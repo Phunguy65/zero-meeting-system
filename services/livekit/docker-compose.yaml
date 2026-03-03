@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+    livekit:
+        image: livekit/livekit-server:latest
+        container_name: livekit-server
+        restart: unless-stopped
+        command: --config /etc/livekit.yaml
+        ports:
+            - "7880:7880"
+            - "7881:7881/tcp"
+            - "7882:7882/udp"
+        volumes:
+            - ./livekit.yaml:/etc/livekit.yaml
+        depends_on:
+            - valkey
+
+    valkey:
+        image: valkey/valkey:9-alpine3.23
+        container_name: livekit-valkey
+        restart: unless-stopped
+        ports:
+            - "6379:6379"

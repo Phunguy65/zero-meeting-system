@@ -1,0 +1,36 @@
+pre-commit:
+    parallel: true
+    commands:
+        # ── Secret scanning ────────────────────────────────────────────
+        secret-scan:
+            run: >
+                command -v gitleaks >/dev/null 2>&1 && gitleaks protect --staged
+                --config .gitleaks.toml || echo "[secret-scan] gitleaks not
+                found, skipping (install via:
+                https://github.com/gitleaks/gitleaks)"
+
+        # ── Java, Kotlin Gradle ──────────────────────────────────
+        java-lint:
+            glob: '**/*.{java}'
+            exclude:
+                - 'third_party/**'
+            run: ./gradlew spotlessCheck
+            stage_fixed: false
+
+        java-format:
+            glob: '**/*.{java}'
+            exclude:
+                - 'third_party/**'
+            run: ./gradlew spotlessApply
+            stage_fixed: true
+
+        database-format:
+            root: 'database/'
+            glob: '**/*.sql'
+            run: bun --bun run format
+            stage_fixed: true
+
+commit-msg:
+    commands:
+        commitlint:
+            run: node_modules/.bin/commitlint --edit {1}
