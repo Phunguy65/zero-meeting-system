@@ -14,7 +14,7 @@ androidCompileSdk = "36"
 kotlin = "2.3.10"
 hilt = "2.59.2"
 ksp = "2.3.4"
-retrofit = "3.1.0-SNAPSHOT"
+retrofit = "2.9.0"
 okhttp = "5.2.0"
 
 [libraries]
