@@ -3,6 +3,7 @@
           xmlns:tools="http://schemas.android.com/tools">
 
     <application
+            android:name="com.example.zeromeeting.ZeroMeetingApp"
             android:allowBackup="true"
             android:dataExtractionRules="@xml/data_extraction_rules"
             android:fullBackupContent="@xml/backup_rules"
@@ -19,6 +20,18 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.example.zeromeeting.view.welcome.WelcomeActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.zeromeeting.view.auth.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.zeromeeting.view.auth.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.zeromeeting.view.guest.JoinGuestActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
