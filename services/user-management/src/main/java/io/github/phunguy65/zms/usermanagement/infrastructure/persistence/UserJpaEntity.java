@@ -36,6 +36,9 @@ public class UserJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
     protected UserJpaEntity() {}
 
     public UserJpaEntity(
@@ -46,7 +49,8 @@ public class UserJpaEntity {
             String avatarUrl,
             String preferences,
             Instant createdAt,
-            Instant updatedAt) {
+            Instant updatedAt,
+            Instant deletedAt) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -55,6 +59,7 @@ public class UserJpaEntity {
         this.preferences = preferences;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
     }
 
     public UUID getId() {
@@ -87,5 +92,9 @@ public class UserJpaEntity {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getDeletedAt() {
+        return deletedAt;
     }
 }

@@ -33,7 +33,7 @@ class RegisterUserUseCaseTest {
     @Test
     void successfulRegistration() {
         var request = new RegisterRequest("alice@example.com", "password123", "Alice Smith");
-        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsActiveByEmail(any())).thenReturn(false);
         when(passwordHasher.hash("password123")).thenReturn(HashedPassword.of("$argon2id$hash"));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -49,7 +49,7 @@ class RegisterUserUseCaseTest {
     @Test
     void duplicateEmailReturnsFailure() {
         var request = new RegisterRequest("alice@example.com", "password123", "Alice Smith");
-        when(userRepository.existsByEmail(Email.of("alice@example.com"))).thenReturn(true);
+        when(userRepository.existsActiveByEmail(Email.of("alice@example.com"))).thenReturn(true);
 
         var result = useCase.execute(request);
 
@@ -62,7 +62,7 @@ class RegisterUserUseCaseTest {
     @Test
     void passwordHashingIsCalled() {
         var request = new RegisterRequest("bob@example.com", "securepass", "Bob");
-        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsActiveByEmail(any())).thenReturn(false);
         when(passwordHasher.hash("securepass")).thenReturn(HashedPassword.of("$argon2id$xyz"));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 

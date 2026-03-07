@@ -29,6 +29,16 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<User> findActiveById(UUID id) {
+        return jpa.findByIdAndDeletedAtIsNull(id).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<User> findActiveByEmail(Email email) {
+        return jpa.findByEmailAndDeletedAtIsNull(email.value()).map(this::toDomain);
+    }
+
+    @Override
     public User save(User user) {
         UserJpaEntity entity = toEntity(user);
         UserJpaEntity saved = jpa.save(entity);
@@ -40,6 +50,11 @@ public class UserRepositoryAdapter implements UserRepository {
         return jpa.existsByEmail(email.value());
     }
 
+    @Override
+    public boolean existsActiveByEmail(Email email) {
+        return jpa.existsByEmailAndDeletedAtIsNull(email.value());
+    }
+
     private User toDomain(UserJpaEntity e) {
         return User.reconstitute(
                 e.getId(),
@@ -49,7 +64,8 @@ public class UserRepositoryAdapter implements UserRepository {
                 e.getAvatarUrl(),
                 e.getPreferences(),
                 e.getCreatedAt(),
-                e.getUpdatedAt());
+                e.getUpdatedAt(),
+                e.getDeletedAt());
     }
 
     private UserJpaEntity toEntity(User u) {
@@ -61,6 +77,7 @@ public class UserRepositoryAdapter implements UserRepository {
                 u.getAvatarUrl(),
                 u.getPreferences(),
                 u.getCreatedAt(),
-                u.getUpdatedAt());
+                u.getUpdatedAt(),
+                u.getDeletedAt());
     }
 }

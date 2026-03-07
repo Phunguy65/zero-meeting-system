@@ -100,7 +100,8 @@ class RefreshTokenUseCaseTest {
                 null,
                 null,
                 Instant.now(),
-                Instant.now());
+                Instant.now(),
+                null);
 
         when(refreshTokenRepository.findByTokenHash(TOKEN_HASH)).thenReturn(Optional.of(valid));
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));

@@ -17,8 +17,6 @@ dependencies {
 
 hibernate {
     enhancement {
-        enableLazyInitialization = false
-        enableDirtyTracking = false
-        enableAssociationManagement = false
+        enableAssociationManagement = true
     }
 }

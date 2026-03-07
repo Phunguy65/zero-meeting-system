@@ -27,7 +27,7 @@ public class RegisterUserUseCase {
     public Result<RegisterResponse, AuthErrorCode> execute(RegisterRequest request) {
         Email email = Email.of(request.email());
 
-        if (userRepository.existsByEmail(email)) {
+        if (userRepository.existsActiveByEmail(email)) {
             return Result.failure(AuthErrorCode.EMAIL_ALREADY_EXISTS);
         }
 

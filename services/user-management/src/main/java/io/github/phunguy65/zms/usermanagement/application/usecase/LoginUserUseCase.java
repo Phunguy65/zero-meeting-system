@@ -46,8 +46,13 @@ public class LoginUserUseCase {
     @Transactional
     public Result<LoginResponse, AuthErrorCode> execute(LoginRequest request) {
         var emailVo = Email.of(request.email());
-        var userOpt = userRepository.findByEmail(emailVo);
 
+        var anyUser = userRepository.findByEmail(emailVo);
+        if (anyUser.isPresent() && anyUser.get().isDeleted()) {
+            return Result.failure(AuthErrorCode.USER_DELETED);
+        }
+
+        var userOpt = userRepository.findActiveByEmail(emailVo);
         if (userOpt.isEmpty()) {
             return Result.failure(AuthErrorCode.INVALID_CREDENTIALS);
         }
@@ -57,16 +62,13 @@ public class LoginUserUseCase {
             return Result.failure(AuthErrorCode.INVALID_CREDENTIALS);
         }
 
-        // Generate access token
         String accessToken = jwtTokenProvider.generateAccessToken(
                 user.getId(), user.getEmail().value());
 
-        // Generate raw refresh token (32 random bytes, Base64URL-encoded)
         byte[] rawBytes = new byte[32];
         secureRandom.nextBytes(rawBytes);
         String rawRefreshToken = Base64.getUrlEncoder().withoutPadding().encodeToString(rawBytes);
 
-        // SHA-256 hash for storage
         String tokenHash = sha256Hex(rawRefreshToken);
 
         Instant expiresAt = Instant.now().plusSeconds(refreshTokenExpirySeconds);

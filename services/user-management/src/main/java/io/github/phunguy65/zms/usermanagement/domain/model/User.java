@@ -18,6 +18,7 @@ public class User extends AggregateRoot<UUID> {
     private String preferences;
     private final Instant createdAt;
     private Instant updatedAt;
+    private Instant deletedAt;
 
     private User(
             UUID id,
@@ -27,7 +28,8 @@ public class User extends AggregateRoot<UUID> {
             String avatarUrl,
             String preferences,
             Instant createdAt,
-            Instant updatedAt) {
+            Instant updatedAt,
+            Instant deletedAt) {
         this.id = id;
         this.email = email;
         this.hashedPassword = hashedPassword;
@@ -36,6 +38,7 @@ public class User extends AggregateRoot<UUID> {
         this.preferences = preferences;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
     }
 
     /** Factory method for new user registration. Generates a UUIDv7 primary key. */
@@ -49,7 +52,8 @@ public class User extends AggregateRoot<UUID> {
                 null,
                 null,
                 now,
-                now);
+                now,
+                null);
     }
 
     /** Reconstitution factory used by the persistence adapter. */
@@ -61,9 +65,30 @@ public class User extends AggregateRoot<UUID> {
             String avatarUrl,
             String preferences,
             Instant createdAt,
-            Instant updatedAt) {
+            Instant updatedAt,
+            Instant deletedAt) {
         return new User(
-                id, email, hashedPassword, fullName, avatarUrl, preferences, createdAt, updatedAt);
+                id,
+                email,
+                hashedPassword,
+                fullName,
+                avatarUrl,
+                preferences,
+                createdAt,
+                updatedAt,
+                deletedAt);
+    }
+
+    /** Soft-deletes this user. Sets {@code deletedAt} to now and updates {@code updatedAt}. */
+    public void delete() {
+        Instant now = Instant.now();
+        this.deletedAt = now;
+        this.updatedAt = now;
+    }
+
+    /** Returns {@code true} if this user has been soft-deleted. */
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
     @Override
@@ -97,5 +122,9 @@ public class User extends AggregateRoot<UUID> {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getDeletedAt() {
+        return deletedAt;
     }
 }
