@@ -38,11 +38,10 @@ dependencies {
     runtimeOnly(libs.jjwt.jackson)
     developmentOnly(libs.spring.boot.devtools)
     runtimeOnly(libs.postgresql)
+    runtimeOnly(libs.bouncycastle)
     annotationProcessor(libs.spring.boot.configuration.processor)
-    testImplementation(libs.spring.boot.starter.actuator.test)
-    testImplementation(libs.spring.boot.starter.data.jpa.test)
+    testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.starter.security.test)
-    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.spring.integration.test)
     testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.h2)
@@ -56,16 +55,18 @@ configurations {
 
 hibernate {
     enhancement {
-        enableAssociationManagement = true
+        enableLazyInitialization = true
+        enableDirtyTracking = true
+        enableAssociationManagement = false
     }
 }
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protoc.get()}"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.protocGenGrpcJava.get()}"
         }
     }
     generateProtoTasks {

@@ -10,4 +10,15 @@ description = "user-management"
 
 dependencies {
     implementation(libs.shared)
+    implementation(libs.uuid.creator)
+    implementation(libs.spring.boot.starter.flyway)
+    runtimeOnly(libs.flyway.database.postgresql)
+}
+
+hibernate {
+    enhancement {
+        enableLazyInitialization = false
+        enableDirtyTracking = false
+        enableAssociationManagement = false
+    }
 }

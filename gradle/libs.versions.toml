@@ -9,8 +9,12 @@ graalvmNative = "0.11.4"
 spotless = "8.2.1"
 jspecify = "1.0.0"
 jjwt = "0.13.0"
+bouncycastle = "1.80"
+uuidCreator = "6.1.1"
 palantirJavaFormat = "2.88.0"
-protoBuf = "0.9.5"
+protoBuf = "0.9.6"
+protoc = "4.34.0"
+protocGenGrpcJava = "1.79.0"
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 agp = "9.0.0"
 androidCompileSdk = "36"
@@ -18,16 +22,28 @@ androidMinSdk = "24"
 androidTargetSdk = "36"
 androidxActivity = "1.12.4"
 androidxAppcompat = "1.7.1"
+androidxConstraintlayout = "2.2.1"
 androidxCore = "1.17.0"
 androidxEspresso = "3.7.0"
 androidxLifecycle = "2.9.6"
 androidxTestExt = "1.3.0"
+hilt = "2.59.2"
+junit4 = "4.13.2"
+kotlin = "2.3.10"
+ksp = "2.3.4"
+material = "1.13.0"
+okhttp = "5.3.2"
+retrofit = "3.0.0"
 runtime = "1.10.3"
 # Utilities
 ktlint = "1.8.0"
 
 [libraries]
 # ─── Backend ─────────────────────────────────────────────────────────────────
+
+# Protobuf
+protoc = { module = "com.google.protobuf:protoc", version.ref = "protoc" }
+protoc-gen-grpc-java = { module = "io.grpc:protoc-gen-grpc-java", version.ref = "protocGenGrpcJava" }
 
 # jjwt dependencies (version managed by jjwt BOM)
 jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable" }
@@ -38,11 +54,19 @@ jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 # Jspecify
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
+# UUID Creator
+uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuidCreator" }
+
+# Flyway
+flyway-core = { module = "org.flywaydb:flyway-core" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
+
 # Spring Boot Starters (version managed by Spring Boot BOM)
 shared = { module = "io.github.phunguy65.zms.services:shared" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-starter-amqp" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 spring-boot-starter-integration = { module = "org.springframework.boot:spring-boot-starter-integration" }
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
@@ -65,14 +89,13 @@ spring-security-messaging = { module = "org.springframework.security:spring-secu
 # PostgreSQL
 postgresql = { module = "org.postgresql:postgresql" }
 
+# BouncyCastle (required by Spring Security Argon2PasswordEncoder)
+bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+
 # JUnit Platform
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
-
-# Spring Boot Test Starters
-spring-boot-starter-actuator-test = { module = "org.springframework.boot:spring-boot-starter-actuator-test" }
-spring-boot-starter-data-jpa-test = { module = "org.springframework.boot:spring-boot-starter-data-jpa-test" }
-spring-boot-starter-security-test = { module = "org.springframework.boot:spring-boot-starter-security-test" }
-spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-security-test = { module = "org.springframework.security:spring-security-test" }
 h2 = { module = "com.h2database:h2" }
 
 # ─── Frontend – AndroidX ─────────────────────────────────────────────────────
@@ -80,9 +103,28 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx
 androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExt" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
+androidx-activity = { module = "androidx.activity:activity", version.ref = "androidxActivity" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
+
+# ─── Frontend – Material & Test ───────────────────────────────────────────────
+material = { module = "com.google.android.material:material", version.ref = "material" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
+
+# ─── Frontend – Hilt ─────────────────────────────────────────────────────────
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
+
+# ─── Frontend – OkHttp ───────────────────────────────────────────────────────
+okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
+okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
+okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor" }
+
+# ─── Frontend – Retrofit ─────────────────────────────────────────────────────
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 
 [plugins]
 # ─── Backend ─────────────────────────────────────────────────────────────────
@@ -93,5 +135,11 @@ graalvmNative = { id = "org.graalvm.buildtools.native", version.ref = "graalvmNa
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 protobuf = { id = "com.google.protobuf", version.ref = "protoBuf" }
 
+# ─── Frontend ─────────────────────────────────────────────────────────────────
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
 # ─── Custom Plugin ─────────────────────────────────────────────────────────────
-spotlessConvention = { id = "io.github.phunguy65.zms.plugin.spotless"  }
+spotlessConvention = { id = "io.github.phunguy65.zms.plugin.spotless" }

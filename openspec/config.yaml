@@ -1,0 +1,67 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+context: |
+    Domain: Meeting system
+    Tech stack:
+    =============================================================
+    - Services: Spring Boot, Java 25
+    Codebase conventions: Clean Architecture (Hexagonal/Ports & Adapters), RESTful API design, Jsend response format.
+
+    Service directory structure (Spring Boot):
+    =============================================================
+    services/{service-name}/
+      src/
+        main/
+          java/io/github/phunguy65/zms/{service-name}/
+            domain/
+              model/          # Entities (extends AggregateRoot<ID>) & Value Objects (records)
+              port/           # Outbound port interfaces (Repository, service contracts)
+              {Feature}ErrorCode.java  # Typed error enums (implements ErrorCode)
+            application/
+              usecase/        # Use cases (@Service, @Transactional), return Result<T, ErrorCode>
+              dto/            # Request/Response DTOs (Java records + Jakarta validation)
+            infrastructure/
+              persistence/    # {Entity}JpaEntity, {Entity}JpaRepository, {Entity}RepositoryAdapter
+              security/       # SecurityConfig, JwtTokenProvider, JwtAuthFilter, PasswordHasher impl
+              web/            # WebConfig, ApiVersionParser
+            presentation/
+              {Feature}Controller.java  # @RestController, maps Result<> to JsendResponse<>
+            {ServiceName}Application.java  # @SpringBootApplication entry point
+          resources/
+            application.properties
+            db/migration/     # Flyway: V{N}__{description}.sql (PostgreSQL)
+        test/
+          java/io/github/phunguy65/zms/{service-name}/
+            application/usecase/   # Unit tests per use case
+            infrastructure/        # Infrastructure/adapter tests
+            presentation/          # @SpringBootTest integration tests
+          resources/
+            application-test.properties
+            db/h2-migration/       # H2-compatible Flyway migrations for tests
+
+    Key patterns:
+    - Domain entities use static factory methods: register() for new, reconstitute() from DB
+    - Value Objects: Java records, validate in compact constructor, implement ValueObject marker
+    - Error handling: Result<T, ErrorCode> (no exceptions across layer boundaries)
+    - Repository adapters contain private toDomain() / toEntity() mappers
+    - API versioning: /{version}/resource path prefix, resolved by ApiVersionParser
+    - Shared module (io.github.phunguy65.zms.shared): AggregateRoot, ValueObject, Result, JsendResponse, ErrorCode
+    - Main app scans both service and shared packages via scanBasePackages
+
+    - Frontend: 
+      - Android Native App (Java 25,XML)
+      - Web App (Next.js, TypeScript)
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
