@@ -20,7 +20,6 @@ spotless {
         endWithNewline()
         importOrder()
         removeUnusedImports()
-        licenseHeader("")
     }
     kotlinGradle {
         target("**/*.gradle.kts")

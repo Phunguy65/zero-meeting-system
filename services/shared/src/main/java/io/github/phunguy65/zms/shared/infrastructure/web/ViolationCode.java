@@ -1,4 +1,4 @@
-package infrastructure.web;
+package io.github.phunguy65.zms.shared.infrastructure.web;
 
 /**
  * Codes representing the category of a Bean Validation constraint failure.

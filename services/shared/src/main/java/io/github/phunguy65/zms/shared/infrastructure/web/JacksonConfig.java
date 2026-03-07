@@ -1,4 +1,4 @@
-package infrastructure.web;
+package io.github.phunguy65.zms.shared.infrastructure.web;
 
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.context.annotation.Bean;

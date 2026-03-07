@@ -1,4 +1,4 @@
-package domain;
+package io.github.phunguy65.zms.shared.domain;
 
 import java.util.function.Function;
 

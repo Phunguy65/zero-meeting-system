@@ -1,4 +1,4 @@
-package infrastructure.web;
+package io.github.phunguy65.zms.shared.infrastructure.web;
 
 /**
  * Represents a single field-level validation failure inside a {@link FailData#errors()} list.
