@@ -23,11 +23,12 @@ pre-commit:
                 - 'third_party/**'
             run: ./gradlew spotlessApply
             stage_fixed: true
-
-        database-format:
-            root: 'database/'
-            glob: '**/*.sql'
-            run: bun --bun run format
+        
+        general-format:
+            glob: '**/*.{md, json, toml, yaml, yml, sh}'
+            exclude:
+                - 'third_party/**'
+            run: bun run format
             stage_fixed: true
 
 commit-msg:
