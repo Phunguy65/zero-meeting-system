@@ -18,8 +18,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class DeleteAccountUseCaseTest {
@@ -30,6 +32,10 @@ class DeleteAccountUseCaseTest {
     @Mock
     RefreshTokenRepository refreshTokenRepository;
 
+    @Mock
+    ApplicationEventPublisher eventPublisher;
+
+    @InjectMocks
     DeleteAccountUseCase useCase;
 
     private UUID userId;
@@ -38,7 +44,6 @@ class DeleteAccountUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new DeleteAccountUseCase(userRepository, refreshTokenRepository);
         userId = UUID.randomUUID();
         activeUser = User.reconstitute(
                 userId,

@@ -1,9 +1,11 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.event.UserLoggedInEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
@@ -16,6 +18,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,7 @@ public class LoginUserUseCase {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final long refreshTokenExpirySeconds;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -35,12 +39,14 @@ public class LoginUserUseCase {
             PasswordHasher passwordHasher,
             RefreshTokenRepository refreshTokenRepository,
             JwtTokenProvider jwtTokenProvider,
-            @Value("${app.jwt.refresh-token-expiry-seconds}") long refreshTokenExpirySeconds) {
+            @Value("${app.jwt.refresh-token-expiry-seconds}") long refreshTokenExpirySeconds,
+            ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtTokenProvider = jwtTokenProvider;
         this.refreshTokenExpirySeconds = refreshTokenExpirySeconds;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -74,6 +80,10 @@ public class LoginUserUseCase {
         Instant expiresAt = Instant.now().plusSeconds(refreshTokenExpirySeconds);
         var refreshToken = RefreshToken.issue(user.getId(), tokenHash, expiresAt);
         refreshTokenRepository.save(refreshToken);
+
+        Instant loginAt = Instant.now();
+        eventPublisher.publishEvent(new UserLoggedInEvent(
+                UuidCreator.getTimeOrderedEpoch(), user.getId(), user.getEmail().value(), loginAt));
 
         return Result.success(new LoginResponse(
                 accessToken, rawRefreshToken, jwtTokenProvider.getAccessTokenExpirySeconds()));

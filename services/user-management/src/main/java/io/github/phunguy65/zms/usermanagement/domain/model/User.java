@@ -2,6 +2,8 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
+import io.github.phunguy65.zms.usermanagement.domain.event.UserDeletedEvent;
+import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -44,7 +46,7 @@ public class User extends AggregateRoot<UUID> {
     /** Factory method for new user registration. Generates a UUIDv7 primary key. */
     public static User register(Email email, HashedPassword hashedPassword, FullName fullName) {
         Instant now = Instant.now();
-        return new User(
+        var user = new User(
                 UuidCreator.getTimeOrderedEpoch(),
                 email,
                 hashedPassword,
@@ -54,6 +56,9 @@ public class User extends AggregateRoot<UUID> {
                 now,
                 now,
                 null);
+        user.registerEvent(new UserRegisteredEvent(
+                UuidCreator.getTimeOrderedEpoch(), user.id, email.value(), fullName.value(), now));
+        return user;
     }
 
     /** Reconstitution factory used by the persistence adapter. */
@@ -84,6 +89,8 @@ public class User extends AggregateRoot<UUID> {
         Instant now = Instant.now();
         this.deletedAt = now;
         this.updatedAt = now;
+        registerEvent(new UserDeletedEvent(
+                UuidCreator.getTimeOrderedEpoch(), this.id, this.email.value(), now));
     }
 
     /** Returns {@code true} if this user has been soft-deleted. */

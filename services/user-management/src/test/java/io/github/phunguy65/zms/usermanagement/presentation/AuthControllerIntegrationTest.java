@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
@@ -22,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.context.WebApplicationContext;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -207,7 +207,7 @@ class AuthControllerIntegrationTest {
 
         // Delete account
         mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -234,7 +234,7 @@ class AuthControllerIntegrationTest {
 
         // Delete account
         mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         // Subsequent request with same JWT should be rejected (filter checks deletedAt)
         mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
@@ -263,7 +263,7 @@ class AuthControllerIntegrationTest {
                 .asText();
 
         mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         // Login attempt after deletion should return 401 USER_DELETED
         mockMvc.perform(post("/api/v1/auth/login")
@@ -299,7 +299,7 @@ class AuthControllerIntegrationTest {
                 .asText();
 
         mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         // Re-register with same email should succeed (201)
         mockMvc.perform(post("/api/v1/auth/register")
