@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.security;
 
+import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,9 +20,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
-    public JwtAuthFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthFilter(JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -42,7 +45,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         UUID userId = jwtTokenProvider.extractUserId(token);
-        String email = jwtTokenProvider.extractEmail(token);
+
+        // Reject if user is soft-deleted or does not exist
+        var userOpt = userRepository.findActiveById(userId);
+        if (userOpt.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(userId.toString(), null, List.of());

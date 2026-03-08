@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class LoginUserUseCaseTest {
@@ -41,6 +42,9 @@ class LoginUserUseCaseTest {
     @Mock
     JwtTokenProvider jwtTokenProvider;
 
+    @Mock
+    ApplicationEventPublisher eventPublisher;
+
     LoginUserUseCase useCase;
 
     private User testUser;
@@ -48,7 +52,12 @@ class LoginUserUseCaseTest {
     @BeforeEach
     void setUp() {
         useCase = new LoginUserUseCase(
-                userRepository, passwordHasher, refreshTokenRepository, jwtTokenProvider, 2592000L);
+                userRepository,
+                passwordHasher,
+                refreshTokenRepository,
+                jwtTokenProvider,
+                2592000L,
+                eventPublisher);
         testUser = User.reconstitute(
                 UUID.randomUUID(),
                 Email.of("alice@example.com"),
@@ -57,12 +66,15 @@ class LoginUserUseCaseTest {
                 null,
                 null,
                 Instant.now(),
-                Instant.now());
+                Instant.now(),
+                null);
     }
 
     @Test
     void successfulLogin() {
         when(userRepository.findByEmail(Email.of("alice@example.com")))
+                .thenReturn(Optional.of(testUser));
+        when(userRepository.findActiveByEmail(Email.of("alice@example.com")))
                 .thenReturn(Optional.of(testUser));
         when(passwordHasher.verify("password123", testUser.getHashedPassword())).thenReturn(true);
         when(jwtTokenProvider.generateAccessToken(any(), any())).thenReturn("access.token.here");
@@ -81,6 +93,7 @@ class LoginUserUseCaseTest {
     @Test
     void wrongPasswordReturnsInvalidCredentials() {
         when(userRepository.findByEmail(any())).thenReturn(Optional.of(testUser));
+        when(userRepository.findActiveByEmail(any())).thenReturn(Optional.of(testUser));
         when(passwordHasher.verify(any(), any())).thenReturn(false);
 
         var result = useCase.execute(new LoginRequest("alice@example.com", "wrong"));
@@ -92,6 +105,7 @@ class LoginUserUseCaseTest {
     @Test
     void unknownEmailReturnsInvalidCredentials() {
         when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+        when(userRepository.findActiveByEmail(any())).thenReturn(Optional.empty());
 
         var result = useCase.execute(new LoginRequest("nobody@example.com", "pass"));
 
@@ -102,6 +116,7 @@ class LoginUserUseCaseTest {
     @Test
     void refreshTokenStoredAsHash() {
         when(userRepository.findByEmail(any())).thenReturn(Optional.of(testUser));
+        when(userRepository.findActiveByEmail(any())).thenReturn(Optional.of(testUser));
         when(passwordHasher.verify(any(), any())).thenReturn(true);
         when(jwtTokenProvider.generateAccessToken(any(), any())).thenReturn("tok");
         when(jwtTokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);

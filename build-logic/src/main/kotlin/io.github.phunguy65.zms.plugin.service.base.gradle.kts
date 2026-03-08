@@ -21,14 +21,13 @@ version = "0.0.1-SNAPSHOT"
 val libs = the<LibrariesForLibs>()
 dependencies {
     implementation(libs.spring.boot.starter.actuator)
-    implementation(libs.spring.boot.starter.amqp)
+    implementation(libs.spring.kafka)
+    implementation(libs.cloudevents.core)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.integration)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.validation)
-    implementation(libs.spring.rabbit.stream)
-    implementation(libs.spring.integration.amqp)
     implementation(libs.spring.integration.http)
     implementation(libs.spring.integration.jpa)
     implementation(libs.spring.security.messaging)
@@ -55,8 +54,6 @@ configurations {
 
 hibernate {
     enhancement {
-        enableLazyInitialization = true
-        enableDirtyTracking = true
         enableAssociationManagement = false
     }
 }

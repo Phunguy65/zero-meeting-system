@@ -7,6 +7,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
+import io.github.phunguy65.zms.usermanagement.application.usecase.DeleteAccountUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LoginUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LogoutUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.RefreshTokenUseCase;
@@ -14,8 +15,10 @@ import io.github.phunguy65.zms.usermanagement.application.usecase.RegisterUserUs
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,16 +28,19 @@ public class AuthController {
     private final LoginUserUseCase loginUserUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final LogoutUserUseCase logoutUserUseCase;
+    private final DeleteAccountUseCase deleteAccountUseCase;
 
     public AuthController(
             RegisterUserUseCase registerUserUseCase,
             LoginUserUseCase loginUserUseCase,
             RefreshTokenUseCase refreshTokenUseCase,
-            LogoutUserUseCase logoutUserUseCase) {
+            LogoutUserUseCase logoutUserUseCase,
+            DeleteAccountUseCase deleteAccountUseCase) {
         this.registerUserUseCase = registerUserUseCase;
         this.loginUserUseCase = loginUserUseCase;
         this.refreshTokenUseCase = refreshTokenUseCase;
         this.logoutUserUseCase = logoutUserUseCase;
+        this.deleteAccountUseCase = deleteAccountUseCase;
     }
 
     /** POST /api/v1/auth/register */
@@ -94,6 +100,24 @@ public class AuthController {
             case Result.Success<?, AuthErrorCode> _ -> ResponseEntity.ok(JsendResponse.success());
             case Result.Failure<?, AuthErrorCode> f ->
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(JsendResponse.fail(
+                                new FailData(f.error().name(), f.error(), List.of())));
+        };
+    }
+
+    /** DELETE /api/v1/auth/me */
+    @DeleteMapping(value = "/{version}/auth/me", version = "1.0")
+    public ResponseEntity<JsendResponse<?>> deleteAccount() {
+        String principalId =
+                (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UUID userId = UUID.fromString(principalId);
+
+        var result = deleteAccountUseCase.execute(userId);
+        return switch (result) {
+            case Result.Success<?, AuthErrorCode> s ->
+                ResponseEntity.ok(JsendResponse.success(s.value()));
+            case Result.Failure<?, AuthErrorCode> f ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(JsendResponse.fail(
                                 new FailData(f.error().name(), f.error(), List.of())));
         };

@@ -28,5 +28,8 @@ public enum AuthErrorCode implements ErrorCode {
     REFRESH_TOKEN_REUSE_DETECTED,
 
     /** Operation requires a user that does not exist. */
-    USER_NOT_FOUND
+    USER_NOT_FOUND,
+
+    /** Deleted user attempted login or JWT check failed because account is soft-deleted. */
+    USER_DELETED
 }

@@ -2,6 +2,8 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
+import io.github.phunguy65.zms.usermanagement.domain.event.UserDeletedEvent;
+import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -18,6 +20,7 @@ public class User extends AggregateRoot<UUID> {
     private String preferences;
     private final Instant createdAt;
     private Instant updatedAt;
+    private Instant deletedAt;
 
     private User(
             UUID id,
@@ -27,7 +30,8 @@ public class User extends AggregateRoot<UUID> {
             String avatarUrl,
             String preferences,
             Instant createdAt,
-            Instant updatedAt) {
+            Instant updatedAt,
+            Instant deletedAt) {
         this.id = id;
         this.email = email;
         this.hashedPassword = hashedPassword;
@@ -36,12 +40,13 @@ public class User extends AggregateRoot<UUID> {
         this.preferences = preferences;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
     }
 
     /** Factory method for new user registration. Generates a UUIDv7 primary key. */
     public static User register(Email email, HashedPassword hashedPassword, FullName fullName) {
         Instant now = Instant.now();
-        return new User(
+        var user = new User(
                 UuidCreator.getTimeOrderedEpoch(),
                 email,
                 hashedPassword,
@@ -49,7 +54,11 @@ public class User extends AggregateRoot<UUID> {
                 null,
                 null,
                 now,
-                now);
+                now,
+                null);
+        user.registerEvent(new UserRegisteredEvent(
+                UuidCreator.getTimeOrderedEpoch(), user.id, email.value(), fullName.value(), now));
+        return user;
     }
 
     /** Reconstitution factory used by the persistence adapter. */
@@ -61,9 +70,32 @@ public class User extends AggregateRoot<UUID> {
             String avatarUrl,
             String preferences,
             Instant createdAt,
-            Instant updatedAt) {
+            Instant updatedAt,
+            Instant deletedAt) {
         return new User(
-                id, email, hashedPassword, fullName, avatarUrl, preferences, createdAt, updatedAt);
+                id,
+                email,
+                hashedPassword,
+                fullName,
+                avatarUrl,
+                preferences,
+                createdAt,
+                updatedAt,
+                deletedAt);
+    }
+
+    /** Soft-deletes this user. Sets {@code deletedAt} to now and updates {@code updatedAt}. */
+    public void delete() {
+        Instant now = Instant.now();
+        this.deletedAt = now;
+        this.updatedAt = now;
+        registerEvent(new UserDeletedEvent(
+                UuidCreator.getTimeOrderedEpoch(), this.id, this.email.value(), now));
+    }
+
+    /** Returns {@code true} if this user has been soft-deleted. */
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
     @Override
@@ -97,5 +129,9 @@ public class User extends AggregateRoot<UUID> {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getDeletedAt() {
+        return deletedAt;
     }
 }
