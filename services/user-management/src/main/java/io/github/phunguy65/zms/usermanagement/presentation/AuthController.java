@@ -8,7 +8,6 @@ import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
-import io.github.phunguy65.zms.usermanagement.application.usecase.DeleteAccountUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LoginUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LoginWithGoogleUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LogoutUserUseCase;
@@ -17,10 +16,8 @@ import io.github.phunguy65.zms.usermanagement.application.usecase.RegisterUserUs
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,7 +27,6 @@ public class AuthController {
     private final LoginUserUseCase loginUserUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final LogoutUserUseCase logoutUserUseCase;
-    private final DeleteAccountUseCase deleteAccountUseCase;
     private final LoginWithGoogleUseCase loginWithGoogleUseCase;
 
     public AuthController(
@@ -38,13 +34,11 @@ public class AuthController {
             LoginUserUseCase loginUserUseCase,
             RefreshTokenUseCase refreshTokenUseCase,
             LogoutUserUseCase logoutUserUseCase,
-            DeleteAccountUseCase deleteAccountUseCase,
             LoginWithGoogleUseCase loginWithGoogleUseCase) {
         this.registerUserUseCase = registerUserUseCase;
         this.loginUserUseCase = loginUserUseCase;
         this.refreshTokenUseCase = refreshTokenUseCase;
         this.logoutUserUseCase = logoutUserUseCase;
-        this.deleteAccountUseCase = deleteAccountUseCase;
         this.loginWithGoogleUseCase = loginWithGoogleUseCase;
     }
 
@@ -124,23 +118,6 @@ public class AuthController {
                         .body(JsendResponse.fail(
                                 new FailData(f.error().name(), f.error(), List.of())));
             }
-        };
-    }
-
-    @DeleteMapping(value = "/{version}/auth/me", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> deleteAccount() {
-        String principalId =
-                (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UUID userId = UUID.fromString(principalId);
-
-        var result = deleteAccountUseCase.execute(userId);
-        return switch (result) {
-            case Result.Success<?, AuthErrorCode> s ->
-                ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, AuthErrorCode> f ->
-                ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(JsendResponse.fail(
-                                new FailData(f.error().name(), f.error(), List.of())));
         };
     }
 }

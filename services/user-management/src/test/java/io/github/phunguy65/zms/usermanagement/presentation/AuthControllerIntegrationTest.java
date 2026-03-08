@@ -212,7 +212,7 @@ class AuthControllerIntegrationTest {
                 .asText();
 
         // Delete account
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
     }
 
@@ -239,11 +239,11 @@ class AuthControllerIntegrationTest {
                 .asString();
 
         // Delete account
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
 
         // Subsequent request with same JWT should be rejected (filter checks deletedAt)
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -268,7 +268,7 @@ class AuthControllerIntegrationTest {
                 .at("/data/accessToken")
                 .asString();
 
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
 
         // Login attempt after deletion should return 401 USER_DELETED
@@ -304,7 +304,7 @@ class AuthControllerIntegrationTest {
                 .at("/data/accessToken")
                 .asString();
 
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
 
         // Re-register with same email should succeed (201)
