@@ -18,6 +18,9 @@ public interface UserRepository {
     /** Returns the user only if {@code deleted_at IS NULL}. */
     Optional<User> findActiveByEmail(Email email);
 
+    /** Returns the active user with the given Firebase Google UID, or empty if not found. */
+    Optional<User> findActiveByGoogleUid(String googleUid);
+
     User save(User user);
 
     boolean existsByEmail(Email email);

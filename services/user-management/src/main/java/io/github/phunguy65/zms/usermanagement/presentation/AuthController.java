@@ -3,12 +3,14 @@ package io.github.phunguy65.zms.usermanagement.presentation;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.FailData;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.github.phunguy65.zms.usermanagement.application.dto.GoogleLoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
 import io.github.phunguy65.zms.usermanagement.application.usecase.DeleteAccountUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LoginUserUseCase;
+import io.github.phunguy65.zms.usermanagement.application.usecase.LoginWithGoogleUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LogoutUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.RefreshTokenUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.RegisterUserUseCase;
@@ -29,18 +31,21 @@ public class AuthController {
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final LogoutUserUseCase logoutUserUseCase;
     private final DeleteAccountUseCase deleteAccountUseCase;
+    private final LoginWithGoogleUseCase loginWithGoogleUseCase;
 
     public AuthController(
             RegisterUserUseCase registerUserUseCase,
             LoginUserUseCase loginUserUseCase,
             RefreshTokenUseCase refreshTokenUseCase,
             LogoutUserUseCase logoutUserUseCase,
-            DeleteAccountUseCase deleteAccountUseCase) {
+            DeleteAccountUseCase deleteAccountUseCase,
+            LoginWithGoogleUseCase loginWithGoogleUseCase) {
         this.registerUserUseCase = registerUserUseCase;
         this.loginUserUseCase = loginUserUseCase;
         this.refreshTokenUseCase = refreshTokenUseCase;
         this.logoutUserUseCase = logoutUserUseCase;
         this.deleteAccountUseCase = deleteAccountUseCase;
+        this.loginWithGoogleUseCase = loginWithGoogleUseCase;
     }
 
     /** POST /api/v1/auth/register */
@@ -98,6 +103,21 @@ public class AuthController {
         var result = logoutUserUseCase.execute(request);
         return switch (result) {
             case Result.Success<?, AuthErrorCode> _ -> ResponseEntity.ok(JsendResponse.success());
+            case Result.Failure<?, AuthErrorCode> f ->
+                ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(JsendResponse.fail(
+                                new FailData(f.error().name(), f.error(), List.of())));
+        };
+    }
+
+    /** POST /api/v1/auth/google-login */
+    @PostMapping(value = "/{version}/auth/google-login", version = "1.0")
+    public ResponseEntity<JsendResponse<?>> googleLogin(
+            @Valid @RequestBody GoogleLoginRequest request) {
+        var result = loginWithGoogleUseCase.execute(request);
+        return switch (result) {
+            case Result.Success<?, AuthErrorCode> s ->
+                ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthErrorCode> f ->
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(JsendResponse.fail(
