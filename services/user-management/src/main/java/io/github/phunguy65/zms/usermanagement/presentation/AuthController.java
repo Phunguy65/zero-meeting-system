@@ -114,10 +114,16 @@ public class AuthController {
         return switch (result) {
             case Result.Success<?, AuthErrorCode> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, AuthErrorCode> f ->
-                ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            case Result.Failure<?, AuthErrorCode> f -> {
+                if (f.error() == AuthErrorCode.FIREBASE_AUTH_ERROR) {
+                    yield ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                            .body(JsendResponse.fail(
+                                    new FailData(f.error().name(), f.error(), List.of())));
+                }
+                yield ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(JsendResponse.fail(
                                 new FailData(f.error().name(), f.error(), List.of())));
+            }
         };
     }
 

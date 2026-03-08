@@ -40,5 +40,8 @@ public enum AuthErrorCode implements ErrorCode {
     INVALID_FIREBASE_TOKEN,
 
     /** Firebase Admin SDK returned an unexpected error during token verification. */
-    FIREBASE_AUTH_ERROR
+    FIREBASE_AUTH_ERROR,
+
+    /** Preferences JSON serialization failed due to an internal/unexpected error. */
+    PREFERENCES_SERIALIZATION_ERROR
 }

@@ -87,7 +87,7 @@ public class PatchUpdateUserUseCase {
                 user.updatePreferences(json);
             } catch (Exception e) {
                 log.error("Failed to serialise preferences for user {}", userId, e);
-                return Result.failure(AuthErrorCode.USER_NOT_FOUND);
+                return Result.failure(AuthErrorCode.PREFERENCES_SERIALIZATION_ERROR);
             }
         }
 

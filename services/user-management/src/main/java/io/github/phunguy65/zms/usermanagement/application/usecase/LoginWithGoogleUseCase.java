@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -14,6 +15,7 @@ import io.github.phunguy65.zms.usermanagement.domain.port.GoogleAuthVerifier;
 import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class LoginWithGoogleUseCase {
     private final TokenProvider tokenProvider;
     private final RefreshTokenIssuer refreshTokenIssuer;
     private final UserPreferencesParser preferencesParser;
+    private final ApplicationEventPublisher eventPublisher;
     private final long refreshTokenExpirySeconds;
 
     public LoginWithGoogleUseCase(
@@ -33,12 +36,14 @@ public class LoginWithGoogleUseCase {
             TokenProvider tokenProvider,
             RefreshTokenIssuer refreshTokenIssuer,
             UserPreferencesParser preferencesParser,
+            ApplicationEventPublisher eventPublisher,
             @Value("${app.jwt.refresh-token-expiry-seconds}") long refreshTokenExpirySeconds) {
         this.googleAuthVerifier = googleAuthVerifier;
         this.userRepository = userRepository;
         this.tokenProvider = tokenProvider;
         this.refreshTokenIssuer = refreshTokenIssuer;
         this.preferencesParser = preferencesParser;
+        this.eventPublisher = eventPublisher;
         this.refreshTokenExpirySeconds = refreshTokenExpirySeconds;
     }
 
@@ -84,6 +89,11 @@ public class LoginWithGoogleUseCase {
                         claims.photoUrl(),
                         username);
                 user = userRepository.save(newUser);
+                user.getDomainEvents().stream()
+                        .filter(e -> e instanceof PublishableEvent)
+                        .map(e -> (PublishableEvent) e)
+                        .forEach(eventPublisher::publishEvent);
+                user.clearDomainEvents();
             }
         }
 
