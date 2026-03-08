@@ -8,6 +8,17 @@ services:
         ports:
             - '5432:5432'
 
+    user-management:
+        build: .
+        environment:
+            - 'FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-}'
+            - 'GOOGLE_APPLICATION_CREDENTIALS=/secrets/firebase-service-account.json'
+        volumes:
+            - '${FIREBASE_SERVICE_ACCOUNT_PATH:-/dev/null}:/secrets/firebase-service-account.json:ro'
+        depends_on:
+            - postgres
+            - kafka
+
     kafka:
         image: confluentinc/cp-kafka:7.8.0
         hostname: kafka

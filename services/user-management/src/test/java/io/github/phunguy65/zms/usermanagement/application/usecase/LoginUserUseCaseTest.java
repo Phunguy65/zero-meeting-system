@@ -7,6 +7,8 @@ import static org.mockito.Mockito.*;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
+import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
+import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
@@ -15,8 +17,8 @@ import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
+import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
-import io.github.phunguy65.zms.usermanagement.infrastructure.security.JwtTokenProvider;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class LoginUserUseCaseTest {
@@ -40,22 +43,25 @@ class LoginUserUseCaseTest {
     RefreshTokenRepository refreshTokenRepository;
 
     @Mock
-    JwtTokenProvider jwtTokenProvider;
+    TokenProvider tokenProvider;
 
     @Mock
     ApplicationEventPublisher eventPublisher;
 
     LoginUserUseCase useCase;
+    RefreshTokenIssuer refreshTokenIssuer;
 
     private User testUser;
 
     @BeforeEach
     void setUp() {
+        refreshTokenIssuer = new RefreshTokenIssuer(refreshTokenRepository);
         useCase = new LoginUserUseCase(
                 userRepository,
                 passwordHasher,
-                refreshTokenRepository,
-                jwtTokenProvider,
+                tokenProvider,
+                refreshTokenIssuer,
+                new UserPreferencesParser(new ObjectMapper()),
                 2592000L,
                 eventPublisher);
         testUser = User.reconstitute(
@@ -64,6 +70,8 @@ class LoginUserUseCaseTest {
                 HashedPassword.of("$argon2id$hash"),
                 FullName.of("Alice"),
                 null,
+                null,
+                "EMAIL",
                 null,
                 Instant.now(),
                 Instant.now(),
@@ -76,9 +84,10 @@ class LoginUserUseCaseTest {
                 .thenReturn(Optional.of(testUser));
         when(userRepository.findActiveByEmail(Email.of("alice@example.com")))
                 .thenReturn(Optional.of(testUser));
-        when(passwordHasher.verify("password123", testUser.getHashedPassword())).thenReturn(true);
-        when(jwtTokenProvider.generateAccessToken(any(), any())).thenReturn("access.token.here");
-        when(jwtTokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
+        when(passwordHasher.verify("password123", testUser.getHashedPassword().orElseThrow()))
+                .thenReturn(true);
+        when(tokenProvider.generateAccessToken(any(), any())).thenReturn("access.token.here");
+        when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
         when(refreshTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var result = useCase.execute(new LoginRequest("alice@example.com", "password123"));
@@ -118,8 +127,8 @@ class LoginUserUseCaseTest {
         when(userRepository.findByEmail(any())).thenReturn(Optional.of(testUser));
         when(userRepository.findActiveByEmail(any())).thenReturn(Optional.of(testUser));
         when(passwordHasher.verify(any(), any())).thenReturn(true);
-        when(jwtTokenProvider.generateAccessToken(any(), any())).thenReturn("tok");
-        when(jwtTokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
+        when(tokenProvider.generateAccessToken(any(), any())).thenReturn("tok");
+        when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
         when(refreshTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var result = useCase.execute(new LoginRequest("alice@example.com", "password123"));
@@ -127,9 +136,36 @@ class LoginUserUseCaseTest {
 
         // The raw token returned to client should NOT equal the stored hash
         String rawToken = response.refreshToken();
-        String expectedHash = LoginUserUseCase.sha256Hex(rawToken);
+        String expectedHash = refreshTokenIssuer.hash(rawToken);
 
         verify(refreshTokenRepository)
                 .save(argThat((RefreshToken rt) -> rt.getTokenHash().equals(expectedHash)));
+    }
+
+    @Test
+    void googleOnlyAccountCannotLoginWithPassword() {
+        var googleUser = User.reconstitute(
+                UUID.randomUUID(),
+                Email.of("google@example.com"),
+                null, // no password
+                FullName.of("Google User"),
+                null,
+                "google-uid-abc",
+                "GOOGLE",
+                null,
+                Instant.now(),
+                Instant.now(),
+                null);
+
+        when(userRepository.findByEmail(Email.of("google@example.com")))
+                .thenReturn(Optional.of(googleUser));
+        when(userRepository.findActiveByEmail(Email.of("google@example.com")))
+                .thenReturn(Optional.of(googleUser));
+
+        var result = useCase.execute(new LoginRequest("google@example.com", "anypassword"));
+
+        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
+                .isEqualTo(AuthErrorCode.INVALID_CREDENTIALS);
+        verify(passwordHasher, never()).verify(any(), any());
     }
 }

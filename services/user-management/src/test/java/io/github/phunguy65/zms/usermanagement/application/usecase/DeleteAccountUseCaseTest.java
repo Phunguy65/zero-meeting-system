@@ -52,6 +52,8 @@ class DeleteAccountUseCaseTest {
                 FullName.of("Alice"),
                 null,
                 null,
+                "EMAIL",
+                null,
                 Instant.now(),
                 Instant.now(),
                 null);
@@ -61,6 +63,8 @@ class DeleteAccountUseCaseTest {
                 HashedPassword.of("$argon2id$hash"),
                 FullName.of("Alice"),
                 null,
+                null,
+                "EMAIL",
                 null,
                 Instant.now().minusSeconds(100),
                 Instant.now().minusSeconds(50),
@@ -76,7 +80,7 @@ class DeleteAccountUseCaseTest {
 
         assertThat(result).isInstanceOf(Result.Success.class);
         assertThat(activeUser.isDeleted()).isTrue();
-        assertThat(activeUser.getDeletedAt()).isNotNull();
+        assertThat(activeUser.getDeletedAt()).isPresent();
         verify(userRepository).save(activeUser);
         verify(refreshTokenRepository).revokeAllByUserId(userId);
     }

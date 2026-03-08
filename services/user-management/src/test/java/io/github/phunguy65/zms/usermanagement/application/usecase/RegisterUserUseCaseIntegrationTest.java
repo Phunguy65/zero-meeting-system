@@ -7,6 +7,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
 import io.github.phunguy65.zms.usermanagement.infrastructure.messaging.KafkaEventPublisher;
 import io.github.phunguy65.zms.usermanagement.infrastructure.messaging.OutboxEventPublisher;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventRepository;
+import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTokenVerifier;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +35,10 @@ class RegisterUserUseCaseIntegrationTest {
 
     @MockitoBean
     OutboxEventPublisher outboxEventPublisher;
+
+    // Mock Firebase — no credentials needed in tests
+    @MockitoBean
+    FirebaseTokenVerifier firebaseTokenVerifier;
 
     @Test
     void successfulRegistration_contextLoadsAndUseCaseIsWired() {

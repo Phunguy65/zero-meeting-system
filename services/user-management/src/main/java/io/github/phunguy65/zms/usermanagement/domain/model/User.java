@@ -4,8 +4,11 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserDeletedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
+import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /**
  * User aggregate root. Represents a registered account in the system.
@@ -14,36 +17,44 @@ public class User extends AggregateRoot<UUID> {
 
     private final UUID id;
     private Email email;
-    private HashedPassword hashedPassword;
+    /** Null for Google-only accounts. */
+    private @Nullable HashedPassword hashedPassword;
+
     private FullName fullName;
-    private String avatarUrl;
-    private String preferences;
+    private @Nullable String avatarUrl;
+    private @Nullable String googleUid;
+    private String authProvider;
+    private @Nullable String preferences;
     private final Instant createdAt;
     private Instant updatedAt;
-    private Instant deletedAt;
+    private @Nullable Instant deletedAt;
 
     private User(
             UUID id,
             Email email,
-            HashedPassword hashedPassword,
+            @Nullable HashedPassword hashedPassword,
             FullName fullName,
-            String avatarUrl,
-            String preferences,
+            @Nullable String avatarUrl,
+            @Nullable String googleUid,
+            String authProvider,
+            @Nullable String preferences,
             Instant createdAt,
             Instant updatedAt,
-            Instant deletedAt) {
+            @Nullable Instant deletedAt) {
         this.id = id;
         this.email = email;
         this.hashedPassword = hashedPassword;
         this.fullName = fullName;
         this.avatarUrl = avatarUrl;
+        this.googleUid = googleUid;
+        this.authProvider = authProvider;
         this.preferences = preferences;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
     }
 
-    /** Factory method for new user registration. Generates a UUIDv7 primary key. */
+    /** Factory method for new email/password user registration. Generates a UUIDv7 primary key. */
     public static User register(Email email, HashedPassword hashedPassword, FullName fullName) {
         Instant now = Instant.now();
         var user = new User(
@@ -53,6 +64,8 @@ public class User extends AggregateRoot<UUID> {
                 fullName,
                 null,
                 null,
+                "EMAIL",
+                null,
                 now,
                 now,
                 null);
@@ -61,23 +74,66 @@ public class User extends AggregateRoot<UUID> {
         return user;
     }
 
+    /**
+     * Factory method for Google Sign-In registration.
+     * Sets {@code authProvider = "GOOGLE"} and {@code hashedPassword = null}.
+     */
+    public static User registerWithGoogle(
+            Email email, String googleUid, FullName fullName, @Nullable String avatarUrl) {
+        Instant now = Instant.now();
+        var user = new User(
+                UuidCreator.getTimeOrderedEpoch(),
+                email,
+                null,
+                fullName,
+                avatarUrl,
+                googleUid,
+                "GOOGLE",
+                null,
+                now,
+                now,
+                null);
+        user.registerEvent(new UserRegisteredEvent(
+                UuidCreator.getTimeOrderedEpoch(), user.id, email.value(), fullName.value(), now));
+        return user;
+    }
+
+    /**
+     * Links a Google account to this existing email/password account.
+     * Sets {@code googleUid} and updates {@code authProvider} to {@code "BOTH"}.
+     */
+    public void linkGoogle(String googleUid) {
+        this.googleUid = googleUid;
+        this.authProvider = "BOTH";
+        this.updatedAt = Instant.now();
+    }
+
+    /** Returns {@code true} if this user has a password set (i.e. not a Google-only account). */
+    public boolean hasPassword() {
+        return hashedPassword != null;
+    }
+
     /** Reconstitution factory used by the persistence adapter. */
     public static User reconstitute(
             UUID id,
             Email email,
-            HashedPassword hashedPassword,
+            @Nullable HashedPassword hashedPassword,
             FullName fullName,
-            String avatarUrl,
-            String preferences,
+            @Nullable String avatarUrl,
+            @Nullable String googleUid,
+            String authProvider,
+            @Nullable String preferences,
             Instant createdAt,
             Instant updatedAt,
-            Instant deletedAt) {
+            @Nullable Instant deletedAt) {
         return new User(
                 id,
                 email,
                 hashedPassword,
                 fullName,
                 avatarUrl,
+                googleUid,
+                authProvider,
                 preferences,
                 createdAt,
                 updatedAt,
@@ -91,6 +147,68 @@ public class User extends AggregateRoot<UUID> {
         this.updatedAt = now;
         registerEvent(new UserDeletedEvent(
                 UuidCreator.getTimeOrderedEpoch(), this.id, this.email.value(), now));
+    }
+
+    /** Updates the raw JSON preferences string. */
+    public void updatePreferences(@Nullable String preferencesJson) {
+        this.preferences = preferencesJson;
+        this.updatedAt = Instant.now();
+    }
+
+    /**
+     * Partially updates the user's profile fields. Only non-null arguments are applied.
+     * Updates {@code updatedAt} and registers a {@link UserUpdatedEvent} with the state
+     * after mutation.
+     *
+     * @param newFullName  new full name, or {@code null} to leave unchanged
+     * @param newAvatarUrl new avatar URL (may be {@code null} to clear), or use a sentinel
+     *                     — callers must pass the value only when the field is present in the
+     *                     PATCH body; use {@link #updateProfile(FullName, String, boolean)}
+     *                     when clearing is needed
+     */
+    public void updateProfile(@Nullable FullName newFullName, @Nullable String newAvatarUrl) {
+        if (newFullName != null) {
+            this.fullName = newFullName;
+        }
+        if (newAvatarUrl != null) {
+            this.avatarUrl = newAvatarUrl;
+        }
+        this.updatedAt = Instant.now();
+        registerEvent(new UserUpdatedEvent(
+                UuidCreator.getTimeOrderedEpoch(),
+                this.id,
+                this.email.value(),
+                this.fullName.value(),
+                this.avatarUrl,
+                this.authProvider,
+                this.updatedAt));
+    }
+
+    /**
+     * Partially updates the user's profile fields with explicit avatar-clear support.
+     *
+     * @param newFullName    new full name, or {@code null} to leave unchanged
+     * @param newAvatarUrl   new avatar URL value (may be {@code null} to clear)
+     * @param applyAvatarUrl {@code true} if the avatarUrl argument should be applied
+     *                       (even when null, which clears the field)
+     */
+    public void updateProfile(
+            @Nullable FullName newFullName, @Nullable String newAvatarUrl, boolean applyAvatarUrl) {
+        if (newFullName != null) {
+            this.fullName = newFullName;
+        }
+        if (applyAvatarUrl) {
+            this.avatarUrl = newAvatarUrl;
+        }
+        this.updatedAt = Instant.now();
+        registerEvent(new UserUpdatedEvent(
+                UuidCreator.getTimeOrderedEpoch(),
+                this.id,
+                this.email.value(),
+                this.fullName.value(),
+                this.avatarUrl,
+                this.authProvider,
+                this.updatedAt));
     }
 
     /** Returns {@code true} if this user has been soft-deleted. */
@@ -107,20 +225,28 @@ public class User extends AggregateRoot<UUID> {
         return email;
     }
 
-    public HashedPassword getHashedPassword() {
-        return hashedPassword;
+    public Optional<HashedPassword> getHashedPassword() {
+        return Optional.ofNullable(hashedPassword);
     }
 
     public FullName getFullName() {
         return fullName;
     }
 
-    public String getAvatarUrl() {
-        return avatarUrl;
+    public Optional<String> getAvatarUrl() {
+        return Optional.ofNullable(avatarUrl);
     }
 
-    public String getPreferences() {
-        return preferences;
+    public Optional<String> getGoogleUid() {
+        return Optional.ofNullable(googleUid);
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public Optional<String> getPreferences() {
+        return Optional.ofNullable(preferences);
     }
 
     public Instant getCreatedAt() {
@@ -131,7 +257,7 @@ public class User extends AggregateRoot<UUID> {
         return updatedAt;
     }
 
-    public Instant getDeletedAt() {
-        return deletedAt;
+    public Optional<Instant> getDeletedAt() {
+        return Optional.ofNullable(deletedAt);
     }
 }

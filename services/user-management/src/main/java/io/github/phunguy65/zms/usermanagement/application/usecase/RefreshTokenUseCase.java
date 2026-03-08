@@ -3,14 +3,13 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
+import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
+import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
+import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
-import io.github.phunguy65.zms.usermanagement.infrastructure.security.JwtTokenProvider;
-import java.security.SecureRandom;
-import java.time.Instant;
-import java.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,25 +19,29 @@ public class RefreshTokenUseCase {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenIssuer refreshTokenIssuer;
+    private final UserPreferencesParser preferencesParser;
     private final long refreshTokenExpirySeconds;
-
-    private final SecureRandom secureRandom = new SecureRandom();
 
     public RefreshTokenUseCase(
             RefreshTokenRepository refreshTokenRepository,
             UserRepository userRepository,
-            JwtTokenProvider jwtTokenProvider,
+            TokenProvider tokenProvider,
+            RefreshTokenIssuer refreshTokenIssuer,
+            UserPreferencesParser preferencesParser,
             @Value("${app.jwt.refresh-token-expiry-seconds}") long refreshTokenExpirySeconds) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.tokenProvider = tokenProvider;
+        this.refreshTokenIssuer = refreshTokenIssuer;
+        this.preferencesParser = preferencesParser;
         this.refreshTokenExpirySeconds = refreshTokenExpirySeconds;
     }
 
     @Transactional
     public Result<LoginResponse, AuthErrorCode> execute(RefreshTokenRequest request) {
-        String tokenHash = LoginUserUseCase.sha256Hex(request.refreshToken());
+        String tokenHash = refreshTokenIssuer.hash(request.refreshToken());
 
         var tokenOpt = refreshTokenRepository.findByTokenHash(tokenHash);
         if (tokenOpt.isEmpty()) {
@@ -65,22 +68,15 @@ public class RefreshTokenUseCase {
         }
         var user = userOpt.get();
 
-        String newAccessToken = jwtTokenProvider.generateAccessToken(
-                user.getId(), user.getEmail().value());
-
-        byte[] rawBytes = new byte[32];
-        secureRandom.nextBytes(rawBytes);
+        String newAccessToken =
+                tokenProvider.generateAccessToken(user.getId(), user.getEmail().value());
         String newRawRefreshToken =
-                Base64.getUrlEncoder().withoutPadding().encodeToString(rawBytes);
-        String newTokenHash = LoginUserUseCase.sha256Hex(newRawRefreshToken);
-
-        Instant expiresAt = Instant.now().plusSeconds(refreshTokenExpirySeconds);
-        var newRefreshToken = RefreshToken.issue(user.getId(), newTokenHash, expiresAt);
-        refreshTokenRepository.save(newRefreshToken);
+                refreshTokenIssuer.issueAndSave(user.getId(), refreshTokenExpirySeconds);
 
         return Result.success(new LoginResponse(
                 newAccessToken,
                 newRawRefreshToken,
-                jwtTokenProvider.getAccessTokenExpirySeconds()));
+                tokenProvider.getAccessTokenExpirySeconds(),
+                preferencesParser.parseAsResponse(user.getPreferences())));
     }
 }
