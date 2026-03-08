@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesRequest;
+import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
@@ -13,6 +14,7 @@ import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,30 +58,43 @@ class UserPreferencesUseCaseTest {
     }
 
     @Test
-    void getPreferences_nullPrefs_returnsDefaults() {
+    void getPreferences_nullPrefs_returnsEmpty() {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(userWithPrefs(null)));
 
         var result = getUseCase.execute(USER_ID);
 
         assertThat(result).isInstanceOf(Result.Success.class);
-        var prefs = (UserPreferencesRequest) ((Result.Success<?, ?>) result).value();
-        assertThat(prefs.theme()).isEqualTo("system");
-        assertThat(prefs.defaultMic()).isTrue();
-        assertThat(prefs.defaultCamera()).isTrue();
+        var prefs = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
+        assertThat(prefs.settings()).isEmpty();
     }
 
     @Test
-    void getPreferences_storedPrefs_returnsStored() throws Exception {
+    void getPreferences_storedPrefs_returnsStoredAsIs() throws Exception {
         String json = new ObjectMapper()
-                .writeValueAsString(new UserPreferencesRequest("dark", false, true));
+                .writeValueAsString(Map.of("theme", "dark", "fontSize", 14, "lang", "vi"));
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(userWithPrefs(json)));
 
         var result = getUseCase.execute(USER_ID);
 
         assertThat(result).isInstanceOf(Result.Success.class);
-        var prefs = (UserPreferencesRequest) ((Result.Success<?, ?>) result).value();
-        assertThat(prefs.theme()).isEqualTo("dark");
-        assertThat(prefs.defaultMic()).isFalse();
+        var prefs = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
+        assertThat(prefs.settings()).containsEntry("theme", "dark");
+        assertThat(prefs.settings()).containsEntry("fontSize", 14);
+        assertThat(prefs.settings()).containsEntry("lang", "vi");
+    }
+
+    @Test
+    void getPreferences_arbitraryKeys_accepted() throws Exception {
+        String json = new ObjectMapper()
+                .writeValueAsString(Map.of("customKey", "customValue", "nested", Map.of("a", 1)));
+        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(userWithPrefs(json)));
+
+        var result = getUseCase.execute(USER_ID);
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        var prefs = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
+        assertThat(prefs.settings()).containsKey("customKey");
+        assertThat(prefs.settings()).containsKey("nested");
     }
 
     @Test
@@ -98,12 +113,28 @@ class UserPreferencesUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new UserPreferencesRequest("light", true, false);
+        var dto = new UserPreferencesRequest(Map.of("theme", "light", "fontSize", 16));
         var result = updateUseCase.execute(USER_ID, dto);
 
         assertThat(result).isInstanceOf(Result.Success.class);
-        var saved = (UserPreferencesRequest) ((Result.Success<?, ?>) result).value();
-        assertThat(saved.theme()).isEqualTo("light");
+        var saved = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
+        assertThat(saved.settings()).containsEntry("theme", "light");
+        assertThat(saved.settings()).containsEntry("fontSize", 16);
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void updatePreferences_emptyMap_clearsPreferences() {
+        var user = userWithPrefs("{\"theme\":\"dark\"}");
+        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        var dto = new UserPreferencesRequest(Map.of());
+        var result = updateUseCase.execute(USER_ID, dto);
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        var saved = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
+        assertThat(saved.settings()).isEmpty();
         verify(userRepository).save(any(User.class));
     }
 
@@ -111,7 +142,7 @@ class UserPreferencesUseCaseTest {
     void updatePreferences_userNotFound_returnsFailure() {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.empty());
 
-        var result = updateUseCase.execute(USER_ID, new UserPreferencesRequest("dark", true, true));
+        var result = updateUseCase.execute(USER_ID, new UserPreferencesRequest(Map.of("k", "v")));
 
         assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
                 .isEqualTo(AuthErrorCode.USER_NOT_FOUND);

@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.domain.port;
 
+import io.github.phunguy65.zms.shared.domain.PageResult;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import java.util.Optional;
@@ -27,4 +28,14 @@ public interface UserRepository {
 
     /** Returns {@code true} only if an active (non-deleted) user with this email exists. */
     boolean existsActiveByEmail(Email email);
+
+    /**
+     * Returns a paginated slice of active (non-deleted) users matching the given filter.
+     * Results are ordered by {@code createdAt} descending.
+     *
+     * @param page   0-indexed page number
+     * @param size   page size (max 100)
+     * @param filter optional filter criteria; use {@link UserFilter#empty()} for no filtering
+     */
+    PageResult<User> findActiveUsers(int page, int size, UserFilter filter);
 }

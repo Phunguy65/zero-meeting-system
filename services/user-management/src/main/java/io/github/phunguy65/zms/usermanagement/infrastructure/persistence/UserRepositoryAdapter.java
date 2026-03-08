@@ -1,12 +1,15 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.persistence;
 
+import io.github.phunguy65.zms.shared.domain.PageResult;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.port.UserFilter;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -58,6 +61,14 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     public boolean existsActiveByEmail(Email email) {
         return jpa.existsByEmailAndDeletedAtIsNull(email.value());
+    }
+
+    @Override
+    public PageResult<User> findActiveUsers(int page, int size, UserFilter filter) {
+        var pageable = PageRequest.of(page, size);
+        var slice = jpa.findActiveFiltered(filter.emailContains(), filter.authProvider(), pageable);
+        var items = slice.getContent().stream().map(this::toDomain).toList();
+        return PageResult.of(items, page, size, slice.hasNext());
     }
 
     private User toDomain(UserJpaEntity e) {

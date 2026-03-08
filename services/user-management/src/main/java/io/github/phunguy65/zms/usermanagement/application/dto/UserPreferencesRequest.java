@@ -1,18 +1,21 @@
 package io.github.phunguy65.zms.usermanagement.application.dto;
 
-import jakarta.validation.constraints.Pattern;
+import java.util.Collections;
+import java.util.Map;
 
 /**
- * Typed representation of a user's stored preferences.
+ * Free-form preferences submitted by the client. The server imposes no schema constraints;
+ * any valid JSON object is accepted and stored as-is.
  */
-public record UserPreferencesRequest(
-        @Pattern(regexp = "dark|light|system", message = "theme must be dark, light, or system") String theme,
+public record UserPreferencesRequest(Map<String, Object> settings) {
 
-        boolean defaultMic,
-        boolean defaultCamera) {
+    public UserPreferencesRequest {
+        settings =
+                settings != null ? Collections.unmodifiableMap(settings) : Collections.emptyMap();
+    }
 
-    /** Returns a {@code UserPreferencesRequest} with sensible defaults. */
-    public static UserPreferencesRequest defaults() {
-        return new UserPreferencesRequest("system", true, true);
+    /** Returns an empty preferences request (no settings). */
+    public static UserPreferencesRequest empty() {
+        return new UserPreferencesRequest(Collections.emptyMap());
     }
 }

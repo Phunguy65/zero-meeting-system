@@ -84,6 +84,6 @@ public class LoginUserUseCase {
                 accessToken,
                 rawRefreshToken,
                 tokenProvider.getAccessTokenExpirySeconds(),
-                preferencesParser.parse(user.getPreferences())));
+                preferencesParser.parseAsResponse(user.getPreferences())));
     }
 }

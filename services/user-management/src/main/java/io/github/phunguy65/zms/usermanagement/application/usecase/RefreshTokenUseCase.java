@@ -77,6 +77,6 @@ public class RefreshTokenUseCase {
                 newAccessToken,
                 newRawRefreshToken,
                 tokenProvider.getAccessTokenExpirySeconds(),
-                preferencesParser.parse(user.getPreferences())));
+                preferencesParser.parseAsResponse(user.getPreferences())));
     }
 }

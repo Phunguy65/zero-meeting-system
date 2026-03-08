@@ -4,6 +4,7 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserDeletedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
+import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -152,6 +153,62 @@ public class User extends AggregateRoot<UUID> {
     public void updatePreferences(@Nullable String preferencesJson) {
         this.preferences = preferencesJson;
         this.updatedAt = Instant.now();
+    }
+
+    /**
+     * Partially updates the user's profile fields. Only non-null arguments are applied.
+     * Updates {@code updatedAt} and registers a {@link UserUpdatedEvent} with the state
+     * after mutation.
+     *
+     * @param newFullName  new full name, or {@code null} to leave unchanged
+     * @param newAvatarUrl new avatar URL (may be {@code null} to clear), or use a sentinel
+     *                     — callers must pass the value only when the field is present in the
+     *                     PATCH body; use {@link #updateProfile(FullName, String, boolean)}
+     *                     when clearing is needed
+     */
+    public void updateProfile(@Nullable FullName newFullName, @Nullable String newAvatarUrl) {
+        if (newFullName != null) {
+            this.fullName = newFullName;
+        }
+        if (newAvatarUrl != null) {
+            this.avatarUrl = newAvatarUrl;
+        }
+        this.updatedAt = Instant.now();
+        registerEvent(new UserUpdatedEvent(
+                UuidCreator.getTimeOrderedEpoch(),
+                this.id,
+                this.email.value(),
+                this.fullName.value(),
+                this.avatarUrl,
+                this.authProvider,
+                this.updatedAt));
+    }
+
+    /**
+     * Partially updates the user's profile fields with explicit avatar-clear support.
+     *
+     * @param newFullName    new full name, or {@code null} to leave unchanged
+     * @param newAvatarUrl   new avatar URL value (may be {@code null} to clear)
+     * @param applyAvatarUrl {@code true} if the avatarUrl argument should be applied
+     *                       (even when null, which clears the field)
+     */
+    public void updateProfile(
+            @Nullable FullName newFullName, @Nullable String newAvatarUrl, boolean applyAvatarUrl) {
+        if (newFullName != null) {
+            this.fullName = newFullName;
+        }
+        if (applyAvatarUrl) {
+            this.avatarUrl = newAvatarUrl;
+        }
+        this.updatedAt = Instant.now();
+        registerEvent(new UserUpdatedEvent(
+                UuidCreator.getTimeOrderedEpoch(),
+                this.id,
+                this.email.value(),
+                this.fullName.value(),
+                this.avatarUrl,
+                this.authProvider,
+                this.updatedAt));
     }
 
     /** Returns {@code true} if this user has been soft-deleted. */

@@ -1,7 +1,7 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesRequest;
+import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
@@ -22,11 +22,11 @@ public class GetUserPreferencesUseCase {
     }
 
     @Transactional(readOnly = true)
-    public Result<UserPreferencesRequest, AuthErrorCode> execute(UUID userId) {
+    public Result<UserPreferencesResponse, AuthErrorCode> execute(UUID userId) {
         var userOpt = userRepository.findActiveById(userId);
         if (userOpt.isEmpty()) {
             return Result.failure(AuthErrorCode.USER_NOT_FOUND);
         }
-        return Result.success(preferencesParser.parse(userOpt.get().getPreferences()));
+        return Result.success(preferencesParser.parseAsResponse(userOpt.get().getPreferences()));
     }
 }

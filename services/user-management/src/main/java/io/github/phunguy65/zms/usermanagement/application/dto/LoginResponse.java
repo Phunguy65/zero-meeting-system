@@ -4,4 +4,4 @@ public record LoginResponse(
         String accessToken,
         String refreshToken,
         long expiresIn,
-        UserPreferencesRequest preferences) {}
+        UserPreferencesResponse preferences) {}

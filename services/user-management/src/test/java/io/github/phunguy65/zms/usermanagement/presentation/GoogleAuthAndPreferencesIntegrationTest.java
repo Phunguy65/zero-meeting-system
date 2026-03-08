@@ -112,35 +112,31 @@ class GoogleAuthAndPreferencesIntegrationTest {
                 .at("/data/accessToken")
                 .asText();
 
-        // GET preferences — should return defaults
+        // GET preferences — should return empty settings for new user
         mockMvc.perform(get("/api/v1/users/me/preferences")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.theme").value("system"));
+                .andExpect(jsonPath("$.data.settings").isMap());
 
-        // PUT preferences
+        // PUT preferences with arbitrary keys
         mockMvc.perform(put("/api/v1/users/me/preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(
-                                "{\"theme\":\"dark\",\"defaultMic\":false,\"defaultCamera\":true}"))
+                        .content("{\"theme\":\"dark\",\"fontSize\":16,\"lang\":\"vi\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.theme").value("dark"));
+                .andExpect(jsonPath("$.data.settings.theme").value("dark"))
+                .andExpect(jsonPath("$.data.settings.fontSize").value(16))
+                .andExpect(jsonPath("$.data.settings.lang").value("vi"));
 
         // GET again — should return updated prefs
         mockMvc.perform(get("/api/v1/users/me/preferences")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.theme").value("dark"));
+                .andExpect(jsonPath("$.data.settings.theme").value("dark"));
     }
 
     @Test
-    void preferences_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(get("/api/v1/users/me/preferences")).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void preferences_invalidTheme_returns400() throws Exception {
+    void preferences_anyJsonKeysAccepted() throws Exception {
         when(firebaseTokenVerifier.verify(anyString())).thenReturn(Result.success(CLAIMS));
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/google-login")
@@ -154,12 +150,19 @@ class GoogleAuthAndPreferencesIntegrationTest {
                 .at("/data/accessToken")
                 .asText();
 
-        mockMvc.perform(
-                        put("/api/v1/users/me/preferences")
-                                .header("Authorization", "Bearer " + accessToken)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(
-                                        "{\"theme\":\"invalid-theme\",\"defaultMic\":true,\"defaultCamera\":true}"))
-                .andExpect(status().isBadRequest());
+        // Any JSON keys should be accepted without validation errors
+        mockMvc.perform(put("/api/v1/users/me/preferences")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"customKey\":\"customValue\",\"anotherKey\":42,\"flag\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.settings.customKey").value("customValue"))
+                .andExpect(jsonPath("$.data.settings.anotherKey").value(42))
+                .andExpect(jsonPath("$.data.settings.flag").value(true));
+    }
+
+    @Test
+    void preferences_unauthenticated_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/users/me/preferences")).andExpect(status().isUnauthorized());
     }
 }
