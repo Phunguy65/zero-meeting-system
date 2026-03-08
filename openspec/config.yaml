@@ -18,16 +18,24 @@ context: |
         main/
           java/io/github/phunguy65/zms/{service-name}/
             domain/
-              model/          # Entities (extends AggregateRoot<ID>) & Value Objects (records)
-              port/           # Outbound port interfaces (Repository, service contracts)
+              model/          # Aggregates (extends AggregateRoot<UUID>) & Value Objects (records implementing ValueObject)
+              port/           # Outbound port interfaces (Repository, PasswordHasher, TokenProvider, external service contracts)
+              event/          # Domain events (implements PublishableEvent for Kafka-publishable events, or DomainEvent for internal)
               {Feature}ErrorCode.java  # Typed error enums (implements ErrorCode)
+              EventPublisher.java      # Outbound port for publishing domain events externally
             application/
               usecase/        # Use cases (@Service, @Transactional), return Result<T, ErrorCode>
               dto/            # Request/Response DTOs (Java records + Jakarta validation)
+              service/        # Application services: reusable logic shared across use cases (e.g. token issuance, JSON parsing)
             infrastructure/
-              persistence/    # {Entity}JpaEntity, {Entity}JpaRepository, {Entity}RepositoryAdapter
-              security/       # SecurityConfig, JwtTokenProvider, JwtAuthFilter, PasswordHasher impl
-              web/            # WebConfig, ApiVersionParser
+              persistence/    # {Entity}JpaEntity, {Entity}JpaRepository, {Entity}RepositoryAdapter (implements domain port)
+                              # OutboxEventEntity + OutboxEventRepository for transactional outbox pattern
+              security/       # SecurityConfig, JwtTokenProvider (implements TokenProvider), JwtAuthFilter, Argon2PasswordHasher
+                              # FirebaseTokenVerifier (implements GoogleAuthVerifier), FirebaseTokenClaims
+              messaging/      # KafkaEventPublisher (implements EventPublisher), NoOpEventPublisher (test fallback)
+                              # OutboxEventListener (@TransactionalEventListener), OutboxEventPublisher (@Scheduled poller)
+              config/         # Framework config beans: FirebaseConfig, KafkaConfig
+              web/            # WebConfig (adds /api prefix), ApiVersionParser
             presentation/
               {Feature}Controller.java  # @RestController, maps Result<> to JsendResponse<>
             {ServiceName}Application.java  # @SpringBootApplication entry point
@@ -37,23 +45,31 @@ context: |
         test/
           java/io/github/phunguy65/zms/{service-name}/
             application/usecase/   # Unit tests per use case
-            infrastructure/        # Infrastructure/adapter tests
+            domain/                # Domain model & event tests
+            infrastructure/        # Infrastructure/adapter tests (messaging, security, persistence)
             presentation/          # @SpringBootTest integration tests
           resources/
             application-test.properties
             db/h2-migration/       # H2-compatible Flyway migrations for tests
+      compose.yaml                 # Docker Compose for local dev (PostgreSQL, Kafka, etc.)
 
     Key patterns:
-    - Domain entities use static factory methods: register() for new, reconstitute() from DB
+    - Domain entities use static factory methods: register() / registerWithGoogle() for new, reconstitute() from DB
     - Value Objects: Java records, validate in compact constructor, implement ValueObject marker
     - Error handling: Result<T, ErrorCode> (no exceptions across layer boundaries)
     - Repository adapters contain private toDomain() / toEntity() mappers
-    - API versioning: /{version}/resource path prefix, resolved by ApiVersionParser
-    - Shared module (io.github.phunguy65.zms.shared): AggregateRoot, ValueObject, Result, JsendResponse, ErrorCode
+    - API versioning: /{version}/resource path prefix, resolved by ApiVersionParser; WebConfig adds /api prefix
+    - Shared module (io.github.phunguy65.zms.shared): AggregateRoot, ValueObject, DomainEvent, Result, PageResult,
+      JsendResponse, ErrorCode, CommonErrorCode, FailData, Violation, GlobalExceptionHandler, JacksonConfig
     - Main app scans both service and shared packages via scanBasePackages
+    - Primary keys: UUIDv7 (UuidCreator.getTimeOrderedEpoch()) for time-ordered, sortable IDs
+    - Domain events: registered via registerEvent() on AggregateRoot, cleared after publishing in use case
+    - Event format: CloudEvents 1.0 (binary content mode over Kafka); PublishableEvent interface defines metadata
+    - Controllers: pattern-match on Result<> to map domain errors to HTTP status + JsendResponse (success/fail)
+    - NoOpEventPublisher: test-only fallback implementation of EventPublisher (logs and discards events)
 
-    - Frontend: 
-      - Android Native App (Java 25,XML)
+    - Frontend:
+      - Android Native App (Java 25, XML)
       - Web App (Next.js, TypeScript)
 
 # Per-artifact rules (optional)
