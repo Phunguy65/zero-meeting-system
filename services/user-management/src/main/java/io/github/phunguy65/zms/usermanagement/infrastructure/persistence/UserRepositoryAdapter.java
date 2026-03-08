@@ -5,6 +5,7 @@ import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserFilter;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.util.Optional;
@@ -64,6 +65,16 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public boolean existsActiveByUsername(Username username) {
+        return jpa.existsByUsernameAndDeletedAtIsNull(username.value());
+    }
+
+    @Override
+    public Optional<User> findActiveByUsername(Username username) {
+        return jpa.findByUsernameAndDeletedAtIsNull(username.value()).map(this::toDomain);
+    }
+
+    @Override
     public PageResult<User> findActiveUsers(int page, int size, UserFilter filter) {
         var pageable = PageRequest.of(page, size);
         var slice = jpa.findActiveFiltered(filter.emailContains(), filter.authProvider(), pageable);
@@ -78,6 +89,7 @@ public class UserRepositoryAdapter implements UserRepository {
                 Email.of(e.getEmail()),
                 hash != null ? HashedPassword.of(hash) : null,
                 FullName.of(e.getFullName()),
+                e.getUsername(),
                 e.getAvatarUrl(),
                 e.getGoogleUid(),
                 e.getAuthProvider(),
@@ -93,6 +105,7 @@ public class UserRepositoryAdapter implements UserRepository {
                 u.getEmail().value(),
                 u.getHashedPassword().map(HashedPassword::value).orElse(null),
                 u.getFullName().value(),
+                u.getUsername().map(Username::value).orElse(null),
                 u.getAvatarUrl().orElse(null),
                 u.getGoogleUid().orElse(null),
                 u.getAuthProvider(),

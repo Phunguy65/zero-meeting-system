@@ -118,7 +118,20 @@ public class UserController {
     @PatchMapping(value = "/{version}/users/me", version = "1.0")
     public ResponseEntity<JsendResponse<?>> patchMe(@Valid @RequestBody PatchUserRequest dto) {
         var result = patchUpdateUserUseCase.execute(currentUserId(), dto);
-        return toUserResponse(result);
+        return switch (result) {
+            case Result.Success<?, AuthErrorCode> s ->
+                ResponseEntity.ok(JsendResponse.success(s.value()));
+            case Result.Failure<?, AuthErrorCode> f -> {
+                if (f.error() == AuthErrorCode.USERNAME_ALREADY_EXISTS) {
+                    yield ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(JsendResponse.fail(
+                                    new FailData(f.error().name(), f.error(), List.of())));
+                }
+                yield ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(JsendResponse.fail(
+                                new FailData(f.error().name(), f.error(), List.of())));
+            }
+        };
     }
 
     /** PATCH /api/v1/users/me/preferences */

@@ -22,6 +22,10 @@ public interface UserJpaRepository extends JpaRepository<UserJpaEntity, UUID> {
 
     Optional<UserJpaEntity> findByGoogleUidAndDeletedAtIsNull(String googleUid);
 
+    boolean existsByUsernameAndDeletedAtIsNull(String username);
+
+    Optional<UserJpaEntity> findByUsernameAndDeletedAtIsNull(String username);
+
     @Query("SELECT u FROM UserJpaEntity u WHERE u.deletedAt IS NULL "
             + "AND (:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))) "
             + "AND (:provider IS NULL OR u.authProvider = :provider) "

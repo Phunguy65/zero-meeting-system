@@ -47,6 +47,7 @@ class GetUsersSliceUseCaseTest {
                 FullName.of("User"),
                 null,
                 null,
+                null,
                 "EMAIL",
                 null,
                 Instant.now(),

@@ -3,13 +3,19 @@ package io.github.phunguy65.zms.usermanagement.domain.event;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Published when a new user successfully registers. Topic:
  * {@code user-management.user.registered}.
  */
 public record UserRegisteredEvent(
-        UUID eventId, UUID aggregateId, String email, String fullName, Instant registeredAt)
+        UUID eventId,
+        UUID aggregateId,
+        String email,
+        String fullName,
+        @Nullable String username,
+        Instant registeredAt)
         implements PublishableEvent {
 
     @Override

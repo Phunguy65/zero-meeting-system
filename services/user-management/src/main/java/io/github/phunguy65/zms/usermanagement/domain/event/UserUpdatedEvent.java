@@ -18,6 +18,7 @@ public record UserUpdatedEvent(
         UUID aggregateId,
         String email,
         String fullName,
+        @Nullable String username,
         @Nullable String avatarUrl,
         String authProvider,
         Instant updatedAt)

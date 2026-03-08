@@ -49,6 +49,7 @@ class UserPreferencesUseCaseTest {
                 null,
                 FullName.of("Alice"),
                 null,
+                null,
                 "google-uid",
                 "GOOGLE",
                 prefsJson,

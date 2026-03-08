@@ -9,6 +9,7 @@ import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.GoogleAuthVerifier;
 import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
@@ -70,11 +71,18 @@ public class LoginWithGoogleUseCase {
             } else {
                 String displayName =
                         claims.displayName() != null ? claims.displayName() : claims.email();
+
+                Username username = Username.generateForGoogle();
+                while (userRepository.existsActiveByUsername(username)) {
+                    username = Username.generateForGoogle();
+                }
+
                 var newUser = User.registerWithGoogle(
                         Email.of(claims.email()),
                         claims.uid(),
                         FullName.of(displayName),
-                        claims.photoUrl());
+                        claims.photoUrl(),
+                        username);
                 user = userRepository.save(newUser);
             }
         }

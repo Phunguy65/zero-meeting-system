@@ -48,7 +48,6 @@ public class AuthController {
         this.loginWithGoogleUseCase = loginWithGoogleUseCase;
     }
 
-    /** POST /api/v1/auth/register */
     @PostMapping(value = "/{version}/auth/register", version = "1.0")
     public ResponseEntity<JsendResponse<?>> register(@Valid @RequestBody RegisterRequest request) {
         var result = registerUserUseCase.execute(request);
@@ -56,7 +55,8 @@ public class AuthController {
             case Result.Success<?, AuthErrorCode> s ->
                 ResponseEntity.status(HttpStatus.CREATED).body(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthErrorCode> f -> {
-                if (f.error() == AuthErrorCode.EMAIL_ALREADY_EXISTS) {
+                if (f.error() == AuthErrorCode.EMAIL_ALREADY_EXISTS
+                        || f.error() == AuthErrorCode.USERNAME_ALREADY_EXISTS) {
                     yield ResponseEntity.status(HttpStatus.CONFLICT)
                             .body(JsendResponse.fail(
                                     new FailData(f.error().name(), f.error(), List.of())));
@@ -68,7 +68,6 @@ public class AuthController {
         };
     }
 
-    /** POST /api/v1/auth/login */
     @PostMapping(value = "/{version}/auth/login", version = "1.0")
     public ResponseEntity<JsendResponse<?>> login(@Valid @RequestBody LoginRequest request) {
         var result = loginUserUseCase.execute(request);
@@ -82,7 +81,6 @@ public class AuthController {
         };
     }
 
-    /** POST /api/v1/auth/refresh */
     @PostMapping(value = "/{version}/auth/refresh", version = "1.0")
     public ResponseEntity<JsendResponse<?>> refresh(
             @Valid @RequestBody RefreshTokenRequest request) {
@@ -97,7 +95,6 @@ public class AuthController {
         };
     }
 
-    /** POST /api/v1/auth/logout */
     @PostMapping(value = "/{version}/auth/logout", version = "1.0")
     public ResponseEntity<JsendResponse<?>> logout(@Valid @RequestBody LogoutRequest request) {
         var result = logoutUserUseCase.execute(request);
@@ -110,7 +107,6 @@ public class AuthController {
         };
     }
 
-    /** POST /api/v1/auth/google-login */
     @PostMapping(value = "/{version}/auth/google-login", version = "1.0")
     public ResponseEntity<JsendResponse<?>> googleLogin(
             @Valid @RequestBody GoogleLoginRequest request) {
@@ -125,7 +121,6 @@ public class AuthController {
         };
     }
 
-    /** DELETE /api/v1/auth/me */
     @DeleteMapping(value = "/{version}/auth/me", version = "1.0")
     public ResponseEntity<JsendResponse<?>> deleteAccount() {
         String principalId =

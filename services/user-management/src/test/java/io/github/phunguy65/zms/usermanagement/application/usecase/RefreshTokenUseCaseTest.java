@@ -111,6 +111,7 @@ class RefreshTokenUseCaseTest {
                 FullName.of("Alice"),
                 null,
                 null,
+                null,
                 "EMAIL",
                 null,
                 Instant.now(),

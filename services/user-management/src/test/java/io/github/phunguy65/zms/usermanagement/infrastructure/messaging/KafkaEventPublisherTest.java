@@ -42,6 +42,7 @@ class KafkaEventPublisherTest {
                 userId,
                 "alice@example.com",
                 "Alice",
+                "alice_user",
                 Instant.now());
 
         when(kafkaTemplate.send(any(String.class), any(String.class), any(CloudEvent.class)))

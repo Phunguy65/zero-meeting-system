@@ -1,5 +1,10 @@
 package io.github.phunguy65.zms.usermanagement.application.dto;
 
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
-public record RegisterResponse(UUID userId, String email, String fullName) {}
+public record RegisterResponse(
+        UUID userId,
+        String email,
+        String fullName,
+        @Nullable String username) {}

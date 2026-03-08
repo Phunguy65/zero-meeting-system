@@ -42,6 +42,7 @@ class GetUserUseCaseTest {
                 Email.of("alice@example.com"),
                 null,
                 FullName.of("Alice"),
+                null,
                 "https://example.com/avatar.png",
                 null,
                 "EMAIL",

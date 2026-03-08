@@ -12,6 +12,9 @@ public enum AuthErrorCode implements ErrorCode {
     /** Registration attempt with an email address already in use. */
     EMAIL_ALREADY_EXISTS,
 
+    /** Registration or update attempt with a username already in use by an active user. */
+    USERNAME_ALREADY_EXISTS,
+
     /** Login failed due to wrong email or password (no user enumeration). */
     INVALID_CREDENTIALS,
 

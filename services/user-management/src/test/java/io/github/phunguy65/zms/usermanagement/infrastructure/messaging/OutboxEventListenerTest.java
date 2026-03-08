@@ -37,6 +37,7 @@ class OutboxEventListenerTest {
                 userId,
                 "alice@example.com",
                 "Alice",
+                "alice_user",
                 Instant.now());
 
         listener.onPublishableEvent(event);
