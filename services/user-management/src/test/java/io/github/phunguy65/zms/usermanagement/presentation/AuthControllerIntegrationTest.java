@@ -11,6 +11,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
+import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTokenVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.context.WebApplicationContext;
@@ -29,6 +31,10 @@ class AuthControllerIntegrationTest {
 
     @Autowired
     WebApplicationContext wac;
+
+    /** Mock Firebase so the context starts without real credentials. */
+    @MockitoBean
+    FirebaseTokenVerifier firebaseTokenVerifier;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -230,7 +236,7 @@ class AuthControllerIntegrationTest {
         String accessToken = objectMapper
                 .readTree(loginResult.getResponse().getContentAsString())
                 .at("/data/accessToken")
-                .asText();
+                .asString();
 
         // Delete account
         mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
@@ -260,7 +266,7 @@ class AuthControllerIntegrationTest {
         String accessToken = objectMapper
                 .readTree(loginResult.getResponse().getContentAsString())
                 .at("/data/accessToken")
-                .asText();
+                .asString();
 
         mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
@@ -296,7 +302,7 @@ class AuthControllerIntegrationTest {
         String accessToken = objectMapper
                 .readTree(loginResult.getResponse().getContentAsString())
                 .at("/data/accessToken")
-                .asText();
+                .asString();
 
         mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());

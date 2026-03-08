@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "users")
@@ -17,18 +18,24 @@ public class UserJpaEntity {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;
+    @Column(name = "password_hash", length = 255)
+    private @Nullable String passwordHash;
 
     @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
 
     @Column(name = "avatar_url", length = 2048)
-    private String avatarUrl;
+    private @Nullable String avatarUrl;
+
+    @Column(name = "google_uid", unique = true, length = 128)
+    private @Nullable String googleUid;
+
+    @Column(name = "auth_provider", nullable = false, length = 20)
+    private String authProvider;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String preferences;
+    private @Nullable String preferences;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -37,25 +44,29 @@ public class UserJpaEntity {
     private Instant updatedAt;
 
     @Column(name = "deleted_at")
-    private Instant deletedAt;
+    private @Nullable Instant deletedAt;
 
     protected UserJpaEntity() {}
 
     public UserJpaEntity(
             UUID id,
             String email,
-            String passwordHash,
+            @Nullable String passwordHash,
             String fullName,
-            String avatarUrl,
-            String preferences,
+            @Nullable String avatarUrl,
+            @Nullable String googleUid,
+            String authProvider,
+            @Nullable String preferences,
             Instant createdAt,
             Instant updatedAt,
-            Instant deletedAt) {
+            @Nullable Instant deletedAt) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
         this.fullName = fullName;
         this.avatarUrl = avatarUrl;
+        this.googleUid = googleUid;
+        this.authProvider = authProvider;
         this.preferences = preferences;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -70,7 +81,7 @@ public class UserJpaEntity {
         return email;
     }
 
-    public String getPasswordHash() {
+    public @Nullable String getPasswordHash() {
         return passwordHash;
     }
 
@@ -78,11 +89,19 @@ public class UserJpaEntity {
         return fullName;
     }
 
-    public String getAvatarUrl() {
+    public @Nullable String getAvatarUrl() {
         return avatarUrl;
     }
 
-    public String getPreferences() {
+    public @Nullable String getGoogleUid() {
+        return googleUid;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public @Nullable String getPreferences() {
         return preferences;
     }
 
@@ -94,7 +113,7 @@ public class UserJpaEntity {
         return updatedAt;
     }
 
-    public Instant getDeletedAt() {
+    public @Nullable Instant getDeletedAt() {
         return deletedAt;
     }
 }

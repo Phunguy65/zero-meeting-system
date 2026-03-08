@@ -4,19 +4,15 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
+import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
+import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserLoggedInEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
-import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
+import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
-import io.github.phunguy65.zms.usermanagement.infrastructure.security.JwtTokenProvider;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -27,24 +23,25 @@ public class LoginUserUseCase {
 
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenIssuer refreshTokenIssuer;
+    private final UserPreferencesParser preferencesParser;
     private final long refreshTokenExpirySeconds;
     private final ApplicationEventPublisher eventPublisher;
-
-    private final SecureRandom secureRandom = new SecureRandom();
 
     public LoginUserUseCase(
             UserRepository userRepository,
             PasswordHasher passwordHasher,
-            RefreshTokenRepository refreshTokenRepository,
-            JwtTokenProvider jwtTokenProvider,
+            TokenProvider tokenProvider,
+            RefreshTokenIssuer refreshTokenIssuer,
+            UserPreferencesParser preferencesParser,
             @Value("${app.jwt.refresh-token-expiry-seconds}") long refreshTokenExpirySeconds,
             ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.tokenProvider = tokenProvider;
+        this.refreshTokenIssuer = refreshTokenIssuer;
+        this.preferencesParser = preferencesParser;
         this.refreshTokenExpirySeconds = refreshTokenExpirySeconds;
         this.eventPublisher = eventPublisher;
     }
@@ -64,42 +61,29 @@ public class LoginUserUseCase {
         }
 
         var user = userOpt.get();
-        if (!passwordHasher.verify(request.password(), user.getHashedPassword())) {
+
+        // Guard: Google-only accounts have no password
+        if (!user.hasPassword()) {
             return Result.failure(AuthErrorCode.INVALID_CREDENTIALS);
         }
 
-        String accessToken = jwtTokenProvider.generateAccessToken(
-                user.getId(), user.getEmail().value());
+        if (!passwordHasher.verify(request.password(), user.getHashedPassword().orElseThrow())) {
+            return Result.failure(AuthErrorCode.INVALID_CREDENTIALS);
+        }
 
-        byte[] rawBytes = new byte[32];
-        secureRandom.nextBytes(rawBytes);
-        String rawRefreshToken = Base64.getUrlEncoder().withoutPadding().encodeToString(rawBytes);
-
-        String tokenHash = sha256Hex(rawRefreshToken);
-
-        Instant expiresAt = Instant.now().plusSeconds(refreshTokenExpirySeconds);
-        var refreshToken = RefreshToken.issue(user.getId(), tokenHash, expiresAt);
-        refreshTokenRepository.save(refreshToken);
+        String accessToken =
+                tokenProvider.generateAccessToken(user.getId(), user.getEmail().value());
+        String rawRefreshToken =
+                refreshTokenIssuer.issueAndSave(user.getId(), refreshTokenExpirySeconds);
 
         Instant loginAt = Instant.now();
         eventPublisher.publishEvent(new UserLoggedInEvent(
                 UuidCreator.getTimeOrderedEpoch(), user.getId(), user.getEmail().value(), loginAt));
 
         return Result.success(new LoginResponse(
-                accessToken, rawRefreshToken, jwtTokenProvider.getAccessTokenExpirySeconds()));
-    }
-
-    static String sha256Hex(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
+                accessToken,
+                rawRefreshToken,
+                tokenProvider.getAccessTokenExpirySeconds(),
+                preferencesParser.parseAsResponse(user.getPreferences())));
     }
 }

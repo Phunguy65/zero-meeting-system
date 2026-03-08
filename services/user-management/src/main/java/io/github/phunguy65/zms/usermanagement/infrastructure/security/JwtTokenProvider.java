@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.security;
 
+import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -15,7 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtTokenProvider {
+public class JwtTokenProvider implements TokenProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
     private static final String CLAIM_EMAIL = "email";

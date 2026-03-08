@@ -61,4 +61,44 @@ class UserDomainEventsTest {
         assertThat(event.eventType()).isEqualTo("io.github.phunguy65.zms.user.deleted.v1");
         assertThat(event.topic()).isEqualTo("user-management.user.deleted");
     }
+
+    @Test
+    void userUpdatedEvent_hasCorrectFields() {
+        UUID eventId = UuidCreator.getTimeOrderedEpoch();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+
+        var event = new UserUpdatedEvent(
+                eventId,
+                userId,
+                "dave@example.com",
+                "Dave",
+                "https://example.com/avatar.png",
+                "EMAIL",
+                now);
+
+        assertThat(event.eventId()).isEqualTo(eventId);
+        assertThat(event.aggregateId()).isEqualTo(userId);
+        assertThat(event.email()).isEqualTo("dave@example.com");
+        assertThat(event.fullName()).isEqualTo("Dave");
+        assertThat(event.avatarUrl()).isEqualTo("https://example.com/avatar.png");
+        assertThat(event.authProvider()).isEqualTo("EMAIL");
+        assertThat(event.updatedAt()).isEqualTo(now);
+        assertThat(event.aggregateType()).isEqualTo("user");
+        assertThat(event.eventType()).isEqualTo("io.github.phunguy65.zms.user.updated.v1");
+        assertThat(event.topic()).isEqualTo("user-management.user.updated");
+        assertThat(event.occurredAt()).isEqualTo(now);
+    }
+
+    @Test
+    void userUpdatedEvent_nullAvatarUrl_isAllowed() {
+        UUID eventId = UuidCreator.getTimeOrderedEpoch();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+
+        var event = new UserUpdatedEvent(
+                eventId, userId, "eve@example.com", "Eve", null, "GOOGLE", now);
+
+        assertThat(event.avatarUrl()).isNull();
+    }
 }

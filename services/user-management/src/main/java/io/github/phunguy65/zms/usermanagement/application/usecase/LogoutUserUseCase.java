@@ -2,6 +2,7 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
+import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import org.springframework.stereotype.Service;
@@ -11,14 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class LogoutUserUseCase {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenIssuer refreshTokenIssuer;
 
-    public LogoutUserUseCase(RefreshTokenRepository refreshTokenRepository) {
+    public LogoutUserUseCase(
+            RefreshTokenRepository refreshTokenRepository, RefreshTokenIssuer refreshTokenIssuer) {
         this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenIssuer = refreshTokenIssuer;
     }
 
     @Transactional
     public Result<Void, AuthErrorCode> execute(LogoutRequest request) {
-        String tokenHash = LoginUserUseCase.sha256Hex(request.refreshToken());
+        String tokenHash = refreshTokenIssuer.hash(request.refreshToken());
 
         var tokenOpt = refreshTokenRepository.findByTokenHash(tokenHash);
         if (tokenOpt.isEmpty()) {

@@ -41,7 +41,7 @@ public class DeleteAccountUseCase {
                     user.getId(),
                     user.getEmail().value(),
                     user.getFullName().value(),
-                    user.getDeletedAt()));
+                    user.getDeletedAt().orElseThrow()));
         }
 
         user.delete();
@@ -58,6 +58,6 @@ public class DeleteAccountUseCase {
                 saved.getId(),
                 saved.getEmail().value(),
                 saved.getFullName().value(),
-                saved.getDeletedAt()));
+                saved.getDeletedAt().orElseThrow()));
     }
 }

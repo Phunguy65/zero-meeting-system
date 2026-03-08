@@ -31,5 +31,11 @@ public enum AuthErrorCode implements ErrorCode {
     USER_NOT_FOUND,
 
     /** Deleted user attempted login or JWT check failed because account is soft-deleted. */
-    USER_DELETED
+    USER_DELETED,
+
+    /** Firebase ID token failed verification (expired, malformed, wrong audience, etc.). */
+    INVALID_FIREBASE_TOKEN,
+
+    /** Firebase Admin SDK returned an unexpected error during token verification. */
+    FIREBASE_AUTH_ERROR
 }
