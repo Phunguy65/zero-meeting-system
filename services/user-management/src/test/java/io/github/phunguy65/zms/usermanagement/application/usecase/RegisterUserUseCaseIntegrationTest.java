@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
+import io.github.phunguy65.zms.usermanagement.config.TestcontainersConfiguration;
 import io.github.phunguy65.zms.usermanagement.infrastructure.messaging.KafkaEventPublisher;
 import io.github.phunguy65.zms.usermanagement.infrastructure.messaging.OutboxEventPublisher;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventRepository;
@@ -11,6 +12,7 @@ import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTo
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestcontainersConfiguration.class)
 @Transactional
 class RegisterUserUseCaseIntegrationTest {
 

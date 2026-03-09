@@ -6,11 +6,13 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
+import io.github.phunguy65.zms.usermanagement.config.TestcontainersConfiguration;
 import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTokenVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
@@ -22,6 +24,7 @@ import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestcontainersConfiguration.class)
 class UserProfileIntegrationTest {
 
     @Autowired
