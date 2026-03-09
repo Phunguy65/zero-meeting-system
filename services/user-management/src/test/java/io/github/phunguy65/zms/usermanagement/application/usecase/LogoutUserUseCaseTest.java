@@ -18,12 +18,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class LogoutUserUseCaseTest {
 
     @Mock
     RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    ApplicationEventPublisher eventPublisher;
 
     LogoutUserUseCase useCase;
     RefreshTokenIssuer refreshTokenIssuer;
@@ -33,7 +37,7 @@ class LogoutUserUseCaseTest {
     @BeforeEach
     void setUp() {
         refreshTokenIssuer = new RefreshTokenIssuer(refreshTokenRepository);
-        useCase = new LogoutUserUseCase(refreshTokenRepository, refreshTokenIssuer);
+        useCase = new LogoutUserUseCase(refreshTokenRepository, refreshTokenIssuer, eventPublisher);
     }
 
     @Test
