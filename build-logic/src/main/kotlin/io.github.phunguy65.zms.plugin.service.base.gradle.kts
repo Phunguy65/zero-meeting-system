@@ -1,4 +1,5 @@
 import com.google.protobuf.gradle.id
+import gradle.kotlin.dsl.accessors._e9cc5b3d3e0f80810f7669da3585a0d9.implementation
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.the
@@ -19,8 +20,31 @@ group = "io.github.phunguy65.zms"
 version = "0.0.1-SNAPSHOT"
 
 val libs = the<LibrariesForLibs>()
+
 dependencies {
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"))
+    implementation(platform("org.springframework.cloud:spring-cloud-dependencies:${libs.versions.springCloud.get()}"))
     implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.aspectj)
+    implementation(libs.spring.boot.starter.data.redis)
+    implementation(libs.spring.cloud.starter.consul.discovery)
+    implementation(libs.spring.cloud.starter.consul.config)
+    implementation(libs.spring.boot.starter.log4j2)
+    implementation(libs.log4j.layout.template.json)
+    modules {
+        module(
+            libs.spring.boot.starter.logging
+                .get()
+                .module,
+        ) {
+            replacedBy(
+                libs.spring.boot.starter.log4j2
+                    .get()
+                    .module,
+                "Use Log4j2 instead of Logback",
+            )
+        }
+    }
     implementation(libs.spring.kafka)
     implementation(libs.cloudevents.core)
     implementation(libs.spring.boot.starter.data.jpa)

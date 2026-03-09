@@ -1,0 +1,25 @@
+# Consul Helm values — hashicorp/consul
+# https://developer.hashicorp.com/consul/docs/k8s/helm
+
+global:
+    name: consul
+    datacenter: dc1
+
+server:
+    # dev: 1 replica; prod: change to 3
+    replicas: 1
+    storage: 1Gi
+    storageClass: standard
+
+connectInject:
+    enabled: false
+
+syncCatalog:
+    enabled: true
+    toConsul: true
+    toK8S: false
+
+ui:
+    enabled: true
+    service:
+        type: ClusterIP

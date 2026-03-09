@@ -6,7 +6,7 @@ import java.util.List;
  * A page of sliced results without a total count.
  *
  * <p>Pure Java domain abstraction for offset-based Slice pagination. Consistent with other shared
- * domain types ({@link Result}, {@link Money}, {@link UserId}) – zero Spring/JPA dependencies.
+ * domain types ({@link Result} – zero Spring/JPA dependencies.
  *
  * <p>The factory method {@code of(...)} is used by infrastructure adapters to build a
  * {@code PageResult} from a Spring Data {@code Slice<Entity>} after entity-to-domain mapping.

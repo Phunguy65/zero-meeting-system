@@ -1,0 +1,75 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: user-management-user-registered
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: user-management.user.registered
+    config:
+        retention.ms: 604800000 # 7 days
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: user-management-user-updated
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: user-management.user.updated
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: user-management-user-deleted
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: user-management.user.deleted
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: user-management-user-logged-in
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: user-management.user.logged-in
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: user-management-user-logged-out
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: user-management.user.logged-out
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
