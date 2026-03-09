@@ -1,5 +1,6 @@
 [versions]
 # ─── Java ─────────────────────────────────────────────────────────────────
+firebaseAdmin = "9.8.0"
 java = "25"
 # ─── Backend ─────────────────────────────────────────────────────────────────
 springBoot = "4.0.3"
@@ -43,6 +44,7 @@ ktlint = "1.8.0"
 # ─── Backend ─────────────────────────────────────────────────────────────────
 
 # Protobuf
+firebase-admin = { module = "com.google.firebase:firebase-admin", version.ref = "firebaseAdmin" }
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protoc" }
 protoc-gen-grpc-java = { module = "io.grpc:protoc-gen-grpc-java", version.ref = "protocGenGrpcJava" }
 

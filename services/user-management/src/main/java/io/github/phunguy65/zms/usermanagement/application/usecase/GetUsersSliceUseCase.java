@@ -2,12 +2,12 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.SliceHttpResponse;
+import io.github.phunguy65.zms.usermanagement.application.dto.GetUsersRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.Username;
-import io.github.phunguy65.zms.usermanagement.domain.port.UserFilter;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,9 +25,9 @@ public class GetUsersSliceUseCase {
     }
 
     @Transactional(readOnly = true)
-    public Result<SliceHttpResponse<UserResponse>, AuthErrorCode> execute(
-            int page, int size, UserFilter filter) {
-        var pageResult = userRepository.findActiveUsers(page, size, filter);
+    public Result<SliceHttpResponse<UserResponse>, AuthErrorCode> execute(GetUsersRequest request) {
+        var pageResult =
+                userRepository.findActiveUsers(request.page(), request.size(), request.toFilter());
         var items = pageResult.items().stream().map(this::toResponse).toList();
         var response = new SliceHttpResponse<>(
                 items,

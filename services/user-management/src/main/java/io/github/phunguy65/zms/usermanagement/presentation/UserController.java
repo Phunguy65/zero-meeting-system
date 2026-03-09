@@ -3,10 +3,11 @@ package io.github.phunguy65.zms.usermanagement.presentation;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.FailData;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.github.phunguy65.zms.usermanagement.application.dto.GetUsersRequest;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUsersSliceUseCase;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
-import io.github.phunguy65.zms.usermanagement.domain.port.UserFilter;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -39,14 +40,8 @@ public class UserController {
     }
 
     @GetMapping(value = "/{version}/users", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> getUsers(
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String authProvider,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        int clampedSize = Math.min(size, 100);
-        var filter = new UserFilter(email, authProvider);
-        var result = getUsersSliceUseCase.execute(page, clampedSize, filter);
+    public ResponseEntity<JsendResponse<?>> getUsers(@Valid GetUsersRequest request) {
+        var result = getUsersSliceUseCase.execute(request);
         return switch (result) {
             case Result.Success<?, AuthErrorCode> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
