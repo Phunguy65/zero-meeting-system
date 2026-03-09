@@ -8,6 +8,7 @@ import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -48,18 +49,34 @@ public class PatchUpdateUserUseCase {
 
         boolean anyChange = dto.fullName().isPresent()
                 || dto.avatarUrl().isPresent()
+                || dto.username().isPresent()
                 || dto.preferences().isPresent();
 
         if (!anyChange) {
             return Result.success(toResponse(user));
         }
 
-        if (dto.fullName().isPresent() || dto.avatarUrl().isPresent()) {
+        Username newUsername = null;
+        if (dto.username().isPresent()) {
+            String rawUsername = dto.username().get();
+            if (rawUsername != null) {
+                final Username candidateUsername = Username.of(rawUsername);
+                boolean isSameAsCurrent = user.getUsername()
+                        .map(u -> u.value().equals(candidateUsername.value()))
+                        .orElse(false);
+                if (!isSameAsCurrent && userRepository.existsActiveByUsername(candidateUsername)) {
+                    return Result.failure(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+                }
+                newUsername = candidateUsername;
+            }
+        }
+
+        if (dto.fullName().isPresent() || dto.avatarUrl().isPresent() || newUsername != null) {
             FullName newFullName =
                     dto.fullName().isPresent() ? FullName.of(dto.fullName().get()) : null;
             boolean applyAvatar = dto.avatarUrl().isPresent();
             String newAvatarUrl = applyAvatar ? dto.avatarUrl().get() : null;
-            user.updateProfile(newFullName, newAvatarUrl, applyAvatar);
+            user.updateProfile(newFullName, newAvatarUrl, applyAvatar, newUsername);
         }
 
         if (dto.preferences().isPresent()) {
@@ -70,7 +87,7 @@ public class PatchUpdateUserUseCase {
                 user.updatePreferences(json);
             } catch (Exception e) {
                 log.error("Failed to serialise preferences for user {}", userId, e);
-                return Result.failure(AuthErrorCode.USER_NOT_FOUND);
+                return Result.failure(AuthErrorCode.PREFERENCES_SERIALIZATION_ERROR);
             }
         }
 
@@ -90,6 +107,7 @@ public class PatchUpdateUserUseCase {
                 user.getId(),
                 user.getEmail().value(),
                 user.getFullName().value(),
+                user.getUsername().map(Username::value).orElse(null),
                 user.getAvatarUrl().orElse(null),
                 user.getAuthProvider(),
                 preferencesParser.parseAsResponse(user.getPreferences()),

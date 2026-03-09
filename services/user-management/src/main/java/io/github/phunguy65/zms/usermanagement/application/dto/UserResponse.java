@@ -12,6 +12,7 @@ public record UserResponse(
         UUID id,
         String email,
         String fullName,
+        @Nullable String username,
         @Nullable String avatarUrl,
         String authProvider,
         UserPreferencesResponse preferences,

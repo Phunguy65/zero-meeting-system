@@ -5,6 +5,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class GetUserUseCase {
                 user.getId(),
                 user.getEmail().value(),
                 user.getFullName().value(),
+                user.getUsername().map(Username::value).orElse(null),
                 user.getAvatarUrl().orElse(null),
                 user.getAuthProvider(),
                 preferencesParser.parseAsResponse(user.getPreferences()),

@@ -71,6 +71,7 @@ class LoginUserUseCaseTest {
                 FullName.of("Alice"),
                 null,
                 null,
+                null,
                 "EMAIL",
                 null,
                 Instant.now(),
@@ -149,6 +150,7 @@ class LoginUserUseCaseTest {
                 Email.of("google@example.com"),
                 null, // no password
                 FullName.of("Google User"),
+                null,
                 null,
                 "google-uid-abc",
                 "GOOGLE",

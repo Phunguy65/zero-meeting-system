@@ -3,8 +3,8 @@ package io.github.phunguy65.zms.usermanagement.presentation;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
@@ -113,13 +113,13 @@ class GoogleAuthAndPreferencesIntegrationTest {
                 .asText();
 
         // GET preferences — should return empty settings for new user
-        mockMvc.perform(get("/api/v1/users/me/preferences")
+        mockMvc.perform(get("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.settings").isMap());
 
-        // PUT preferences with arbitrary keys
-        mockMvc.perform(put("/api/v1/users/me/preferences")
+        // PATCH preferences with arbitrary keys
+        mockMvc.perform(patch("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theme\":\"dark\",\"fontSize\":16,\"lang\":\"vi\"}"))
@@ -129,7 +129,7 @@ class GoogleAuthAndPreferencesIntegrationTest {
                 .andExpect(jsonPath("$.data.settings.lang").value("vi"));
 
         // GET again — should return updated prefs
-        mockMvc.perform(get("/api/v1/users/me/preferences")
+        mockMvc.perform(get("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.settings.theme").value("dark"));
@@ -151,7 +151,7 @@ class GoogleAuthAndPreferencesIntegrationTest {
                 .asText();
 
         // Any JSON keys should be accepted without validation errors
-        mockMvc.perform(put("/api/v1/users/me/preferences")
+        mockMvc.perform(patch("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"customKey\":\"customValue\",\"anotherKey\":42,\"flag\":true}"))
@@ -163,6 +163,6 @@ class GoogleAuthAndPreferencesIntegrationTest {
 
     @Test
     void preferences_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(get("/api/v1/users/me/preferences")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/me/preferences")).andExpect(status().isUnauthorized());
     }
 }

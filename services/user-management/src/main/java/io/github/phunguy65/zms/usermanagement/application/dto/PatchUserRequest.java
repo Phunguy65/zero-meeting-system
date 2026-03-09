@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.usermanagement.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -16,15 +17,26 @@ import org.openapitools.jackson.nullable.JsonNullable;
 public record PatchUserRequest(
         JsonNullable<@Size(max = 255) @NotBlank String> fullName,
         JsonNullable<@Size(max = 2048) String> avatarUrl,
+        JsonNullable<
+                        @Size(min = 3, max = 30) @NotBlank @Pattern(
+                                regexp = "^[a-zA-Z0-9_-]+$",
+                                message = "Username must contain only letters, digits, _ or -")
+                        String>
+                username,
         JsonNullable<Map<String, Object>> preferences) {
 
     public PatchUserRequest {
         if (fullName == null) fullName = JsonNullable.undefined();
         if (avatarUrl == null) avatarUrl = JsonNullable.undefined();
+        if (username == null) username = JsonNullable.undefined();
         if (preferences == null) preferences = JsonNullable.undefined();
     }
 
     public PatchUserRequest() {
-        this(JsonNullable.undefined(), JsonNullable.undefined(), JsonNullable.undefined());
+        this(
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.undefined());
     }
 }

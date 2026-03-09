@@ -3,6 +3,7 @@ package io.github.phunguy65.zms.usermanagement.domain.port;
 import io.github.phunguy65.zms.shared.domain.PageResult;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,6 +29,12 @@ public interface UserRepository {
 
     /** Returns {@code true} only if an active (non-deleted) user with this email exists. */
     boolean existsActiveByEmail(Email email);
+
+    /** Returns {@code true} only if an active (non-deleted) user with this username exists. */
+    boolean existsActiveByUsername(Username username);
+
+    /** Returns the active user with the given username, or empty if not found. */
+    Optional<User> findActiveByUsername(Username username);
 
     /**
      * Returns a paginated slice of active (non-deleted) users matching the given filter.

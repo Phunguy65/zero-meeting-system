@@ -49,6 +49,7 @@ class PatchUpdatePreferencesUseCaseTest {
                 FullName.of("Alice"),
                 null,
                 null,
+                null,
                 "EMAIL",
                 prefsJson,
                 Instant.now(),

@@ -15,7 +15,8 @@ class UserDomainEventsTest {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
 
-        var event = new UserRegisteredEvent(eventId, userId, "alice@example.com", "Alice", now);
+        var event = new UserRegisteredEvent(
+                eventId, userId, "alice@example.com", "Alice", "alice_user", now);
 
         assertThat(event.eventId()).isEqualTo(eventId);
         assertThat(event.aggregateId()).isEqualTo(userId);
@@ -73,6 +74,7 @@ class UserDomainEventsTest {
                 userId,
                 "dave@example.com",
                 "Dave",
+                "dave_user",
                 "https://example.com/avatar.png",
                 "EMAIL",
                 now);
@@ -97,7 +99,7 @@ class UserDomainEventsTest {
         Instant now = Instant.now();
 
         var event = new UserUpdatedEvent(
-                eventId, userId, "eve@example.com", "Eve", null, "GOOGLE", now);
+                eventId, userId, "eve@example.com", "Eve", null, null, "GOOGLE", now);
 
         assertThat(event.avatarUrl()).isNull();
     }

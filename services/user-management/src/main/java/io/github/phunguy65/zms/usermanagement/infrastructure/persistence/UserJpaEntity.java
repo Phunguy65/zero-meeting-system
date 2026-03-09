@@ -24,6 +24,9 @@ public class UserJpaEntity {
     @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
 
+    @Column(length = 30)
+    private @Nullable String username;
+
     @Column(name = "avatar_url", length = 2048)
     private @Nullable String avatarUrl;
 
@@ -53,6 +56,7 @@ public class UserJpaEntity {
             String email,
             @Nullable String passwordHash,
             String fullName,
+            @Nullable String username,
             @Nullable String avatarUrl,
             @Nullable String googleUid,
             String authProvider,
@@ -64,6 +68,7 @@ public class UserJpaEntity {
         this.email = email;
         this.passwordHash = passwordHash;
         this.fullName = fullName;
+        this.username = username;
         this.avatarUrl = avatarUrl;
         this.googleUid = googleUid;
         this.authProvider = authProvider;
@@ -87,6 +92,10 @@ public class UserJpaEntity {
 
     public String getFullName() {
         return fullName;
+    }
+
+    public @Nullable String getUsername() {
+        return username;
     }
 
     public @Nullable String getAvatarUrl() {

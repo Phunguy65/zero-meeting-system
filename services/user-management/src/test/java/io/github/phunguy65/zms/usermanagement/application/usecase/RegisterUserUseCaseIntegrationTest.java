@@ -45,7 +45,8 @@ class RegisterUserUseCaseIntegrationTest {
         var request = new RegisterRequest(
                 "integration-" + System.nanoTime() + "@example.com",
                 "password123",
-                "Integration User");
+                "Integration User",
+                "intuser_" + System.nanoTime() % 100000);
 
         var result = registerUserUseCase.execute(request);
 

@@ -8,6 +8,7 @@ import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -38,9 +39,15 @@ public class RegisterUserUseCase {
             return Result.failure(AuthErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
+        Username username = Username.of(request.username());
+
+        if (userRepository.existsActiveByUsername(username)) {
+            return Result.failure(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+        }
+
         var hashedPassword = passwordHasher.hash(request.password());
         var fullName = FullName.of(request.fullName());
-        var user = User.register(email, hashedPassword, fullName);
+        var user = User.register(email, hashedPassword, fullName, username);
         var saved = userRepository.save(user);
 
         saved.getDomainEvents().stream()
@@ -50,6 +57,9 @@ public class RegisterUserUseCase {
         saved.clearDomainEvents();
 
         return Result.success(new RegisterResponse(
-                saved.getId(), saved.getEmail().value(), saved.getFullName().value()));
+                saved.getId(),
+                saved.getEmail().value(),
+                saved.getFullName().value(),
+                saved.getUsername().map(Username::value).orElse(null)));
     }
 }

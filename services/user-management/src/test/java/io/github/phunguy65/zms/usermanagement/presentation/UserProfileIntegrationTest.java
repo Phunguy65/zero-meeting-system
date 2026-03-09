@@ -44,10 +44,19 @@ class UserProfileIntegrationTest {
     /** Registers a user and returns their access token. */
     private String registerAndLogin(String email, String password, String fullName)
             throws Exception {
+        // Generate a unique username from the email prefix
+        String username = email.replaceAll("[^a-zA-Z0-9_-]", "_")
+                .substring(0, Math.min(30, email.indexOf('@')));
+        return registerAndLogin(email, password, fullName, username);
+    }
+
+    /** Registers a user with an explicit username and returns their access token. */
+    private String registerAndLogin(String email, String password, String fullName, String username)
+            throws Exception {
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, password, fullName))))
+                                new RegisterRequest(email, password, fullName, username))))
                 .andExpect(status().isCreated());
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
@@ -70,7 +79,7 @@ class UserProfileIntegrationTest {
         String token = registerAndLogin(
                 "getme-" + System.nanoTime() + "@example.com", "password123", "Get Me User");
 
-        mockMvc.perform(get("/api/v1/users/me").header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.data.email").isNotEmpty())
@@ -80,7 +89,7 @@ class UserProfileIntegrationTest {
 
     @Test
     void getMe_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(get("/api/v1/users/me")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/me")).andExpect(status().isUnauthorized());
     }
 
     // ─── 11.2 GET /users/{id} ─────────────────────────────────────────────────
@@ -92,7 +101,7 @@ class UserProfileIntegrationTest {
 
         // Get own ID from /me
         MvcResult meResult = mockMvc.perform(
-                        get("/api/v1/users/me").header("Authorization", "Bearer " + token))
+                        get("/api/v1/me").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn();
         String userId = objectMapper
@@ -176,7 +185,7 @@ class UserProfileIntegrationTest {
         String token = registerAndLogin(
                 "patch-" + System.nanoTime() + "@example.com", "password123", "Patch User");
 
-        mockMvc.perform(patch("/api/v1/users/me")
+        mockMvc.perform(patch("/api/v1/me")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fullName\":\"Updated Name\"}"))
@@ -190,7 +199,7 @@ class UserProfileIntegrationTest {
         String token = registerAndLogin(
                 "patch-noop-" + System.nanoTime() + "@example.com", "password123", "NoOp User");
 
-        mockMvc.perform(patch("/api/v1/users/me")
+        mockMvc.perform(patch("/api/v1/me")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -203,7 +212,7 @@ class UserProfileIntegrationTest {
         String token = registerAndLogin(
                 "patch-blank-" + System.nanoTime() + "@example.com", "password123", "Blank Test");
 
-        mockMvc.perform(patch("/api/v1/users/me")
+        mockMvc.perform(patch("/api/v1/me")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fullName\":\"\"}"))
@@ -213,7 +222,7 @@ class UserProfileIntegrationTest {
 
     @Test
     void patchMe_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(patch("/api/v1/users/me")
+        mockMvc.perform(patch("/api/v1/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fullName\":\"X\"}"))
                 .andExpect(status().isUnauthorized());
@@ -226,7 +235,7 @@ class UserProfileIntegrationTest {
         String token = registerAndLogin(
                 "patchprefs-" + System.nanoTime() + "@example.com", "password123", "Prefs User");
 
-        mockMvc.perform(patch("/api/v1/users/me/preferences")
+        mockMvc.perform(patch("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theme\":\"dark\",\"fontSize\":14}"))
@@ -243,7 +252,7 @@ class UserProfileIntegrationTest {
                 "Any Key User");
 
         // Any key/value should be accepted — no validation errors
-        mockMvc.perform(patch("/api/v1/users/me/preferences")
+        mockMvc.perform(patch("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theme\":\"blue\",\"customKey\":\"anything\"}"))
@@ -254,9 +263,78 @@ class UserProfileIntegrationTest {
 
     @Test
     void patchPreferences_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(patch("/api/v1/users/me/preferences")
+        mockMvc.perform(patch("/api/v1/me/preferences")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theme\":\"dark\"}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // ─── Username tests ───────────────────────────────────────────────────────
+
+    @Test
+    void getMe_responseIncludesUsername() throws Exception {
+        String username = "getme_user_" + System.nanoTime() % 10000;
+        String email = "getme-un-" + System.nanoTime() + "@example.com";
+        String token = registerAndLogin(email, "password123", "Get Me Username", username);
+
+        mockMvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.username").value(username));
+    }
+
+    @Test
+    void getUsers_responseIncludesUsername() throws Exception {
+        String username = "slice_user_" + System.nanoTime() % 10000;
+        String email = "slice-un-" + System.nanoTime() + "@example.com";
+        String token = registerAndLogin(email, "password123", "Slice Username", username);
+
+        mockMvc.perform(get("/api/v1/users")
+                        .param("email", email)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content[0].username").value(username));
+    }
+
+    @Test
+    void patchMe_updateUsername_success() throws Exception {
+        String originalUsername = "orig_user_" + System.nanoTime() % 10000;
+        String newUsername = "new_user_" + System.nanoTime() % 10000;
+        String token = registerAndLogin(
+                "patch-un-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Patch Username",
+                originalUsername);
+
+        mockMvc.perform(patch("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + newUsername + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.username").value(newUsername));
+    }
+
+    @Test
+    void patchMe_duplicateUsername_returns409() throws Exception {
+        String takenUsername = "taken_un_" + System.nanoTime() % 10000;
+        // Register first user with the username
+        registerAndLogin(
+                "taken-un-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Taken User",
+                takenUsername);
+
+        // Register second user and try to take the username
+        String token = registerAndLogin(
+                "second-un-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Second User",
+                "second_un_" + System.nanoTime() % 10000);
+
+        mockMvc.perform(patch("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + takenUsername + "\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.data.code").value("USERNAME_ALREADY_EXISTS"));
     }
 }

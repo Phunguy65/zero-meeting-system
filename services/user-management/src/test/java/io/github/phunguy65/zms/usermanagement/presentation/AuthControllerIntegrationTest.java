@@ -50,8 +50,8 @@ class AuthControllerIntegrationTest {
     @Test
     void fullRegisterLoginRefreshLogoutFlow() throws Exception {
         // 1. Register
-        var registerRequest =
-                new RegisterRequest("integration@example.com", "password123", "Integration User");
+        var registerRequest = new RegisterRequest(
+                "integration@example.com", "password123", "Integration User", "integration_user");
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
@@ -107,7 +107,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void duplicateRegistrationReturns409() throws Exception {
-        var request = new RegisterRequest("dup@example.com", "password123", "Dup User");
+        var request = new RegisterRequest("dup@example.com", "password123", "Dup User", "dup_user");
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -150,7 +150,7 @@ class AuthControllerIntegrationTest {
     @Test
     void registerWithInvalidEmailReturns400WithEmailViolation() throws Exception {
         var body =
-                "{\"email\":\"not-an-email\",\"password\":\"password123\",\"fullName\":\"Test User\"}";
+                "{\"email\":\"not-an-email\",\"password\":\"password123\",\"fullName\":\"Test User\",\"username\":\"testuser\"}";
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -165,7 +165,7 @@ class AuthControllerIntegrationTest {
     @Test
     void registerWithShortPasswordReturns400WithTooShortViolation() throws Exception {
         var body =
-                "{\"email\":\"valid@example.com\",\"password\":\"short\",\"fullName\":\"Test User\"}";
+                "{\"email\":\"valid@example.com\",\"password\":\"short\",\"fullName\":\"Test User\",\"username\":\"testuser\"}";
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -195,8 +195,8 @@ class AuthControllerIntegrationTest {
         var email = "delete-me@example.com";
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Delete Me"))))
+                        .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                email, "password123", "Delete Me", "delete_me_user"))))
                 .andExpect(status().isCreated());
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
@@ -212,7 +212,7 @@ class AuthControllerIntegrationTest {
                 .asText();
 
         // Delete account
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
     }
 
@@ -222,8 +222,8 @@ class AuthControllerIntegrationTest {
         var email = "deleted-jwt@example.com";
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Deleted JWT"))))
+                        .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                email, "password123", "Deleted JWT", "deleted_jwt_user"))))
                 .andExpect(status().isCreated());
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
@@ -239,11 +239,11 @@ class AuthControllerIntegrationTest {
                 .asString();
 
         // Delete account
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
 
         // Subsequent request with same JWT should be rejected (filter checks deletedAt)
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -252,8 +252,8 @@ class AuthControllerIntegrationTest {
         var email = "deleted-login@example.com";
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Deleted Login"))))
+                        .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                email, "password123", "Deleted Login", "deleted_login_user"))))
                 .andExpect(status().isCreated());
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
@@ -268,7 +268,7 @@ class AuthControllerIntegrationTest {
                 .at("/data/accessToken")
                 .asString();
 
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
 
         // Login attempt after deletion should return 401 USER_DELETED
@@ -287,8 +287,8 @@ class AuthControllerIntegrationTest {
         // Register
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Original"))))
+                        .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                email, "password123", "Original", "original_user"))))
                 .andExpect(status().isCreated());
 
         // Login + delete
@@ -304,14 +304,64 @@ class AuthControllerIntegrationTest {
                 .at("/data/accessToken")
                 .asString();
 
-        mockMvc.perform(delete("/api/v1/auth/me").header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(delete("/api/v1/me").header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
 
         // Re-register with same email should succeed (201)
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "newpassword123", "New User"))))
+                        .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                email, "newpassword123", "New User", "new_user_reuse"))))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void registerWithMissingUsernameReturns400() throws Exception {
+        var body =
+                "{\"email\":\"missing-username@example.com\",\"password\":\"password123\",\"fullName\":\"Test User\"}";
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void registerWithDuplicateUsernameReturns409() throws Exception {
+        String username = "dupuser_" + System.nanoTime() % 100000;
+        // First registration
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                "first-" + System.nanoTime() + "@example.com",
+                                "password123",
+                                "First",
+                                username))))
+                .andExpect(status().isCreated());
+
+        // Second registration with same username but different email
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                "second-" + System.nanoTime() + "@example.com",
+                                "password123",
+                                "Second",
+                                username))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.data.code").value("USERNAME_ALREADY_EXISTS"));
+    }
+
+    @Test
+    void registerSuccess_responseIncludesUsername() throws Exception {
+        String username = "testuser_" + System.nanoTime() % 100000;
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                "withusername-" + System.nanoTime() + "@example.com",
+                                "password123",
+                                "Test User",
+                                username))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.username").value(username));
     }
 }

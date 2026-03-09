@@ -55,6 +55,7 @@ class PatchUpdateUserUseCaseTest {
                 Email.of("alice@example.com"),
                 null,
                 FullName.of("Alice"),
+                null,
                 avatarUrl,
                 null,
                 "EMAIL",
@@ -84,7 +85,10 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var dto = new PatchUserRequest(
-                JsonNullable.of("New Name"), JsonNullable.undefined(), JsonNullable.undefined());
+                JsonNullable.of("New Name"),
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.undefined());
         var result = useCase.execute(USER_ID, dto);
 
         assertThat(result).isInstanceOf(Result.Success.class);
@@ -100,7 +104,10 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         var dto = new PatchUserRequest(
-                JsonNullable.undefined(), JsonNullable.of(null), JsonNullable.undefined());
+                JsonNullable.undefined(),
+                JsonNullable.of(null),
+                JsonNullable.undefined(),
+                JsonNullable.undefined());
         var result = useCase.execute(USER_ID, dto);
 
         assertThat(result).isInstanceOf(Result.Success.class);
@@ -117,7 +124,10 @@ class PatchUpdateUserUseCaseTest {
         var prefs = java.util.Map.<String, Object>of(
                 "theme", "dark", "defaultMic", false, "defaultCamera", true);
         var dto = new PatchUserRequest(
-                JsonNullable.undefined(), JsonNullable.undefined(), JsonNullable.of(prefs));
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.of(prefs));
         var result = useCase.execute(USER_ID, dto);
 
         assertThat(result).isInstanceOf(Result.Success.class);
@@ -132,6 +142,7 @@ class PatchUpdateUserUseCaseTest {
 
         var dto = new PatchUserRequest(
                 JsonNullable.of("Alice Updated"),
+                JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.undefined());
         useCase.execute(USER_ID, dto);
@@ -162,6 +173,7 @@ class PatchUpdateUserUseCaseTest {
         var dto = new PatchUserRequest(
                 JsonNullable.of("Updated Name"),
                 JsonNullable.undefined(),
+                JsonNullable.undefined(),
                 JsonNullable.undefined());
         useCase.execute(USER_ID, dto);
 
@@ -171,5 +183,74 @@ class PatchUpdateUserUseCaseTest {
         var event = (UserUpdatedEvent) captor.getValue();
         assertThat(event.fullName()).isEqualTo("Updated Name");
         assertThat(event.email()).isEqualTo("alice@example.com");
+    }
+
+    @Test
+    void execute_updateUsername_success() {
+        var user = buildUser(null);
+        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.existsActiveByUsername(any())).thenReturn(false);
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        var dto = new PatchUserRequest(
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.of("new_username"),
+                JsonNullable.undefined());
+        var result = useCase.execute(USER_ID, dto);
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        var response = (UserResponse) ((Result.Success<?, ?>) result).value();
+        assertThat(response.username()).isEqualTo("new_username");
+    }
+
+    @Test
+    void execute_duplicateUsername_returnsFailure() {
+        var user = buildUser(null);
+        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.existsActiveByUsername(any())).thenReturn(true);
+
+        var dto = new PatchUserRequest(
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.of("taken_user"),
+                JsonNullable.undefined());
+        var result = useCase.execute(USER_ID, dto);
+
+        assertThat(result).isInstanceOf(Result.Failure.class);
+        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
+                .isEqualTo(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void execute_sameUsername_isIdempotent() {
+        // Build user with existing username
+        var user = User.reconstitute(
+                USER_ID,
+                Email.of("alice@example.com"),
+                null,
+                FullName.of("Alice"),
+                "alice_user",
+                null,
+                null,
+                "EMAIL",
+                null,
+                java.time.Instant.now(),
+                java.time.Instant.now(),
+                null);
+        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        var dto = new PatchUserRequest(
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.of("alice_user"), // same as current
+                JsonNullable.undefined());
+        var result = useCase.execute(USER_ID, dto);
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        // existsActiveByUsername should NOT be called (same username skips check)
+        verify(userRepository, never()).existsActiveByUsername(any());
     }
 }

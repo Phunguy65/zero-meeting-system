@@ -1,11 +1,9 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
@@ -31,7 +29,6 @@ class UserPreferencesUseCaseTest {
     UserRepository userRepository;
 
     GetUserPreferencesUseCase getUseCase;
-    UpdateUserPreferencesUseCase updateUseCase;
 
     private static final UUID USER_ID = UUID.randomUUID();
 
@@ -39,7 +36,6 @@ class UserPreferencesUseCaseTest {
     void setUp() {
         var preferencesParser = new UserPreferencesParser(new ObjectMapper());
         getUseCase = new GetUserPreferencesUseCase(userRepository, preferencesParser);
-        updateUseCase = new UpdateUserPreferencesUseCase(userRepository, new ObjectMapper());
     }
 
     private User userWithPrefs(String prefsJson) {
@@ -48,6 +44,7 @@ class UserPreferencesUseCaseTest {
                 Email.of("alice@example.com"),
                 null,
                 FullName.of("Alice"),
+                null,
                 null,
                 "google-uid",
                 "GOOGLE",
@@ -102,47 +99,6 @@ class UserPreferencesUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.empty());
 
         var result = getUseCase.execute(USER_ID);
-
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USER_NOT_FOUND);
-    }
-
-    @Test
-    void updatePreferences_happyPath_savesAndReturns() {
-        var user = userWithPrefs(null);
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
-        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        var dto = new UserPreferencesRequest(Map.of("theme", "light", "fontSize", 16));
-        var result = updateUseCase.execute(USER_ID, dto);
-
-        assertThat(result).isInstanceOf(Result.Success.class);
-        var saved = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
-        assertThat(saved.settings()).containsEntry("theme", "light");
-        assertThat(saved.settings()).containsEntry("fontSize", 16);
-        verify(userRepository).save(any(User.class));
-    }
-
-    @Test
-    void updatePreferences_emptyMap_clearsPreferences() {
-        var user = userWithPrefs("{\"theme\":\"dark\"}");
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
-        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        var dto = new UserPreferencesRequest(Map.of());
-        var result = updateUseCase.execute(USER_ID, dto);
-
-        assertThat(result).isInstanceOf(Result.Success.class);
-        var saved = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
-        assertThat(saved.settings()).isEmpty();
-        verify(userRepository).save(any(User.class));
-    }
-
-    @Test
-    void updatePreferences_userNotFound_returnsFailure() {
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.empty());
-
-        var result = updateUseCase.execute(USER_ID, new UserPreferencesRequest(Map.of("k", "v")));
 
         assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
                 .isEqualTo(AuthErrorCode.USER_NOT_FOUND);
