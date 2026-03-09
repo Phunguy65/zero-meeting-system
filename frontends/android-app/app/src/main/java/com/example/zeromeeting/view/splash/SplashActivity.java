@@ -10,6 +10,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 // Import thêm đường dẫn tới WelcomeActivity của bạn
+import com.example.zeromeeting.view.calendar.CalendarActivity;
+import com.example.zeromeeting.view.dashboard.DashboardActivity;
+import com.example.zeromeeting.view.meetingcreate.CreateMeetingActivity;
+import com.example.zeromeeting.view.meetingroom.JoinMeetingActivity;
+import com.example.zeromeeting.view.meetingroom.MeetingRoomActivity;
+import com.example.zeromeeting.view.meetingroom.ParticipantsActivity;
+import com.example.zeromeeting.view.meetingroom.chat.MeetingChatActivity;
+import com.example.zeromeeting.view.profile.ProfileActivity;
+import com.example.zeromeeting.view.schedule.ScheduleActivity;
 import com.example.zeromeeting.view.welcome.WelcomeActivity;
 import com.example.zeromeeting.view.auth.RegisterActivity;
 import com.example.zeromeeting.view.auth.LoginActivity;
@@ -28,7 +37,7 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // Tạo lệnh di chuyển từ Splash sang Welcome
-                Intent intent = new Intent(SplashActivity.this, JoinGuestActivity.class);
+                Intent intent = new Intent(SplashActivity.this, MeetingChatActivity.class);
                 startActivity(intent);
 
                 // Đóng SplashActivity lại để khi người dùng bấm nút Back ở màn Welcome sẽ thoát app luôn, không quay lại màn hình trắng này nữa
