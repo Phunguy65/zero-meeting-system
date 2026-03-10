@@ -1,4 +1,4 @@
-package com.example.zeromeeting.view.meetingroom;
+package com.example.zeromeeting.view.meetingroom.participant;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

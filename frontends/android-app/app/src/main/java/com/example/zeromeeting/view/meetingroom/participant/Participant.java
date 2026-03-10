@@ -1,4 +1,4 @@
-package com.example.zeromeeting.view.meetingroom;
+package com.example.zeromeeting.view.meetingroom.participant;
 
 public class Participant {
     private String name;

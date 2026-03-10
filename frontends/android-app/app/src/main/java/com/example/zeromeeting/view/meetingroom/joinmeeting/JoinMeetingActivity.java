@@ -1,4 +1,4 @@
-package com.example.zeromeeting.view.meetingroom;
+package com.example.zeromeeting.view.meetingroom.joinmeeting;
 
 import android.os.Bundle;
 import android.widget.ImageView;

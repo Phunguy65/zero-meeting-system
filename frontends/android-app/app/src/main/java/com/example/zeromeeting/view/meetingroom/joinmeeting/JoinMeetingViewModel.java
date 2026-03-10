@@ -1,4 +1,4 @@
-package com.example.zeromeeting.view.meetingroom;
+package com.example.zeromeeting.view.meetingroom.joinmeeting;
 
 import androidx.lifecycle.ViewModel;
 import javax.inject.Inject;

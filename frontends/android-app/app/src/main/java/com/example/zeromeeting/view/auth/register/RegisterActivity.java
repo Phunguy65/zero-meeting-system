@@ -1,4 +1,4 @@
-package com.example.zeromeeting.view.auth;
+package com.example.zeromeeting.view.auth.register;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.zeromeeting.view.auth.login.LoginActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -56,8 +57,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Bấm "Sign In" -> Mở màn hình Login
         tvHaveAccount.setOnClickListener(v -> {
-            // startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-            // finish(); // Tùy chọn: đóng màn hình đăng ký
+             startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+             finish(); // Tùy chọn: đóng màn hình đăng ký
         });
 
         // Bấm nút "Create Account"
