@@ -1,5 +1,0 @@
-ALTER TABLE users
-    ADD COLUMN deleted_at TIMESTAMP DEFAULT NULL;
-
-ALTER TABLE users
-    DROP CONSTRAINT uq_users_email;

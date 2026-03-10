@@ -10,3 +10,19 @@ version = "0.0.1-SNAPSHOT"
 dependencies {
     implementation(libs.jackson.databind.nullable)
 }
+
+tasks.bootJar {
+    enabled = false
+}
+
+tasks.jar {
+    enabled = true
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.aot.ProcessAot> {
+    enabled = false
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.aot.ProcessTestAot> {
+    enabled = false
+}

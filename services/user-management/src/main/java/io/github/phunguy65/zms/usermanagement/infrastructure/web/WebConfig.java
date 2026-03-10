@@ -16,6 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void configureApiVersioning(ApiVersionConfigurer configurer) {
-        configurer.setVersionParser(new ApiVersionParser());
+        configurer.setVersionParser(
+                new io.github.phunguy65.zms.shared.infrastructure.web.ApiVersionParser());
     }
 }

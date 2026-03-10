@@ -1,8 +1,10 @@
 [versions]
 # ─── Java ─────────────────────────────────────────────────────────────────
+firebaseAdmin = "9.8.0"
 java = "25"
 # ─── Backend ─────────────────────────────────────────────────────────────────
 springBoot = "4.0.3"
+springCloud = "2025.1.1"
 springDependencyManagement = "1.1.7"
 hibernateOrm = "7.2.1.Final"
 graalvmNative = "0.11.4"
@@ -13,6 +15,7 @@ bouncycastle = "1.80"
 uuidCreator = "6.1.1"
 cloudevents = "4.0.1"
 palantirJavaFormat = "2.88.0"
+testcontainers = "1.21.4"
 protoBuf = "0.9.6"
 protoc = "4.34.0"
 protocGenGrpcJava = "1.79.0"
@@ -43,6 +46,7 @@ ktlint = "1.8.0"
 # ─── Backend ─────────────────────────────────────────────────────────────────
 
 # Protobuf
+firebase-admin = { module = "com.google.firebase:firebase-admin", version.ref = "firebaseAdmin" }
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protoc" }
 protoc-gen-grpc-java = { module = "io.grpc:protoc-gen-grpc-java", version.ref = "protocGenGrpcJava" }
 
@@ -69,7 +73,13 @@ spring-kafka = { module = "org.springframework.kafka:spring-kafka" }
 cloudevents-core = { module = "io.cloudevents:cloudevents-core", version.ref = "cloudevents" }
 cloudevents-kafka = { module = "io.cloudevents:cloudevents-kafka", version.ref = "cloudevents" }
 
+# Spring Cloud (version managed by Spring Cloud BOM)
+spring-cloud-starter-consul-discovery = { module = "org.springframework.cloud:spring-cloud-starter-consul-discovery" }
+spring-cloud-starter-consul-config = { module = "org.springframework.cloud:spring-cloud-starter-consul-config" }
+
 # Spring Boot Starters (version managed by Spring Boot BOM)
+spring-boot-starter-aspectj = { module = "org.springframework.boot:spring-boot-starter-aspectj" }
+spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 shared = { module = "io.github.phunguy65.zms.services:shared" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
@@ -78,6 +88,9 @@ spring-boot-starter-integration = { module = "org.springframework.boot:spring-bo
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-logging = { module = "org.springframework.boot:spring-boot-starter-logging" }
+spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2" }
+log4j-layout-template-json = { module = "org.apache.logging.log4j:log4j-layout-template-json" }
 spring-boot-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 
@@ -99,7 +112,11 @@ bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "boun
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-security-test = { module = "org.springframework.security:spring-security-test" }
-h2 = { module = "com.h2database:h2" }
+
+# Testcontainers (version managed by Spring Boot BOM)
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 
 # ─── Frontend – AndroidX ─────────────────────────────────────────────────────
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }

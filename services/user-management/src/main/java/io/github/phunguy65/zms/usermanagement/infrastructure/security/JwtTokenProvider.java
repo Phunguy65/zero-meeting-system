@@ -35,6 +35,9 @@ public class JwtTokenProvider implements TokenProvider {
         Instant now = Instant.now();
         Instant expiry = now.plusSeconds(accessTokenExpirySeconds);
         return Jwts.builder()
+                .header()
+                .keyId("zms-user-management")
+                .and()
                 .subject(userId.toString())
                 .claim(CLAIM_EMAIL, email)
                 .issuedAt(Date.from(now))

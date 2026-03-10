@@ -26,10 +26,12 @@ public interface UserJpaRepository extends JpaRepository<UserJpaEntity, UUID> {
 
     Optional<UserJpaEntity> findByUsernameAndDeletedAtIsNull(String username);
 
-    @Query("SELECT u FROM UserJpaEntity u WHERE u.deletedAt IS NULL "
-            + "AND (:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))) "
-            + "AND (:provider IS NULL OR u.authProvider = :provider) "
-            + "ORDER BY u.createdAt DESC")
+    @Query(
+            value = "SELECT * FROM users u WHERE u.deleted_at IS NULL "
+                    + "AND (CAST(:email AS text) IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:email AS text), '%'))) "
+                    + "AND (CAST(:provider AS text) IS NULL OR u.auth_provider = CAST(:provider AS text)) "
+                    + "ORDER BY u.created_at DESC",
+            nativeQuery = true)
     Slice<UserJpaEntity> findActiveFiltered(
             @Param("email") String email, @Param("provider") String provider, Pageable pageable);
 }

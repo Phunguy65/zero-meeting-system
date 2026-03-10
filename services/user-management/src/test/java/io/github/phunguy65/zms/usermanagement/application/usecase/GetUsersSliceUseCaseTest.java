@@ -8,12 +8,12 @@ import static org.mockito.Mockito.when;
 import io.github.phunguy65.zms.shared.domain.PageResult;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.SliceHttpResponse;
+import io.github.phunguy65.zms.usermanagement.application.dto.GetUsersRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.port.UserFilter;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
 import java.util.List;
@@ -61,7 +61,7 @@ class GetUsersSliceUseCaseTest {
         when(userRepository.findActiveUsers(anyInt(), anyInt(), any()))
                 .thenReturn(PageResult.of(users, 0, 20, false));
 
-        var result = useCase.execute(0, 20, UserFilter.empty());
+        var result = useCase.execute(new GetUsersRequest(0, 20, null, null, null));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         @SuppressWarnings("unchecked")
@@ -78,7 +78,7 @@ class GetUsersSliceUseCaseTest {
         when(userRepository.findActiveUsers(anyInt(), anyInt(), any()))
                 .thenReturn(PageResult.of(List.of(), 0, 20, false));
 
-        var result = useCase.execute(0, 20, UserFilter.empty());
+        var result = useCase.execute(new GetUsersRequest(0, 20, null, null, null));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         @SuppressWarnings("unchecked")

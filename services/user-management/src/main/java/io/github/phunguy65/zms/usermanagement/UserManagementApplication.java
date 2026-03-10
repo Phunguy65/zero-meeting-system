@@ -2,6 +2,7 @@ package io.github.phunguy65.zms.usermanagement;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(
@@ -10,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
             "io.github.phunguy65.zms.shared"
         })
 @EnableScheduling
+@EntityScan(basePackages = {"io.github.phunguy65.zms.usermanagement.infrastructure.persistence"})
 public class UserManagementApplication {
 
     public static void main(String[] args) {
