@@ -14,7 +14,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
 /**
  * Scheduled poller that reads unpublished rows from {@code outbox_event} and publishes them to
@@ -28,15 +27,12 @@ public class OutboxEventPublisher {
 
     private final OutboxEventRepository outboxEventRepository;
     private final KafkaTemplate<String, CloudEvent> kafkaTemplate;
-    private final ObjectMapper objectMapper;
 
     public OutboxEventPublisher(
             OutboxEventRepository outboxEventRepository,
-            KafkaTemplate<String, CloudEvent> kafkaTemplate,
-            ObjectMapper objectMapper) {
+            KafkaTemplate<String, CloudEvent> kafkaTemplate) {
         this.outboxEventRepository = outboxEventRepository;
         this.kafkaTemplate = kafkaTemplate;
-        this.objectMapper = objectMapper;
     }
 
     @Scheduled(fixedDelay = 1000)
@@ -67,7 +63,7 @@ public class OutboxEventPublisher {
 
             kafkaTemplate
                     .send(row.getTopic(), row.getAggregateId().toString(), cloudEvent)
-                    .get(); // block to detect failures synchronously
+                    .get();
 
             row.setPublishedAt(Instant.now());
             outboxEventRepository.save(row);
