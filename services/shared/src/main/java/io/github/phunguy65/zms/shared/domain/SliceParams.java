@@ -14,12 +14,12 @@ import java.util.Optional;
  *
  * <pre>{@code
  * public record GetUsersRequest(
- *         Integer pageParam,
- *         Integer sizeParam,
+ *         Integer page,
+ *         Integer size,
  *         String sortRaw,
  *         String email) implements SliceParams {
- *     public int page() { return pageParam; }
- *     public int size() { return sizeParam; }
+ *     public int pageNumber() { return page; }
+ *     public int pageSize() { return size; }
  *     public Optional<String> sort() { return Optional.ofNullable(sortRaw); }
  * }
  * }</pre>
@@ -29,10 +29,10 @@ import java.util.Optional;
 public interface SliceParams {
 
     /** 0-indexed page number. Must be ≥ 0. */
-    int page();
+    int pageNumber();
 
     /** Number of items per page. Must be in range [1, 100]. */
-    int size();
+    int pageSize();
 
     /**
      * Optional sort expression in the form {@code "field,direction"} (e.g. {@code "createdAt,desc"}).
@@ -42,7 +42,7 @@ public interface SliceParams {
 
     /** Derived offset for use in SQL/repository queries. */
     default long offset() {
-        return (long) page() * size();
+        return (long) pageNumber() * pageSize();
     }
 
     /**

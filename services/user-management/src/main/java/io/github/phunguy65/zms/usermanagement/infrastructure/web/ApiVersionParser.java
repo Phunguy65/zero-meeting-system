@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.shared.infrastructure.web;
+package io.github.phunguy65.zms.usermanagement.infrastructure.web;
 
 import org.springframework.web.accept.SemanticApiVersionParser;
 

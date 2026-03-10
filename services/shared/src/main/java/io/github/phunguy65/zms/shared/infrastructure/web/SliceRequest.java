@@ -52,6 +52,16 @@ public record SliceRequest(
     }
 
     @Override
+    public int pageNumber() {
+        return page;
+    }
+
+    @Override
+    public int pageSize() {
+        return size;
+    }
+
+    @Override
     public Optional<String> sort() {
         return Optional.ofNullable(sortRaw);
     }

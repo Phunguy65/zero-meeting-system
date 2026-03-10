@@ -1,5 +1,4 @@
 import com.google.protobuf.gradle.id
-import gradle.kotlin.dsl.accessors._e9cc5b3d3e0f80810f7669da3585a0d9.implementation
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.the

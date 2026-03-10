@@ -26,8 +26,8 @@ public class GetUsersSliceUseCase {
 
     @Transactional(readOnly = true)
     public Result<SliceHttpResponse<UserResponse>, AuthErrorCode> execute(GetUsersRequest request) {
-        var pageResult =
-                userRepository.findActiveUsers(request.page(), request.size(), request.toFilter());
+        var pageResult = userRepository.findActiveUsers(
+                request.pageNumber(), request.pageSize(), request.toFilter());
         var items = pageResult.items().stream().map(this::toResponse).toList();
         var response = new SliceHttpResponse<>(
                 items,

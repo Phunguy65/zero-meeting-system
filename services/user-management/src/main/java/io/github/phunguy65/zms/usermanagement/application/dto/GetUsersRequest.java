@@ -10,10 +10,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * Query parameters for the {@code GET /{version}/users} endpoint.
  *
- * <p>Implements {@link SliceParams} to carry pagination fields ({@code page}, {@code size},
+ * <p>Implements {@link SliceParams} to carry pagination fields ({@code pageNumber}, {@code pageSize},
  * {@code sort}) alongside user-specific filter fields ({@code email}, {@code authProvider}).
- * Spring MVC binds all query parameters via constructor binding – absent {@code pageParam} and
- * {@code sizeParam} default to {@code 0} and {@code 20} respectively via the compact constructor.
+ * Spring MVC binds all query parameters via constructor binding – absent {@code page} and
+ * {@code size} default to {@code 0} and {@code 20} respectively via the compact constructor.
  *
  * <p>Example request:
  *
@@ -21,15 +21,15 @@ import org.jspecify.annotations.Nullable;
  * GET /v1/users?page=0&size=20&sort=createdAt,desc&email=alice&authProvider=GOOGLE
  * }</pre>
  *
- * @param pageParam 0-indexed page number (default {@code 0})
- * @param sizeParam items per page, clamped to [1, 100] (default {@code 20})
+ * @param page 0-indexed page number (default {@code 0})
+ * @param size items per page, clamped to [1, 100] (default {@code 20})
  * @param sortRaw optional sort expression {@code "field,direction"}
  * @param email optional case-insensitive substring filter on email
  * @param authProvider optional exact-match filter on auth provider
  */
 public record GetUsersRequest(
-        @Min(0) Integer pageParam,
-        @Min(1) @Max(100) Integer sizeParam,
+        @Min(0) Integer page,
+        @Min(1) @Max(100) Integer size,
         @Nullable String sortRaw,
         @Nullable String email,
         @Nullable String authProvider)
@@ -37,19 +37,19 @@ public record GetUsersRequest(
 
     /** Compact constructor – applies defaults and enforces pagination invariants. */
     public GetUsersRequest {
-        if (pageParam == null || pageParam < 0) pageParam = 0;
-        if (sizeParam == null) sizeParam = 20;
-        sizeParam = Math.max(1, Math.min(sizeParam, 100));
+        if (page == null || page < 0) page = 0;
+        if (size == null) size = 20;
+        size = Math.max(1, Math.min(size, 100));
     }
 
     @Override
-    public int page() {
-        return pageParam;
+    public int pageNumber() {
+        return page;
     }
 
     @Override
-    public int size() {
-        return sizeParam;
+    public int pageSize() {
+        return size;
     }
 
     @Override
