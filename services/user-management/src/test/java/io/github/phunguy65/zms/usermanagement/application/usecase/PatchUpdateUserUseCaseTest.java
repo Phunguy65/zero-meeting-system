@@ -8,6 +8,7 @@ import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.PatchUserRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
+import io.github.phunguy65.zms.usermanagement.application.service.UserResponseMapper;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
@@ -44,7 +45,7 @@ class PatchUpdateUserUseCaseTest {
     void setUp() {
         useCase = new PatchUpdateUserUseCase(
                 userRepository,
-                new UserPreferencesParser(new ObjectMapper()),
+                new UserResponseMapper(new UserPreferencesParser(new ObjectMapper())),
                 eventPublisher,
                 new ObjectMapper());
     }

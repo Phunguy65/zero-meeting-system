@@ -1,11 +1,13 @@
 package io.github.phunguy65.zms.usermanagement.domain.port;
 
-import io.github.phunguy65.zms.shared.domain.PageResult;
+import io.github.phunguy65.zms.shared.domain.CursorPageResult;
+import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** Outbound port: persistence operations for the {@link User} aggregate. */
 public interface UserRepository {
@@ -37,12 +39,13 @@ public interface UserRepository {
     Optional<User> findActiveByUsername(Username username);
 
     /**
-     * Returns a paginated slice of active (non-deleted) users matching the given filter.
-     * Results are ordered by {@code createdAt} descending.
+     * Returns a keyset-scrolled page of active (non-deleted) users matching the given filter.
+     * Results are ordered by {@code (created_at DESC, id DESC)}.
      *
-     * @param page   0-indexed page number
+     * @param cursor decoded cursor from the previous page, or {@code null} for the first page
      * @param size   page size (max 100)
-     * @param filter optional filter criteria; use {@link UserFilter#empty()} for no filtering
+     * @param filter optional search filter; use {@link UserScrollFilter#empty()} for no filtering
      */
-    PageResult<User> findActiveUsers(int page, int size, UserFilter filter);
+    CursorPageResult<User> searchUsers(
+            @Nullable ScrollCursor cursor, int size, UserScrollFilter filter);
 }

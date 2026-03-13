@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.shared.infrastructure.web;
 
+import io.github.phunguy65.zms.shared.domain.ErrorCode;
 import java.util.List;
 
 /**

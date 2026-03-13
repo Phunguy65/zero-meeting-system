@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
+import io.github.phunguy65.zms.usermanagement.application.service.UserResponseMapper;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
@@ -33,7 +34,9 @@ class GetUserUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new GetUserUseCase(userRepository, new UserPreferencesParser(new ObjectMapper()));
+        useCase = new GetUserUseCase(
+                userRepository,
+                new UserResponseMapper(new UserPreferencesParser(new ObjectMapper())));
     }
 
     private User buildUser() {

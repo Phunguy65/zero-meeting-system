@@ -8,6 +8,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
 import io.github.phunguy65.zms.usermanagement.config.TestcontainersConfiguration;
 import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTokenVerifier;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,50 +136,35 @@ class UserProfileIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    // ─── 11.3 GET /users ──────────────────────────────────────────────────────
+    // ─── 11.3 GET /users:search ───────────────────────────────────────────────
 
     @Test
-    void getUsers_defaultPagination_returns200WithSlice() throws Exception {
+    void searchUsers_defaultPagination_returns200WithScrollResponse() throws Exception {
         String token = registerAndLogin(
                 "getusers-" + System.nanoTime() + "@example.com", "password123", "List User");
 
-        mockMvc.perform(get("/api/v1/users").header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/api/v1/users:search").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.data.content").isArray())
-                .andExpect(jsonPath("$.data.page").value(0))
                 .andExpect(jsonPath("$.data.size").value(20));
     }
 
     @Test
-    void getUsers_emailFilter_returnsMatchingUsers() throws Exception {
+    void searchUsers_queryFilter_returnsMatchingUsers() throws Exception {
         String unique = "filter-" + System.nanoTime();
         String token = registerAndLogin(unique + "@example.com", "password123", "Filter User");
 
-        mockMvc.perform(get("/api/v1/users")
-                        .param("email", unique)
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("query", unique)
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content[0].email").value(unique + "@example.com"));
     }
 
     @Test
-    void getUsers_authProviderFilter_returnsMatchingUsers() throws Exception {
-        String token = registerAndLogin(
-                "provider-filter-" + System.nanoTime() + "@example.com",
-                "password123",
-                "Provider Filter");
-
-        mockMvc.perform(get("/api/v1/users")
-                        .param("authProvider", "EMAIL")
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content").isArray());
-    }
-
-    @Test
-    void getUsers_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(get("/api/v1/users")).andExpect(status().isUnauthorized());
+    void searchUsers_unauthenticated_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/users:search")).andExpect(status().isUnauthorized());
     }
 
     // ─── 11.4 PATCH /users/me ─────────────────────────────────────────────────
@@ -286,13 +272,13 @@ class UserProfileIntegrationTest {
     }
 
     @Test
-    void getUsers_responseIncludesUsername() throws Exception {
+    void searchUsers_responseIncludesUsername() throws Exception {
         String username = "slice_user_" + System.nanoTime() % 10000;
         String email = "slice-un-" + System.nanoTime() + "@example.com";
         String token = registerAndLogin(email, "password123", "Slice Username", username);
 
-        mockMvc.perform(get("/api/v1/users")
-                        .param("email", email)
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("query", email)
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content[0].username").value(username));
@@ -339,5 +325,165 @@ class UserProfileIntegrationTest {
                         .content("{\"username\":\"" + takenUsername + "\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.data.code").value("USERNAME_ALREADY_EXISTS"));
+    }
+
+    // ─── 11.6 GET /users:search — cursor & pagination edge cases ─────────────
+
+    @Test
+    void searchUsers_invalidPageToken_returns400WithInvalidCursorCode() throws Exception {
+        String token = registerAndLogin(
+                "cursor-invalid-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Cursor Test");
+
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("pageToken", "not!!!valid@base64token")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_CURSOR"));
+    }
+
+    @Test
+    void searchUsers_tamperedPageToken_returns400() throws Exception {
+        String token = registerAndLogin(
+                "cursor-tamper-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Tamper Test");
+
+        String fakeToken = java.util.Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(
+                        "1700000000000:00000000-0000-0000-0000-000000000001:badhmacsig".getBytes());
+
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("pageToken", fakeToken)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_CURSOR"));
+    }
+
+    @Test
+    void searchUsers_sizeOmitted_defaultsTo20() throws Exception {
+        String token = registerAndLogin(
+                "size-default-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Size Default");
+
+        mockMvc.perform(get("/api/v1/users:search").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.size").value(20));
+    }
+
+    @Test
+    void searchUsers_sizeGreaterThan100_clampsTo100() throws Exception {
+        String token = registerAndLogin(
+                "size-clamp-" + System.nanoTime() + "@example.com", "password123", "Size Clamp");
+
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("size", "500")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.size").value(100));
+    }
+
+    @Test
+    void searchUsers_noMatchingQuery_returnsEmptyContentAndNullNextPageToken() throws Exception {
+        String token = registerAndLogin(
+                "empty-result-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Empty Result");
+
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("query", "zzz_nonexistent_user_xyz_12345_abc")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content").isEmpty())
+                .andExpect(jsonPath("$.data.nextPageToken").doesNotExist());
+    }
+
+    @Test
+    void searchUsers_queryMatchesUsername_returnsUser() throws Exception {
+        String uniquePart = "uname_" + System.nanoTime() % 100000;
+        String username = uniquePart;
+        String email = "or-search-" + System.nanoTime() + "@example.com";
+        String token = registerAndLogin(email, "password123", "OR Search User", username);
+
+        // Search by username (not email) — verifies OR logic
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("query", uniquePart)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content[0].username").value(username));
+    }
+
+    @Test
+    void searchUsers_queryMatchesEmailOrUsername_returnsBothUsers() throws Exception {
+        String sharedPart = "shared_" + System.nanoTime() % 100000;
+
+        // user1: email contains sharedPart, username does not
+        String token1 = registerAndLogin(
+                sharedPart + "@example.com",
+                "password123",
+                "User One",
+                "user1_" + System.nanoTime() % 100000);
+
+        // user2: username contains sharedPart, email does not
+        String token2 = registerAndLogin(
+                "user2-" + System.nanoTime() + "@example.com",
+                "password123",
+                "User Two",
+                sharedPart);
+
+        // Query with sharedPart should match both users (OR semantics)
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("query", sharedPart)
+                        .header("Authorization", "Bearer " + token1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content.length()")
+                        .value(Matchers.greaterThanOrEqualTo(2)));
+    }
+
+    @Test
+    void searchUsers_multiPageTraversal_fetchesConsecutivePages() throws Exception {
+        String prefix = "page_" + System.nanoTime() % 100000;
+
+        // Register 5 users with a unique prefix in their email
+        String firstToken = null;
+        for (int i = 0; i < 5; i++) {
+            String t = registerAndLogin(
+                    prefix + "_u" + i + "@example.com",
+                    "password123",
+                    "Page User " + i,
+                    prefix + "_u" + i);
+            if (i == 0) firstToken = t;
+        }
+
+        // Fetch first page with size=2 — should get 2 items + nextPageToken
+        MvcResult page1Result = mockMvc.perform(get("/api/v1/users:search")
+                        .param("query", prefix)
+                        .param("size", "2")
+                        .header("Authorization", "Bearer " + firstToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content.length()").value(2))
+                .andExpect(jsonPath("$.data.nextPageToken").isNotEmpty())
+                .andReturn();
+
+        String nextPageToken = objectMapper
+                .readTree(page1Result.getResponse().getContentAsString())
+                .at("/data/nextPageToken")
+                .asText();
+
+        // Fetch second page using the token — should get more items
+        mockMvc.perform(get("/api/v1/users:search")
+                        .param("query", prefix)
+                        .param("size", "2")
+                        .param("pageToken", nextPageToken)
+                        .header("Authorization", "Bearer " + firstToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content.length()")
+                        .value(Matchers.greaterThanOrEqualTo(1)));
     }
 }

@@ -1,16 +1,18 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.persistence;
 
-import io.github.phunguy65.zms.shared.domain.PageResult;
+import io.github.phunguy65.zms.shared.domain.CursorPageResult;
+import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.Username;
-import io.github.phunguy65.zms.usermanagement.domain.port.UserFilter;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
+import io.github.phunguy65.zms.usermanagement.domain.port.UserScrollFilter;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.PageRequest;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -75,11 +77,26 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public PageResult<User> findActiveUsers(int page, int size, UserFilter filter) {
-        var pageable = PageRequest.of(page, size);
-        var slice = jpa.findActiveFiltered(filter.emailContains(), filter.authProvider(), pageable);
-        var items = slice.getContent().stream().map(this::toDomain).toList();
-        return PageResult.of(items, page, size, slice.hasNext());
+    public CursorPageResult<User> searchUsers(
+            @Nullable ScrollCursor cursor, int size, UserScrollFilter filter) {
+        int fetchLimit = size + 1;
+
+        var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
+        var cursorId = cursor != null ? cursor.id().toString() : null;
+
+        var query = filter.hasQuery() ? escapeLike(filter.query()) : null;
+
+        List<UserJpaEntity> rows =
+                jpa.findActiveKeyset(cursorCreatedAt, cursorId, query, fetchLimit);
+
+        boolean hasNext = rows.size() > size;
+        List<User> items = rows.stream().limit(size).map(this::toDomain).toList();
+
+        return CursorPageResult.of(items, size, hasNext);
+    }
+
+    private String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
     private User toDomain(UserJpaEntity e) {

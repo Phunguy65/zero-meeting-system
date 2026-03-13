@@ -1,6 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.domain;
 
-import io.github.phunguy65.zms.shared.infrastructure.web.ErrorCode;
+import io.github.phunguy65.zms.shared.domain.ErrorCode;
 
 /**
  * Typed error codes for all authentication and user-management failures.

@@ -3,11 +3,10 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.PatchUserRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
+import io.github.phunguy65.zms.usermanagement.application.service.UserResponseMapper;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
-import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.util.UUID;
@@ -24,17 +23,17 @@ public class PatchUpdateUserUseCase {
     private static final Logger log = LoggerFactory.getLogger(PatchUpdateUserUseCase.class);
 
     private final UserRepository userRepository;
-    private final UserPreferencesParser preferencesParser;
+    private final UserResponseMapper userResponseMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
 
     public PatchUpdateUserUseCase(
             UserRepository userRepository,
-            UserPreferencesParser preferencesParser,
+            UserResponseMapper userResponseMapper,
             ApplicationEventPublisher eventPublisher,
             ObjectMapper objectMapper) {
         this.userRepository = userRepository;
-        this.preferencesParser = preferencesParser;
+        this.userResponseMapper = userResponseMapper;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
     }
@@ -53,7 +52,7 @@ public class PatchUpdateUserUseCase {
                 || dto.preferences().isPresent();
 
         if (!anyChange) {
-            return Result.success(toResponse(user));
+            return Result.success(userResponseMapper.toResponse(user));
         }
 
         Username newUsername = null;
@@ -99,19 +98,6 @@ public class PatchUpdateUserUseCase {
                 .forEach(eventPublisher::publishEvent);
         saved.clearDomainEvents();
 
-        return Result.success(toResponse(saved));
-    }
-
-    private UserResponse toResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getEmail().value(),
-                user.getFullName().value(),
-                user.getUsername().map(Username::value).orElse(null),
-                user.getAvatarUrl().orElse(null),
-                user.getAuthProvider(),
-                preferencesParser.parseAsResponse(user.getPreferences()),
-                user.getCreatedAt(),
-                user.getUpdatedAt());
+        return Result.success(userResponseMapper.toResponse(saved));
     }
 }
