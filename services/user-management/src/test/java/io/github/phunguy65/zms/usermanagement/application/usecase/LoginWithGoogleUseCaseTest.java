@@ -9,7 +9,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.GoogleLoginRequest
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.GoogleAuthClaims;
@@ -74,12 +74,12 @@ class LoginWithGoogleUseCaseTest {
     @Test
     void invalidTokenReturnsFailure() {
         when(googleAuthVerifier.verify(ID_TOKEN))
-                .thenReturn(Result.failure(AuthErrorCode.INVALID_FIREBASE_TOKEN));
+                .thenReturn(Result.failure(new AuthError.InvalidFirebaseToken()));
 
         var result = useCase.execute(new GoogleLoginRequest(ID_TOKEN));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.INVALID_FIREBASE_TOKEN);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.InvalidFirebaseToken.class);
         verifyNoInteractions(userRepository);
     }
 
@@ -184,8 +184,8 @@ class LoginWithGoogleUseCaseTest {
 
         var result = useCase.execute(new GoogleLoginRequest(ID_TOKEN));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USER_DELETED);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.UserDeleted.class);
     }
 
     @Test

@@ -6,7 +6,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserLoggedInEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
@@ -47,28 +47,28 @@ public class LoginUserUseCase {
     }
 
     @Transactional
-    public Result<LoginResponse, AuthErrorCode> execute(LoginRequest request) {
+    public Result<LoginResponse, AuthError> execute(LoginRequest request) {
         var emailVo = Email.of(request.email());
 
         var anyUser = userRepository.findByEmail(emailVo);
         if (anyUser.isPresent() && anyUser.get().isDeleted()) {
-            return Result.failure(AuthErrorCode.USER_DELETED);
+            return Result.failure(new AuthError.UserDeleted());
         }
 
         var userOpt = userRepository.findActiveByEmail(emailVo);
         if (userOpt.isEmpty()) {
-            return Result.failure(AuthErrorCode.INVALID_CREDENTIALS);
+            return Result.failure(new AuthError.InvalidCredentials());
         }
 
         var user = userOpt.get();
 
         // Guard: Google-only accounts have no password
         if (!user.hasPassword()) {
-            return Result.failure(AuthErrorCode.INVALID_CREDENTIALS);
+            return Result.failure(new AuthError.InvalidCredentials());
         }
 
         if (!passwordHasher.verify(request.password(), user.getHashedPassword().orElseThrow())) {
-            return Result.failure(AuthErrorCode.INVALID_CREDENTIALS);
+            return Result.failure(new AuthError.InvalidCredentials());
         }
 
         String accessToken =

@@ -7,7 +7,7 @@ import static org.mockito.Mockito.*;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import java.time.Instant;
@@ -47,8 +47,8 @@ class LogoutUserUseCaseTest {
 
         var result = useCase.execute(new LogoutRequest(RAW_TOKEN));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.RefreshTokenNotFound.class);
     }
 
     @Test

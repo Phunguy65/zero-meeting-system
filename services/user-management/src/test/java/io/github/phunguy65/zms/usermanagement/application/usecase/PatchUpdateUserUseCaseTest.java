@@ -9,7 +9,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.PatchUserRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.service.UserResponseMapper;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
@@ -161,8 +161,8 @@ class PatchUpdateUserUseCaseTest {
         var result = useCase.execute(USER_ID, new PatchUserRequest());
 
         assertThat(result).isInstanceOf(Result.Failure.class);
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USER_NOT_FOUND);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.UserNotFound.class);
     }
 
     @Test
@@ -219,8 +219,8 @@ class PatchUpdateUserUseCaseTest {
         var result = useCase.execute(USER_ID, dto);
 
         assertThat(result).isInstanceOf(Result.Failure.class);
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.UsernameAlreadyExists.class);
         verify(userRepository, never()).save(any());
     }
 

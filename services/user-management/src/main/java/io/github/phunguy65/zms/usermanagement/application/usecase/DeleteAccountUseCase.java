@@ -2,7 +2,7 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.DeleteAccountResponse;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
@@ -28,11 +28,11 @@ public class DeleteAccountUseCase {
     }
 
     @Transactional
-    public Result<DeleteAccountResponse, AuthErrorCode> execute(UUID userId) {
+    public Result<DeleteAccountResponse, AuthError> execute(UUID userId) {
         var userOpt = userRepository.findById(userId);
 
         if (userOpt.isEmpty()) {
-            return Result.failure(AuthErrorCode.USER_NOT_FOUND);
+            return Result.failure(new AuthError.UserNotFound());
         }
 
         var user = userOpt.get();

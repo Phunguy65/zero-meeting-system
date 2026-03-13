@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.config.TestcontainersConfiguration;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.GoogleAuthClaims;
 import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTokenVerifier;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,9 +89,7 @@ class GoogleAuthAndPreferencesIntegrationTest {
     @Test
     void googleLogin_invalidToken_returns401() throws Exception {
         when(firebaseTokenVerifier.verify(INVALID_ID_TOKEN))
-                .thenReturn(Result.failure(
-                        io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode
-                                .INVALID_FIREBASE_TOKEN));
+                .thenReturn(Result.failure(new AuthError.InvalidFirebaseToken()));
 
         mockMvc.perform(post("/api/v1/auth/google-login")
                         .contentType(MediaType.APPLICATION_JSON)

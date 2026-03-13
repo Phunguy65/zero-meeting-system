@@ -10,16 +10,15 @@ import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
 import io.github.phunguy65.zms.usermanagement.application.dto.SearchUsersRequest;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.SearchUsersUseCase;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class UserController {
+public class UserController extends BaseController {
 
     private final GetUserUseCase getUserUseCase;
     private final SearchUsersUseCase searchUsersUseCase;
@@ -36,14 +35,10 @@ public class UserController {
 
     @GetMapping(value = "/{version}/users/{id}", version = "1.0")
     public ResponseEntity<JsendResponse<?>> getUserById(@PathVariable UUID id) {
-        var result = getUserUseCase.execute(id);
-        return switch (result) {
-            case Result.Success<?, AuthErrorCode> s ->
+        return switch (getUserUseCase.execute(id)) {
+            case Result.Success<?, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, AuthErrorCode> f ->
-                ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(JsendResponse.fail(
-                                new FailData(f.error().name(), f.error(), List.of())));
+            case Result.Failure<?, AuthError> f -> errorResponse(f.error());
         };
     }
 

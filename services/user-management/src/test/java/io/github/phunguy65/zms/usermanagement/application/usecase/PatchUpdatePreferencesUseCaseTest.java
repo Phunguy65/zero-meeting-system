@@ -8,7 +8,7 @@ import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.PatchPreferencesRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -143,7 +143,7 @@ class PatchUpdatePreferencesUseCaseTest {
         var result = useCase.execute(USER_ID, new PatchPreferencesRequest());
 
         assertThat(result).isInstanceOf(Result.Failure.class);
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USER_NOT_FOUND);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.UserNotFound.class);
     }
 }

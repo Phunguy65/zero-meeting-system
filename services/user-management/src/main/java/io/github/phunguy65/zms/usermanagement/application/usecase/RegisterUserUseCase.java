@@ -3,7 +3,7 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterResponse;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
@@ -32,17 +32,17 @@ public class RegisterUserUseCase {
     }
 
     @Transactional
-    public Result<RegisterResponse, AuthErrorCode> execute(RegisterRequest request) {
+    public Result<RegisterResponse, AuthError> execute(RegisterRequest request) {
         Email email = Email.of(request.email());
 
         if (userRepository.existsActiveByEmail(email)) {
-            return Result.failure(AuthErrorCode.EMAIL_ALREADY_EXISTS);
+            return Result.failure(new AuthError.EmailAlreadyExists());
         }
 
         Username username = Username.of(request.username());
 
         if (userRepository.existsActiveByUsername(username)) {
-            return Result.failure(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+            return Result.failure(new AuthError.UsernameAlreadyExists());
         }
 
         var hashedPassword = passwordHasher.hash(request.password());

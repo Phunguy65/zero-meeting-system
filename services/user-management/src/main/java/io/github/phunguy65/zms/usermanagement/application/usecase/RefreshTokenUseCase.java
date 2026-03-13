@@ -5,7 +5,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
@@ -40,23 +40,23 @@ public class RefreshTokenUseCase {
     }
 
     @Transactional
-    public Result<LoginResponse, AuthErrorCode> execute(RefreshTokenRequest request) {
+    public Result<LoginResponse, AuthError> execute(RefreshTokenRequest request) {
         String tokenHash = refreshTokenIssuer.hash(request.refreshToken());
 
         var tokenOpt = refreshTokenRepository.findByTokenHash(tokenHash);
         if (tokenOpt.isEmpty()) {
-            return Result.failure(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+            return Result.failure(new AuthError.RefreshTokenNotFound());
         }
 
         RefreshToken token = tokenOpt.get();
 
         if (token.isRevoked()) {
             refreshTokenRepository.revokeAllByUserId(token.getUserId());
-            return Result.failure(AuthErrorCode.REFRESH_TOKEN_REUSE_DETECTED);
+            return Result.failure(new AuthError.RefreshTokenReuseDetected());
         }
 
         if (token.isExpired()) {
-            return Result.failure(AuthErrorCode.REFRESH_TOKEN_EXPIRED);
+            return Result.failure(new AuthError.RefreshTokenExpired());
         }
 
         token.revoke();
@@ -64,7 +64,7 @@ public class RefreshTokenUseCase {
 
         var userOpt = userRepository.findById(token.getUserId());
         if (userOpt.isEmpty()) {
-            return Result.failure(AuthErrorCode.USER_NOT_FOUND);
+            return Result.failure(new AuthError.UserNotFound());
         }
         var user = userOpt.get();
 

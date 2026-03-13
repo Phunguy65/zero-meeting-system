@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -61,8 +61,8 @@ class RegisterUserUseCaseTest {
         var result = useCase.execute(request);
 
         assertThat(result).isInstanceOf(Result.Failure.class);
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.EMAIL_ALREADY_EXISTS);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.EmailAlreadyExists.class);
         verify(passwordHasher, never()).hash(any());
     }
 
@@ -76,8 +76,8 @@ class RegisterUserUseCaseTest {
         var result = useCase.execute(request);
 
         assertThat(result).isInstanceOf(Result.Failure.class);
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.UsernameAlreadyExists.class);
         verify(passwordHasher, never()).hash(any());
     }
 

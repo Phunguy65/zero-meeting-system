@@ -4,7 +4,7 @@ import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.PatchUserRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserResponseMapper;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.Username;
@@ -39,10 +39,10 @@ public class PatchUpdateUserUseCase {
     }
 
     @Transactional
-    public Result<UserResponse, AuthErrorCode> execute(UUID userId, PatchUserRequest dto) {
+    public Result<UserResponse, AuthError> execute(UUID userId, PatchUserRequest dto) {
         var userOpt = userRepository.findActiveById(userId);
         if (userOpt.isEmpty()) {
-            return Result.failure(AuthErrorCode.USER_NOT_FOUND);
+            return Result.failure(new AuthError.UserNotFound());
         }
         var user = userOpt.get();
 
@@ -64,7 +64,7 @@ public class PatchUpdateUserUseCase {
                         .map(u -> u.value().equals(candidateUsername.value()))
                         .orElse(false);
                 if (!isSameAsCurrent && userRepository.existsActiveByUsername(candidateUsername)) {
-                    return Result.failure(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+                    return Result.failure(new AuthError.UsernameAlreadyExists());
                 }
                 newUsername = candidateUsername;
             }
@@ -86,7 +86,7 @@ public class PatchUpdateUserUseCase {
                 user.updatePreferences(json);
             } catch (Exception e) {
                 log.error("Failed to serialise preferences for user {}", userId, e);
-                return Result.failure(AuthErrorCode.PREFERENCES_SERIALIZATION_ERROR);
+                return Result.failure(new AuthError.PreferencesSerializationError());
             }
         }
 

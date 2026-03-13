@@ -4,7 +4,7 @@ import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.dto.PatchPreferencesRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,11 +34,11 @@ public class PatchUpdatePreferencesUseCase {
     }
 
     @Transactional
-    public Result<UserPreferencesResponse, AuthErrorCode> execute(
+    public Result<UserPreferencesResponse, AuthError> execute(
             UUID userId, PatchPreferencesRequest dto) {
         var userOpt = userRepository.findActiveById(userId);
         if (userOpt.isEmpty()) {
-            return Result.failure(AuthErrorCode.USER_NOT_FOUND);
+            return Result.failure(new AuthError.UserNotFound());
         }
         var user = userOpt.get();
 
@@ -62,7 +62,7 @@ public class PatchUpdatePreferencesUseCase {
             userRepository.save(user);
         } catch (Exception e) {
             log.error("Failed to serialise preferences for user {}", userId, e);
-            return Result.failure(AuthErrorCode.USER_NOT_FOUND);
+            return Result.failure(new AuthError.PreferencesSerializationError());
         }
 
         return Result.success(new UserPreferencesResponse(current));

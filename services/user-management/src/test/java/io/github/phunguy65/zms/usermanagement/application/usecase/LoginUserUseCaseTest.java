@@ -9,7 +9,7 @@ import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
@@ -108,19 +108,15 @@ class LoginUserUseCaseTest {
 
         var result = useCase.execute(new LoginRequest("alice@example.com", "wrong"));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.INVALID_CREDENTIALS);
-    }
-
-    @Test
-    void unknownEmailReturnsInvalidCredentials() {
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.InvalidCredentials.class);
         when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
         when(userRepository.findActiveByEmail(any())).thenReturn(Optional.empty());
 
-        var result = useCase.execute(new LoginRequest("nobody@example.com", "pass"));
+        result = useCase.execute(new LoginRequest("nobody@example.com", "pass"));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.INVALID_CREDENTIALS);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.InvalidCredentials.class);
     }
 
     @Test
@@ -166,8 +162,8 @@ class LoginUserUseCaseTest {
 
         var result = useCase.execute(new LoginRequest("google@example.com", "anypassword"));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.INVALID_CREDENTIALS);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.InvalidCredentials.class);
         verify(passwordHasher, never()).verify(any(), any());
     }
 }
