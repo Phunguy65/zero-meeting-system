@@ -1,8 +1,8 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
-import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
+import io.github.phunguy65.zms.usermanagement.application.command.RefreshTokenCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
@@ -40,8 +40,8 @@ public class RefreshTokenUseCase {
     }
 
     @Transactional
-    public Result<LoginResponse, AuthError> execute(RefreshTokenRequest request) {
-        String tokenHash = refreshTokenIssuer.hash(request.refreshToken());
+    public Result<LoginResponse, AuthError> execute(RefreshTokenCommand command) {
+        String tokenHash = refreshTokenIssuer.hash(command.refreshToken());
 
         var tokenOpt = refreshTokenRepository.findByTokenHash(tokenHash);
         if (tokenOpt.isEmpty()) {

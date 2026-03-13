@@ -1,5 +1,6 @@
-package io.github.phunguy65.zms.usermanagement.application.dto;
+package io.github.phunguy65.zms.usermanagement.presentation.request;
 
+import io.github.phunguy65.zms.usermanagement.application.command.PatchPreferencesCommand;
 import java.util.Map;
 import org.openapitools.jackson.nullable.JsonNullable;
 
@@ -10,11 +11,11 @@ import org.openapitools.jackson.nullable.JsonNullable;
  */
 public record PatchPreferencesRequest(JsonNullable<Map<String, Object>> settings) {
 
-    public PatchPreferencesRequest {
-        if (settings == null) settings = JsonNullable.undefined();
-    }
-
     public PatchPreferencesRequest() {
         this(JsonNullable.undefined());
+    }
+
+    public PatchPreferencesCommand toCommand() {
+        return new PatchPreferencesCommand(settings);
     }
 }

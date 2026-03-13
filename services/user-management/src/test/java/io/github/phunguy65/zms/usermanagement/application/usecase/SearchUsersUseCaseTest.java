@@ -7,9 +7,8 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 import io.github.phunguy65.zms.shared.domain.CursorPageResult;
-import io.github.phunguy65.zms.usermanagement.application.dto.SearchUsersRequest;
+import io.github.phunguy65.zms.usermanagement.application.command.SearchUsersQuery;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.application.service.UserResponseMapper;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -35,8 +34,7 @@ class SearchUsersUseCaseTest {
     @BeforeEach
     void setUp() {
         var preferencesParser = new UserPreferencesParser(new ObjectMapper());
-        var userResponseMapper = new UserResponseMapper(preferencesParser);
-        useCase = new SearchUsersUseCase(userRepository, userResponseMapper);
+        useCase = new SearchUsersUseCase(userRepository, preferencesParser);
     }
 
     private User buildUser(String email) {
@@ -61,7 +59,7 @@ class SearchUsersUseCaseTest {
         when(userRepository.searchUsers(isNull(), anyInt(), any()))
                 .thenReturn(CursorPageResult.of(users, 20, false));
 
-        var result = useCase.execute(new SearchUsersRequest(20, null, null), null);
+        var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);
 
         assertThat(result.items()).hasSize(2);
         assertThat(result.pageSize()).isEqualTo(20);
@@ -74,7 +72,7 @@ class SearchUsersUseCaseTest {
         when(userRepository.searchUsers(isNull(), anyInt(), any()))
                 .thenReturn(CursorPageResult.of(users, 20, true));
 
-        var result = useCase.execute(new SearchUsersRequest(20, null, null), null);
+        var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);
 
         assertThat(result.hasNext()).isTrue();
         assertThat(result.items()).hasSize(2);
@@ -85,7 +83,7 @@ class SearchUsersUseCaseTest {
         when(userRepository.searchUsers(isNull(), anyInt(), any()))
                 .thenReturn(CursorPageResult.empty(20));
 
-        var result = useCase.execute(new SearchUsersRequest(20, null, null), null);
+        var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);
 
         assertThat(result.items()).isEmpty();
         assertThat(result.hasNext()).isFalse();

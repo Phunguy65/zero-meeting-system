@@ -1,7 +1,7 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.DeleteAccountResponse;
+import io.github.phunguy65.zms.usermanagement.application.response.DeleteAccountResponse;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;

@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.LoginCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
@@ -91,7 +91,7 @@ class LoginUserUseCaseTest {
         when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
         when(refreshTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var result = useCase.execute(new LoginRequest("alice@example.com", "password123"));
+        var result = useCase.execute(new LoginCommand("alice@example.com", "password123"));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var response = (LoginResponse) ((Result.Success<?, ?>) result).value();
@@ -106,14 +106,14 @@ class LoginUserUseCaseTest {
         when(userRepository.findActiveByEmail(any())).thenReturn(Optional.of(testUser));
         when(passwordHasher.verify(any(), any())).thenReturn(false);
 
-        var result = useCase.execute(new LoginRequest("alice@example.com", "wrong"));
+        var result = useCase.execute(new LoginCommand("alice@example.com", "wrong"));
 
         assertThat(((Result.Failure<?, AuthError>) result).error())
                 .isInstanceOf(AuthError.InvalidCredentials.class);
         when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
         when(userRepository.findActiveByEmail(any())).thenReturn(Optional.empty());
 
-        result = useCase.execute(new LoginRequest("nobody@example.com", "pass"));
+        result = useCase.execute(new LoginCommand("nobody@example.com", "pass"));
 
         assertThat(((Result.Failure<?, AuthError>) result).error())
                 .isInstanceOf(AuthError.InvalidCredentials.class);
@@ -128,7 +128,7 @@ class LoginUserUseCaseTest {
         when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
         when(refreshTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var result = useCase.execute(new LoginRequest("alice@example.com", "password123"));
+        var result = useCase.execute(new LoginCommand("alice@example.com", "password123"));
         var response = (LoginResponse) ((Result.Success<?, ?>) result).value();
 
         // The raw token returned to client should NOT equal the stored hash
@@ -160,7 +160,7 @@ class LoginUserUseCaseTest {
         when(userRepository.findActiveByEmail(Email.of("google@example.com")))
                 .thenReturn(Optional.of(googleUser));
 
-        var result = useCase.execute(new LoginRequest("google@example.com", "anypassword"));
+        var result = useCase.execute(new LoginCommand("google@example.com", "anypassword"));
 
         assertThat(((Result.Failure<?, AuthError>) result).error())
                 .isInstanceOf(AuthError.InvalidCredentials.class);

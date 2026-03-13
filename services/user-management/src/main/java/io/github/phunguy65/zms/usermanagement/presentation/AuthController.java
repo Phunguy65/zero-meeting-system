@@ -2,17 +2,17 @@ package io.github.phunguy65.zms.usermanagement.presentation;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
-import io.github.phunguy65.zms.usermanagement.application.dto.GoogleLoginRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LoginUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LoginWithGoogleUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.LogoutUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.RefreshTokenUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.RegisterUserUseCase;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
+import io.github.phunguy65.zms.usermanagement.presentation.request.GoogleLoginRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.LoginRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.LogoutRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.RefreshTokenRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.RegisterRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +42,7 @@ public class AuthController extends BaseController {
 
     @PostMapping(value = "/{version}/auth/register", version = "1.0")
     public ResponseEntity<JsendResponse<?>> register(@Valid @RequestBody RegisterRequest request) {
-        return switch (registerUserUseCase.execute(request)) {
+        return switch (registerUserUseCase.execute(request.toCommand())) {
             case Result.Success<?, AuthError> s ->
                 ResponseEntity.status(HttpStatus.CREATED).body(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthError> f -> errorResponse(f.error());
@@ -51,7 +51,7 @@ public class AuthController extends BaseController {
 
     @PostMapping(value = "/{version}/auth/login", version = "1.0")
     public ResponseEntity<JsendResponse<?>> login(@Valid @RequestBody LoginRequest request) {
-        return switch (loginUserUseCase.execute(request)) {
+        return switch (loginUserUseCase.execute(request.toCommand())) {
             case Result.Success<?, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthError> f -> errorResponse(f.error());
@@ -61,7 +61,7 @@ public class AuthController extends BaseController {
     @PostMapping(value = "/{version}/auth/refresh", version = "1.0")
     public ResponseEntity<JsendResponse<?>> refresh(
             @Valid @RequestBody RefreshTokenRequest request) {
-        return switch (refreshTokenUseCase.execute(request)) {
+        return switch (refreshTokenUseCase.execute(request.toCommand())) {
             case Result.Success<?, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthError> f -> errorResponse(f.error());
@@ -70,7 +70,7 @@ public class AuthController extends BaseController {
 
     @PostMapping(value = "/{version}/auth/logout", version = "1.0")
     public ResponseEntity<JsendResponse<?>> logout(@Valid @RequestBody LogoutRequest request) {
-        return switch (logoutUserUseCase.execute(request)) {
+        return switch (logoutUserUseCase.execute(request.toCommand())) {
             case Result.Success<?, AuthError> _ -> ResponseEntity.ok(JsendResponse.success());
             case Result.Failure<?, AuthError> f -> errorResponse(f.error());
         };
@@ -79,7 +79,7 @@ public class AuthController extends BaseController {
     @PostMapping(value = "/{version}/auth/google-login", version = "1.0")
     public ResponseEntity<JsendResponse<?>> googleLogin(
             @Valid @RequestBody GoogleLoginRequest request) {
-        return switch (loginWithGoogleUseCase.execute(request)) {
+        return switch (loginWithGoogleUseCase.execute(request.toCommand())) {
             case Result.Success<?, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthError> f -> errorResponse(f.error());

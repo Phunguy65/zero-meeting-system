@@ -5,10 +5,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.PatchUserRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.PatchUserCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.application.service.UserResponseMapper;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
@@ -45,7 +44,7 @@ class PatchUpdateUserUseCaseTest {
     void setUp() {
         useCase = new PatchUpdateUserUseCase(
                 userRepository,
-                new UserResponseMapper(new UserPreferencesParser(new ObjectMapper())),
+                new UserPreferencesParser(new ObjectMapper()),
                 eventPublisher,
                 new ObjectMapper());
     }
@@ -71,8 +70,12 @@ class PatchUpdateUserUseCaseTest {
         var user = buildUser(null);
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
 
-        var dto = new PatchUserRequest();
-        var result = useCase.execute(USER_ID, dto);
+        var cmd = new PatchUserCommand(
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.undefined(),
+                JsonNullable.undefined());
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         verify(userRepository, never()).save(any());
@@ -85,12 +88,12 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchUserRequest(
+        var cmd = new PatchUserCommand(
                 JsonNullable.of("New Name"),
                 JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.undefined());
-        var result = useCase.execute(USER_ID, dto);
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var response = (UserResponse) ((Result.Success<?, ?>) result).value();
@@ -104,12 +107,12 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchUserRequest(
+        var cmd = new PatchUserCommand(
                 JsonNullable.undefined(),
                 JsonNullable.of(null),
                 JsonNullable.undefined(),
                 JsonNullable.undefined());
-        var result = useCase.execute(USER_ID, dto);
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var response = (UserResponse) ((Result.Success<?, ?>) result).value();
@@ -124,12 +127,12 @@ class PatchUpdateUserUseCaseTest {
 
         var prefs = java.util.Map.<String, Object>of(
                 "theme", "dark", "defaultMic", false, "defaultCamera", true);
-        var dto = new PatchUserRequest(
+        var cmd = new PatchUserCommand(
                 JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.of(prefs));
-        var result = useCase.execute(USER_ID, dto);
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         verify(userRepository).save(any(User.class));
@@ -141,12 +144,12 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchUserRequest(
+        var cmd = new PatchUserCommand(
                 JsonNullable.of("Alice Updated"),
                 JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.undefined());
-        useCase.execute(USER_ID, dto);
+        useCase.execute(USER_ID, cmd);
 
         // Verify save was called but preferences were not changed (still null)
         var captor = ArgumentCaptor.forClass(User.class);
@@ -158,7 +161,13 @@ class PatchUpdateUserUseCaseTest {
     void execute_userNotFound_returnsFailure() {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.empty());
 
-        var result = useCase.execute(USER_ID, new PatchUserRequest());
+        var result = useCase.execute(
+                USER_ID,
+                new PatchUserCommand(
+                        JsonNullable.undefined(),
+                        JsonNullable.undefined(),
+                        JsonNullable.undefined(),
+                        JsonNullable.undefined()));
 
         assertThat(result).isInstanceOf(Result.Failure.class);
         assertThat(((Result.Failure<?, AuthError>) result).error())
@@ -171,12 +180,12 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchUserRequest(
+        var cmd = new PatchUserCommand(
                 JsonNullable.of("Updated Name"),
                 JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.undefined());
-        useCase.execute(USER_ID, dto);
+        useCase.execute(USER_ID, cmd);
 
         var captor = ArgumentCaptor.forClass(Object.class);
         verify(eventPublisher).publishEvent(captor.capture());
@@ -193,12 +202,12 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.existsActiveByUsername(any())).thenReturn(false);
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchUserRequest(
+        var cmd = new PatchUserCommand(
                 JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.of("new_username"),
                 JsonNullable.undefined());
-        var result = useCase.execute(USER_ID, dto);
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var response = (UserResponse) ((Result.Success<?, ?>) result).value();
@@ -211,12 +220,12 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.existsActiveByUsername(any())).thenReturn(true);
 
-        var dto = new PatchUserRequest(
+        var cmd = new PatchUserCommand(
                 JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.of("taken_user"),
                 JsonNullable.undefined());
-        var result = useCase.execute(USER_ID, dto);
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Failure.class);
         assertThat(((Result.Failure<?, AuthError>) result).error())
@@ -243,12 +252,12 @@ class PatchUpdateUserUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchUserRequest(
+        var cmd = new PatchUserCommand(
                 JsonNullable.undefined(),
                 JsonNullable.undefined(),
                 JsonNullable.of("alice_user"), // same as current
                 JsonNullable.undefined());
-        var result = useCase.execute(USER_ID, dto);
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         // existsActiveByUsername should NOT be called (same username skips check)

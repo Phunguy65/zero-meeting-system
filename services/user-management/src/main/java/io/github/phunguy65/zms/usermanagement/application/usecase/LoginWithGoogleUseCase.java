@@ -1,8 +1,8 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.GoogleLoginRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.GoogleLoginCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
@@ -48,8 +48,8 @@ public class LoginWithGoogleUseCase {
     }
 
     @Transactional
-    public Result<LoginResponse, AuthError> execute(GoogleLoginRequest request) {
-        var verifyResult = googleAuthVerifier.verify(request.idToken());
+    public Result<LoginResponse, AuthError> execute(GoogleLoginCommand command) {
+        var verifyResult = googleAuthVerifier.verify(command.idToken());
         if (verifyResult instanceof Result.Failure<?, AuthError> f) {
             return Result.failure(f.error());
         }

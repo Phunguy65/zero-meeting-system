@@ -7,10 +7,10 @@ import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.infrastructure.web.CursorScrollResponse;
 import io.github.phunguy65.zms.shared.infrastructure.web.FailData;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
-import io.github.phunguy65.zms.usermanagement.application.dto.SearchUsersRequest;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.SearchUsersUseCase;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
+import io.github.phunguy65.zms.usermanagement.presentation.request.SearchUsersRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -61,7 +61,7 @@ public class UserController extends BaseController {
 
     private ResponseEntity<JsendResponse<?>> executeSearch(
             SearchUsersRequest request, ScrollCursor cursor) {
-        var pageResult = searchUsersUseCase.execute(request, cursor);
+        var pageResult = searchUsersUseCase.execute(request.toQuery(), cursor);
 
         String nextPageToken = null;
         if (pageResult.hasNext() && !pageResult.items().isEmpty()) {

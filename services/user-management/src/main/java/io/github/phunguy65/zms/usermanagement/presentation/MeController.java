@@ -2,14 +2,14 @@ package io.github.phunguy65.zms.usermanagement.presentation;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
-import io.github.phunguy65.zms.usermanagement.application.dto.PatchPreferencesRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.PatchUserRequest;
 import io.github.phunguy65.zms.usermanagement.application.usecase.DeleteAccountUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserPreferencesUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.PatchUpdatePreferencesUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.PatchUpdateUserUseCase;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
+import io.github.phunguy65.zms.usermanagement.presentation.request.PatchPreferencesRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.PatchUserRequest;
 import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
@@ -60,7 +60,7 @@ public class MeController extends BaseController {
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
-        return switch (patchUpdateUserUseCase.execute(userId, dto)) {
+        return switch (patchUpdateUserUseCase.execute(userId, dto.toCommand())) {
             case Result.Success<?, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthError> f -> errorResponse(f.error());
@@ -88,7 +88,7 @@ public class MeController extends BaseController {
             return errorResponse(new AuthError.InvalidCredentials());
         }
         var dto = new PatchPreferencesRequest(JsonNullable.of(body));
-        return switch (patchUpdatePreferencesUseCase.execute(userId, dto)) {
+        return switch (patchUpdatePreferencesUseCase.execute(userId, dto.toCommand())) {
             case Result.Success<?, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthError> f -> errorResponse(f.error());

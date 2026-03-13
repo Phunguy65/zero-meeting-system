@@ -4,10 +4,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
 import io.github.phunguy65.zms.usermanagement.config.TestcontainersConfiguration;
 import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTokenVerifier;
+import io.github.phunguy65.zms.usermanagement.presentation.request.LoginRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.RegisterRequest;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

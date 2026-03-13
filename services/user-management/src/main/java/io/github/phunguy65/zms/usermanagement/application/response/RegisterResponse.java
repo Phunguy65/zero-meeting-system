@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.usermanagement.application.dto;
+package io.github.phunguy65.zms.usermanagement.application.response;
 
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;

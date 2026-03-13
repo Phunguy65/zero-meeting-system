@@ -2,8 +2,8 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.LoginCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
@@ -47,8 +47,8 @@ public class LoginUserUseCase {
     }
 
     @Transactional
-    public Result<LoginResponse, AuthError> execute(LoginRequest request) {
-        var emailVo = Email.of(request.email());
+    public Result<LoginResponse, AuthError> execute(LoginCommand command) {
+        var emailVo = Email.of(command.email());
 
         var anyUser = userRepository.findByEmail(emailVo);
         if (anyUser.isPresent() && anyUser.get().isDeleted()) {
@@ -67,7 +67,7 @@ public class LoginUserUseCase {
             return Result.failure(new AuthError.InvalidCredentials());
         }
 
-        if (!passwordHasher.verify(request.password(), user.getHashedPassword().orElseThrow())) {
+        if (!passwordHasher.verify(command.password(), user.getHashedPassword().orElseThrow())) {
             return Result.failure(new AuthError.InvalidCredentials());
         }
 

@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.usermanagement.application.dto;
+package io.github.phunguy65.zms.usermanagement.application.response;
 
 public record LoginResponse(
         String accessToken,

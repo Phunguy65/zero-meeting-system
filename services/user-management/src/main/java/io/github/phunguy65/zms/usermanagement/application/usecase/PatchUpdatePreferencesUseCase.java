@@ -1,8 +1,8 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.PatchPreferencesRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.PatchPreferencesCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
@@ -35,18 +35,18 @@ public class PatchUpdatePreferencesUseCase {
 
     @Transactional
     public Result<UserPreferencesResponse, AuthError> execute(
-            UUID userId, PatchPreferencesRequest dto) {
+            UUID userId, PatchPreferencesCommand command) {
         var userOpt = userRepository.findActiveById(userId);
         if (userOpt.isEmpty()) {
             return Result.failure(new AuthError.UserNotFound());
         }
         var user = userOpt.get();
 
-        if (!dto.settings().isPresent()) {
+        if (!command.settings().isPresent()) {
             return Result.success(preferencesParser.parseAsResponse(user.getPreferences()));
         }
 
-        Map<String, Object> patch = dto.settings().get();
+        Map<String, Object> patch = command.settings().get();
 
         Map<String, Object> current = new HashMap<>(
                 preferencesParser.parseAsResponse(user.getPreferences()).settings());
