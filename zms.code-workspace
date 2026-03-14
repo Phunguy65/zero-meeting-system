@@ -4,6 +4,9 @@
 			"path": "."
 		},
 		{
+			"path": "services/shared"
+		},
+		{
 			"path": "services/user-management"
 		},
 		{

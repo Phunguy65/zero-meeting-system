@@ -16,6 +16,7 @@ uuidCreator = "6.1.1"
 cloudevents = "4.0.1"
 palantirJavaFormat = "2.88.0"
 testcontainers = "1.21.4"
+archunit = "1.4.1"
 protoBuf = "0.9.6"
 protoc = "4.34.0"
 protocGenGrpcJava = "1.79.0"
@@ -117,6 +118,9 @@ spring-boot-starter-security-test = { module = "org.springframework.security:spr
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+
+# ArchUnit
+archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 
 # ─── Frontend – AndroidX ─────────────────────────────────────────────────────
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }

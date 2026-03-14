@@ -23,6 +23,7 @@ rules:
           java/io/github/phunguy65/zms/{service-name}/
             domain/
               model/          # Aggregates (extends AggregateRoot<UUID>) & Value Objects (records implementing ValueObject)
+                valueobject/     # Subpackage for Value Objects (e.g. Email, Password, etc.)
               port/           # Outbound port interfaces (Repository, PasswordHasher, TokenProvider, external service contracts)
               event/          # Domain events (implements PublishableEvent for Kafka-publishable events, or DomainEvent for internal)
               {Feature}Error.java      # Sealed interface with error records (domain errors, used in Result<T, {Feature}Error>)
@@ -33,7 +34,6 @@ rules:
               usecase/        # Use cases (@Service, @Transactional), return Result<T, {Feature}Error>
               command/        # Command records (input DTOs, no validation — validation happens at presentation boundary)
               response/       # Response records (output DTOs)
-              service/        # Application services: reusable logic shared across use cases (e.g. token issuance, JSON parsing)
             infrastructure/
               persistence/    # {Entity}JpaEntity, {Entity}JpaRepository, {Entity}RepositoryAdapter (implements domain port)
                               # OutboxEventEntity + OutboxEventRepository for transactional outbox pattern
