@@ -1,12 +1,12 @@
-package io.github.phunguy65.zms.meetingmanagement;
+package io.github.phunguy65.zms.chatmanagement;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MeetingManagementApplication {
+public class ChatManagementApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MeetingManagementApplication.class, args);
+        SpringApplication.run(ChatManagementApplication.class, args);
     }
 }

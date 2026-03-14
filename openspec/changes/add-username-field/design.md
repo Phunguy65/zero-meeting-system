@@ -127,7 +127,9 @@ handle.
 **Quyết định**: Tạo `Username` record implementing `ValueObject`, validate trong
 compact constructor.
 
-**Pattern** (consistent với `Email`, `FullName`):
+**Pattern** (consistent với
+`io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email`,
+`io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName`):
 
 - Regex: `^[a-zA-Z0-9_-]{3,30}$`
 - Throws `IllegalArgumentException` nếu invalid

@@ -10,4 +10,10 @@ description = "meeting-management"
 
 dependencies {
     implementation(libs.shared)
+    implementation(libs.uuid.creator)
+    implementation(libs.spring.boot.starter.flyway)
+    implementation(libs.cloudevents.kafka)
+    implementation(libs.jackson.databind.nullable)
+    runtimeOnly(libs.flyway.database.postgresql)
+    testImplementation(testFixtures(libs.shared))
 }

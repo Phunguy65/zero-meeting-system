@@ -129,9 +129,10 @@ are already handled. No new secret-management infrastructure needed.
   call to Google on first use (then caches public keys). If Firebase is
   unreachable, Google logins fail. Mitigation: return `503` with a clear error
   code; email/password login is unaffected.
-- **Email collision edge case** → Two users could theoretically register with
-  the same email via different providers in a race. Mitigation: `email` column
-  has a `UNIQUE` constraint; the second insert will fail with a DB constraint
+- **io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email
+  collision edge case** → Two users could theoretically register with the same
+  email via different providers in a race. Mitigation: `email` column has a
+  `UNIQUE` constraint; the second insert will fail with a DB constraint
   violation, which the use case catches and maps to `EMAIL_ALREADY_EXISTS`.
 - **`password_hash` nullable migration** → Existing rows all have non-null
   hashes, so the `ALTER COLUMN` is safe. `LoginUserUseCase` must null-check

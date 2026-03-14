@@ -28,7 +28,7 @@
 ## 4. Domain — User Aggregate
 
 - [x] 4.1 Add
-      `updateProfile(@Nullable FullName fullName, @Nullable String avatarUrl)`
+      `updateProfile(@Nullable io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName fullName, @Nullable String avatarUrl)`
       method to `User`: apply non-null args, update `updatedAt`, call
       `registerEvent(new     UserUpdatedEvent(...))` with current state after
       mutation

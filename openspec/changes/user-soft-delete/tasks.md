@@ -33,7 +33,9 @@
       `UserJpaRepository` (replaces `existsByEmail`)
 - [x] 3.6 Add `findByIdAndDeletedAtIsNull(UUID id)` to `UserJpaRepository`
 - [x] 3.7 Update `UserRepository` port interface: add `findActiveById(UUID id)`
-      and `findActiveByEmail(Email email)` methods
+      and
+      `findActiveByEmail(io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email email)`
+      methods
 - [x] 3.8 Update `UserRepositoryAdapter` to implement new port methods using the
       new JPA queries
 
