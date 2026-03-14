@@ -5,11 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.GoogleLoginRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.GoogleLoginCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.GoogleAuthClaims;
@@ -74,12 +74,12 @@ class LoginWithGoogleUseCaseTest {
     @Test
     void invalidTokenReturnsFailure() {
         when(googleAuthVerifier.verify(ID_TOKEN))
-                .thenReturn(Result.failure(AuthErrorCode.INVALID_FIREBASE_TOKEN));
+                .thenReturn(Result.failure(new AuthError.InvalidFirebaseToken()));
 
-        var result = useCase.execute(new GoogleLoginRequest(ID_TOKEN));
+        var result = useCase.execute(new GoogleLoginCommand(ID_TOKEN));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.INVALID_FIREBASE_TOKEN);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.InvalidFirebaseToken.class);
         verifyNoInteractions(userRepository);
     }
 
@@ -94,7 +94,7 @@ class LoginWithGoogleUseCaseTest {
         when(tokenProvider.generateAccessToken(any(), any())).thenReturn("access.token");
         when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
 
-        var result = useCase.execute(new GoogleLoginRequest(ID_TOKEN));
+        var result = useCase.execute(new GoogleLoginCommand(ID_TOKEN));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var response = (LoginResponse) ((Result.Success<?, ?>) result).value();
@@ -126,7 +126,7 @@ class LoginWithGoogleUseCaseTest {
         when(tokenProvider.generateAccessToken(any(), any())).thenReturn("access.token");
         when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
 
-        var result = useCase.execute(new GoogleLoginRequest(ID_TOKEN));
+        var result = useCase.execute(new GoogleLoginCommand(ID_TOKEN));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         verify(userRepository, never()).save(any());
@@ -156,7 +156,7 @@ class LoginWithGoogleUseCaseTest {
         when(tokenProvider.generateAccessToken(any(), any())).thenReturn("access.token");
         when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
 
-        var result = useCase.execute(new GoogleLoginRequest(ID_TOKEN));
+        var result = useCase.execute(new GoogleLoginCommand(ID_TOKEN));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         verify(userRepository).save(argThat(u -> "BOTH".equals(u.getAuthProvider())));
@@ -182,10 +182,10 @@ class LoginWithGoogleUseCaseTest {
         when(userRepository.findActiveByGoogleUid(GOOGLE_UID)).thenReturn(Optional.empty());
         when(userRepository.findByEmail(Email.of(EMAIL))).thenReturn(Optional.of(deletedUser));
 
-        var result = useCase.execute(new GoogleLoginRequest(ID_TOKEN));
+        var result = useCase.execute(new GoogleLoginCommand(ID_TOKEN));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USER_DELETED);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.UserDeleted.class);
     }
 
     @Test
@@ -199,7 +199,7 @@ class LoginWithGoogleUseCaseTest {
         when(tokenProvider.generateAccessToken(any(), any())).thenReturn("access.token");
         when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
 
-        useCase.execute(new GoogleLoginRequest(ID_TOKEN));
+        useCase.execute(new GoogleLoginCommand(ID_TOKEN));
 
         // Verify a user was saved with a generated username (starts with "user_")
         verify(userRepository)
@@ -219,7 +219,7 @@ class LoginWithGoogleUseCaseTest {
         when(tokenProvider.generateAccessToken(any(), any())).thenReturn("access.token");
         when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
 
-        var result = useCase.execute(new GoogleLoginRequest(ID_TOKEN));
+        var result = useCase.execute(new GoogleLoginCommand(ID_TOKEN));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         // existsActiveByUsername called 3 times (2 collisions + 1 success)

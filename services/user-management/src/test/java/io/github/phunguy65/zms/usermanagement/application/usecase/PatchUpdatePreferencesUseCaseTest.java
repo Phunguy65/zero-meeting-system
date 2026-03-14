@@ -5,10 +5,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.PatchPreferencesRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.PatchPreferencesCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -65,8 +65,8 @@ class PatchUpdatePreferencesUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchPreferencesRequest(JsonNullable.of(Map.of("lang", "vi")));
-        var result = useCase.execute(USER_ID, dto);
+        var cmd = new PatchPreferencesCommand(JsonNullable.of(Map.of("lang", "vi")));
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var prefs = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
@@ -85,8 +85,8 @@ class PatchUpdatePreferencesUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchPreferencesRequest(JsonNullable.of(Map.of("theme", "light")));
-        var result = useCase.execute(USER_ID, dto);
+        var cmd = new PatchPreferencesCommand(JsonNullable.of(Map.of("theme", "light")));
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var prefs = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
@@ -99,8 +99,8 @@ class PatchUpdatePreferencesUseCaseTest {
         var user = buildUser(null);
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
 
-        var dto = new PatchPreferencesRequest(); // undefined
-        var result = useCase.execute(USER_ID, dto);
+        var cmd = new PatchPreferencesCommand(JsonNullable.undefined());
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var prefs = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
@@ -113,8 +113,8 @@ class PatchUpdatePreferencesUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchPreferencesRequest(JsonNullable.of(null));
-        var result = useCase.execute(USER_ID, dto);
+        var cmd = new PatchPreferencesCommand(JsonNullable.of(null));
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var prefs = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
@@ -128,8 +128,8 @@ class PatchUpdatePreferencesUseCaseTest {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var dto = new PatchPreferencesRequest(JsonNullable.of(Map.of()));
-        var result = useCase.execute(USER_ID, dto);
+        var cmd = new PatchPreferencesCommand(JsonNullable.of(Map.of()));
+        var result = useCase.execute(USER_ID, cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var prefs = (UserPreferencesResponse) ((Result.Success<?, ?>) result).value();
@@ -140,10 +140,11 @@ class PatchUpdatePreferencesUseCaseTest {
     void execute_userNotFound_returnsFailure() {
         when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.empty());
 
-        var result = useCase.execute(USER_ID, new PatchPreferencesRequest());
+        var result =
+                useCase.execute(USER_ID, new PatchPreferencesCommand(JsonNullable.undefined()));
 
         assertThat(result).isInstanceOf(Result.Failure.class);
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USER_NOT_FOUND);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.UserNotFound.class);
     }
 }

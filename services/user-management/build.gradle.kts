@@ -26,5 +26,10 @@ dependencies {
 hibernate {
     enhancement {
         enableAssociationManagement = false
+        classNames.addAll(
+            "io.github.phunguy65.zms.usermanagement.infrastructure.persistence.UserJpaEntity",
+            "io.github.phunguy65.zms.usermanagement.infrastructure.persistence.RefreshTokenJpaEntity",
+            "io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventEntity",
+        )
     }
 }

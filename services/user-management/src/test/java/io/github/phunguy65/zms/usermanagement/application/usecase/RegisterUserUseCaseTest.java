@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.application.command.RegisterCommand;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -36,14 +36,14 @@ class RegisterUserUseCaseTest {
 
     @Test
     void successfulRegistration() {
-        var request = new RegisterRequest(
+        var cmd = new RegisterCommand(
                 "alice@example.com", "password123", "Alice Smith", "alice_smith");
         when(userRepository.existsActiveByEmail(any())).thenReturn(false);
         when(userRepository.existsActiveByUsername(any())).thenReturn(false);
         when(passwordHasher.hash("password123")).thenReturn(HashedPassword.of("$argon2id$hash"));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var result = useCase.execute(request);
+        var result = useCase.execute(cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var success = (Result.Success<?, ?>) result;
@@ -54,42 +54,42 @@ class RegisterUserUseCaseTest {
 
     @Test
     void duplicateEmailReturnsFailure() {
-        var request = new RegisterRequest(
+        var cmd = new RegisterCommand(
                 "alice@example.com", "password123", "Alice Smith", "alice_smith");
         when(userRepository.existsActiveByEmail(Email.of("alice@example.com"))).thenReturn(true);
 
-        var result = useCase.execute(request);
+        var result = useCase.execute(cmd);
 
         assertThat(result).isInstanceOf(Result.Failure.class);
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.EMAIL_ALREADY_EXISTS);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.EmailAlreadyExists.class);
         verify(passwordHasher, never()).hash(any());
     }
 
     @Test
     void duplicateUsernameReturnsFailure() {
-        var request = new RegisterRequest(
+        var cmd = new RegisterCommand(
                 "alice@example.com", "password123", "Alice Smith", "taken_user");
         when(userRepository.existsActiveByEmail(any())).thenReturn(false);
         when(userRepository.existsActiveByUsername(any())).thenReturn(true);
 
-        var result = useCase.execute(request);
+        var result = useCase.execute(cmd);
 
         assertThat(result).isInstanceOf(Result.Failure.class);
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.UsernameAlreadyExists.class);
         verify(passwordHasher, never()).hash(any());
     }
 
     @Test
     void passwordHashingIsCalled() {
-        var request = new RegisterRequest("bob@example.com", "securepass", "Bob", "bob_user");
+        var cmd = new RegisterCommand("bob@example.com", "securepass", "Bob", "bob_user");
         when(userRepository.existsActiveByEmail(any())).thenReturn(false);
         when(userRepository.existsActiveByUsername(any())).thenReturn(false);
         when(passwordHasher.hash("securepass")).thenReturn(HashedPassword.of("$argon2id$xyz"));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        useCase.execute(request);
+        useCase.execute(cmd);
 
         verify(passwordHasher, times(1)).hash("securepass");
     }

@@ -1,5 +1,7 @@
 package io.github.phunguy65.zms.shared.infrastructure.web;
 
+import io.github.phunguy65.zms.shared.domain.ErrorCode;
+
 /**
  * Shared error codes used across all services.
  *

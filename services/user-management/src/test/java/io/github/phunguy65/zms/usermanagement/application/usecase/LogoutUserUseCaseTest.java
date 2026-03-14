@@ -5,9 +5,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.LogoutRequest;
+import io.github.phunguy65.zms.usermanagement.application.command.LogoutCommand;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import java.time.Instant;
@@ -45,10 +45,10 @@ class LogoutUserUseCaseTest {
         String tokenHash = refreshTokenIssuer.hash(RAW_TOKEN);
         when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.empty());
 
-        var result = useCase.execute(new LogoutRequest(RAW_TOKEN));
+        var result = useCase.execute(new LogoutCommand(RAW_TOKEN));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.RefreshTokenNotFound.class);
     }
 
     @Test
@@ -63,7 +63,7 @@ class LogoutUserUseCaseTest {
                 Instant.now().minusSeconds(100));
         when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(revoked));
 
-        var result = useCase.execute(new LogoutRequest(RAW_TOKEN));
+        var result = useCase.execute(new LogoutCommand(RAW_TOKEN));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         verify(refreshTokenRepository, never()).save(any());
@@ -82,7 +82,7 @@ class LogoutUserUseCaseTest {
         when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(active));
         when(refreshTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var result = useCase.execute(new LogoutRequest(RAW_TOKEN));
+        var result = useCase.execute(new LogoutCommand(RAW_TOKEN));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         assertThat(active.isRevoked()).isTrue();

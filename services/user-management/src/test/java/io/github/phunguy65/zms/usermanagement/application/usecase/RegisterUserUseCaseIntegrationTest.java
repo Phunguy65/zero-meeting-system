@@ -3,7 +3,7 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.RegisterRequest;
+import io.github.phunguy65.zms.usermanagement.application.command.RegisterCommand;
 import io.github.phunguy65.zms.usermanagement.config.TestcontainersConfiguration;
 import io.github.phunguy65.zms.usermanagement.infrastructure.messaging.KafkaEventPublisher;
 import io.github.phunguy65.zms.usermanagement.infrastructure.messaging.OutboxEventPublisher;
@@ -45,13 +45,13 @@ class RegisterUserUseCaseIntegrationTest {
 
     @Test
     void successfulRegistration_contextLoadsAndUseCaseIsWired() {
-        var request = new RegisterRequest(
+        var cmd = new RegisterCommand(
                 "integration-" + System.nanoTime() + "@example.com",
                 "password123",
                 "Integration User",
                 "intuser_" + System.nanoTime() % 100000);
 
-        var result = registerUserUseCase.execute(request);
+        var result = registerUserUseCase.execute(cmd);
 
         assertThat(result).isInstanceOf(Result.Success.class);
     }

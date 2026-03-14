@@ -1,9 +1,9 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
+import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
@@ -23,11 +23,11 @@ public class GetUserUseCase {
     }
 
     @Transactional(readOnly = true)
-    public Result<UserResponse, AuthErrorCode> execute(UUID userId) {
+    public Result<UserResponse, AuthError> execute(UUID userId) {
         return userRepository
                 .findActiveById(userId)
-                .map(user -> Result.<UserResponse, AuthErrorCode>success(toResponse(user)))
-                .orElseGet(() -> Result.failure(AuthErrorCode.USER_NOT_FOUND));
+                .map(user -> Result.<UserResponse, AuthError>success(toResponse(user)))
+                .orElseGet(() -> Result.failure(new AuthError.UserNotFound()));
     }
 
     private UserResponse toResponse(User user) {

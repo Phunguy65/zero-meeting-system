@@ -1,11 +1,11 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.GoogleLoginRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.LoginResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.GoogleLoginCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.LoginResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
@@ -48,15 +48,15 @@ public class LoginWithGoogleUseCase {
     }
 
     @Transactional
-    public Result<LoginResponse, AuthErrorCode> execute(GoogleLoginRequest request) {
-        var verifyResult = googleAuthVerifier.verify(request.idToken());
-        if (verifyResult instanceof Result.Failure<?, AuthErrorCode> f) {
+    public Result<LoginResponse, AuthError> execute(GoogleLoginCommand command) {
+        var verifyResult = googleAuthVerifier.verify(command.idToken());
+        if (verifyResult instanceof Result.Failure<?, AuthError> f) {
             return Result.failure(f.error());
         }
         var claims = ((Result.Success<
                                 io.github.phunguy65.zms.usermanagement.domain.model
                                         .GoogleAuthClaims,
-                                AuthErrorCode>)
+                                AuthError>)
                         verifyResult)
                 .value();
 
@@ -69,7 +69,7 @@ public class LoginWithGoogleUseCase {
             if (byEmail.isPresent()) {
                 var existing = byEmail.get();
                 if (existing.isDeleted()) {
-                    return Result.failure(AuthErrorCode.USER_DELETED);
+                    return Result.failure(new AuthError.UserDeleted());
                 }
                 existing.linkGoogle(claims.uid());
                 user = userRepository.save(existing);

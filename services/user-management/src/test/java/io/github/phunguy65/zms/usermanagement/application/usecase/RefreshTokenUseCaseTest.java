@@ -5,10 +5,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.RefreshTokenRequest;
+import io.github.phunguy65.zms.usermanagement.application.command.RefreshTokenCommand;
 import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
@@ -69,10 +69,10 @@ class RefreshTokenUseCaseTest {
                 Instant.now().minusSeconds(100));
         when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(expired));
 
-        var result = useCase.execute(new RefreshTokenRequest(RAW_TOKEN));
+        var result = useCase.execute(new RefreshTokenCommand(RAW_TOKEN));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.REFRESH_TOKEN_EXPIRED);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.RefreshTokenExpired.class);
     }
 
     @Test
@@ -87,10 +87,10 @@ class RefreshTokenUseCaseTest {
                 Instant.now().minusSeconds(100));
         when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(revoked));
 
-        var result = useCase.execute(new RefreshTokenRequest(RAW_TOKEN));
+        var result = useCase.execute(new RefreshTokenCommand(RAW_TOKEN));
 
-        assertThat(((Result.Failure<?, AuthErrorCode>) result).error())
-                .isEqualTo(AuthErrorCode.REFRESH_TOKEN_REUSE_DETECTED);
+        assertThat(((Result.Failure<?, AuthError>) result).error())
+                .isInstanceOf(AuthError.RefreshTokenReuseDetected.class);
         verify(refreshTokenRepository).revokeAllByUserId(USER_ID);
     }
 
@@ -124,7 +124,7 @@ class RefreshTokenUseCaseTest {
         when(tokenProvider.getAccessTokenExpirySeconds()).thenReturn(900L);
         when(refreshTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var result = useCase.execute(new RefreshTokenRequest(RAW_TOKEN));
+        var result = useCase.execute(new RefreshTokenCommand(RAW_TOKEN));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         assertThat(valid.isRevoked()).isTrue();

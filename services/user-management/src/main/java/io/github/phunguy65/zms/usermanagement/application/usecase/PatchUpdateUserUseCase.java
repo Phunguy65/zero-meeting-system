@@ -1,10 +1,10 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.application.dto.PatchUserRequest;
-import io.github.phunguy65.zms.usermanagement.application.dto.UserResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.PatchUserCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -40,54 +40,57 @@ public class PatchUpdateUserUseCase {
     }
 
     @Transactional
-    public Result<UserResponse, AuthErrorCode> execute(UUID userId, PatchUserRequest dto) {
+    public Result<UserResponse, AuthError> execute(UUID userId, PatchUserCommand command) {
         var userOpt = userRepository.findActiveById(userId);
         if (userOpt.isEmpty()) {
-            return Result.failure(AuthErrorCode.USER_NOT_FOUND);
+            return Result.failure(new AuthError.UserNotFound());
         }
         var user = userOpt.get();
 
-        boolean anyChange = dto.fullName().isPresent()
-                || dto.avatarUrl().isPresent()
-                || dto.username().isPresent()
-                || dto.preferences().isPresent();
+        boolean anyChange = command.fullName().isPresent()
+                || command.avatarUrl().isPresent()
+                || command.username().isPresent()
+                || command.preferences().isPresent();
 
         if (!anyChange) {
             return Result.success(toResponse(user));
         }
 
         Username newUsername = null;
-        if (dto.username().isPresent()) {
-            String rawUsername = dto.username().get();
+        if (command.username().isPresent()) {
+            String rawUsername = command.username().get();
             if (rawUsername != null) {
                 final Username candidateUsername = Username.of(rawUsername);
                 boolean isSameAsCurrent = user.getUsername()
                         .map(u -> u.value().equals(candidateUsername.value()))
                         .orElse(false);
                 if (!isSameAsCurrent && userRepository.existsActiveByUsername(candidateUsername)) {
-                    return Result.failure(AuthErrorCode.USERNAME_ALREADY_EXISTS);
+                    return Result.failure(new AuthError.UsernameAlreadyExists());
                 }
                 newUsername = candidateUsername;
             }
         }
 
-        if (dto.fullName().isPresent() || dto.avatarUrl().isPresent() || newUsername != null) {
-            FullName newFullName =
-                    dto.fullName().isPresent() ? FullName.of(dto.fullName().get()) : null;
-            boolean applyAvatar = dto.avatarUrl().isPresent();
-            String newAvatarUrl = applyAvatar ? dto.avatarUrl().get() : null;
+        if (command.fullName().isPresent()
+                || command.avatarUrl().isPresent()
+                || newUsername != null) {
+            FullName newFullName = command.fullName().isPresent()
+                    ? FullName.of(command.fullName().get())
+                    : null;
+            boolean applyAvatar = command.avatarUrl().isPresent();
+            String newAvatarUrl = applyAvatar ? command.avatarUrl().get() : null;
             user.updateProfile(newFullName, newAvatarUrl, applyAvatar, newUsername);
         }
 
-        if (dto.preferences().isPresent()) {
+        if (command.preferences().isPresent()) {
             try {
-                String json = dto.preferences().get() != null
-                        ? objectMapper.writeValueAsString(dto.preferences().get())
+                String json = command.preferences().get() != null
+                        ? objectMapper.writeValueAsString(command.preferences().get())
                         : null;
                 user.updatePreferences(json);
             } catch (Exception e) {
                 log.error("Failed to serialise preferences for user {}", userId, e);
-                return Result.failure(AuthErrorCode.PREFERENCES_SERIALIZATION_ERROR);
+                return Result.failure(new AuthError.PreferencesSerializationError());
             }
         }
 

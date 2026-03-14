@@ -3,7 +3,7 @@ package io.github.phunguy65.zms.usermanagement.infrastructure.security;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
+import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.GoogleAuthClaims;
 import io.github.phunguy65.zms.usermanagement.domain.port.GoogleAuthVerifier;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class FirebaseTokenVerifier implements GoogleAuthVerifier {
     }
 
     @Override
-    public Result<GoogleAuthClaims, AuthErrorCode> verify(String idToken) {
+    public Result<GoogleAuthClaims, AuthError> verify(String idToken) {
         try {
             var decoded = firebaseAuth.verifyIdToken(idToken);
             var claims = new GoogleAuthClaims(
@@ -37,10 +37,10 @@ public class FirebaseTokenVerifier implements GoogleAuthVerifier {
             return Result.success(claims);
         } catch (FirebaseAuthException e) {
             log.warn("Firebase token verification failed: {}", e.getMessage());
-            return Result.failure(AuthErrorCode.INVALID_FIREBASE_TOKEN);
+            return Result.failure(new AuthError.InvalidFirebaseToken());
         } catch (Exception e) {
             log.error("Unexpected error during Firebase token verification", e);
-            return Result.failure(AuthErrorCode.FIREBASE_AUTH_ERROR);
+            return Result.failure(new AuthError.FirebaseAuthError());
         }
     }
 }

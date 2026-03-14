@@ -1,6 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.application.service;
 
-import io.github.phunguy65.zms.usermanagement.application.dto.UserPreferencesResponse;
+import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
