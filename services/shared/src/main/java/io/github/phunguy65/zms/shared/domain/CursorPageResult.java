@@ -5,8 +5,7 @@ import java.util.List;
 /**
  * A page of keyset-scrolled results with a flag indicating whether more pages exist.
  *
- * <p>Pure Java domain abstraction for cursor-based pagination. Mirrors {@link PageResult} for
- * offset-based pagination — zero Spring/JPA dependencies.
+ * <p>Pure Java domain abstraction for cursor-based pagination.
  *
  * <p>Infrastructure adapters build this record after fetching {@code size + 1} rows: if the extra
  * row exists, {@code hasNext} is {@code true}; otherwise it is {@code false} (end of results).

@@ -2,7 +2,7 @@ package io.github.phunguy65.zms.usermanagement.infrastructure.messaging;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventEntity;
+import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventJpaEntity;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventRepository;
 import java.net.URI;
 import java.time.Instant;
@@ -38,8 +38,8 @@ public class OutboxEventPublisher {
     @Scheduled(fixedDelay = 1000)
     @Transactional
     public void pollAndPublish() {
-        List<OutboxEventEntity> pending = outboxEventRepository.findAllByPublishedAtIsNull();
-        for (OutboxEventEntity row : pending) {
+        List<OutboxEventJpaEntity> pending = outboxEventRepository.findAllByPublishedAtIsNull();
+        for (OutboxEventJpaEntity row : pending) {
             if (row.getRetryCount() >= MAX_RETRIES) {
                 publishToDlt(row);
             } else {
@@ -48,7 +48,7 @@ public class OutboxEventPublisher {
         }
     }
 
-    private void tryPublish(OutboxEventEntity row) {
+    private void tryPublish(OutboxEventJpaEntity row) {
         try {
             byte[] data = row.getPayload().getBytes(java.nio.charset.StandardCharsets.UTF_8);
             CloudEvent cloudEvent = CloudEventBuilder.v1()
@@ -80,7 +80,7 @@ public class OutboxEventPublisher {
         }
     }
 
-    private void publishToDlt(OutboxEventEntity row) {
+    private void publishToDlt(OutboxEventJpaEntity row) {
         String dltTopic = row.getTopic() + "-dlt";
         try {
             byte[] data = row.getPayload().getBytes(java.nio.charset.StandardCharsets.UTF_8);

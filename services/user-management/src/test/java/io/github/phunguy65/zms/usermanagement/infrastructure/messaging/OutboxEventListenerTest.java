@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
-import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventEntity;
+import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventJpaEntity;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventRepository;
 import java.time.Instant;
 import java.util.UUID;
@@ -42,6 +42,6 @@ class OutboxEventListenerTest {
 
         listener.onPublishableEvent(event);
 
-        verify(outboxEventRepository).save(any(OutboxEventEntity.class));
+        verify(outboxEventRepository).save(any(OutboxEventJpaEntity.class));
     }
 }

@@ -3,7 +3,7 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.command.LogoutCommand;
-import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
+import io.github.phunguy65.zms.usermanagement.application.helper.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserLoggedOutEvent;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;

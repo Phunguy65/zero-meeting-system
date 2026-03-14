@@ -9,7 +9,8 @@ public record HashedPassword(String value) implements ValueObject {
 
     public HashedPassword {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("HashedPassword must not be blank");
+            throw new IllegalArgumentException(
+                    "io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword must not be blank");
         }
     }
 

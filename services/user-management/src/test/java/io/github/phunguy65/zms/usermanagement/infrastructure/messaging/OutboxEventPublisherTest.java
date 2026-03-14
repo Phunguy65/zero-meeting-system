@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.cloudevents.CloudEvent;
-import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventEntity;
+import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventJpaEntity;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventRepository;
 import java.time.Instant;
 import java.util.List;
@@ -38,8 +38,8 @@ class OutboxEventPublisherTest {
     @InjectMocks
     OutboxEventPublisher outboxEventPublisher;
 
-    private OutboxEventEntity buildRow(int retryCount) {
-        var row = new OutboxEventEntity(
+    private OutboxEventJpaEntity buildRow(int retryCount) {
+        var row = new OutboxEventJpaEntity(
                 UUID.randomUUID(),
                 "user",
                 "io.github.phunguy65.zms.user.registered.v1",

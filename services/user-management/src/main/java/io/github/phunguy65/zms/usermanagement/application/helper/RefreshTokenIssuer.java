@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.usermanagement.application.service;
+package io.github.phunguy65.zms.usermanagement.application.helper;
 
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;

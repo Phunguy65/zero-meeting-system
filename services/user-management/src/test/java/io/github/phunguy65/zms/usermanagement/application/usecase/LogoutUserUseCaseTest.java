@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.application.command.LogoutCommand;
-import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
+import io.github.phunguy65.zms.usermanagement.application.helper.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;

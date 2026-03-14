@@ -12,7 +12,8 @@ public record Email(String value) implements ValueObject {
 
     public Email {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Email must not be blank");
+            throw new IllegalArgumentException(
+                    "io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email must not be blank");
         }
         value = value.strip().toLowerCase();
         if (!EMAIL_PATTERN.matcher(value).matches()) {

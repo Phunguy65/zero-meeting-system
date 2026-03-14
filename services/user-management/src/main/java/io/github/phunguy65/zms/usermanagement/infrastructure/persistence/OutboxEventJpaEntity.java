@@ -7,7 +7,7 @@ import java.util.UUID;
 /** JPA entity representing a row in the {@code outbox_event} table. */
 @Entity
 @Table(name = "outbox_event")
-public class OutboxEventEntity {
+public class OutboxEventJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,9 +40,9 @@ public class OutboxEventEntity {
     @Column(name = "last_error", columnDefinition = "TEXT")
     private String lastError;
 
-    protected OutboxEventEntity() {}
+    protected OutboxEventJpaEntity() {}
 
-    public OutboxEventEntity(
+    public OutboxEventJpaEntity(
             UUID aggregateId,
             String aggregateType,
             String eventType,

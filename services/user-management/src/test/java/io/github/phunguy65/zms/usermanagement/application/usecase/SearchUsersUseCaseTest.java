@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import io.github.phunguy65.zms.shared.domain.CursorPageResult;
 import io.github.phunguy65.zms.usermanagement.application.command.SearchUsersQuery;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
