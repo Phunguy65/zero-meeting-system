@@ -1,6 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.domain.port;
 
-import io.github.phunguy65.zms.shared.domain.CursorPageResult;
+import io.github.phunguy65.zms.shared.application.response.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -46,6 +46,6 @@ public interface UserRepository {
      * @param size   page size (max 100)
      * @param filter optional search filter; use {@link UserScrollFilter#empty()} for no filtering
      */
-    CursorPageResult<User> searchUsers(
+    CursorPageResponse<User> searchUsers(
             @Nullable ScrollCursor cursor, int size, UserScrollFilter filter);
 }

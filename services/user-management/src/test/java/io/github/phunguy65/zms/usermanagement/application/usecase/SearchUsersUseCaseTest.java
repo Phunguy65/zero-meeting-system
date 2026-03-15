@@ -6,9 +6,9 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
-import io.github.phunguy65.zms.shared.domain.CursorPageResult;
-import io.github.phunguy65.zms.usermanagement.application.command.SearchUsersQuery;
+import io.github.phunguy65.zms.shared.application.response.CursorPageResponse;
 import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
+import io.github.phunguy65.zms.usermanagement.application.query.SearchUsersQuery;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -57,7 +57,7 @@ class SearchUsersUseCaseTest {
     void execute_firstPage_returnsMappedContent() {
         var users = List.of(buildUser("a@example.com"), buildUser("b@example.com"));
         when(userRepository.searchUsers(isNull(), anyInt(), any()))
-                .thenReturn(CursorPageResult.of(users, 20, false));
+                .thenReturn(CursorPageResponse.of(users, 20, false));
 
         var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);
 
@@ -70,7 +70,7 @@ class SearchUsersUseCaseTest {
     void execute_hasNextPage_flagsHasNext() {
         var users = List.of(buildUser("a@example.com"), buildUser("b@example.com"));
         when(userRepository.searchUsers(isNull(), anyInt(), any()))
-                .thenReturn(CursorPageResult.of(users, 20, true));
+                .thenReturn(CursorPageResponse.of(users, 20, true));
 
         var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);
 
@@ -81,7 +81,7 @@ class SearchUsersUseCaseTest {
     @Test
     void execute_emptyResult_returnsEmptyContent() {
         when(userRepository.searchUsers(isNull(), anyInt(), any()))
-                .thenReturn(CursorPageResult.empty(20));
+                .thenReturn(CursorPageResponse.empty(20));
 
         var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);
 

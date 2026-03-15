@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.shared.domain;
+package io.github.phunguy65.zms.shared.application.response;
 
 import java.util.List;
 
@@ -13,10 +13,10 @@ import java.util.List;
  *
  * @param <T> the domain type for each item in the page
  */
-public record CursorPageResult<T>(List<T> items, int pageSize, boolean hasNext) {
+public record CursorPageResponse<T>(List<T> items, int pageSize, boolean hasNext) {
 
     /** Compact canonical constructor – defensively copies {@code items} to ensure immutability. */
-    public CursorPageResult {
+    public CursorPageResponse {
         items = List.copyOf(items);
     }
 
@@ -27,12 +27,12 @@ public record CursorPageResult<T>(List<T> items, int pageSize, boolean hasNext) 
      * @param pageSize requested page size
      * @param hasNext  {@code true} if more pages exist (detected by fetching size+1 rows)
      */
-    public static <T> CursorPageResult<T> of(List<T> items, int pageSize, boolean hasNext) {
-        return new CursorPageResult<>(items, pageSize, hasNext);
+    public static <T> CursorPageResponse<T> of(List<T> items, int pageSize, boolean hasNext) {
+        return new CursorPageResponse<>(items, pageSize, hasNext);
     }
 
     /** Convenience factory for an empty result set (first page, no results). */
-    public static <T> CursorPageResult<T> empty(int pageSize) {
-        return new CursorPageResult<>(List.of(), pageSize, false);
+    public static <T> CursorPageResponse<T> empty(int pageSize) {
+        return new CursorPageResponse<>(List.of(), pageSize, false);
     }
 }

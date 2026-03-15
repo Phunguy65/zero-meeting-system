@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.usermanagement.application.command;
+package io.github.phunguy65.zms.usermanagement.application.query;
 
 import io.github.phunguy65.zms.shared.domain.ScrollParams;
 import java.util.Optional;

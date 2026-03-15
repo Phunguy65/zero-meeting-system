@@ -1,7 +1,7 @@
 package io.github.phunguy65.zms.usermanagement.presentation.request;
 
 import io.github.phunguy65.zms.shared.domain.ScrollParams;
-import io.github.phunguy65.zms.usermanagement.application.command.SearchUsersQuery;
+import io.github.phunguy65.zms.usermanagement.application.query.SearchUsersQuery;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.Optional;

@@ -3,7 +3,7 @@ package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Meeting;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ShortCode;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
-import io.github.phunguy65.zms.shared.domain.CursorPageResult;
+import io.github.phunguy65.zms.shared.application.response.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.ScrollParams;
 import java.util.List;
@@ -43,7 +43,7 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
     }
 
     @Override
-    public CursorPageResult<Meeting> findByHostId(UUID hostId, ScrollParams params) {
+    public CursorPageResponse<Meeting> findByHostId(UUID hostId, ScrollParams params) {
         int fetchLimit = params.pageSize() + 1;
 
         ScrollCursor cursor = params.pageToken()
@@ -65,11 +65,12 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
         List<Meeting> items =
                 rows.stream().limit(params.pageSize()).map(this::toDomain).toList();
 
-        return CursorPageResult.of(items, params.pageSize(), hasNext);
+        return CursorPageResponse.of(items, params.pageSize(), hasNext);
     }
 
     /** Overload accepting a pre-decoded cursor — used by application layer use cases. */
-    public CursorPageResult<Meeting> findByHostId(UUID hostId, ScrollCursor cursor, int pageSize) {
+    public CursorPageResponse<Meeting> findByHostId(
+            UUID hostId, ScrollCursor cursor, int pageSize) {
         int fetchLimit = pageSize + 1;
         var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
         var cursorId = cursor != null ? cursor.id().toString() : null;
@@ -79,7 +80,7 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
 
         boolean hasNext = rows.size() > pageSize;
         List<Meeting> items = rows.stream().limit(pageSize).map(this::toDomain).toList();
-        return CursorPageResult.of(items, pageSize, hasNext);
+        return CursorPageResponse.of(items, pageSize, hasNext);
     }
 
     private Meeting toDomain(MeetingJpaEntity e) {

@@ -1,6 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.persistence;
 
-import io.github.phunguy65.zms.shared.domain.CursorPageResult;
+import io.github.phunguy65.zms.shared.application.response.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
@@ -77,7 +77,7 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public CursorPageResult<User> searchUsers(
+    public CursorPageResponse<User> searchUsers(
             @Nullable ScrollCursor cursor, int size, UserScrollFilter filter) {
         int fetchLimit = size + 1;
 
@@ -92,7 +92,7 @@ public class UserRepositoryAdapter implements UserRepository {
         boolean hasNext = rows.size() > size;
         List<User> items = rows.stream().limit(size).map(this::toDomain).toList();
 
-        return CursorPageResult.of(items, size, hasNext);
+        return CursorPageResponse.of(items, size, hasNext);
     }
 
     private String escapeLike(String value) {
