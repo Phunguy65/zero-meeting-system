@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.persistence;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +26,9 @@ public interface UserJpaRepository extends JpaRepository<UserJpaEntity, UUID> {
     boolean existsByUsernameAndDeletedAtIsNull(String username);
 
     Optional<UserJpaEntity> findByUsernameAndDeletedAtIsNull(String username);
+
+    @Query("SELECT u FROM UserJpaEntity u WHERE u.email IN :emails AND u.deletedAt IS NULL")
+    List<UserJpaEntity> findActiveByEmailIn(@Param("emails") Collection<String> emails);
 
     /**
      * Keyset-scroll query for active users with optional cursor and optional ILIKE search.

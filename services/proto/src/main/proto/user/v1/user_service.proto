@@ -12,21 +12,19 @@ option java_package = "io.github.phunguy65.zms.proto.user.v1";
 
 // UserService exposes user lookup for cross-service communication.
 service UserService {
-  // BatchGetUser resolves a batch of users by email or username.
-  // Returns a map of identifier -> UserSnapshot for resolved users only.
-  // Missing identifiers are absent from the response map (partial results).
+  // BatchGetUser resolves a batch of users by email.
+  // Returns a map of email -> UserSnapshot for resolved users only.
+  // Missing emails are absent from the response map (partial results).
   rpc BatchGetUser(BatchGetUserRequest) returns (BatchGetUserResponse);
 }
 
 message BatchGetUserRequest {
   // Email addresses to resolve (may be empty).
   repeated string emails = 1;
-  // Usernames to resolve (may be empty).
-  repeated string usernames = 2;
 }
 
 message BatchGetUserResponse {
-  // Map of identifier (email or username) -> UserSnapshot.
+  // Map of email -> UserSnapshot.
   // Only resolved, active (non-deleted) users are included.
   map<string, UserSnapshot> users = 1;
 }

@@ -2,13 +2,14 @@ package io.github.phunguy65.zms.usermanagement.infrastructure.persistence;
 
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserScrollFilter;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -74,6 +75,12 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     public Optional<User> findActiveByUsername(Username username) {
         return jpa.findByUsernameAndDeletedAtIsNull(username.value()).map(this::toDomain);
+    }
+
+    @Override
+    public List<User> findActiveByEmails(Collection<String> emails) {
+        if (emails.isEmpty()) return List.of();
+        return jpa.findActiveByEmailIn(emails).stream().map(this::toDomain).toList();
     }
 
     @Override

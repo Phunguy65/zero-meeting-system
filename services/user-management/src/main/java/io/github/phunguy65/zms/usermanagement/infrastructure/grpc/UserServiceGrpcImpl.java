@@ -7,69 +7,55 @@ import io.github.phunguy65.zms.proto.user.v1.BatchGetUserRequest;
 import io.github.phunguy65.zms.proto.user.v1.BatchGetUserResponse;
 import io.github.phunguy65.zms.proto.user.v1.UserServiceGrpc;
 import io.github.phunguy65.zms.proto.user.v1.UserSnapshot;
-import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.UserJpaEntity;
-import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.UserJpaRepository;
+import io.github.phunguy65.zms.usermanagement.application.usecase.internal.BatchGetUserUseCase;
+import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * gRPC server implementation for the UserService.
  *
- * <p>Resolves users by email or username and returns full {@link UserSnapshot} state.
- * Deleted users are excluded. Partial results are returned — missing identifiers are absent
+ * <p>Delegates to {@link BatchGetUserUseCase} for user resolution.
+ * Deleted users are excluded. Partial results are returned — missing emails are absent
  * from the response map.
  */
 @Component
 public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
 
-    private final UserJpaRepository userJpaRepository;
+    private final BatchGetUserUseCase batchGetUserUseCase;
 
-    public UserServiceGrpcImpl(UserJpaRepository userJpaRepository) {
-        this.userJpaRepository = userJpaRepository;
+    public UserServiceGrpcImpl(BatchGetUserUseCase batchGetUserUseCase) {
+        this.batchGetUserUseCase = batchGetUserUseCase;
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void batchGetUser(
             BatchGetUserRequest request, StreamObserver<BatchGetUserResponse> responseObserver) {
+        var users = batchGetUserUseCase.execute(request.getEmailsList());
+
         var responseBuilder = BatchGetUserResponse.newBuilder();
-
-        for (String email : request.getEmailsList()) {
-            userJpaRepository
-                    .findByEmailAndDeletedAtIsNull(email)
-                    .ifPresent(user -> responseBuilder.putUsers(email, toSnapshot(user)));
-        }
-
-        for (String username : request.getUsernamesList()) {
-            userJpaRepository
-                    .findByUsernameAndDeletedAtIsNull(username)
-                    .ifPresent(user -> responseBuilder.putUsers(username, toSnapshot(user)));
-        }
+        users.forEach((email, user) -> responseBuilder.putUsers(email, toSnapshot(user)));
 
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
     }
 
-    private UserSnapshot toSnapshot(UserJpaEntity user) {
+    private UserSnapshot toSnapshot(User user) {
         var builder = UserSnapshot.newBuilder()
                 .setId(user.getId().toString())
-                .setEmail(user.getEmail())
-                .setFullName(user.getFullName())
+                .setEmail(user.getEmail().value())
+                .setFullName(user.getFullName().value())
                 .setAuthProvider(user.getAuthProvider())
                 .setCreatedAt(toTimestamp(user.getCreatedAt()))
                 .setUpdatedAt(toTimestamp(user.getUpdatedAt()));
 
-        if (user.getUsername() != null) {
-            builder.setUsername(StringValue.of(user.getUsername()));
-        }
-        if (user.getAvatarUrl() != null) {
-            builder.setAvatarUrl(StringValue.of(user.getAvatarUrl()));
-        }
-        if (user.getPreferences() != null) {
-            parsePreferencesToStruct(user.getPreferences()).ifPresent(builder::setPreferences);
-        }
+        user.getUsername().ifPresent(u -> builder.setUsername(StringValue.of(u.value())));
+        user.getAvatarUrl().ifPresent(a -> builder.setAvatarUrl(StringValue.of(a)));
+        user.getPreferences()
+                .flatMap(this::parsePreferencesToStruct)
+                .ifPresent(builder::setPreferences);
 
         return builder.build();
     }
@@ -85,15 +71,15 @@ public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
      * Parses a raw JSON string into a protobuf {@link Struct}.
      * Returns empty if the JSON is invalid or not an object.
      */
-    private java.util.Optional<Struct> parsePreferencesToStruct(String json) {
+    private Optional<Struct> parsePreferencesToStruct(String json) {
         try {
             var structBuilder = Struct.newBuilder();
             com.google.protobuf.util.JsonFormat.parser()
                     .ignoringUnknownFields()
                     .merge(json, structBuilder);
-            return java.util.Optional.of(structBuilder.build());
+            return Optional.of(structBuilder.build());
         } catch (Exception e) {
-            return java.util.Optional.empty();
+            return Optional.empty();
         }
     }
 }
