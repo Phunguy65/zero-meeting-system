@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.usermanagement.domain.model;
+package io.github.phunguy65.zms.usermanagement.domain.model.valueobject;
 
 import org.jspecify.annotations.Nullable;
 

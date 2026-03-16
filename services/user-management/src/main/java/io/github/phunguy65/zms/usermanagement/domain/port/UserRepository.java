@@ -2,9 +2,9 @@ package io.github.phunguy65.zms.usermanagement.domain.port;
 
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.Username;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;

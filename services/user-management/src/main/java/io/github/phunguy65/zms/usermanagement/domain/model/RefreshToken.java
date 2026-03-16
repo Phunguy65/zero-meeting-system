@@ -3,6 +3,7 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -83,8 +84,8 @@ public class RefreshToken extends AggregateRoot<UUID> {
         return expiresAt;
     }
 
-    public Instant getRevokedAt() {
-        return revokedAt;
+    public Optional<Instant> getRevokedAt() {
+        return Optional.ofNullable(revokedAt);
     }
 
     public Instant getCreatedAt() {

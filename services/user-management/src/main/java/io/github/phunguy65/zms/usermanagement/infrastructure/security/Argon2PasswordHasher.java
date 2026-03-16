@@ -1,6 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.security;
 
-import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Component;

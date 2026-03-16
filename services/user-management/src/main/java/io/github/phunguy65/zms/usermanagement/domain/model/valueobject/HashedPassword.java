@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.usermanagement.domain.model;
+package io.github.phunguy65.zms.usermanagement.domain.model.valueobject;
 
 import io.github.phunguy65.zms.shared.domain.ValueObject;
 

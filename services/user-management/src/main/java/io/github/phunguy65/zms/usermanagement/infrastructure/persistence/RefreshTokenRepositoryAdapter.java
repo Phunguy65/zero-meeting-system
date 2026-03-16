@@ -51,7 +51,7 @@ public class RefreshTokenRepositoryAdapter implements RefreshTokenRepository {
                 t.getUserId(),
                 t.getTokenHash(),
                 t.getExpiresAt(),
-                t.getRevokedAt(),
+                t.getRevokedAt().orElse(null),
                 t.getCreatedAt());
     }
 }

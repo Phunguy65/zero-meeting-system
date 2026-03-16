@@ -3,6 +3,9 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
