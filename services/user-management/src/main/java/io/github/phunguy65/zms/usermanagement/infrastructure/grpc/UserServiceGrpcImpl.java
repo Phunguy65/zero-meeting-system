@@ -11,7 +11,7 @@ import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.UserJpa
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.UserJpaRepository;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Deleted users are excluded. Partial results are returned — missing identifiers are absent
  * from the response map.
  */
-@Service
+@Component
 public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
 
     private final UserJpaRepository userJpaRepository;

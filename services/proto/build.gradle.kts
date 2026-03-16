@@ -43,7 +43,6 @@ protobuf {
 }
 
 buf {
-	
 }
 
 tasks.named<Jar>("jar") {
