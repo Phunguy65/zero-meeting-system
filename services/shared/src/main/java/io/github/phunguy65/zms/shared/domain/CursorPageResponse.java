@@ -1,4 +1,4 @@
-package io.github.phunguy65.zms.shared.application.response;
+package io.github.phunguy65.zms.shared.domain;
 
 import java.util.List;
 

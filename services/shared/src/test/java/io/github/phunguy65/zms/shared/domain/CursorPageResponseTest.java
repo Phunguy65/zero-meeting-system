@@ -3,7 +3,6 @@ package io.github.phunguy65.zms.shared.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.github.phunguy65.zms.shared.application.response.CursorPageResponse;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;

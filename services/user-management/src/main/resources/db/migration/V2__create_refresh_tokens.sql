@@ -1,6 +1,6 @@
 CREATE TABLE refresh_tokens
 (
-    id          UUID        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    id          UUID        NOT NULL DEFAULT uuidv7() PRIMARY KEY,
     user_id     UUID        NOT NULL,
     token_hash  VARCHAR(255) NOT NULL,
     expires_at  TIMESTAMPTZ NOT NULL,

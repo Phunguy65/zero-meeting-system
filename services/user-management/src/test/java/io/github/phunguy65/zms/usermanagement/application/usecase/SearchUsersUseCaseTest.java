@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
-import io.github.phunguy65.zms.shared.application.response.CursorPageResponse;
+import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.query.SearchUsersQuery;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;

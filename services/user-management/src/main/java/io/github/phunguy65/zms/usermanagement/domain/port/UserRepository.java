@@ -1,6 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.domain.port;
 
-import io.github.phunguy65.zms.shared.application.response.CursorPageResponse;
+import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
