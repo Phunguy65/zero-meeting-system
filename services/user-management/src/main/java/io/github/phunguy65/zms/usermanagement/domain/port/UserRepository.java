@@ -2,9 +2,11 @@ package io.github.phunguy65.zms.usermanagement.domain.port;
 
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -37,6 +39,13 @@ public interface UserRepository {
 
     /** Returns the active user with the given username, or empty if not found. */
     Optional<User> findActiveByUsername(Username username);
+
+    /**
+     * Batch-fetch active (non-deleted) users by email.
+     * Invalid or malformed emails are silently skipped.
+     * Missing emails are absent from the result list.
+     */
+    List<User> findActiveByEmails(Collection<String> emails);
 
     /**
      * Returns a keyset-scrolled page of active (non-deleted) users matching the given filter.

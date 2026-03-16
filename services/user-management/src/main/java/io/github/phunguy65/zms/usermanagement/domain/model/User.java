@@ -2,10 +2,10 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserDeletedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
-import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
