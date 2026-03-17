@@ -16,9 +16,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final GrpcUserIdFilter grpcUserIdFilter;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, GrpcUserIdFilter grpcUserIdFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.grpcUserIdFilter = grpcUserIdFilter;
     }
 
     @Bean
@@ -38,6 +40,7 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(grpcUserIdFilter, jwtAuthFilter.getClass())
                 .build();
     }
 }

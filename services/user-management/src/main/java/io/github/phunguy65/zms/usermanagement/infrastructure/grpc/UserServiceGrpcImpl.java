@@ -44,7 +44,7 @@ public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
 
     private UserSnapshot toSnapshot(User user) {
         var builder = UserSnapshot.newBuilder()
-                .setId(user.getId().toString())
+                .setId(user.getId().value().toString())
                 .setEmail(user.getEmail().value())
                 .setFullName(user.getFullName().value())
                 .setAuthProvider(user.getAuthProvider())

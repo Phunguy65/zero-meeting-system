@@ -3,6 +3,7 @@ package io.github.phunguy65.zms.usermanagement.infrastructure.persistence;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
@@ -12,7 +13,6 @@ import io.github.phunguy65.zms.usermanagement.domain.port.UserScrollFilter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
@@ -31,13 +31,13 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
-        return jpa.findById(id).map(this::toDomain);
+    public Optional<User> findById(UserId id) {
+        return jpa.findById(id.value()).map(this::toDomain);
     }
 
     @Override
-    public Optional<User> findActiveById(UUID id) {
-        return jpa.findByIdAndDeletedAtIsNull(id).map(this::toDomain);
+    public Optional<User> findActiveById(UserId id) {
+        return jpa.findByIdAndDeletedAtIsNull(id.value()).map(this::toDomain);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class UserRepositoryAdapter implements UserRepository {
     private User toDomain(UserJpaEntity e) {
         String hash = e.getPasswordHash();
         return User.reconstitute(
-                e.getId(),
+                UserId.of(e.getId()),
                 Email.of(e.getEmail()),
                 hash != null ? HashedPassword.of(hash) : null,
                 FullName.of(e.getFullName()),
@@ -125,7 +125,7 @@ public class UserRepositoryAdapter implements UserRepository {
 
     private UserJpaEntity toEntity(User u) {
         return new UserJpaEntity(
-                u.getId(),
+                u.getId().value(),
                 u.getEmail().value(),
                 u.getHashedPassword().map(HashedPassword::value).orElse(null),
                 u.getFullName().value(),

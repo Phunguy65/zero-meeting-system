@@ -78,7 +78,10 @@ public class LoginUserUseCase {
 
         Instant loginAt = Instant.now();
         eventPublisher.publishEvent(new UserLoggedInEvent(
-                UuidCreator.getTimeOrderedEpoch(), user.getId(), user.getEmail().value(), loginAt));
+                UuidCreator.getTimeOrderedEpoch(),
+                user.getId().value(),
+                user.getEmail().value(),
+                loginAt));
 
         return Result.success(new LoginResponse(
                 accessToken,

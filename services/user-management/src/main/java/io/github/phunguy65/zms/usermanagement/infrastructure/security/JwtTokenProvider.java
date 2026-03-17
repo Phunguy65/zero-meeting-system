@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.security;
 
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -31,14 +32,14 @@ public class JwtTokenProvider implements TokenProvider {
         this.accessTokenExpirySeconds = accessTokenExpirySeconds;
     }
 
-    public String generateAccessToken(UUID userId, String email) {
+    public String generateAccessToken(UserId userId, String email) {
         Instant now = Instant.now();
         Instant expiry = now.plusSeconds(accessTokenExpirySeconds);
         return Jwts.builder()
                 .header()
                 .keyId("zms-user-management")
                 .and()
-                .subject(userId.toString())
+                .subject(userId.value().toString())
                 .claim(CLAIM_EMAIL, email)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
@@ -56,8 +57,8 @@ public class JwtTokenProvider implements TokenProvider {
         }
     }
 
-    public UUID extractUserId(String token) {
-        return UUID.fromString(parseClaims(token).getSubject());
+    public UserId extractUserId(String token) {
+        return UserId.of(UUID.fromString(parseClaims(token).getSubject()));
     }
 
     public String extractEmail(String token) {

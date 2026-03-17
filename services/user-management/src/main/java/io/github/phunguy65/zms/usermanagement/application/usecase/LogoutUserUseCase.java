@@ -45,7 +45,7 @@ public class LogoutUserUseCase {
         }
 
         eventPublisher.publishEvent(new UserLoggedOutEvent(
-                UuidCreator.getTimeOrderedEpoch(), token.getUserId(), Instant.now()));
+                UuidCreator.getTimeOrderedEpoch(), token.getUserId().value(), Instant.now()));
 
         return Result.success();
     }

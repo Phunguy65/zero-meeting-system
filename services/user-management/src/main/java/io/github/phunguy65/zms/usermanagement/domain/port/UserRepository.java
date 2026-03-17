@@ -3,12 +3,12 @@ package io.github.phunguy65.zms.usermanagement.domain.port;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /** Outbound port: persistence operations for the {@link User} aggregate. */
@@ -16,10 +16,10 @@ public interface UserRepository {
 
     Optional<User> findByEmail(Email email);
 
-    Optional<User> findById(UUID id);
+    Optional<User> findById(UserId id);
 
     /** Returns the user only if {@code deleted_at IS NULL}. */
-    Optional<User> findActiveById(UUID id);
+    Optional<User> findActiveById(UserId id);
 
     /** Returns the user only if {@code deleted_at IS NULL}. */
     Optional<User> findActiveByEmail(Email email);

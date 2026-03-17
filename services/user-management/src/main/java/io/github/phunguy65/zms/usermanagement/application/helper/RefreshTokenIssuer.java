@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.application.helper;
 
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import java.security.MessageDigest;
@@ -7,7 +8,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
@@ -29,7 +29,7 @@ public class RefreshTokenIssuer {
      * Generates a new refresh token for the given user, persists it, and returns the raw
      * (unhashed) token string that should be sent to the client.
      */
-    public String issueAndSave(UUID userId, long expirySeconds) {
+    public String issueAndSave(UserId userId, long expirySeconds) {
         byte[] rawBytes = new byte[32];
         secureRandom.nextBytes(rawBytes);
         String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(rawBytes);

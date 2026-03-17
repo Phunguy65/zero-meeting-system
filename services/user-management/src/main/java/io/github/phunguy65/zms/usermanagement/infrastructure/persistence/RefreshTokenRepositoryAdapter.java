@@ -1,10 +1,11 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.persistence;
 
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.RefreshTokenId;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,14 +32,14 @@ public class RefreshTokenRepositoryAdapter implements RefreshTokenRepository {
 
     @Override
     @Transactional
-    public void revokeAllByUserId(UUID userId) {
-        jpa.updateRevokedAtByUserId(userId, Instant.now());
+    public void revokeAllByUserId(UserId userId) {
+        jpa.updateRevokedAtByUserId(userId.value(), Instant.now());
     }
 
     private RefreshToken toDomain(RefreshTokenJpaEntity e) {
         return RefreshToken.reconstitute(
-                e.getId(),
-                e.getUserId(),
+                RefreshTokenId.of(e.getId()),
+                UserId.of(e.getUserId()),
                 e.getTokenHash(),
                 e.getExpiresAt(),
                 e.getRevokedAt(),
@@ -47,8 +48,8 @@ public class RefreshTokenRepositoryAdapter implements RefreshTokenRepository {
 
     private RefreshTokenJpaEntity toEntity(RefreshToken t) {
         return new RefreshTokenJpaEntity(
-                t.getId(),
-                t.getUserId(),
+                t.getId().value(),
+                t.getUserId().value(),
                 t.getTokenHash(),
                 t.getExpiresAt(),
                 t.getRevokedAt().orElse(null),

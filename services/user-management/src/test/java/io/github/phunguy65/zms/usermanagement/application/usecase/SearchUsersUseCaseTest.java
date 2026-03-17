@@ -6,8 +6,10 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.query.SearchUsersQuery;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
@@ -15,7 +17,6 @@ import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,7 @@ class SearchUsersUseCaseTest {
 
     private User buildUser(String email) {
         return User.reconstitute(
-                UUID.randomUUID(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 Email.of(email),
                 null,
                 FullName.of("User"),

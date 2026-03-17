@@ -50,7 +50,7 @@ public class SearchUsersUseCase {
 
     private UserResponse toResponse(User user) {
         return new UserResponse(
-                user.getId(),
+                user.getId().value(),
                 user.getEmail().value(),
                 user.getFullName().value(),
                 user.getUsername().map(Username::value).orElse(null),

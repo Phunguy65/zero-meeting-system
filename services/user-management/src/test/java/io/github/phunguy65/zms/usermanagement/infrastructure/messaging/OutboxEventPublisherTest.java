@@ -6,12 +6,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.cloudevents.CloudEvent;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventJpaEntity;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventRepository;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +40,7 @@ class OutboxEventPublisherTest {
 
     private OutboxEventJpaEntity buildRow(int retryCount) {
         var row = new OutboxEventJpaEntity(
-                UUID.randomUUID(),
+                UuidCreator.getTimeOrderedEpoch(),
                 "user",
                 "io.github.phunguy65.zms.user.registered.v1",
                 "user-management.user.registered",

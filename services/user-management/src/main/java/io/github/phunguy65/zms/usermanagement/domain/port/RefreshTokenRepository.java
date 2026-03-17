@@ -1,8 +1,8 @@
 package io.github.phunguy65.zms.usermanagement.domain.port;
 
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import java.util.Optional;
-import java.util.UUID;
 
 /** Outbound port: persistence operations for the {@link RefreshToken} aggregate. */
 public interface RefreshTokenRepository {
@@ -11,5 +11,5 @@ public interface RefreshTokenRepository {
 
     RefreshToken save(RefreshToken refreshToken);
 
-    void revokeAllByUserId(UUID userId);
+    void revokeAllByUserId(UserId userId);
 }

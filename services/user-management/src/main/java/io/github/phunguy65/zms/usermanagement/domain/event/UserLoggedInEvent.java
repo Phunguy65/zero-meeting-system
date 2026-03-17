@@ -5,8 +5,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 /** Published when a user successfully logs in. Topic: {@code user-management.user.logged-in}. */
-public record UserLoggedInEvent(UUID eventId, UUID aggregateId, String email, Instant loginAt)
+public record UserLoggedInEvent(UUID eventId, UUID userId, String email, Instant loginAt)
         implements PublishableEvent {
+
+    @Override
+    public UUID aggregateId() {
+        return userId;
+    }
 
     @Override
     public String aggregateType() {

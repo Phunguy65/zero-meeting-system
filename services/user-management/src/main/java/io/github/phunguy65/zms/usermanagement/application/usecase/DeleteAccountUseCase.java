@@ -1,12 +1,12 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.response.DeleteAccountResponse;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
-import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ public class DeleteAccountUseCase {
     }
 
     @Transactional
-    public Result<DeleteAccountResponse, AuthError> execute(UUID userId) {
+    public Result<DeleteAccountResponse, AuthError> execute(UserId userId) {
         var userOpt = userRepository.findById(userId);
 
         if (userOpt.isEmpty()) {
@@ -38,7 +38,7 @@ public class DeleteAccountUseCase {
         var user = userOpt.get();
         if (user.isDeleted()) {
             return Result.success(new DeleteAccountResponse(
-                    user.getId(),
+                    user.getId().value(),
                     user.getEmail().value(),
                     user.getFullName().value(),
                     user.getDeletedAt().orElseThrow()));
@@ -55,7 +55,7 @@ public class DeleteAccountUseCase {
         saved.clearDomainEvents();
 
         return Result.success(new DeleteAccountResponse(
-                saved.getId(),
+                saved.getId().value(),
                 saved.getEmail().value(),
                 saved.getFullName().value(),
                 saved.getDeletedAt().orElseThrow()));

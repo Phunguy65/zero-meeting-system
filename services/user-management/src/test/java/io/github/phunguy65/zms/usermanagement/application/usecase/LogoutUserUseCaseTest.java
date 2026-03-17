@@ -4,15 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.command.LogoutCommand;
 import io.github.phunguy65.zms.usermanagement.application.helper.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.RefreshTokenId;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,8 +57,8 @@ class LogoutUserUseCaseTest {
     void alreadyRevokedIsIdempotentSuccess() {
         String tokenHash = refreshTokenIssuer.hash(RAW_TOKEN);
         var revoked = RefreshToken.reconstitute(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
+                RefreshTokenId.of(UuidCreator.getTimeOrderedEpoch()),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 tokenHash,
                 Instant.now().plusSeconds(3600),
                 Instant.now().minusSeconds(10),
@@ -73,8 +75,8 @@ class LogoutUserUseCaseTest {
     void successfulRevocation() {
         String tokenHash = refreshTokenIssuer.hash(RAW_TOKEN);
         var active = RefreshToken.reconstitute(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
+                RefreshTokenId.of(UuidCreator.getTimeOrderedEpoch()),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 tokenHash,
                 Instant.now().plusSeconds(3600),
                 null,

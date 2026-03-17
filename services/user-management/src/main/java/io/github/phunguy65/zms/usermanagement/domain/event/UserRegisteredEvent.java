@@ -11,12 +11,17 @@ import org.jspecify.annotations.Nullable;
  */
 public record UserRegisteredEvent(
         UUID eventId,
-        UUID aggregateId,
+        UUID userId,
         String email,
         String fullName,
         @Nullable String username,
         Instant registeredAt)
         implements PublishableEvent {
+
+    @Override
+    public UUID aggregateId() {
+        return userId;
+    }
 
     @Override
     public String aggregateType() {

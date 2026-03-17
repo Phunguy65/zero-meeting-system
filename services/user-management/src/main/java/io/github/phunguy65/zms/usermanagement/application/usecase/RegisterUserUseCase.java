@@ -57,7 +57,7 @@ public class RegisterUserUseCase {
         saved.clearDomainEvents();
 
         return Result.success(new RegisterResponse(
-                saved.getId(),
+                saved.getId().value(),
                 saved.getEmail().value(),
                 saved.getFullName().value(),
                 saved.getUsername().map(Username::value).orElse(null)));

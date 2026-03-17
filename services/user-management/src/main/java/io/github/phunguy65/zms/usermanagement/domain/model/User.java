@@ -3,6 +3,7 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserDeletedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
@@ -11,15 +12,14 @@ import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPas
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
  * User aggregate root. Represents a registered account in the system.
  */
-public class User extends AggregateRoot<UUID> {
+public class User extends AggregateRoot<UserId> {
 
-    private final UUID id;
+    private final UserId id;
     private Email email;
     /** Null for Google-only accounts. */
     private @Nullable HashedPassword hashedPassword;
@@ -35,7 +35,7 @@ public class User extends AggregateRoot<UUID> {
     private @Nullable Instant deletedAt;
 
     private User(
-            UUID id,
+            UserId id,
             Email email,
             @Nullable HashedPassword hashedPassword,
             FullName fullName,
@@ -66,7 +66,7 @@ public class User extends AggregateRoot<UUID> {
             Email email, HashedPassword hashedPassword, FullName fullName, Username username) {
         Instant now = Instant.now();
         var user = new User(
-                UuidCreator.getTimeOrderedEpoch(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 email,
                 hashedPassword,
                 fullName,
@@ -80,7 +80,7 @@ public class User extends AggregateRoot<UUID> {
                 null);
         user.registerEvent(new UserRegisteredEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                user.id,
+                user.id.value(),
                 email.value(),
                 fullName.value(),
                 username.value(),
@@ -100,7 +100,7 @@ public class User extends AggregateRoot<UUID> {
             Username username) {
         Instant now = Instant.now();
         var user = new User(
-                UuidCreator.getTimeOrderedEpoch(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 email,
                 null,
                 fullName,
@@ -114,7 +114,7 @@ public class User extends AggregateRoot<UUID> {
                 null);
         user.registerEvent(new UserRegisteredEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                user.id,
+                user.id.value(),
                 email.value(),
                 fullName.value(),
                 username.value(),
@@ -139,7 +139,7 @@ public class User extends AggregateRoot<UUID> {
 
     /** Reconstitution factory used by the persistence adapter. */
     public static User reconstitute(
-            UUID id,
+            UserId id,
             Email email,
             @Nullable HashedPassword hashedPassword,
             FullName fullName,
@@ -172,7 +172,7 @@ public class User extends AggregateRoot<UUID> {
         this.deletedAt = now;
         this.updatedAt = now;
         registerEvent(new UserDeletedEvent(
-                UuidCreator.getTimeOrderedEpoch(), this.id, this.email.value(), now));
+                UuidCreator.getTimeOrderedEpoch(), this.id.value(), this.email.value(), now));
     }
 
     /** Updates the raw JSON preferences string. */
@@ -209,7 +209,7 @@ public class User extends AggregateRoot<UUID> {
         this.updatedAt = Instant.now();
         registerEvent(new UserUpdatedEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                this.id,
+                this.id.value(),
                 this.email.value(),
                 this.fullName.value(),
                 this.username != null ? this.username.value() : null,
@@ -244,7 +244,7 @@ public class User extends AggregateRoot<UUID> {
         this.updatedAt = Instant.now();
         registerEvent(new UserUpdatedEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                this.id,
+                this.id.value(),
                 this.email.value(),
                 this.fullName.value(),
                 this.username != null ? this.username.value() : null,
@@ -259,7 +259,7 @@ public class User extends AggregateRoot<UUID> {
     }
 
     @Override
-    public UUID getId() {
+    public UserId getId() {
         return id;
     }
 

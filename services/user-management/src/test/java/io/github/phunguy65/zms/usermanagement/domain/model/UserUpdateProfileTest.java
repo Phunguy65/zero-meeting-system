@@ -2,19 +2,20 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import java.time.Instant;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class UserUpdateProfileTest {
 
     private User buildUser(String avatarUrl) {
         return User.reconstitute(
-                UUID.randomUUID(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 Email.of("alice@example.com"),
                 null,
                 FullName.of("Alice"),

@@ -8,9 +8,9 @@ import static org.mockito.Mockito.when;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.cloudevents.CloudEvent;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,10 +36,10 @@ class KafkaEventPublisherTest {
 
     @Test
     void publish_sendsCloudEventWithCorrectTopicAndKey() {
-        UUID userId = UUID.randomUUID();
+        var userId = UserId.of(UuidCreator.getTimeOrderedEpoch());
         var event = new UserRegisteredEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                userId,
+                userId.value(),
                 "alice@example.com",
                 "Alice",
                 "alice_user",
@@ -54,14 +54,14 @@ class KafkaEventPublisherTest {
         verify(kafkaTemplate)
                 .send(
                         eq("user-management.user.registered"),
-                        eq(userId.toString()),
+                        eq(userId.value().toString()),
                         ceCaptor.capture());
 
         CloudEvent ce = ceCaptor.getValue();
         assertThat(ce.getId()).isEqualTo(event.eventId().toString());
         assertThat(ce.getType()).isEqualTo("io.github.phunguy65.zms.user.registered.v1");
         assertThat(ce.getSource().toString()).isEqualTo("user-management");
-        assertThat(ce.getSubject()).isEqualTo(userId.toString());
+        assertThat(ce.getSubject()).isEqualTo(userId.value().toString());
         assertThat(ce.getDataContentType()).isEqualTo("application/json");
         assertThat(ce.getData()).isNotNull();
     }

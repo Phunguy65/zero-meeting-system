@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.command.GoogleLoginCommand;
 import io.github.phunguy65.zms.usermanagement.application.helper.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
@@ -22,7 +24,6 @@ import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,7 +107,7 @@ class LoginWithGoogleUseCaseTest {
     @Test
     void returningGoogleUserSkipsCreation() {
         var existingUser = User.reconstitute(
-                UUID.randomUUID(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 Email.of(EMAIL),
                 null,
                 FullName.of("Alice"),
@@ -135,7 +136,7 @@ class LoginWithGoogleUseCaseTest {
     @Test
     void accountLinkingForExistingEmailUser() {
         var emailUser = User.reconstitute(
-                UUID.randomUUID(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 Email.of(EMAIL),
                 HashedPassword.of("$argon2id$hash"),
                 FullName.of("Alice"),
@@ -165,7 +166,7 @@ class LoginWithGoogleUseCaseTest {
     @Test
     void deletedUserReturnsFailure() {
         var deletedUser = User.reconstitute(
-                UUID.randomUUID(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 Email.of(EMAIL),
                 null,
                 FullName.of("Alice"),

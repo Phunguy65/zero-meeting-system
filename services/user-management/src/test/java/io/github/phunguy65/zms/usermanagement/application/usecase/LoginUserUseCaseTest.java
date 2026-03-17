@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.command.LoginCommand;
 import io.github.phunguy65.zms.usermanagement.application.helper.RefreshTokenIssuer;
 import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
@@ -21,7 +23,6 @@ import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,7 +66,7 @@ class LoginUserUseCaseTest {
                 2592000L,
                 eventPublisher);
         testUser = User.reconstitute(
-                UUID.randomUUID(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 Email.of("alice@example.com"),
                 HashedPassword.of("$argon2id$hash"),
                 FullName.of("Alice"),
@@ -142,7 +143,7 @@ class LoginUserUseCaseTest {
     @Test
     void googleOnlyAccountCannotLoginWithPassword() {
         var googleUser = User.reconstitute(
-                UUID.randomUUID(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 Email.of("google@example.com"),
                 null, // no password
                 FullName.of("Google User"),

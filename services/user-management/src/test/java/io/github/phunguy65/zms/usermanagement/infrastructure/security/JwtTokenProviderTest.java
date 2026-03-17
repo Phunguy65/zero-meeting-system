@@ -2,7 +2,8 @@ package io.github.phunguy65.zms.usermanagement.infrastructure.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.UUID;
+import com.github.f4b6a3.uuid.UuidCreator;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ class JwtTokenProviderTest {
 
     @Test
     void generateAndValidateToken() {
-        UUID userId = UUID.randomUUID();
+        UserId userId = UserId.of(UuidCreator.getTimeOrderedEpoch());
         String token = provider.generateAccessToken(userId, "alice@example.com");
 
         assertThat(provider.validateToken(token)).isTrue();
@@ -27,7 +28,7 @@ class JwtTokenProviderTest {
 
     @Test
     void extractUserIdFromToken() {
-        UUID userId = UUID.randomUUID();
+        UserId userId = UserId.of(UuidCreator.getTimeOrderedEpoch());
         String token = provider.generateAccessToken(userId, "alice@example.com");
 
         assertThat(provider.extractUserId(token)).isEqualTo(userId);
@@ -35,7 +36,7 @@ class JwtTokenProviderTest {
 
     @Test
     void extractEmailFromToken() {
-        UUID userId = UUID.randomUUID();
+        UserId userId = UserId.of(UuidCreator.getTimeOrderedEpoch());
         String token = provider.generateAccessToken(userId, "alice@example.com");
 
         assertThat(provider.extractEmail(token)).isEqualTo("alice@example.com");
@@ -51,7 +52,8 @@ class JwtTokenProviderTest {
     void expiredTokenReturnsFalse() throws InterruptedException {
         // Create provider with 1-second expiry
         JwtTokenProvider shortLived = new JwtTokenProvider(SECRET, 1L);
-        String token = shortLived.generateAccessToken(UUID.randomUUID(), "test@example.com");
+        String token = shortLived.generateAccessToken(
+                UserId.of(UuidCreator.getTimeOrderedEpoch()), "test@example.com");
 
         // Wait for expiry
         Thread.sleep(1500);
