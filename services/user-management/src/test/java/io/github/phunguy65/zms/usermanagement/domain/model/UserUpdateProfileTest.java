@@ -33,7 +33,7 @@ class UserUpdateProfileTest {
     void updateProfile_fullNameOnly_updatesFullNameAndRegistersEvent() {
         var user = buildUser(null);
 
-        user.updateProfile(FullName.of("New Name"), null, (Username) null);
+        user.updateProfile(FullName.of("New Name"), new AvatarUpdate.Keep(), (Username) null);
 
         assertThat(user.getFullName().value()).isEqualTo("New Name");
         assertThat(user.getAvatarUrl()).isEmpty();
@@ -48,7 +48,8 @@ class UserUpdateProfileTest {
     void updateProfile_avatarUrlOnly_updatesAvatarAndRegistersEvent() {
         var user = buildUser(null);
 
-        user.updateProfile(null, "https://example.com/avatar.png", (Username) null);
+        user.updateProfile(
+                null, new AvatarUpdate.Set("https://example.com/avatar.png"), (Username) null);
 
         assertThat(user.getFullName().value()).isEqualTo("Alice");
         assertThat(user.getAvatarUrl()).contains("https://example.com/avatar.png");
@@ -61,7 +62,7 @@ class UserUpdateProfileTest {
     void updateProfile_clearAvatarUrl_setsNullAndRegistersEvent() {
         var user = buildUser("https://example.com/old.png");
 
-        user.updateProfile(null, null, true, null);
+        user.updateProfile(null, new AvatarUpdate.Clear(), null);
 
         assertThat(user.getAvatarUrl()).isEmpty();
         assertThat(user.getDomainEvents()).hasSize(1);
@@ -70,10 +71,10 @@ class UserUpdateProfileTest {
     }
 
     @Test
-    void updateProfile_applyAvatarFalse_doesNotChangeAvatar() {
+    void updateProfile_keepAvatar_doesNotChangeAvatar() {
         var user = buildUser("https://example.com/existing.png");
 
-        user.updateProfile(null, null, false, null);
+        user.updateProfile(null, new AvatarUpdate.Keep(), null);
 
         assertThat(user.getAvatarUrl()).contains("https://example.com/existing.png");
     }
@@ -84,7 +85,7 @@ class UserUpdateProfileTest {
         Instant before = user.getUpdatedAt();
         Thread.sleep(1);
 
-        user.updateProfile(FullName.of("Updated"), null, (Username) null);
+        user.updateProfile(FullName.of("Updated"), new AvatarUpdate.Keep(), (Username) null);
 
         assertThat(user.getUpdatedAt()).isAfter(before);
     }
@@ -93,7 +94,7 @@ class UserUpdateProfileTest {
     void updateProfile_eventCarriesCorrectAuthProvider() {
         var user = buildUser(null);
 
-        user.updateProfile(FullName.of("Alice"), null, (Username) null);
+        user.updateProfile(FullName.of("Alice"), new AvatarUpdate.Keep(), (Username) null);
 
         var event = (UserUpdatedEvent) user.getDomainEvents().get(0);
         assertThat(event.authProvider()).isEqualTo("EMAIL");

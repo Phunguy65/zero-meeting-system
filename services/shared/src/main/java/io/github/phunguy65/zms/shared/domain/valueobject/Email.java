@@ -1,24 +1,20 @@
 package io.github.phunguy65.zms.shared.domain.valueobject;
 
 import io.github.phunguy65.zms.shared.domain.ValueObject;
-import java.util.regex.Pattern;
 
 /**
- * Value object representing a validated, lowercase-normalized email address.
+ * Value object representing a lowercase-normalized email address.
+ *
+ * <p>Format validation is delegated to the presentation layer ({@code @Email} Jakarta constraint).
+ * This VO only normalizes (strip + lowercase) and guards against blank values.
  */
 public record Email(String value) implements ValueObject {
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
-
     public Email {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(
-                    "io.github.phunguy65.zms.shared.domain.valueobject.Email must not be blank");
+            throw new IllegalArgumentException("Email must not be blank");
         }
         value = value.strip().toLowerCase();
-        if (!EMAIL_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid email format: " + value);
-        }
     }
 
     public static Email of(String raw) {

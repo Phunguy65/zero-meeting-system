@@ -143,7 +143,7 @@ public class User extends AggregateRoot<UserId> {
             Email email,
             @Nullable HashedPassword hashedPassword,
             FullName fullName,
-            @Nullable String username,
+            @Nullable Username username,
             @Nullable String avatarUrl,
             @Nullable String googleUid,
             String authProvider,
@@ -156,7 +156,7 @@ public class User extends AggregateRoot<UserId> {
                 email,
                 hashedPassword,
                 fullName,
-                username != null ? Username.of(username) : null,
+                username,
                 avatarUrl,
                 googleUid,
                 authProvider,
@@ -182,61 +182,26 @@ public class User extends AggregateRoot<UserId> {
     }
 
     /**
-     * Partially updates the user's profile fields. Only non-null arguments are applied.
-     * Updates {@code updatedAt} and registers a {@link UserUpdatedEvent} with the state
-     * after mutation.
-     *
-     * @param newFullName   new full name, or {@code null} to leave unchanged
-     * @param newAvatarUrl  new avatar URL (may be {@code null} to clear), or use a sentinel
-     *                      — callers must pass the value only when the field is present in the
-     *                      PATCH body; use {@link #updateProfile(FullName, String, boolean, Username)}
-     *                      when clearing is needed
-     * @param newUsername   new username, or {@code null} to leave unchanged
-     */
-    public void updateProfile(
-            @Nullable FullName newFullName,
-            @Nullable String newAvatarUrl,
-            @Nullable Username newUsername) {
-        if (newFullName != null) {
-            this.fullName = newFullName;
-        }
-        if (newAvatarUrl != null) {
-            this.avatarUrl = newAvatarUrl;
-        }
-        if (newUsername != null) {
-            this.username = newUsername;
-        }
-        this.updatedAt = Instant.now();
-        registerEvent(new UserUpdatedEvent(
-                UuidCreator.getTimeOrderedEpoch(),
-                this.id.value(),
-                this.email.value(),
-                this.fullName.value(),
-                this.username != null ? this.username.value() : null,
-                this.avatarUrl,
-                this.authProvider,
-                this.updatedAt));
-    }
-
-    /**
-     * Partially updates the user's profile fields with explicit avatar-clear support.
+     * Partially updates the user's profile fields.
      *
      * @param newFullName    new full name, or {@code null} to leave unchanged
-     * @param newAvatarUrl   new avatar URL value (may be {@code null} to clear)
-     * @param applyAvatarUrl {@code true} if the avatarUrl argument should be applied
-     *                       (even when null, which clears the field)
+     * @param avatarUpdate   {@link AvatarUpdate.Keep} to skip, {@link AvatarUpdate.Set} to replace,
+     *                       {@link AvatarUpdate.Clear} to remove
      * @param newUsername    new username, or {@code null} to leave unchanged
      */
     public void updateProfile(
             @Nullable FullName newFullName,
-            @Nullable String newAvatarUrl,
-            boolean applyAvatarUrl,
+            AvatarUpdate avatarUpdate,
             @Nullable Username newUsername) {
         if (newFullName != null) {
             this.fullName = newFullName;
         }
-        if (applyAvatarUrl) {
-            this.avatarUrl = newAvatarUrl;
+        switch (avatarUpdate) {
+            case AvatarUpdate.Set s -> this.avatarUrl = s.url();
+            case AvatarUpdate.Clear ignored -> this.avatarUrl = null;
+            case AvatarUpdate.Keep ignored -> {
+                /* no-op */
+            }
         }
         if (newUsername != null) {
             this.username = newUsername;

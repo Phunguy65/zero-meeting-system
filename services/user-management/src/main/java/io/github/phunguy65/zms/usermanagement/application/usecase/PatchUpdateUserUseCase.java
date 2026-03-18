@@ -7,6 +7,7 @@ import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferences
 import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
+import io.github.phunguy65.zms.usermanagement.domain.model.AvatarUpdate;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
@@ -77,9 +78,12 @@ public class PatchUpdateUserUseCase {
             FullName newFullName = command.fullName().isPresent()
                     ? FullName.of(command.fullName().get())
                     : null;
-            boolean applyAvatar = command.avatarUrl().isPresent();
-            String newAvatarUrl = applyAvatar ? command.avatarUrl().get() : null;
-            user.updateProfile(newFullName, newAvatarUrl, applyAvatar, newUsername);
+            AvatarUpdate avatarUpdate = !command.avatarUrl().isPresent()
+                    ? new AvatarUpdate.Keep()
+                    : command.avatarUrl().get() != null
+                            ? new AvatarUpdate.Set(command.avatarUrl().get())
+                            : new AvatarUpdate.Clear();
+            user.updateProfile(newFullName, avatarUpdate, newUsername);
         }
 
         if (command.preferences().isPresent()) {

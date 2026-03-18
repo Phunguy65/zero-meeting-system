@@ -113,7 +113,7 @@ public class UserRepositoryAdapter implements UserRepository {
                 Email.of(e.getEmail()),
                 hash != null ? HashedPassword.of(hash) : null,
                 FullName.of(e.getFullName()),
-                e.getUsername(),
+                e.getUsername() != null ? Username.of(e.getUsername()) : null,
                 e.getAvatarUrl(),
                 e.getGoogleUid(),
                 e.getAuthProvider(),

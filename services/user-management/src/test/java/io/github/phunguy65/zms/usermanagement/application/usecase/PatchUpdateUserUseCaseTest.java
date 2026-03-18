@@ -15,6 +15,7 @@ import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
 import java.util.Optional;
@@ -242,7 +243,7 @@ class PatchUpdateUserUseCaseTest {
                 Email.of("alice@example.com"),
                 null,
                 FullName.of("Alice"),
-                "alice_user",
+                Username.of("alice_user"),
                 null,
                 null,
                 "EMAIL",
