@@ -1,10 +1,12 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,6 +15,10 @@ public interface MeetingJpaRepository extends JpaRepository<MeetingJpaEntity, UU
     Optional<MeetingJpaEntity> findByShortCode(String shortCode);
 
     boolean existsByShortCode(String shortCode);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT m FROM MeetingJpaEntity m WHERE m.id = :id")
+    Optional<MeetingJpaEntity> findByIdWithLock(@Param("id") UUID id);
 
     /**
      * Keyset-scroll query for meetings by host, ordered by (created_at DESC, id DESC).

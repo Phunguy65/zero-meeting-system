@@ -1,14 +1,23 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Meeting;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingType;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTimeRange;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTitle;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ShortCode;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
-import io.github.phunguy65.zms.shared.application.response.CursorPageResponse;
+import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.ScrollParams;
+import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Duration;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -30,6 +39,11 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
     @Override
     public Optional<Meeting> findById(UUID id) {
         return jpa.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<Meeting> findByIdWithLock(UUID id) {
+        return jpa.findByIdWithLock(id).map(this::toDomain);
     }
 
     @Override
@@ -84,30 +98,60 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
     }
 
     private Meeting toDomain(MeetingJpaEntity e) {
+        MeetingTitle title = e.getTitle() != null ? MeetingTitle.of(e.getTitle()) : null;
+        MeetingTimeRange timeRange = e.getStartTime() != null && e.getEndTime() != null
+                ? MeetingTimeRange.of(e.getStartTime(), e.getEndTime())
+                : null;
+        java.time.Instant endTime = (timeRange == null) ? e.getEndTime() : null;
+        MeetingSettings settings = new MeetingSettings(
+                AdmissionPolicy.valueOf(e.getSettings().admissionPolicy()),
+                e.getSettings().joinRequestTimeoutSeconds() != null
+                        ? Duration.ofSeconds(e.getSettings().joinRequestTimeoutSeconds())
+                        : null,
+                e.getSettings().allowGuest(),
+                e.getSettings().muteOnEntry(),
+                e.getSettings().maxParticipants(),
+                e.getSettings().recordingEnabled(),
+                e.getSettings().screenShareMode(),
+                e.getSettings().chatEnabled(),
+                e.getSettings().passwordHash());
         return Meeting.reconstitute(
-                e.getId(),
-                e.getHostId(),
+                MeetingId.of(e.getId()),
+                UserId.of(e.getHostId()),
                 ShortCode.of(e.getShortCode()),
-                e.getTitle(),
-                e.getStartTime(),
-                e.getEndTime(),
-                e.getType(),
-                e.getStatus(),
-                e.getSettings(),
+                title,
+                e.getDescription(),
+                timeRange,
+                endTime,
+                MeetingType.valueOf(e.getType()),
+                MeetingStatus.valueOf(e.getStatus()),
+                settings,
                 e.getCreatedAt());
     }
 
     private MeetingJpaEntity toEntity(Meeting m) {
         return new MeetingJpaEntity(
-                m.getId(),
-                m.getHostId(),
+                m.getId().value(),
+                m.getHostId().value(),
                 m.getShortCode().value(),
-                m.getTitle(),
-                m.getStartTime(),
-                m.getEndTime(),
-                m.getType(),
-                m.getStatus(),
-                m.getSettings(),
+                m.getTitle().map(MeetingTitle::value).orElse(null),
+                m.getDescription().orElse(null),
+                m.getStartTime().orElse(null),
+                m.getEndTime().orElse(null),
+                m.getType().name(),
+                m.getStatus().name(),
+                new MeetingSettingsJson(
+                        m.getSettings().admissionPolicy().name(),
+                        m.getSettings().joinRequestTimeout() != null
+                                ? (int) m.getSettings().joinRequestTimeout().toSeconds()
+                                : null,
+                        m.getSettings().allowGuest(),
+                        m.getSettings().muteOnEntry(),
+                        m.getSettings().maxParticipants(),
+                        m.getSettings().recordingEnabled(),
+                        m.getSettings().screenShareMode(),
+                        m.getSettings().chatEnabled(),
+                        m.getSettings().passwordHash()),
                 m.getCreatedAt());
     }
 }

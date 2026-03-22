@@ -1,7 +1,10 @@
 package io.github.phunguy65.zms.meetingmanagement.domain;
 
+import io.github.phunguy65.zms.meetingmanagement.domain.model.InviteeStatus;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.RecordingStatus;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId;
 import io.github.phunguy65.zms.shared.domain.DomainError;
 import java.util.UUID;
 
@@ -12,6 +15,13 @@ public sealed interface MeetingError extends DomainError {
         @Override
         public String message() {
             return "Meeting not found: " + id;
+        }
+    }
+
+    record MeetingNotFoundByShortCode(String shortCode) implements MeetingError {
+        @Override
+        public String message() {
+            return "Meeting not found for short code: " + shortCode;
         }
     }
 
@@ -37,10 +47,17 @@ public sealed interface MeetingError extends DomainError {
         }
     }
 
-    record RecordingNotFound(UUID id) implements MeetingError {
+    record NoActiveRecording(UUID meetingId) implements MeetingError {
         @Override
         public String message() {
-            return "Recording not found: " + id;
+            return "No active recording found for meeting: " + meetingId;
+        }
+    }
+
+    record RecordingNotFound(RecordingId id) implements MeetingError {
+        @Override
+        public String message() {
+            return "Recording not found: " + id.value();
         }
     }
 
@@ -62,6 +79,100 @@ public sealed interface MeetingError extends DomainError {
         @Override
         public String message() {
             return "No active participation log for meeting " + meetingId + " device " + deviceId;
+        }
+    }
+
+    record GuestNotAllowed(UUID meetingId) implements MeetingError {
+        @Override
+        public String message() {
+            return "Guest access is not allowed for meeting: " + meetingId;
+        }
+    }
+
+    record LiveKitUnavailable(String detail) implements MeetingError {
+        @Override
+        public String message() {
+            return "LiveKit media server is unavailable: " + detail;
+        }
+    }
+
+    record MeetingFull(UUID meetingId, int limit) implements MeetingError {
+        @Override
+        public String message() {
+            return "Meeting " + meetingId + " is full (limit: " + limit + ")";
+        }
+    }
+
+    record InviteeNotFound(String identifier) implements MeetingError {
+        @Override
+        public String message() {
+            return "Invitee not found: " + identifier;
+        }
+    }
+
+    record InvalidMeetingDuration(long actualMinutes, int minMinutes, int maxMinutes)
+            implements MeetingError {
+        @Override
+        public String message() {
+            return "Meeting duration " + actualMinutes + " minutes is outside allowed range ["
+                    + minMinutes + ", " + maxMinutes + "]";
+        }
+    }
+
+    record UserServiceUnavailable(String detail) implements MeetingError {
+        @Override
+        public String message() {
+            return "User service is unavailable: " + detail;
+        }
+    }
+
+    record InvalidSettings(String detail) implements MeetingError {
+        @Override
+        public String message() {
+            return "Invalid meeting settings: " + detail;
+        }
+    }
+
+    record InvalidInviteeTransition(InviteeStatus from, InviteeStatus to) implements MeetingError {
+        @Override
+        public String message() {
+            return "Cannot transition invitee from " + from + " to " + to;
+        }
+    }
+
+    record InvalidPassword(UUID meetingId) implements MeetingError {
+        @Override
+        public String message() {
+            return "Invalid password for meeting: " + meetingId;
+        }
+    }
+
+    record JoinRequestNotFound(UUID meetingId, UUID requestId) implements MeetingError {
+        @Override
+        public String message() {
+            return "Join request " + requestId + " not found for meeting: " + meetingId;
+        }
+    }
+
+    record JoinRequestExpired(UUID meetingId, UUID requestId) implements MeetingError {
+        @Override
+        public String message() {
+            return "Join request " + requestId + " has expired for meeting: " + meetingId;
+        }
+    }
+
+    record InvalidJoinRequestTransition(JoinRequestStatus from, JoinRequestStatus to)
+            implements MeetingError {
+        @Override
+        public String message() {
+            return "Cannot transition join request from " + from + " to " + to;
+        }
+    }
+
+    record NotWaitingForApproval(UUID meetingId) implements MeetingError {
+        @Override
+        public String message() {
+            return "Meeting " + meetingId + " does not require manual approval";
         }
     }
 }

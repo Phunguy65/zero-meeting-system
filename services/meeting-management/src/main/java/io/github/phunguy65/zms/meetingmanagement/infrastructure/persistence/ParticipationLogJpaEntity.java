@@ -1,10 +1,7 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
-import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,9 +27,14 @@ public class ParticipationLogJpaEntity {
     @Column(name = "display_name", nullable = false, length = 255)
     private String displayName;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ParticipantRole role;
+    private String role;
+
+    @Column(name = "livekit_identity", nullable = false, length = 255)
+    private String livekitIdentity;
+
+    @Column(name = "livekit_participant_sid", length = 50)
+    private @Nullable String livekitParticipantSid;
 
     @Column(name = "joined_at", nullable = false)
     private Instant joinedAt;
@@ -40,26 +42,25 @@ public class ParticipationLogJpaEntity {
     @Column(name = "left_at")
     private @Nullable Instant leftAt;
 
-    @Column(name = "device_id", length = 255)
-    private @Nullable String deviceId;
-
     protected ParticipationLogJpaEntity() {}
 
     public ParticipationLogJpaEntity(
             UUID meetingId,
             @Nullable UUID userId,
             String displayName,
-            ParticipantRole role,
+            String role,
+            String livekitIdentity,
+            @Nullable String livekitParticipantSid,
             Instant joinedAt,
-            @Nullable Instant leftAt,
-            @Nullable String deviceId) {
+            @Nullable Instant leftAt) {
         this.meetingId = meetingId;
         this.userId = userId;
         this.displayName = displayName;
         this.role = role;
+        this.livekitIdentity = livekitIdentity;
+        this.livekitParticipantSid = livekitParticipantSid;
         this.joinedAt = joinedAt;
         this.leftAt = leftAt;
-        this.deviceId = deviceId;
     }
 
     public Long getId() {
@@ -78,8 +79,16 @@ public class ParticipationLogJpaEntity {
         return displayName;
     }
 
-    public ParticipantRole getRole() {
+    public String getRole() {
         return role;
+    }
+
+    public String getLivekitIdentity() {
+        return livekitIdentity;
+    }
+
+    public @Nullable String getLivekitParticipantSid() {
+        return livekitParticipantSid;
     }
 
     public Instant getJoinedAt() {
@@ -90,12 +99,11 @@ public class ParticipationLogJpaEntity {
         return leftAt;
     }
 
-    public @Nullable String getDeviceId() {
-        return deviceId;
-    }
-
-    /** Called by the adapter to update left_at after a participant leaves. */
     public void setLeftAt(Instant leftAt) {
         this.leftAt = leftAt;
+    }
+
+    public void setLivekitParticipantSid(String sid) {
+        this.livekitParticipantSid = sid;
     }
 }

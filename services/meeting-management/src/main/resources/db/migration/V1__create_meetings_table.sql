@@ -1,7 +1,7 @@
 -- V1: Create meetings table
 CREATE TABLE meetings
 (
-    id         UUID        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    id         UUID        NOT NULL DEFAULT uuidv7() PRIMARY KEY,
     host_id    UUID        NOT NULL,
     short_code VARCHAR(15) NOT NULL,
     title      VARCHAR(255),

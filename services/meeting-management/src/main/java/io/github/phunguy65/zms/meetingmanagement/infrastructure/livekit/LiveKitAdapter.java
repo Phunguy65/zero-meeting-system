@@ -1,94 +1,176 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.livekit;
 
+import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantGrants;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import javax.crypto.SecretKey;
-import org.jspecify.annotations.Nullable;
+import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.LiveKitProperties;
+import io.github.phunguy65.zms.shared.domain.Result;
+import io.livekit.server.*;
+import java.io.IOException;
+import java.util.List;
+import livekit.LivekitModels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
+import retrofit2.Response;
 
 /**
- * LiveKit adapter — generates JWT access tokens and manages rooms via the LiveKit HTTP API.
+ * LiveKit adapter — generates JWT access tokens and manages rooms via the LiveKit Server SDK.
  *
- * <p>Token format follows the LiveKit JWT spec:
+ * <p>Token identity format:
  * <ul>
- *   <li>Signed with HMAC-SHA256 using the API secret</li>
- *   <li>Claims: {@code iss} (API key), {@code sub} (participant identity), {@code video} grants</li>
+ *   <li>Authenticated user: {@code "<userId>:<deviceId>"} — supports multi-device without
+ *       triggering {@code DUPLICATE_IDENTITY} disconnects.
+ *   <li>Guest: {@code "guest:<deviceId>"}
  * </ul>
+ *
+ * <p>Permission matrix by role:
+ * <ul>
+ *   <li>HOST — roomAdmin, canPublish, canPublishData, canSubscribe, canUpdateOwnMetadata
+ *   <li>PARTICIPANT — canPublish, canPublishData, canSubscribe, canUpdateOwnMetadata
+ *   <li>GUEST — canPublishData, canSubscribe (subscribe + chat only)
+ * </ul>
+ *
+ * <p>Room operations use blocking {@code call.execute()}, which is safe on virtual threads
+ * (enabled via {@code spring.threads.virtual.enabled=true}). All infrastructure exceptions are
+ * caught internally and returned as {@link MeetingError.LiveKitUnavailable}.
  */
 @Component
 public class LiveKitAdapter implements LiveKitPort {
 
     private static final Logger log = LoggerFactory.getLogger(LiveKitAdapter.class);
 
-    private final String apiKey;
-    private final SecretKey signingKey;
-    private final long tokenExpirySeconds;
-    private final RestClient restClient;
+    private final LiveKitProperties props;
+    private final RoomServiceClient roomServiceClient;
 
-    public LiveKitAdapter(
-            @Value("${app.livekit.api-key}") String apiKey,
-            @Value("${app.livekit.api-secret}") String apiSecret,
-            @Value("${app.livekit.token-expiry-seconds:7200}") long tokenExpirySeconds,
-            @Value("${app.livekit.url}") String livekitUrl) {
-        this.apiKey = apiKey;
-        this.signingKey = Keys.hmacShaKeyFor(apiSecret.getBytes(StandardCharsets.UTF_8));
-        this.tokenExpirySeconds = tokenExpirySeconds;
-        this.restClient = RestClient.builder().baseUrl(livekitUrl).build();
+    public LiveKitAdapter(LiveKitProperties props, RoomServiceClient roomServiceClient) {
+        this.props = props;
+        this.roomServiceClient = roomServiceClient;
     }
 
+    // -------------------------------------------------------------------------
+    // Token generation
+    // -------------------------------------------------------------------------
+
     @Override
-    public String generateToken(
+    public Result<String, MeetingError> generateToken(
             LiveKitRoomName roomName,
-            @Nullable UUID userId,
+            LiveKitIdentity identity,
             String displayName,
             ParticipantRole role) {
-        String identity = userId != null ? userId.toString() : "guest-" + UUID.randomUUID();
-        boolean canPublish = role == ParticipantRole.HOST;
+        try {
+            AccessToken token = new AccessToken(props.getApiKey(), props.getApiSecret());
+            token.setIdentity(identity.value());
+            token.setName(displayName);
+            token.setTtl(props.getTokenExpirySeconds() * 1_000L);
 
-        Map<String, Object> videoGrants = new HashMap<>();
-        videoGrants.put("room", roomName.value());
-        videoGrants.put("roomJoin", true);
-        videoGrants.put("canPublish", canPublish);
-        videoGrants.put("canPublishData", canPublish);
-        videoGrants.put("canSubscribe", true);
+            token.addGrants(new RoomJoin(true), new RoomName(roomName.value()));
+            token.addGrants(buildRoleGrants(role).toArray(new VideoGrant[0]));
 
-        Instant now = Instant.now();
-        return Jwts.builder()
-                .issuer(apiKey)
-                .subject(identity)
-                .claim("name", displayName)
-                .claim("video", videoGrants)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusSeconds(tokenExpirySeconds)))
-                .signWith(signingKey)
-                .compact();
+            return Result.success(token.toJwt());
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to generate LiveKit token for room '{}': {}",
+                    roomName.value(),
+                    e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
+    }
+
+    private List<VideoGrant> buildRoleGrants(ParticipantRole role) {
+        return switch (role) {
+            case HOST ->
+                List.of(
+                        new RoomAdmin(true),
+                        new CanPublish(true),
+                        new CanPublishData(true),
+                        new CanSubscribe(true),
+                        new CanUpdateOwnMetadata(true));
+            case PARTICIPANT ->
+                List.of(
+                        new CanPublish(true),
+                        new CanPublishData(true),
+                        new CanSubscribe(true),
+                        new CanUpdateOwnMetadata(true));
+            case GUEST ->
+                List.of(
+                        new CanPublish(false),
+                        new CanPublishData(false),
+                        new CanSubscribe(true),
+                        new CanUpdateOwnMetadata(false));
+        };
+    }
+
+    // -------------------------------------------------------------------------
+    // Room management
+    // -------------------------------------------------------------------------
+
+    @Override
+    public Result<Void, MeetingError> updateParticipantPermissions(
+            LiveKitRoomName roomName, String identity, ParticipantGrants grants) {
+        LivekitModels.ParticipantPermission permission =
+                LivekitModels.ParticipantPermission.newBuilder()
+                        .setCanPublish(grants.canPublish())
+                        .setCanPublishData(grants.canPublishData())
+                        .setCanSubscribe(grants.canSubscribe())
+                        .build();
+
+        try {
+            Response<LivekitModels.ParticipantInfo> response = roomServiceClient
+                    .updateParticipant(roomName.value(), identity, null, null, permission, null)
+                    .execute();
+
+            if (!response.isSuccessful()) {
+                String msg = "HTTP %d: %s".formatted(response.code(), response.message());
+                log.warn(
+                        "Failed to update permissions for participant '{}' in room '{}': {}",
+                        identity,
+                        roomName.value(),
+                        msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            log.info(
+                    "Updated permissions for participant '{}' in room '{}': canPublish={}, canPublishData={}, canSubscribe={}",
+                    identity,
+                    roomName.value(),
+                    grants.canPublish(),
+                    grants.canPublishData(),
+                    grants.canSubscribe());
+
+            return Result.success();
+
+        } catch (IOException e) {
+            log.warn(
+                    "Network error updating participant '{}' in room '{}': {}",
+                    identity,
+                    roomName.value(),
+                    e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
     }
 
     @Override
-    public void createRoom(LiveKitRoomName roomName) {
-        // LiveKit auto-creates rooms on first participant join.
-        // Explicit creation is a no-op here; can be extended to pre-configure room options
-        // via the LiveKit Twirp API if needed.
-        log.debug("LiveKit room will be auto-created on join: {}", roomName.value());
-    }
+    public Result<Void, MeetingError> deleteRoom(LiveKitRoomName roomName) {
+        try {
+            Response<?> response =
+                    roomServiceClient.deleteRoom(roomName.value()).execute();
 
-    @Override
-    public void deleteRoom(LiveKitRoomName roomName) {
-        // POST /twirp/livekit.RoomService/DeleteRoom
-        // Requires a server-side admin token — omitted for now, can be added when needed.
-        log.info("LiveKit room deletion requested: {}", roomName.value());
+            if (!response.isSuccessful()) {
+                String msg = "HTTP %d: %s".formatted(response.code(), response.message());
+                log.warn("Failed to delete LiveKit room '{}': {}", roomName.value(), msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            log.info("Deleted LiveKit room: {}", roomName.value());
+            return Result.success();
+
+        } catch (IOException e) {
+            log.warn("Network error deleting room '{}': {}", roomName.value(), e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
     }
 }

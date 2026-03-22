@@ -5,30 +5,44 @@ import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.RecordingCompletedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.RecordingFailedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.RecordingStartedEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Recording aggregate root — separate from Meeting to allow independent lifecycle management.
  *
- * <p>A recording is created when a meeting goes LIVE and transitions through:
- * RECORDING → PROCESSING → COMPLETED (or FAILED at any point).
- *
- * <p>The {@code file_url} and {@code thumbnail_url} are populated asynchronously by the
- * MinIO/S3 callback once the file is uploaded.
+ * <p>Lifecycle driven by LiveKit egress webhooks:
+ * <ol>
+ *   <li>{@link #startFor} — created by {@code StartRecordingUseCase} (status: {@code PENDING}).
+ *   <li>{@link #activate} — called by {@code egress_started} webhook handler
+ *       (PENDING → RECORDING), sets {@code livekitEgressId}.
+ *   <li>{@link #complete} — called by {@code egress_ended} webhook handler
+ *       (RECORDING → COMPLETED), sets file URL and metrics from LiveKit {@code fileResults}.
+ *   <li>{@link #fail} — called on {@code egress_ended} with error, or on timeout
+ *       (PENDING/RECORDING → FAILED).
+ * </ol>
  */
-public class Recording extends AggregateRoot<UUID> {
+public class Recording extends AggregateRoot<RecordingId> {
 
-    private final UUID id;
-    private final UUID meetingId;
+    private final RecordingId id;
+    private final MeetingId meetingId;
+    private final LiveKitRoomName livekitRoomName;
     private final Instant startedAt;
     private final Instant createdAt;
 
+    private @Nullable LiveKitEgressId livekitEgressId;
     private @Nullable String fileUrl;
     private @Nullable String thumbnailUrl;
+    private @Nullable String storagePath;
+    private @Nullable String errorMessage;
     private RecordingStatus status;
     private @Nullable Instant endedAt;
     private int durationSeconds;
@@ -39,10 +53,14 @@ public class Recording extends AggregateRoot<UUID> {
     // -------------------------------------------------------------------------
 
     private Recording(
-            UUID id,
-            UUID meetingId,
+            RecordingId id,
+            MeetingId meetingId,
+            LiveKitRoomName livekitRoomName,
+            @Nullable LiveKitEgressId livekitEgressId,
             @Nullable String fileUrl,
             @Nullable String thumbnailUrl,
+            @Nullable String storagePath,
+            @Nullable String errorMessage,
             RecordingStatus status,
             Instant startedAt,
             @Nullable Instant endedAt,
@@ -51,8 +69,12 @@ public class Recording extends AggregateRoot<UUID> {
             Instant createdAt) {
         this.id = id;
         this.meetingId = meetingId;
+        this.livekitRoomName = livekitRoomName;
+        this.livekitEgressId = livekitEgressId;
         this.fileUrl = fileUrl;
         this.thumbnailUrl = thumbnailUrl;
+        this.storagePath = storagePath;
+        this.errorMessage = errorMessage;
         this.status = status;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
@@ -65,22 +87,43 @@ public class Recording extends AggregateRoot<UUID> {
     // Factory methods
     // -------------------------------------------------------------------------
 
-    /** Creates a new recording for a meeting that just went LIVE. */
-    public static Recording startFor(UUID meetingId) {
-        UUID id = UuidCreator.getTimeOrderedEpoch();
+    /**
+     * Creates a new PENDING recording. Called by {@code StartRecordingUseCase} before
+     * the LiveKit egress is confirmed. Registers {@code RecordingStartedEvent}.
+     */
+    public static Recording startFor(MeetingId meetingId, LiveKitRoomName livekitRoomName) {
+        RecordingId id = RecordingId.of(UuidCreator.getTimeOrderedEpoch());
         Instant now = Instant.now();
         Recording recording = new Recording(
-                id, meetingId, null, null, RecordingStatus.RECORDING, now, null, 0, 0L, now);
-        recording.registerEvent(new RecordingStartedEvent(UUID.randomUUID(), id, meetingId, now));
+                id,
+                meetingId,
+                livekitRoomName,
+                null,
+                null,
+                null,
+                null,
+                null,
+                RecordingStatus.PENDING,
+                now,
+                null,
+                0,
+                0L,
+                now);
+        recording.registerEvent(
+                new RecordingStartedEvent(UUID.randomUUID(), id.value(), meetingId.value(), now));
         return recording;
     }
 
     /** Reconstitutes a Recording from persistence. No domain events registered. */
     public static Recording reconstitute(
-            UUID id,
-            UUID meetingId,
+            RecordingId id,
+            MeetingId meetingId,
+            LiveKitRoomName livekitRoomName,
+            @Nullable LiveKitEgressId livekitEgressId,
             @Nullable String fileUrl,
             @Nullable String thumbnailUrl,
+            @Nullable String storagePath,
+            @Nullable String errorMessage,
             RecordingStatus status,
             Instant startedAt,
             @Nullable Instant endedAt,
@@ -90,8 +133,12 @@ public class Recording extends AggregateRoot<UUID> {
         return new Recording(
                 id,
                 meetingId,
+                livekitRoomName,
+                livekitEgressId,
                 fileUrl,
                 thumbnailUrl,
+                storagePath,
+                errorMessage,
                 status,
                 startedAt,
                 endedAt,
@@ -104,20 +151,28 @@ public class Recording extends AggregateRoot<UUID> {
     // Domain behaviours
     // -------------------------------------------------------------------------
 
-    /** Transitions RECORDING → PROCESSING (file upload started). */
-    public Result<Void, MeetingError> markProcessing() {
-        if (!status.canTransitionTo(RecordingStatus.PROCESSING)) {
-            return Result.failure(new MeetingError.InvalidRecordingTransition(
-                    status, RecordingStatus.PROCESSING));
+    /**
+     * Transitions PENDING → RECORDING. Called by the {@code egress_started} webhook handler.
+     */
+    public Result<Void, MeetingError> activate(LiveKitEgressId egressId) {
+        if (!status.canTransitionTo(RecordingStatus.RECORDING)) {
+            return Result.failure(
+                    new MeetingError.InvalidRecordingTransition(status, RecordingStatus.RECORDING));
         }
-        status = RecordingStatus.PROCESSING;
-        endedAt = Instant.now();
+        this.status = RecordingStatus.RECORDING;
+        this.livekitEgressId = egressId;
         return Result.success();
     }
 
-    /** Transitions PROCESSING → COMPLETED. Called by MinIO/S3 callback. */
+    /**
+     * Transitions RECORDING → COMPLETED. Called by the {@code egress_ended} webhook handler.
+     *
+     * <p>{@code durationSeconds} should be derived from LiveKit's {@code fileResults[0].duration}
+     * (nanoseconds) divided by {@code 1_000_000_000}.
+     */
     public Result<Void, MeetingError> complete(
             String fileUrl,
+            String storagePath,
             @Nullable String thumbnailUrl,
             int durationSeconds,
             long fileSizeBytes) {
@@ -127,13 +182,15 @@ public class Recording extends AggregateRoot<UUID> {
         }
         this.status = RecordingStatus.COMPLETED;
         this.fileUrl = fileUrl;
+        this.storagePath = storagePath;
         this.thumbnailUrl = thumbnailUrl;
         this.durationSeconds = durationSeconds;
         this.fileSizeBytes = fileSizeBytes;
+        this.endedAt = Instant.now();
         registerEvent(new RecordingCompletedEvent(
                 UUID.randomUUID(),
-                id,
-                meetingId,
+                id.value(),
+                meetingId.value(),
                 fileUrl,
                 durationSeconds,
                 fileSizeBytes,
@@ -141,15 +198,19 @@ public class Recording extends AggregateRoot<UUID> {
         return Result.success();
     }
 
-    /** Transitions RECORDING or PROCESSING → FAILED. */
-    public Result<Void, MeetingError> fail() {
+    /**
+     * Transitions PENDING or RECORDING → FAILED.
+     */
+    public Result<Void, MeetingError> fail(@Nullable String errorMessage) {
         if (!status.canTransitionTo(RecordingStatus.FAILED)) {
             return Result.failure(
                     new MeetingError.InvalidRecordingTransition(status, RecordingStatus.FAILED));
         }
-        status = RecordingStatus.FAILED;
+        this.status = RecordingStatus.FAILED;
+        this.errorMessage = errorMessage;
         if (endedAt == null) endedAt = Instant.now();
-        registerEvent(new RecordingFailedEvent(UUID.randomUUID(), id, meetingId, Instant.now()));
+        registerEvent(new RecordingFailedEvent(
+                UUID.randomUUID(), id.value(), meetingId.value(), Instant.now()));
         return Result.success();
     }
 
@@ -158,20 +219,36 @@ public class Recording extends AggregateRoot<UUID> {
     // -------------------------------------------------------------------------
 
     @Override
-    public UUID getId() {
+    public RecordingId getId() {
         return id;
     }
 
-    public UUID getMeetingId() {
+    public MeetingId getMeetingId() {
         return meetingId;
     }
 
-    public @Nullable String getFileUrl() {
-        return fileUrl;
+    public LiveKitRoomName getLivekitRoomName() {
+        return livekitRoomName;
     }
 
-    public @Nullable String getThumbnailUrl() {
-        return thumbnailUrl;
+    public Optional<LiveKitEgressId> getLivekitEgressId() {
+        return Optional.ofNullable(livekitEgressId);
+    }
+
+    public Optional<String> getFileUrl() {
+        return Optional.ofNullable(fileUrl);
+    }
+
+    public Optional<String> getThumbnailUrl() {
+        return Optional.ofNullable(thumbnailUrl);
+    }
+
+    public Optional<String> getStoragePath() {
+        return Optional.ofNullable(storagePath);
+    }
+
+    public Optional<String> getErrorMessage() {
+        return Optional.ofNullable(errorMessage);
     }
 
     public RecordingStatus getStatus() {
@@ -182,8 +259,8 @@ public class Recording extends AggregateRoot<UUID> {
         return startedAt;
     }
 
-    public @Nullable Instant getEndedAt() {
-        return endedAt;
+    public Optional<Instant> getEndedAt() {
+        return Optional.ofNullable(endedAt);
     }
 
     public int getDurationSeconds() {

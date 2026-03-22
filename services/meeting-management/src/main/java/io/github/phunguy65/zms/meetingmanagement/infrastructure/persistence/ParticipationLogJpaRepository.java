@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,12 +13,36 @@ public interface ParticipationLogJpaRepository
 
     List<ParticipationLogJpaEntity> findByMeetingId(UUID meetingId);
 
-    /**
-     * Finds the most recent active (not yet left) session for a given meeting and device.
-     */
+    @Query("SELECT COUNT(p) FROM ParticipationLogJpaEntity p "
+            + "WHERE p.meetingId = :meetingId AND p.leftAt IS NULL")
+    long countActiveByMeetingId(@Param("meetingId") UUID meetingId);
+
+    /** Primary lookup for participant_left webhook: find active session by LiveKit SID. */
     @Query("SELECT p FROM ParticipationLogJpaEntity p "
-            + "WHERE p.meetingId = :meetingId AND p.deviceId = :deviceId AND p.leftAt IS NULL "
+            + "WHERE p.livekitParticipantSid = :sid AND p.leftAt IS NULL")
+    Optional<ParticipationLogJpaEntity> findActiveBySid(@Param("sid") String sid);
+
+    /** Lookup for participant_joined webhook: find pending entry to assign SID. */
+    @Query("SELECT p FROM ParticipationLogJpaEntity p "
+            + "WHERE p.meetingId = :meetingId AND p.livekitIdentity = :identity AND p.leftAt IS NULL "
             + "ORDER BY p.joinedAt DESC")
-    Optional<ParticipationLogJpaEntity> findActiveByMeetingIdAndDeviceId(
-            @Param("meetingId") UUID meetingId, @Param("deviceId") String deviceId);
+    Optional<ParticipationLogJpaEntity> findActiveByMeetingIdAndIdentity(
+            @Param("meetingId") UUID meetingId, @Param("identity") String identity);
+
+    /**
+     * Keyset-scroll query for participation logs by meeting, ordered by (joined_at DESC, id DESC).
+     * Caller should request {@code size + 1} rows to detect next page.
+     */
+    @Query(
+            value =
+                    "SELECT * FROM participation_logs p WHERE p.meeting_id = CAST(:meetingId AS uuid) "
+                            + "AND (:cursorJoinedAt IS NULL OR (p.joined_at, p.id) < (CAST(:cursorJoinedAt AS timestamptz), :cursorId)) "
+                            + "ORDER BY p.joined_at DESC, p.id DESC "
+                            + "LIMIT :limit",
+            nativeQuery = true)
+    List<ParticipationLogJpaEntity> findByMeetingIdKeyset(
+            @Param("meetingId") String meetingId,
+            @Param("cursorJoinedAt") Instant cursorJoinedAt,
+            @Param("cursorId") Long cursorId,
+            @Param("limit") int limit);
 }

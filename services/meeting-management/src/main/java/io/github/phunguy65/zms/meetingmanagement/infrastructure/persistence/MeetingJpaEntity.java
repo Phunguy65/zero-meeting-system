@@ -1,12 +1,7 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
-import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
-import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingType;
-import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -32,23 +27,24 @@ public class MeetingJpaEntity {
     @Column(length = 255)
     private @Nullable String title;
 
+    @Column(columnDefinition = "TEXT")
+    private @Nullable String description;
+
     @Column(name = "start_time")
     private @Nullable Instant startTime;
 
     @Column(name = "end_time")
     private @Nullable Instant endTime;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private MeetingType type;
+    private String type;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private MeetingStatus status;
+    private String status;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
-    private MeetingSettings settings;
+    private MeetingSettingsJson settings;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -60,16 +56,18 @@ public class MeetingJpaEntity {
             UUID hostId,
             String shortCode,
             @Nullable String title,
+            @Nullable String description,
             @Nullable Instant startTime,
             @Nullable Instant endTime,
-            MeetingType type,
-            MeetingStatus status,
-            MeetingSettings settings,
+            String type,
+            String status,
+            MeetingSettingsJson settings,
             Instant createdAt) {
         this.id = id;
         this.hostId = hostId;
         this.shortCode = shortCode;
         this.title = title;
+        this.description = description;
         this.startTime = startTime;
         this.endTime = endTime;
         this.type = type;
@@ -94,6 +92,10 @@ public class MeetingJpaEntity {
         return title;
     }
 
+    public @Nullable String getDescription() {
+        return description;
+    }
+
     public @Nullable Instant getStartTime() {
         return startTime;
     }
@@ -102,15 +104,15 @@ public class MeetingJpaEntity {
         return endTime;
     }
 
-    public MeetingType getType() {
+    public String getType() {
         return type;
     }
 
-    public MeetingStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public MeetingSettings getSettings() {
+    public MeetingSettingsJson getSettings() {
         return settings;
     }
 

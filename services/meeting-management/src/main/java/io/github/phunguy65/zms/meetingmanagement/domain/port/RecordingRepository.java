@@ -1,6 +1,10 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.port;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Recording;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId;
+import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
+import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -9,10 +13,20 @@ public interface RecordingRepository {
 
     Recording save(Recording recording);
 
-    Optional<Recording> findById(UUID id);
+    Optional<Recording> findById(RecordingId id);
 
-    /** Returns the recording currently in RECORDING or PROCESSING state for the given meeting. */
+    /** Returns the recording currently in PENDING or RECORDING state for the given meeting. */
     Optional<Recording> findActiveByMeetingId(UUID meetingId);
 
+    /**
+     * Finds a recording by LiveKit egress ID.
+     * Used by {@code egress_started} and {@code egress_ended} webhook handlers.
+     */
+    Optional<Recording> findByEgressId(LiveKitEgressId egressId);
+
     List<Recording> findByMeetingId(UUID meetingId);
+
+    /** Keyset-scroll recordings for a meeting, ordered by (created_at DESC, id DESC). */
+    CursorPageResponse<Recording> findByMeetingIdKeyset(
+            UUID meetingId, ScrollCursor cursor, int pageSize);
 }

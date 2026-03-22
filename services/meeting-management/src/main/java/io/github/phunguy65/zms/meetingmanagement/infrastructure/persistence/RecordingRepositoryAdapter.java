@@ -2,7 +2,13 @@ package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Recording;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.RecordingStatus;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.RecordingRepository;
+import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
+import io.github.phunguy65.zms.shared.domain.ScrollCursor;
+import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,21 +25,26 @@ public class RecordingRepositoryAdapter implements RecordingRepository {
 
     @Override
     public Recording save(Recording recording) {
-        RecordingJpaEntity entity = toEntity(recording);
-        jpa.save(entity);
+        jpa.save(toEntity(recording));
         return recording;
     }
 
     @Override
-    public Optional<Recording> findById(UUID id) {
-        return jpa.findById(id).map(this::toDomain);
+    public Optional<Recording> findById(RecordingId id) {
+        return jpa.findById(id.value()).map(this::toDomain);
     }
 
     @Override
     public Optional<Recording> findActiveByMeetingId(UUID meetingId) {
         return jpa.findByMeetingIdAndStatusIn(
-                        meetingId, List.of(RecordingStatus.RECORDING, RecordingStatus.PROCESSING))
+                        meetingId,
+                        List.of(RecordingStatus.PENDING.name(), RecordingStatus.RECORDING.name()))
                 .map(this::toDomain);
+    }
+
+    @Override
+    public Optional<Recording> findByEgressId(LiveKitEgressId egressId) {
+        return jpa.findByLivekitEgressId(egressId.value()).map(this::toDomain);
     }
 
     @Override
@@ -41,13 +52,35 @@ public class RecordingRepositoryAdapter implements RecordingRepository {
         return jpa.findByMeetingId(meetingId).stream().map(this::toDomain).toList();
     }
 
+    @Override
+    public CursorPageResponse<Recording> findByMeetingIdKeyset(
+            UUID meetingId, ScrollCursor cursor, int pageSize) {
+        int fetchLimit = pageSize + 1;
+        var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
+        var cursorId = cursor != null ? cursor.id().toString() : null;
+
+        List<RecordingJpaEntity> rows = jpa.findByMeetingIdKeyset(
+                meetingId.toString(), cursorCreatedAt, cursorId, fetchLimit);
+
+        boolean hasNext = rows.size() > pageSize;
+        List<Recording> items =
+                rows.stream().limit(pageSize).map(this::toDomain).toList();
+        return CursorPageResponse.of(items, pageSize, hasNext);
+    }
+
     private Recording toDomain(RecordingJpaEntity e) {
         return Recording.reconstitute(
-                e.getId(),
-                e.getMeetingId(),
+                RecordingId.of(e.getId()),
+                MeetingId.of(e.getMeetingId()),
+                e.getLivekitRoomName() != null
+                        ? LiveKitRoomName.of(e.getLivekitRoomName())
+                        : LiveKitRoomName.fromMeetingId(MeetingId.of(e.getMeetingId())),
+                e.getLivekitEgressId() != null ? LiveKitEgressId.of(e.getLivekitEgressId()) : null,
                 e.getFileUrl(),
                 e.getThumbnailUrl(),
-                e.getStatus(),
+                e.getStoragePath(),
+                e.getErrorMessage(),
+                RecordingStatus.valueOf(e.getStatus()),
                 e.getStartedAt(),
                 e.getEndedAt(),
                 e.getDurationSeconds(),
@@ -57,15 +90,19 @@ public class RecordingRepositoryAdapter implements RecordingRepository {
 
     private RecordingJpaEntity toEntity(Recording r) {
         return new RecordingJpaEntity(
-                r.getId(),
-                r.getMeetingId(),
-                r.getFileUrl(),
-                r.getThumbnailUrl(),
-                r.getStatus(),
+                r.getId().value(),
+                r.getMeetingId().value(),
+                r.getLivekitEgressId().map(LiveKitEgressId::value).orElse(null),
+                r.getLivekitRoomName().value(),
+                r.getFileUrl().orElse(null),
+                r.getThumbnailUrl().orElse(null),
+                r.getStoragePath().orElse(null),
+                r.getStatus().name(),
                 r.getStartedAt(),
-                r.getEndedAt(),
+                r.getEndedAt().orElse(null),
                 r.getDurationSeconds(),
                 r.getFileSizeBytes(),
+                r.getErrorMessage().orElse(null),
                 r.getCreatedAt());
     }
 }

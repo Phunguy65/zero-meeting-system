@@ -1,18 +1,18 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.model;
 
 public enum RecordingStatus {
-    /** Đang ghi */
+    /** Row created by StartRecordingUseCase; waiting for LiveKit egress_started webhook. */
+    PENDING,
+    /** LiveKit egress is actively capturing (egress_started webhook received). */
     RECORDING,
-    /** Đang ghép file / upload */
-    PROCESSING,
-    /** Đã có URL */
+    /** Recording finished and file is available (egress_ended webhook received). */
     COMPLETED,
     FAILED;
 
     public boolean canTransitionTo(RecordingStatus target) {
         return switch (this) {
-            case RECORDING -> target == PROCESSING || target == FAILED;
-            case PROCESSING -> target == COMPLETED || target == FAILED;
+            case PENDING -> target == RECORDING || target == FAILED;
+            case RECORDING -> target == COMPLETED || target == FAILED;
             case COMPLETED, FAILED -> false;
         };
     }

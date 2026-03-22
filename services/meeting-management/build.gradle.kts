@@ -1,3 +1,5 @@
+import com.google.protobuf.gradle.id
+
 plugins {
     id("io.github.phunguy65.zms.plugin.spotless")
     id("io.github.phunguy65.zms.plugin.jvm.base")
@@ -14,6 +16,9 @@ dependencies {
     implementation(libs.spring.boot.starter.flyway)
     implementation(libs.cloudevents.kafka)
     implementation(libs.jackson.databind.nullable)
+    implementation(libs.livekit.server)
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.bouncycastle)
     runtimeOnly(libs.flyway.database.postgresql)
     testImplementation(testFixtures(libs.shared))
 }

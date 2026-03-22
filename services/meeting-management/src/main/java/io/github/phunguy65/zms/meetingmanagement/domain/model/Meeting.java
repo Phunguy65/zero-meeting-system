@@ -8,10 +8,15 @@ import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingScheduledEv
 import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingStartedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTimeRange;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTitle;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ShortCode;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
@@ -22,16 +27,17 @@ import org.jspecify.annotations.Nullable;
  * Domain events are registered on each state transition and published by the infrastructure layer
  * via the Transactional Outbox pattern.
  */
-public class Meeting extends AggregateRoot<UUID> {
+public class Meeting extends AggregateRoot<MeetingId> {
 
-    private final UUID id;
-    private final UUID hostId;
+    private final MeetingId id;
+    private final UserId hostId;
     private final ShortCode shortCode;
     private final MeetingType type;
     private final Instant createdAt;
 
-    private @Nullable String title;
-    private @Nullable Instant startTime;
+    private @Nullable MeetingTitle title;
+    private @Nullable String description;
+    private @Nullable MeetingTimeRange timeRange;
     private @Nullable Instant endTime;
     private MeetingStatus status;
     private MeetingSettings settings;
@@ -41,12 +47,12 @@ public class Meeting extends AggregateRoot<UUID> {
     // -------------------------------------------------------------------------
 
     private Meeting(
-            UUID id,
-            UUID hostId,
+            MeetingId id,
+            UserId hostId,
             ShortCode shortCode,
-            @Nullable String title,
-            @Nullable Instant startTime,
-            @Nullable Instant endTime,
+            @Nullable MeetingTitle title,
+            @Nullable String description,
+            @Nullable MeetingTimeRange timeRange,
             MeetingType type,
             MeetingStatus status,
             MeetingSettings settings,
@@ -55,8 +61,8 @@ public class Meeting extends AggregateRoot<UUID> {
         this.hostId = hostId;
         this.shortCode = shortCode;
         this.title = title;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.description = description;
+        this.timeRange = timeRange;
         this.type = type;
         this.status = status;
         this.settings = settings;
@@ -71,27 +77,33 @@ public class Meeting extends AggregateRoot<UUID> {
      * Creates a new SCHEDULED meeting. Registers {@code MeetingScheduledEvent}.
      */
     public static Meeting schedule(
-            UUID hostId,
-            @Nullable String title,
-            Instant startTime,
-            Instant endTime,
+            UserId hostId,
+            @Nullable MeetingTitle title,
+            @Nullable String description,
+            MeetingTimeRange timeRange,
             MeetingSettings settings,
             ShortCode shortCode) {
-        UUID id = UuidCreator.getTimeOrderedEpoch();
+        MeetingId id = MeetingId.of(UuidCreator.getTimeOrderedEpoch());
         Instant now = Instant.now();
         Meeting meeting = new Meeting(
                 id,
                 hostId,
                 shortCode,
                 title,
-                startTime,
-                endTime,
+                description,
+                timeRange,
                 MeetingType.SCHEDULED,
                 MeetingStatus.SCHEDULED,
                 settings,
                 now);
         meeting.registerEvent(new MeetingScheduledEvent(
-                UUID.randomUUID(), id, hostId, shortCode.value(), title, startTime, now));
+                UUID.randomUUID(),
+                id.value(),
+                hostId.value(),
+                shortCode.value(),
+                title != null ? title.value() : null,
+                timeRange.start(),
+                now));
         return meeting;
     }
 
@@ -100,22 +112,32 @@ public class Meeting extends AggregateRoot<UUID> {
      * Registers {@code MeetingScheduledEvent}.
      */
     public static Meeting instant(
-            UUID hostId, @Nullable String title, MeetingSettings settings, ShortCode shortCode) {
-        UUID id = UuidCreator.getTimeOrderedEpoch();
+            UserId hostId,
+            @Nullable MeetingTitle title,
+            @Nullable String description,
+            MeetingSettings settings,
+            ShortCode shortCode) {
+        MeetingId id = MeetingId.of(UuidCreator.getTimeOrderedEpoch());
         Instant now = Instant.now();
         Meeting meeting = new Meeting(
                 id,
                 hostId,
                 shortCode,
                 title,
-                null,
+                description,
                 null,
                 MeetingType.INSTANT,
                 MeetingStatus.SCHEDULED,
                 settings,
                 now);
         meeting.registerEvent(new MeetingScheduledEvent(
-                UUID.randomUUID(), id, hostId, shortCode.value(), title, null, now));
+                UUID.randomUUID(),
+                id.value(),
+                hostId.value(),
+                shortCode.value(),
+                title != null ? title.value() : null,
+                null,
+                now));
         return meeting;
     }
 
@@ -123,19 +145,30 @@ public class Meeting extends AggregateRoot<UUID> {
      * Reconstitutes a Meeting from persistence. No domain events are registered.
      */
     public static Meeting reconstitute(
-            UUID id,
-            UUID hostId,
+            MeetingId id,
+            UserId hostId,
             ShortCode shortCode,
-            @Nullable String title,
-            @Nullable Instant startTime,
+            @Nullable MeetingTitle title,
+            @Nullable String description,
+            @Nullable MeetingTimeRange timeRange,
             @Nullable Instant endTime,
             MeetingType type,
             MeetingStatus status,
             MeetingSettings settings,
             Instant createdAt) {
-        return new Meeting(
-                id, hostId, shortCode, title, startTime, endTime, type, status, settings,
+        Meeting meeting = new Meeting(
+                id,
+                hostId,
+                shortCode,
+                title,
+                description,
+                timeRange,
+                type,
+                status,
+                settings,
                 createdAt);
+        meeting.endTime = endTime;
+        return meeting;
     }
 
     // -------------------------------------------------------------------------
@@ -153,7 +186,11 @@ public class Meeting extends AggregateRoot<UUID> {
         status = MeetingStatus.LIVE;
         Instant now = Instant.now();
         registerEvent(new MeetingStartedEvent(
-                UUID.randomUUID(), id, hostId, LiveKitRoomName.fromMeetingId(id).value(), now));
+                UUID.randomUUID(),
+                id.value(),
+                hostId.value(),
+                LiveKitRoomName.fromMeetingId(id).value(),
+                now));
         return Result.success();
     }
 
@@ -168,7 +205,7 @@ public class Meeting extends AggregateRoot<UUID> {
         status = MeetingStatus.ENDED;
         Instant now = Instant.now();
         this.endTime = now;
-        registerEvent(new MeetingEndedEvent(UUID.randomUUID(), id, hostId, now));
+        registerEvent(new MeetingEndedEvent(UUID.randomUUID(), id.value(), hostId.value(), now));
         return Result.success();
     }
 
@@ -182,7 +219,8 @@ public class Meeting extends AggregateRoot<UUID> {
         }
         status = MeetingStatus.CANCELLED;
         Instant now = Instant.now();
-        registerEvent(new MeetingCancelledEvent(UUID.randomUUID(), id, hostId, now));
+        registerEvent(
+                new MeetingCancelledEvent(UUID.randomUUID(), id.value(), hostId.value(), now));
         return Result.success();
     }
 
@@ -191,11 +229,11 @@ public class Meeting extends AggregateRoot<UUID> {
     // -------------------------------------------------------------------------
 
     @Override
-    public UUID getId() {
+    public MeetingId getId() {
         return id;
     }
 
-    public UUID getHostId() {
+    public UserId getHostId() {
         return hostId;
     }
 
@@ -203,16 +241,30 @@ public class Meeting extends AggregateRoot<UUID> {
         return shortCode;
     }
 
-    public @Nullable String getTitle() {
-        return title;
+    public Optional<MeetingTitle> getTitle() {
+        return Optional.ofNullable(title);
     }
 
-    public @Nullable Instant getStartTime() {
-        return startTime;
+    public Optional<String> getDescription() {
+        return Optional.ofNullable(description);
     }
 
-    public @Nullable Instant getEndTime() {
-        return endTime;
+    public Optional<MeetingTimeRange> getTimeRange() {
+        return Optional.ofNullable(timeRange);
+    }
+
+    /** Convenience accessor — start time from the time range, if present. */
+    public Optional<Instant> getStartTime() {
+        return Optional.ofNullable(timeRange).map(MeetingTimeRange::start);
+    }
+
+    /**
+     * End time: uses the actual ended-at timestamp when the meeting has ended,
+     * otherwise falls back to the scheduled end from the time range.
+     */
+    public Optional<Instant> getEndTime() {
+        if (endTime != null) return Optional.of(endTime);
+        return Optional.ofNullable(timeRange).map(MeetingTimeRange::end);
     }
 
     public MeetingType getType() {

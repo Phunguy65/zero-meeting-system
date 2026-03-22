@@ -1,7 +1,12 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.model;
 
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitParticipantSid;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipationLogId;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
+import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
@@ -10,17 +15,27 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Each row represents one participation session (one device joining once).
  * A participant rejoining creates a new row. {@code user_id} is null for guest participants.
+ *
+ * <p>Lifecycle:
+ * <ol>
+ *   <li>{@link #join} — created by {@code JoinMeetingUseCase} when token is issued;
+ *       {@code livekitParticipantSid} is null at this point.
+ *   <li>{@link #assignSid} — called by the {@code participant_joined} webhook handler
+ *       once LiveKit confirms the participant connected.
+ *   <li>{@link #leave} — called by the {@code participant_left} webhook handler.
+ * </ol>
  */
-public class ParticipationLog extends AggregateRoot<Long> {
+public class ParticipationLog extends AggregateRoot<ParticipationLogId> {
 
-    private Long id; // bigserial — assigned by DB on insert
-    private final UUID meetingId;
-    private final @Nullable UUID userId; // null = guest
+    private @Nullable ParticipationLogId id;
+    private final MeetingId meetingId;
+    private final @Nullable UUID userId;
     private final String displayName;
     private final ParticipantRole role;
+    private final LiveKitIdentity livekitIdentity;
     private final Instant joinedAt;
-    private final @Nullable String deviceId;
 
+    private @Nullable LiveKitParticipantSid livekitParticipantSid;
     private @Nullable Instant leftAt;
 
     // -------------------------------------------------------------------------
@@ -28,56 +43,86 @@ public class ParticipationLog extends AggregateRoot<Long> {
     // -------------------------------------------------------------------------
 
     private ParticipationLog(
-            @Nullable Long id,
-            UUID meetingId,
+            @Nullable ParticipationLogId id,
+            MeetingId meetingId,
             @Nullable UUID userId,
             String displayName,
             ParticipantRole role,
+            LiveKitIdentity livekitIdentity,
+            @Nullable LiveKitParticipantSid livekitParticipantSid,
             Instant joinedAt,
-            @Nullable Instant leftAt,
-            @Nullable String deviceId) {
+            @Nullable Instant leftAt) {
         this.id = id;
         this.meetingId = meetingId;
         this.userId = userId;
         this.displayName = displayName;
         this.role = role;
+        this.livekitIdentity = livekitIdentity;
+        this.livekitParticipantSid = livekitParticipantSid;
         this.joinedAt = joinedAt;
         this.leftAt = leftAt;
-        this.deviceId = deviceId;
     }
 
     // -------------------------------------------------------------------------
     // Factory methods
     // -------------------------------------------------------------------------
 
-    /** Records a participant joining a meeting. */
+    /** Records a participant joining a meeting (token issued, not yet connected to LiveKit). */
     public static ParticipationLog join(
-            UUID meetingId,
+            MeetingId meetingId,
             @Nullable UUID userId,
             String displayName,
             ParticipantRole role,
-            @Nullable String deviceId) {
+            LiveKitIdentity livekitIdentity) {
         return new ParticipationLog(
-                null, meetingId, userId, displayName, role, Instant.now(), null, deviceId);
+                null,
+                meetingId,
+                userId,
+                displayName,
+                role,
+                livekitIdentity,
+                null,
+                Instant.now(),
+                null);
     }
 
     /** Reconstitutes from persistence. */
     public static ParticipationLog reconstitute(
-            Long id,
-            UUID meetingId,
+            ParticipationLogId id,
+            MeetingId meetingId,
             @Nullable UUID userId,
             String displayName,
             ParticipantRole role,
+            LiveKitIdentity livekitIdentity,
+            @Nullable LiveKitParticipantSid livekitParticipantSid,
             Instant joinedAt,
-            @Nullable Instant leftAt,
-            @Nullable String deviceId) {
+            @Nullable Instant leftAt) {
         return new ParticipationLog(
-                id, meetingId, userId, displayName, role, joinedAt, leftAt, deviceId);
+                id,
+                meetingId,
+                userId,
+                displayName,
+                role,
+                livekitIdentity,
+                livekitParticipantSid,
+                joinedAt,
+                leftAt);
     }
 
     // -------------------------------------------------------------------------
     // Domain behaviours
     // -------------------------------------------------------------------------
+
+    /**
+     * Assigns the LiveKit session ID once the {@code participant_joined} webhook arrives.
+     * Can only be called once.
+     */
+    public void assignSid(LiveKitParticipantSid sid) {
+        if (this.livekitParticipantSid != null) {
+            throw new IllegalStateException("LiveKit participant SID already assigned");
+        }
+        this.livekitParticipantSid = sid;
+    }
 
     /** Records the time the participant left. Can only be called once. */
     public void leave(Instant leftAt) {
@@ -97,22 +142,22 @@ public class ParticipationLog extends AggregateRoot<Long> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Long getId() {
+    public ParticipationLogId getId() {
         return id;
     }
 
     /** Called by the persistence adapter after insert to set the DB-generated id. */
-    public void assignId(Long id) {
+    public void assignId(ParticipationLogId id) {
         if (this.id != null) throw new IllegalStateException("Id already assigned");
         this.id = id;
     }
 
-    public UUID getMeetingId() {
+    public MeetingId getMeetingId() {
         return meetingId;
     }
 
-    public @Nullable UUID getUserId() {
-        return userId;
+    public Optional<UUID> getUserId() {
+        return Optional.ofNullable(userId);
     }
 
     public String getDisplayName() {
@@ -123,15 +168,19 @@ public class ParticipationLog extends AggregateRoot<Long> {
         return role;
     }
 
+    public LiveKitIdentity getLivekitIdentity() {
+        return livekitIdentity;
+    }
+
+    public Optional<LiveKitParticipantSid> getLivekitParticipantSid() {
+        return Optional.ofNullable(livekitParticipantSid);
+    }
+
     public Instant getJoinedAt() {
         return joinedAt;
     }
 
-    public @Nullable Instant getLeftAt() {
-        return leftAt;
-    }
-
-    public @Nullable String getDeviceId() {
-        return deviceId;
+    public Optional<Instant> getLeftAt() {
+        return Optional.ofNullable(leftAt);
     }
 }
