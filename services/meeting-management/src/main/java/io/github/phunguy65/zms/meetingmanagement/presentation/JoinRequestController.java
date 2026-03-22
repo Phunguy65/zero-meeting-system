@@ -42,7 +42,6 @@ public class JoinRequestController extends BaseController {
         this.meetingSseManager = meetingSseManager;
     }
 
-    /** POST /v1.0/meetings/{id}:requestJoin — submit a join request (no auth required for guests) */
     @PostMapping(value = "/{version}/meetings/{id}:requestJoin", version = "1.0")
     public ResponseEntity<JsendResponse<?>> requestJoin(
             @PathVariable UUID id,
@@ -52,7 +51,6 @@ public class JoinRequestController extends BaseController {
         return switch (requestJoinUseCase.execute(request.toCommand(id, userId))) {
             case Result.Success<?, MeetingError> s -> {
                 var body = s.value();
-                // Return 202 for PENDING, 200 for APPROVED
                 var response = (io.github.phunguy65.zms.meetingmanagement.application.response
                                 .RequestJoinResponse)
                         body;
@@ -67,7 +65,6 @@ public class JoinRequestController extends BaseController {
         };
     }
 
-    /** GET /v1.0/meetings/{id}/joinRequests — list pending requests (host only) */
     @GetMapping(value = "/{version}/meetings/{id}/joinRequests", version = "1.0")
     public ResponseEntity<JsendResponse<?>> listJoinRequests(
             @PathVariable UUID id, Authentication auth) {
@@ -80,7 +77,6 @@ public class JoinRequestController extends BaseController {
         };
     }
 
-    /** POST /v1.0/meetings/{id}/joinRequests/{requestId}:approve — approve a single request */
     @PostMapping(
             value = "/{version}/meetings/{id}/joinRequests/{requestId}:approve",
             version = "1.0")
@@ -96,7 +92,6 @@ public class JoinRequestController extends BaseController {
         };
     }
 
-    /** POST /v1.0/meetings/{id}/joinRequests/{requestId}:deny — deny a single request */
     @PostMapping(value = "/{version}/meetings/{id}/joinRequests/{requestId}:deny", version = "1.0")
     public ResponseEntity<JsendResponse<?>> denyJoinRequest(
             @PathVariable UUID id, @PathVariable UUID requestId, Authentication auth) {
@@ -110,7 +105,6 @@ public class JoinRequestController extends BaseController {
         };
     }
 
-    /** POST /v1.0/meetings/{id}/joinRequests:approveAll — approve all pending requests */
     @PostMapping(value = "/{version}/meetings/{id}/joinRequests:approveAll", version = "1.0")
     public ResponseEntity<JsendResponse<?>> approveAllJoinRequests(
             @PathVariable UUID id, Authentication auth) {

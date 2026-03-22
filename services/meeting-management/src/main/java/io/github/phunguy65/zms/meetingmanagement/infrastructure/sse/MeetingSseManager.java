@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestApprove
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestCreatedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestDeniedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestExpiredEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.SseProperties;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.sse.model.*;
 import java.io.IOException;
@@ -143,14 +144,17 @@ public class MeetingSseManager {
             topics = "meeting-management.join_request.approved",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onJoinRequestApproved(CloudEvent cloudEvent) {
+
+        final String eventName = "join_request_approved";
+
         JoinRequestApprovedEvent event = deserialize(cloudEvent, JoinRequestApprovedEvent.class);
         if (event == null) return;
 
         UUID requestId = event.joinRequestId();
-        SseEventData sseData =
-                new JoinRequestApprovedData(requestId.toString(), "APPROVED", event.liveKitToken());
+        SseEventData sseData = new JoinRequestApprovedData(
+                requestId.toString(), JoinRequestStatus.APPROVED.name(), event.liveKitToken());
 
-        sendToGuestAndComplete(requestId, "join_request_approved", sseData);
+        sendToGuestAndComplete(requestId, eventName, sseData);
     }
 
     /**
@@ -160,13 +164,16 @@ public class MeetingSseManager {
             topics = "meeting-management.join_request.denied",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onJoinRequestDenied(CloudEvent cloudEvent) {
+        final String eventName = "join_request_denied";
+
         JoinRequestDeniedEvent event = deserialize(cloudEvent, JoinRequestDeniedEvent.class);
         if (event == null) return;
 
         UUID requestId = event.joinRequestId();
-        SseEventData sseData = new JoinRequestDeniedData(requestId.toString(), "DENIED");
+        SseEventData sseData =
+                new JoinRequestDeniedData(requestId.toString(), JoinRequestStatus.DENIED.name());
 
-        sendToGuestAndComplete(requestId, "join_request_denied", sseData);
+        sendToGuestAndComplete(requestId, eventName, sseData);
     }
 
     /**
@@ -177,16 +184,18 @@ public class MeetingSseManager {
             topics = "meeting-management.join_request.expired",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onJoinRequestExpired(CloudEvent cloudEvent) {
+        final String eventName = "join_request_expired";
         JoinRequestExpiredEvent event = deserialize(cloudEvent, JoinRequestExpiredEvent.class);
         if (event == null) return;
 
         UUID meetingId = event.meetingId();
         UUID requestId = event.joinRequestId();
-        SseEventData sseData = new JoinRequestExpiredData(requestId.toString(), "EXPIRED");
+        SseEventData sseData =
+                new JoinRequestExpiredData(requestId.toString(), JoinRequestStatus.EXPIRED.name());
 
-        pushToHostEmitters(meetingId, "join_request_expired", sseData);
+        pushToHostEmitters(meetingId, eventName, sseData);
 
-        sendToGuestAndComplete(requestId, "join_request_expired", sseData);
+        sendToGuestAndComplete(requestId, eventName, sseData);
     }
 
     /** Push an event to all HOST emitters for a meeting; remove dead emitters on IOException. */
