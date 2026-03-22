@@ -2,9 +2,8 @@ package io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
 import io.github.phunguy65.zms.shared.domain.ValueObject;
-import org.jspecify.annotations.Nullable;
-
 import java.time.Duration;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Meeting room settings stored as JSONB in the database.

@@ -1,10 +1,9 @@
 package io.github.phunguy65.zms.meetingmanagement.application.response;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
-import org.jspecify.annotations.Nullable;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Response DTO for a join request in the pending queue.

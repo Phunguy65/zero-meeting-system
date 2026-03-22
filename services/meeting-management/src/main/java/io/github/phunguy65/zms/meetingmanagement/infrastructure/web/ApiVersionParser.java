@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.web;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.web.accept.SemanticApiVersionParser;
 
 /**
@@ -17,7 +18,7 @@ import org.springframework.web.accept.SemanticApiVersionParser;
 public class ApiVersionParser extends SemanticApiVersionParser {
 
     @Override
-    public Version parseVersion(String version) {
+    @NonNull public Version parseVersion(String version) {
         if (version.startsWith("v") || version.startsWith("V")) {
             version = version.substring(1);
         }

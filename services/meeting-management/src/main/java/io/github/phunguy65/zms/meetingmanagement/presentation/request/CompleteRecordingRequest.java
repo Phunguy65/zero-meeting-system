@@ -16,6 +16,11 @@ public record CompleteRecordingRequest(
 
     public CompleteRecordingCommand toCommand(UUID recordingId) {
         return new CompleteRecordingCommand(
-                RecordingId.of(recordingId), fileUrl, storagePath, thumbnailUrl, durationSeconds, fileSizeBytes);
+                RecordingId.of(recordingId),
+                fileUrl,
+                storagePath,
+                thumbnailUrl,
+                durationSeconds,
+                fileSizeBytes);
     }
 }

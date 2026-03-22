@@ -1,7 +1,6 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject;
 
 import io.github.phunguy65.zms.shared.domain.ValueObject;
-
 import java.util.Objects;
 import java.util.UUID;
 

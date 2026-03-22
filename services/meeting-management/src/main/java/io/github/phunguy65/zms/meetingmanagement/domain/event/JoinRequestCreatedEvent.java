@@ -1,10 +1,9 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.event;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
-import org.jspecify.annotations.Nullable;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** Published when a participant submits a join request for a meeting with MANUAL_APPROVAL policy. */
 public record JoinRequestCreatedEvent(

@@ -1,7 +1,6 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.event;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -11,6 +10,7 @@ public record JoinRequestApprovedEvent(
         UUID meetingId,
         UUID joinRequestId,
         UUID approvedBy,
+        String liveKitToken,
         Instant occurredAt)
         implements PublishableEvent {
 

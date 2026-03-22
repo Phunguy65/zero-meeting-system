@@ -2,7 +2,6 @@ package io.github.phunguy65.zms.meetingmanagement.domain.port;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequest;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;

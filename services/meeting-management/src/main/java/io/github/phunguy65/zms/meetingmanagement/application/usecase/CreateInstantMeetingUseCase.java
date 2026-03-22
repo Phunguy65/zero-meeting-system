@@ -6,7 +6,6 @@ import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingRes
 import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingSettingsResponse;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
-import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Meeting;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTitle;
@@ -18,8 +17,6 @@ import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Duration;
 
 @Service
 public class CreateInstantMeetingUseCase {

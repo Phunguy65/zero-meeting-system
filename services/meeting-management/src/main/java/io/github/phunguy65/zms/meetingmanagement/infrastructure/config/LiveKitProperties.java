@@ -1,19 +1,19 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 
 /**
  * LiveKit connection properties loaded from Consul KV ({@code config/meeting-management/data}).
  *
- * <p>Annotated with {@code @RefreshScope} so values are hot-reloaded when Consul KV changes
- * without requiring a service restart.
+ * <p>Properties are loaded at startup from Consul. Changes require service restart (use K8s rolling
+ * restart for zero-downtime updates).
+ *
+ * <p>Note: {@code @RefreshScope} removed for Spring Boot 4.x AOT/native image compatibility.
  *
  * <p>Default values ensure the service starts safely even when Consul is unavailable.
  */
 @Component
-@RefreshScope
 @ConfigurationProperties(prefix = "app.livekit")
 public class LiveKitProperties {
 

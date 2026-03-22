@@ -41,7 +41,7 @@ abstract class BaseController {
                     case MeetingError.InvalidInviteeTransition e -> HttpStatus.CONFLICT;
                     case MeetingError.InvalidPassword e -> HttpStatus.UNAUTHORIZED;
                     case MeetingError.JoinRequestExpired e -> HttpStatus.GONE;
-                    case MeetingError.NotWaitingForApproval e -> HttpStatus.UNPROCESSABLE_ENTITY;
+                    case MeetingError.NotWaitingForApproval e -> HttpStatus.UNPROCESSABLE_CONTENT;
                 };
         MeetingErrorCode code =
                 switch (error) {
@@ -72,16 +72,16 @@ abstract class BaseController {
                     case MeetingError.InvalidPassword e -> MeetingErrorCode.INVALID_PASSWORD;
                     case MeetingError.GuestNotAllowed e -> MeetingErrorCode.GUEST_NOT_ALLOWED;
                     case MeetingError.NotAuthorized e -> MeetingErrorCode.NOT_AUTHORIZED;
-                    case MeetingError.JoinRequestNotFound e -> MeetingErrorCode.JOIN_REQUEST_NOT_FOUND;
+                    case MeetingError.JoinRequestNotFound e ->
+                        MeetingErrorCode.JOIN_REQUEST_NOT_FOUND;
                     case MeetingError.JoinRequestExpired e -> MeetingErrorCode.JOIN_REQUEST_EXPIRED;
                     case MeetingError.InvalidJoinRequestTransition e ->
                         MeetingErrorCode.INVALID_JOIN_REQUEST_TRANSITION;
-                    case MeetingError.NotWaitingForApproval e -> MeetingErrorCode.NOT_WAITING_FOR_APPROVAL;
+                    case MeetingError.NotWaitingForApproval e ->
+                        MeetingErrorCode.NOT_WAITING_FOR_APPROVAL;
                 };
-        return status == HttpStatus.INTERNAL_SERVER_ERROR
-                ? ResponseEntity.status(status).body(JsendResponse.error(error.message()))
-                : ResponseEntity.status(status)
-                        .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
+        return ResponseEntity.status(status)
+                .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
     }
 
     protected UUID extractUserId(Authentication auth) {

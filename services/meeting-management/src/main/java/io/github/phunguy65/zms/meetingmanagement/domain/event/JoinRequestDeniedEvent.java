@@ -1,10 +1,9 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.event;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
-import org.jspecify.annotations.Nullable;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** Published when a host denies a join request or when a meeting ends with pending requests. */
 public record JoinRequestDeniedEvent(

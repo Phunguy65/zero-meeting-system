@@ -51,10 +51,6 @@ public class JoinMeetingUseCase {
         boolean isHost =
                 command.userId() != null && m.getHostId().equals(UserId.of(command.userId()));
 
-//       TODO:
-//        if (!isHost && m.getSettings().requiredApproval()) {
-//        }
-
         if (command.userId() == null && !m.getSettings().allowGuest()) {
             return Result.failure(new MeetingError.GuestNotAllowed(m.getId().value()));
         }

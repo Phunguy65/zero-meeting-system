@@ -4,11 +4,7 @@ import io.github.phunguy65.zms.meetingmanagement.application.command.StartRecord
 import io.github.phunguy65.zms.meetingmanagement.application.command.StopRecordingCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetRecordingQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.query.ListMeetingRecordingsQuery;
-import io.github.phunguy65.zms.meetingmanagement.application.usecase.CompleteRecordingUseCase;
-import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetRecordingUseCase;
-import io.github.phunguy65.zms.meetingmanagement.application.usecase.ListMeetingRecordingsUseCase;
-import io.github.phunguy65.zms.meetingmanagement.application.usecase.StartRecordingUseCase;
-import io.github.phunguy65.zms.meetingmanagement.application.usecase.StopRecordingUseCase;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.CompleteRecordingRequest;
 import io.github.phunguy65.zms.shared.domain.CursorErrorCode;
@@ -87,7 +83,8 @@ public class RecordingController extends BaseController {
     @GetMapping(value = "/{version}/recordings/{id}", version = "1.0")
     public ResponseEntity<JsendResponse<?>> getRecording(@PathVariable UUID id) {
         return switch (getRecordingUseCase.execute(new GetRecordingQuery(
-                io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId.of(id)))) {
+                io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId.of(
+                        id)))) {
             case Result.Success<?, MeetingError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
@@ -121,7 +118,8 @@ public class RecordingController extends BaseController {
         String nextPageToken = null;
         if (pageResult.hasNext() && !pageResult.items().isEmpty()) {
             var last = pageResult.items().getLast();
-            nextPageToken = cursorTokenEncoder.encode(last.createdAt(), last.id().value());
+            nextPageToken =
+                    cursorTokenEncoder.encode(last.createdAt(), last.id().value());
         }
         var response =
                 new CursorScrollResponse<>(pageResult.items(), query.pageSize(), nextPageToken);

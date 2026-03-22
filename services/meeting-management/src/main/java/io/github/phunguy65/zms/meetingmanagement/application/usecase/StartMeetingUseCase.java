@@ -36,8 +36,8 @@ public class StartMeetingUseCase {
         }
 
         var startResult = m.start();
-        if (startResult instanceof Result.Failure<?, MeetingError> f) {
-            return Result.failure(f.error());
+        if (startResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+            return Result.failure(error);
         }
 
         var saved = meetingRepository.save(m);

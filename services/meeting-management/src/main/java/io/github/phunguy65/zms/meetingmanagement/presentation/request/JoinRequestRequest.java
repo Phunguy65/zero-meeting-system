@@ -3,9 +3,8 @@ package io.github.phunguy65.zms.meetingmanagement.presentation.request;
 import io.github.phunguy65.zms.meetingmanagement.application.command.RequestJoinCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.jspecify.annotations.Nullable;
-
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 public record JoinRequestRequest(
         @NotBlank @Size(max = 100) String displayName,

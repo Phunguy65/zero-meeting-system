@@ -12,18 +12,14 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKi
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
-import io.github.phunguy65.zms.meetingmanagement.infrastructure.sse.RedisSseEventPublisher;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class ApproveAllJoinRequestsUseCase {
@@ -31,19 +27,16 @@ public class ApproveAllJoinRequestsUseCase {
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
     private final LiveKitPort liveKitPort;
-    private final RedisSseEventPublisher sseEventPublisher;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public ApproveAllJoinRequestsUseCase(
             MeetingRepository meetingRepository,
             JoinRequestRepository joinRequestRepository,
             LiveKitPort liveKitPort,
-            RedisSseEventPublisher sseEventPublisher,
             ApplicationEventPublisher applicationEventPublisher) {
         this.meetingRepository = meetingRepository;
         this.joinRequestRepository = joinRequestRepository;
         this.liveKitPort = liveKitPort;
-        this.sseEventPublisher = sseEventPublisher;
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
@@ -55,13 +48,11 @@ public class ApproveAllJoinRequestsUseCase {
         }
         var meeting = meetingOpt.get();
 
-        // Validate host
         if (!meeting.getHostId().equals(UserId.of(command.approvedBy()))) {
-            return Result.failure(
-                    new MeetingError.NotAuthorized(command.approvedBy(), meeting.getHostId().value()));
+            return Result.failure(new MeetingError.NotAuthorized(
+                    command.approvedBy(), meeting.getHostId().value()));
         }
 
-        // Load all pending requests
         List<JoinRequest> pendingRequests =
                 joinRequestRepository.findPendingByMeetingId(command.meetingId());
 
@@ -73,48 +64,41 @@ public class ApproveAllJoinRequestsUseCase {
         int approvedCount = 0;
 
         for (JoinRequest joinRequest : pendingRequests) {
-            // Approve
             var approveResult = joinRequest.approve();
             if (approveResult instanceof Result.Failure<?, MeetingError>) {
-                continue; // Skip invalid transitions
+                continue;
             }
 
-            // Generate token (not stored, participant will poll to get it)
             ParticipantRole role = joinRequest.getUserId().isPresent()
                     ? ParticipantRole.PARTICIPANT
                     : ParticipantRole.GUEST;
 
             LiveKitIdentity identity = joinRequest.getUserId().isPresent()
-                    ? LiveKitIdentity.fromUser(joinRequest.getUserId().get(), joinRequest.getDeviceId())
+                    ? LiveKitIdentity.fromUser(
+                            joinRequest.getUserId().get(), joinRequest.getDeviceId())
                     : LiveKitIdentity.forGuest(joinRequest.getDeviceId());
 
             var tokenResult = liveKitPort.generateToken(
                     roomName, identity, joinRequest.getDisplayName(), role);
             if (tokenResult instanceof Result.Failure<?, MeetingError>) {
-                continue; // Skip on token generation failure
+                continue;
             }
+            String token = ((Result.Success<String, MeetingError>) tokenResult).value();
 
-            // Update status
             joinRequestRepository.updateStatus(
                     joinRequest.getId().value(), JoinRequestStatus.APPROVED);
 
-            // Publish events
             var approvedEvent = new JoinRequestApprovedEvent(
                     UUID.randomUUID(),
                     command.meetingId(),
                     joinRequest.getId().value(),
                     command.approvedBy(),
+                    token,
                     Instant.now());
             applicationEventPublisher.publishEvent(approvedEvent);
 
-            Map<String, Object> sseData = new HashMap<>();
-            sseData.put("requestId", joinRequest.getId().value().toString());
-            sseData.put("status", "APPROVED");
-            sseData.put("approvedBy", command.approvedBy().toString());
-            sseEventPublisher.publish(command.meetingId(), "join_request_approved", sseData);
-
-            // Remove from queue
-            joinRequestRepository.removeFromQueue(command.meetingId(), joinRequest.getId().value());
+            joinRequestRepository.removeFromQueue(
+                    command.meetingId(), joinRequest.getId().value());
 
             approvedCount++;
         }

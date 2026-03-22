@@ -30,8 +30,8 @@ Android native app and the Next.js web app.
 **Non-Goals:**
 
 - OAuth2 / social login (future change)
-- io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email
-  verification flow (future change)
+- io.github.phunguy65.zms.shared.domain.valueobject.Email verification flow
+  (future change)
 - Password reset / forgot password (future change)
 - Role-based access control (future change)
 - Rate limiting (infrastructure concern, handled at gateway level)

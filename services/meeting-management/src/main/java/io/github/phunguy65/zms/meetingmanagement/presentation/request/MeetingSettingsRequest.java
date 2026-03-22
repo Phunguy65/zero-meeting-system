@@ -2,14 +2,9 @@ package io.github.phunguy65.zms.meetingmanagement.presentation.request;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import org.jspecify.annotations.Nullable;
-
+import jakarta.validation.constraints.*;
 import java.time.Duration;
+import org.jspecify.annotations.Nullable;
 
 /**
  * API request DTO for meeting settings.
@@ -51,7 +46,9 @@ public record MeetingSettingsRequest(
     public MeetingSettings toDomain() {
         return new MeetingSettings(
                 AdmissionPolicy.valueOf(admissionPolicy),
-                joinRequestTimeoutSeconds != null ? Duration.ofSeconds(joinRequestTimeoutSeconds) : null,
+                joinRequestTimeoutSeconds != null
+                        ? Duration.ofSeconds(joinRequestTimeoutSeconds)
+                        : null,
                 allowGuest,
                 muteOnEntry,
                 maxParticipants,

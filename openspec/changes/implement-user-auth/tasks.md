@@ -30,9 +30,8 @@
 
 ## 4. Domain Layer
 
-- [x] 4.1 Create
-      `io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email`
-      value object: validates format, case-normalizes to lowercase, implements
+- [x] 4.1 Create `io.github.phunguy65.zms.shared.domain.valueobject.Email` value
+      object: validates format, case-normalizes to lowercase, implements
       `ValueObject`
 - [x] 4.2 Create
       `io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword`
@@ -49,9 +48,9 @@
       method `RefreshToken.issue(userId, tokenHash, expiresAt)` generates UUIDv7
       id; method `isExpired()`, `isRevoked()`, `revoke()`
 - [x] 4.6 Create `UserRepository` port interface:
-      `findByEmail(io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email): Optional<User>`,
+      `findByEmail(io.github.phunguy65.zms.shared.domain.valueobject.Email): Optional<User>`,
       `findById(UUID): Optional<User>`, `save(User): User`,
-      `existsByEmail(io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email): boolean`
+      `existsByEmail(io.github.phunguy65.zms.shared.domain.valueobject.Email): boolean`
 - [x] 4.7 Create `RefreshTokenRepository` port interface:
       `findByTokenHash(String): Optional<RefreshToken>`,
       `save(RefreshToken): RefreshToken`, `revokeAllByUserId(UUID): void`

@@ -1,7 +1,7 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
-import io.github.phunguy65.zms.meetingmanagement.domain.model.Meeting;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.Meeting;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingType;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
@@ -14,10 +14,10 @@ import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.ScrollParams;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.time.Duration;
 import org.springframework.stereotype.Repository;
 
 @Repository

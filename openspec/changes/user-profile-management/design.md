@@ -36,8 +36,8 @@ Current state relevant to this change:
 - Admin role or elevated permissions — all endpoints are self-service
   (authenticated user only) or open to any authenticated user (GET by ID, GET
   slice)
-- io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email or
-  password update — these remain auth-domain concerns
+- io.github.phunguy65.zms.shared.domain.valueobject.Email or password update —
+  these remain auth-domain concerns
 - Cursor-based pagination — offset-based `Slice` is sufficient at current scale
 - Preference schema evolution — `theme`, `defaultMic`, `defaultCamera` remain
   the only fields

@@ -63,7 +63,7 @@ public static Username generateForGoogle() {
 
 // Application layer (LoginWithGoogleUseCase):
 Username candidate = Username.generateForGoogle();
-while (userRepository.existsActiveByUsername(candidate)) {
+while (userGrpcServicePort.existsActiveByUsername(candidate)) {
     candidate = Username.generateForGoogle();  // retry (collision cực hiếm)
 }
 User.registerWithGoogle(..., candidate)
@@ -128,7 +128,7 @@ handle.
 compact constructor.
 
 **Pattern** (consistent với
-`io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Email`,
+`io.github.phunguy65.zms.shared.domain.valueobject.Email`,
 `io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName`):
 
 - Regex: `^[a-zA-Z0-9_-]{3,30}$`

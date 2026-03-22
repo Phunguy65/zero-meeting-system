@@ -1,16 +1,12 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.event;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
-
 import java.time.Instant;
 import java.util.UUID;
 
 /** Published when a join request expires due to TTL elapsing. */
 public record JoinRequestExpiredEvent(
-        UUID eventId,
-        UUID meetingId,
-        UUID joinRequestId,
-        Instant occurredAt)
+        UUID eventId, UUID meetingId, UUID joinRequestId, Instant occurredAt)
         implements PublishableEvent {
 
     @Override

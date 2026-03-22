@@ -7,10 +7,9 @@ import io.github.phunguy65.zms.shared.domain.AggregateRoot;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
-import org.jspecify.annotations.Nullable;
-
 import java.time.Instant;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a participant's request to join a meeting that requires manual approval.
@@ -102,12 +101,11 @@ public class JoinRequest extends AggregateRoot<JoinRequestId> {
      */
     public Result<Void, MeetingError> approve() {
         if (status == JoinRequestStatus.APPROVED) {
-            // Idempotent: already approved
             return Result.success();
         }
         if (status == JoinRequestStatus.DENIED) {
-            return Result.failure(
-                    new MeetingError.InvalidJoinRequestTransition(status, JoinRequestStatus.APPROVED));
+            return Result.failure(new MeetingError.InvalidJoinRequestTransition(
+                    status, JoinRequestStatus.APPROVED));
         }
         status = JoinRequestStatus.APPROVED;
         return Result.success();
@@ -122,12 +120,11 @@ public class JoinRequest extends AggregateRoot<JoinRequestId> {
      */
     public Result<Void, MeetingError> deny() {
         if (status == JoinRequestStatus.DENIED) {
-            // Idempotent: already denied
             return Result.success();
         }
         if (status == JoinRequestStatus.APPROVED) {
-            return Result.failure(
-                    new MeetingError.InvalidJoinRequestTransition(status, JoinRequestStatus.DENIED));
+            return Result.failure(new MeetingError.InvalidJoinRequestTransition(
+                    status, JoinRequestStatus.DENIED));
         }
         status = JoinRequestStatus.DENIED;
         return Result.success();

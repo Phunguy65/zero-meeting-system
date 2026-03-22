@@ -1,20 +1,22 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.config;
 
+import io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence.model.JoinRequestData;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
- * Redis configuration for join request queue and SSE Pub/Sub.
+ * Redis configuration for join request queue storage.
  *
  * <p>Provides:
  * <ul>
- *   <li>{@link StringRedisTemplate} for join request storage (Sorted Set + Hash)</li>
- *   <li>{@link RedisMessageListenerContainer} for SSE event broadcasting across instances</li>
+ *   <li>{@link StringRedisTemplate} for queue (ZSET) and device index (STRING) operations
+ *   <li>{@link RedisTemplate} with JSON serialization for join request metadata storage
  * </ul>
  *
  * <p>Only activates when {@code spring.data.redis.host} is set.
@@ -24,10 +26,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     /**
-     * Template for string-based Redis operations (join request queue).
+     * Template for string-based Redis operations (queue ZSET + device index STRING).
      *
-     * <p>Uses {@link StringRedisSerializer} for both keys and values to ensure
-     * compatibility with Redis CLI inspection and cross-language interop.
+     * <p>Uses {@link StringRedisSerializer} for both keys and values to ensure compatibility with
+     * Redis CLI inspection and cross-language interop.
      */
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
@@ -41,16 +43,28 @@ public class RedisConfig {
     }
 
     /**
-     * Message listener container for Redis Pub/Sub (SSE event broadcasting).
+     * Template for JSON-serialized join request metadata storage.
      *
-     * <p>Allows multiple backend instances to subscribe to {@code meeting:*:events}
-     * channels and fan-out SSE notifications to connected clients.
+     * <p>Uses Jackson to serialize {@link JoinRequestData} records to JSON strings.
+     * Replaces the previous HASH-based storage with JSON STRING for better performance
+     * and type safety.
      */
     @Bean
-    public RedisMessageListenerContainer redisMessageListenerContainer(
+    public RedisTemplate<String, JoinRequestData> joinRequestRedisTemplate(
             RedisConnectionFactory connectionFactory) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        return container;
+        RedisTemplate<String, JoinRequestData> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+
+        JacksonJsonRedisSerializer<JoinRequestData> jsonSerializer =
+                new JacksonJsonRedisSerializer<>(JoinRequestData.class);
+
+        template.setValueSerializer(jsonSerializer);
+        template.setHashValueSerializer(jsonSerializer);
+
+        template.afterPropertiesSet();
+        return template;
     }
 }

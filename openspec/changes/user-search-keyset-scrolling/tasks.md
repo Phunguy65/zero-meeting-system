@@ -44,8 +44,8 @@
       `ScrollParams` (fields: `size`, `pageToken`, `query`; validation: size
       [1,100])
 - [x] 4.2 Add `SearchUsersUseCase` to `application/usecase/` — decode
-      `pageToken` via `CursorEncoder`, call `userRepository.searchUsers()`, map
-      to `CursorScrollResponse<UserResponse>`, encode `nextPageToken`
+      `pageToken` via `CursorEncoder`, call `userGrpcServicePort.searchUsers()`,
+      map to `CursorScrollResponse<UserResponse>`, encode `nextPageToken`
 
 ## 5. User-Management — Infrastructure Layer
 
