@@ -31,6 +31,13 @@ public interface ParticipationLogRepository {
     /** Returns the count of currently active (not yet left) participants for a meeting. */
     long countActiveByMeetingId(UUID meetingId);
 
+    /**
+     * Returns all active (not yet left) participation logs for a meeting.
+     * Used by {@code room_finished} webhook and {@code EndMeetingUseCase} to bulk-close
+     * any remaining open sessions.
+     */
+    List<ParticipationLog> findActiveByMeetingId(UUID meetingId);
+
     /** Keyset-scroll participation logs for a meeting, ordered by (joined_at DESC, id DESC). */
     CursorPageResponse<ParticipationLog> findByMeetingIdKeyset(
             UUID meetingId, ParticipationLogCursor cursor, int pageSize);

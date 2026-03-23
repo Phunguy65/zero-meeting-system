@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.meetingmanagement.application.usecase;
 
 import io.github.phunguy65.zms.meetingmanagement.application.command.EndMeetingCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.helper.ParticipationLogCloser;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
@@ -18,14 +19,17 @@ public class EndMeetingUseCase {
     private final MeetingRepository meetingRepository;
     private final LiveKitPort liveKitPort;
     private final ApplicationEventPublisher eventPublisher;
+    private final ParticipationLogCloser participationLogCloser;
 
     public EndMeetingUseCase(
             MeetingRepository meetingRepository,
             LiveKitPort liveKitPort,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            ParticipationLogCloser participationLogCloser) {
         this.meetingRepository = meetingRepository;
         this.liveKitPort = liveKitPort;
         this.eventPublisher = eventPublisher;
+        this.participationLogCloser = participationLogCloser;
     }
 
     @Transactional
@@ -50,6 +54,12 @@ public class EndMeetingUseCase {
         if (deleteResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
             return Result.failure(error);
         }
+
+        // Belt-and-suspenders: close any active participation logs now.
+        // LiveKit will also fire participant_left + room_finished webhooks after deleteRoom(),
+        // but those are async and may be delayed or lost. Closing here ensures countActive
+        // returns 0 immediately and orphaned rows don't linger.
+        participationLogCloser.closeAllActive(m.getId().value());
 
         var saved = meetingRepository.save(m);
         saved.getDomainEvents().stream()

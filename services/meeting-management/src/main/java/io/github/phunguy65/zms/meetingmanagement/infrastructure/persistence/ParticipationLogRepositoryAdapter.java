@@ -65,6 +65,11 @@ public class ParticipationLogRepositoryAdapter implements ParticipationLogReposi
     }
 
     @Override
+    public List<ParticipationLog> findActiveByMeetingId(UUID meetingId) {
+        return jpa.findActiveByMeetingId(meetingId).stream().map(this::toDomain).toList();
+    }
+
+    @Override
     public CursorPageResponse<ParticipationLog> findByMeetingIdKeyset(
             UUID meetingId, ParticipationLogCursor cursor, int pageSize) {
         int fetchLimit = pageSize + 1;

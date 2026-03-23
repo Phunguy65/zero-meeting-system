@@ -19,12 +19,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RequestJoinUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(RequestJoinUseCase.class);
 
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
@@ -108,6 +112,14 @@ public class RequestJoinUseCase {
             }
             String token = ((Result.Success<String, MeetingError>) tokenResult).value();
 
+            ParticipationLog participationLog = ParticipationLog.join(
+                    meeting.getId(), command.userId(), command.displayName(), role, identity);
+            participationLogRepository.save(participationLog);
+            log.debug(
+                    "Recorded participation log for identity '{}' in meeting '{}'",
+                    identity.value(),
+                    meeting.getId().value());
+
             return Result.success(new RequestJoinResponse(
                     UUID.randomUUID(), JoinRequestStatus.APPROVED, token, roomName.value()));
         }
@@ -147,7 +159,6 @@ public class RequestJoinUseCase {
     }
 
     private Optional<JoinRequest> findExisting(RequestJoinCommand command, MeetingId meetingId) {
-        // Check by userId first (for authenticated users)
         if (command.userId() != null) {
             var byUser = joinRequestRepository.findPendingByMeetingId(meetingId.value()).stream()
                     .filter(r -> r.getUserId()
@@ -158,7 +169,6 @@ public class RequestJoinUseCase {
             if (byUser.isPresent()) return byUser;
         }
 
-        // Check by deviceId (for guests and as fallback)
         return joinRequestRepository
                 .findByDeviceId(meetingId.value(), command.deviceId())
                 .filter(r -> r.getStatus() == JoinRequestStatus.PENDING);

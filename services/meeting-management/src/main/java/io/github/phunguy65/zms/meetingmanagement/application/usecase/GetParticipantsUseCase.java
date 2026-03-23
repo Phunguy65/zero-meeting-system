@@ -24,7 +24,7 @@ public class GetParticipantsUseCase {
                 query.meetingId(), cursor, query.pageSize());
         var items = page.items().stream()
                 .map(log -> new ParticipantResponse(
-                        log.getId(),
+                        log.getId().value(),
                         log.getMeetingId().value(),
                         log.getUserId().orElse(null),
                         log.getDisplayName(),

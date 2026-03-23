@@ -5,6 +5,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestApprovedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipationLog;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
@@ -15,12 +16,16 @@ import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ApproveJoinRequestUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(ApproveJoinRequestUseCase.class);
 
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
@@ -43,7 +48,7 @@ public class ApproveJoinRequestUseCase {
 
     @Transactional
     public Result<String, MeetingError> execute(ApproveJoinRequestCommand command) {
-        var meetingOpt = meetingRepository.findById(command.meetingId());
+        var meetingOpt = meetingRepository.findByIdWithLock(command.meetingId());
         if (meetingOpt.isEmpty()) {
             return Result.failure(new MeetingError.MeetingNotFound(command.meetingId()));
         }
@@ -93,6 +98,18 @@ public class ApproveJoinRequestUseCase {
         String token = ((Result.Success<String, MeetingError>) tokenResult).value();
 
         joinRequestRepository.updateStatus(command.requestId(), JoinRequestStatus.APPROVED);
+
+        ParticipationLog participationLog = ParticipationLog.join(
+                meeting.getId(),
+                joinRequest.getUserId().map(UserId::value).orElse(null),
+                joinRequest.getDisplayName(),
+                role,
+                identity);
+        participationLogRepository.save(participationLog);
+        log.debug(
+                "Recorded participation log for identity '{}' in meeting '{}'",
+                identity.value(),
+                meeting.getId().value());
 
         var approvedEvent = new JoinRequestApprovedEvent(
                 UUID.randomUUID(),

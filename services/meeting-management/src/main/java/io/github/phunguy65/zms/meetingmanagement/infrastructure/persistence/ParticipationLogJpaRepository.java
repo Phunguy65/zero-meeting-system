@@ -29,6 +29,11 @@ public interface ParticipationLogJpaRepository
     Optional<ParticipationLogJpaEntity> findActiveByMeetingIdAndIdentity(
             @Param("meetingId") UUID meetingId, @Param("identity") String identity);
 
+    /** Bulk lookup for room_finished / EndMeeting: all active sessions for a meeting. */
+    @Query("SELECT p FROM ParticipationLogJpaEntity p "
+            + "WHERE p.meetingId = :meetingId AND p.leftAt IS NULL")
+    List<ParticipationLogJpaEntity> findActiveByMeetingId(@Param("meetingId") UUID meetingId);
+
     /**
      * Keyset-scroll query for participation logs by meeting, ordered by (joined_at DESC, id DESC).
      * Caller should request {@code size + 1} rows to detect next page.

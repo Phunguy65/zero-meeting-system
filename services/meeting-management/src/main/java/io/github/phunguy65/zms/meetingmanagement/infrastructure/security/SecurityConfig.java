@@ -34,6 +34,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/*/joinRequests/*/events")
                         .permitAll()
+                        .requestMatchers("/webhook/livekit")
+                        .permitAll()
                         .anyRequest()
                         .authenticated())
                 .addFilterBefore(headerAuthFilter, UsernamePasswordAuthenticationFilter.class)

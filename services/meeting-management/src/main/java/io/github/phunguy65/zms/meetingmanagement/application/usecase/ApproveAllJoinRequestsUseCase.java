@@ -7,6 +7,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestApprove
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequest;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipationLog;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
@@ -18,12 +19,16 @@ import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ApproveAllJoinRequestsUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(ApproveAllJoinRequestsUseCase.class);
 
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
@@ -46,7 +51,7 @@ public class ApproveAllJoinRequestsUseCase {
 
     @Transactional
     public Result<ApproveAllResponse, MeetingError> execute(ApproveAllJoinRequestsCommand command) {
-        var meetingOpt = meetingRepository.findById(command.meetingId());
+        var meetingOpt = meetingRepository.findByIdWithLock(command.meetingId());
         if (meetingOpt.isEmpty()) {
             return Result.failure(new MeetingError.MeetingNotFound(command.meetingId()));
         }
@@ -68,8 +73,7 @@ public class ApproveAllJoinRequestsUseCase {
         int approvedCount = 0;
 
         int maxParticipants = meeting.getSettings().maxParticipants();
-        // Snapshot active count once; decrement as each approval is issued.
-        // Effective only after ParticipationLog write path is implemented.
+
         long remainingSlots = maxParticipants > 0
                 ? maxParticipants
                         - participationLogRepository.countActiveByMeetingId(
@@ -78,7 +82,6 @@ public class ApproveAllJoinRequestsUseCase {
 
         for (JoinRequest joinRequest : pendingRequests) {
             if (remainingSlots <= 0) {
-                // Meeting is full — skip remaining requests without failing the batch
                 continue;
             }
 
@@ -105,6 +108,18 @@ public class ApproveAllJoinRequestsUseCase {
 
             joinRequestRepository.updateStatus(
                     joinRequest.getId().value(), JoinRequestStatus.APPROVED);
+
+            ParticipationLog participationLog = ParticipationLog.join(
+                    meeting.getId(),
+                    joinRequest.getUserId().map(UserId::value).orElse(null),
+                    joinRequest.getDisplayName(),
+                    role,
+                    identity);
+            participationLogRepository.save(participationLog);
+            log.debug(
+                    "Recorded participation log for identity '{}' in meeting '{}'",
+                    identity.value(),
+                    meeting.getId().value());
 
             var approvedEvent = new JoinRequestApprovedEvent(
                     UUID.randomUUID(),
