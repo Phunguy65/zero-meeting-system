@@ -18,7 +18,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Lifecycle:
  * <ol>
- *   <li>{@link #join} — created by {@code JoinMeetingUseCase} when token is issued;
+ *   <li>{@link #join} — created when a token is issued ({@code RequestJoinUseCase} for
+ *       {@code ALLOW_ALL}, {@code ApproveJoinRequestUseCase} for {@code MANUAL_APPROVAL});
  *       {@code livekitParticipantSid} is null at this point.
  *   <li>{@link #assignSid} — called by the {@code participant_joined} webhook handler
  *       once LiveKit confirms the participant connected.

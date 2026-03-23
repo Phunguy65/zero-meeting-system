@@ -10,6 +10,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKi
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.PasswordHasher;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
@@ -27,6 +28,7 @@ public class RequestJoinUseCase {
 
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
+    private final ParticipationLogRepository participationLogRepository;
     private final LiveKitPort liveKitPort;
     private final PasswordHasher passwordHasher;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -34,17 +36,19 @@ public class RequestJoinUseCase {
     public RequestJoinUseCase(
             MeetingRepository meetingRepository,
             JoinRequestRepository joinRequestRepository,
+            ParticipationLogRepository participationLogRepository,
             LiveKitPort liveKitPort,
             PasswordHasher passwordHasher,
             ApplicationEventPublisher applicationEventPublisher) {
         this.meetingRepository = meetingRepository;
         this.joinRequestRepository = joinRequestRepository;
+        this.participationLogRepository = participationLogRepository;
         this.liveKitPort = liveKitPort;
         this.passwordHasher = passwordHasher;
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Result<RequestJoinResponse, MeetingError> execute(RequestJoinCommand command) {
         var meetingOpt = meetingRepository.findByIdWithLock(command.meetingId());
         if (meetingOpt.isEmpty()) {
@@ -82,6 +86,16 @@ public class RequestJoinUseCase {
                     : (command.userId() == null
                             ? ParticipantRole.GUEST
                             : ParticipantRole.PARTICIPANT);
+
+            int maxParticipants = meeting.getSettings().maxParticipants();
+            if (maxParticipants > 0 && role != ParticipantRole.HOST) {
+                long activeCount = participationLogRepository.countActiveByMeetingId(
+                        meeting.getId().value());
+                if (activeCount >= maxParticipants) {
+                    return Result.failure(
+                            new MeetingError.MeetingFull(meeting.getId().value(), maxParticipants));
+                }
+            }
 
             LiveKitIdentity identity = command.userId() != null
                     ? LiveKitIdentity.fromUser(UserId.of(command.userId()), command.deviceId())

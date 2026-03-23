@@ -2,12 +2,10 @@ package io.github.phunguy65.zms.meetingmanagement.presentation;
 
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetParticipantsQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetParticipantsUseCase;
-import io.github.phunguy65.zms.meetingmanagement.application.usecase.JoinMeetingUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.LeaveMeetingUseCase;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipationLogCursor;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence.ParticipationLogCursorEncoder;
-import io.github.phunguy65.zms.meetingmanagement.presentation.request.JoinMeetingRequest;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.LeaveMeetingRequest;
 import io.github.phunguy65.zms.shared.domain.CursorErrorCode;
 import io.github.phunguy65.zms.shared.domain.Result;
@@ -19,39 +17,22 @@ import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class ParticipantController extends BaseController {
 
-    private final JoinMeetingUseCase joinMeetingUseCase;
     private final LeaveMeetingUseCase leaveMeetingUseCase;
     private final GetParticipantsUseCase getParticipantsUseCase;
     private final ParticipationLogCursorEncoder participationLogCursorEncoder;
 
     public ParticipantController(
-            JoinMeetingUseCase joinMeetingUseCase,
             LeaveMeetingUseCase leaveMeetingUseCase,
             GetParticipantsUseCase getParticipantsUseCase,
             ParticipationLogCursorEncoder participationLogCursorEncoder) {
-        this.joinMeetingUseCase = joinMeetingUseCase;
         this.leaveMeetingUseCase = leaveMeetingUseCase;
         this.getParticipantsUseCase = getParticipantsUseCase;
         this.participationLogCursorEncoder = participationLogCursorEncoder;
-    }
-
-    @PostMapping(value = "/{version}/meetings/{id}:join", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> joinMeeting(
-            @PathVariable UUID id,
-            @Valid @RequestBody JoinMeetingRequest request,
-            Authentication auth) {
-        UUID userId = extractUserId(auth);
-        return switch (joinMeetingUseCase.execute(request.toCommand(id, userId))) {
-            case Result.Success<?, MeetingError> s ->
-                ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
-        };
     }
 
     @PostMapping(value = "/{version}/meetings/{id}:leave", version = "1.0")

@@ -10,6 +10,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKi
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRepository;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
@@ -23,16 +24,19 @@ public class ApproveJoinRequestUseCase {
 
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
+    private final ParticipationLogRepository participationLogRepository;
     private final LiveKitPort liveKitPort;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public ApproveJoinRequestUseCase(
             MeetingRepository meetingRepository,
             JoinRequestRepository joinRequestRepository,
+            ParticipationLogRepository participationLogRepository,
             LiveKitPort liveKitPort,
             ApplicationEventPublisher applicationEventPublisher) {
         this.meetingRepository = meetingRepository;
         this.joinRequestRepository = joinRequestRepository;
+        this.participationLogRepository = participationLogRepository;
         this.liveKitPort = liveKitPort;
         this.applicationEventPublisher = applicationEventPublisher;
     }
@@ -56,6 +60,16 @@ public class ApproveJoinRequestUseCase {
                     new MeetingError.JoinRequestNotFound(command.meetingId(), command.requestId()));
         }
         var joinRequest = requestOpt.get();
+
+        int maxParticipants = meeting.getSettings().maxParticipants();
+        if (maxParticipants > 0) {
+            long activeCount = participationLogRepository.countActiveByMeetingId(
+                    meeting.getId().value());
+            if (activeCount >= maxParticipants) {
+                return Result.failure(
+                        new MeetingError.MeetingFull(meeting.getId().value(), maxParticipants));
+            }
+        }
 
         var approveResult = joinRequest.approve();
         if (approveResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {

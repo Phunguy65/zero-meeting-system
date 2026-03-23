@@ -12,6 +12,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKi
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRepository;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
@@ -26,16 +27,19 @@ public class ApproveAllJoinRequestsUseCase {
 
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
+    private final ParticipationLogRepository participationLogRepository;
     private final LiveKitPort liveKitPort;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public ApproveAllJoinRequestsUseCase(
             MeetingRepository meetingRepository,
             JoinRequestRepository joinRequestRepository,
+            ParticipationLogRepository participationLogRepository,
             LiveKitPort liveKitPort,
             ApplicationEventPublisher applicationEventPublisher) {
         this.meetingRepository = meetingRepository;
         this.joinRequestRepository = joinRequestRepository;
+        this.participationLogRepository = participationLogRepository;
         this.liveKitPort = liveKitPort;
         this.applicationEventPublisher = applicationEventPublisher;
     }
@@ -63,7 +67,21 @@ public class ApproveAllJoinRequestsUseCase {
         LiveKitRoomName roomName = LiveKitRoomName.fromMeetingId(meeting.getId());
         int approvedCount = 0;
 
+        int maxParticipants = meeting.getSettings().maxParticipants();
+        // Snapshot active count once; decrement as each approval is issued.
+        // Effective only after ParticipationLog write path is implemented.
+        long remainingSlots = maxParticipants > 0
+                ? maxParticipants
+                        - participationLogRepository.countActiveByMeetingId(
+                                meeting.getId().value())
+                : Long.MAX_VALUE;
+
         for (JoinRequest joinRequest : pendingRequests) {
+            if (remainingSlots <= 0) {
+                // Meeting is full — skip remaining requests without failing the batch
+                continue;
+            }
+
             var approveResult = joinRequest.approve();
             if (approveResult instanceof Result.Failure<?, MeetingError>) {
                 continue;
@@ -101,6 +119,7 @@ public class ApproveAllJoinRequestsUseCase {
                     command.meetingId(), joinRequest.getId().value());
 
             approvedCount++;
+            remainingSlots--;
         }
 
         return Result.success(new ApproveAllResponse(approvedCount));
