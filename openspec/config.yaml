@@ -27,6 +27,7 @@ rules:
                   valueobject/     # Subpackage for Value Objects (e.g. Email, Password, etc.)
                 port/           # Outbound port interfaces (Repository, PasswordHasher, TokenProvider, external service contracts)
                 event/          # Domain events (implements PublishableEvent for Kafka-publishable events, or DomainEvent for internal)
+                projection/       # Read models for queries (if using CQRS; otherwise can be in domain/model)
                 {Feature}Error.java      # Sealed interface with error records (domain errors, used in Result<T, {Feature}Error>)
                 {Feature}ErrorCode.java  # Enum implementing ErrorCode (machine-readable API error codes, used in JsendResponse)
                 EventPublisher.java      # Outbound port for publishing domain events externally

@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -56,5 +57,31 @@ public interface UserRepository {
      * @param filter optional search filter; use {@link UserScrollFilter#empty()} for no filtering
      */
     CursorPageResponse<User> searchUsers(
+            @Nullable ScrollCursor cursor, int size, UserScrollFilter filter);
+
+    // ── Read-only projection methods (GET use cases) ───────────────────────
+
+    /**
+     * Returns a lightweight {@link UserSummary} projection for an active user.
+     * Does not reconstitute the full aggregate — no value-object wrapping, no sensitive fields.
+     */
+    Optional<UserSummary> findSummaryActiveById(UserId id);
+
+    /**
+     * Batch-fetch {@link UserSummary} projections for active (non-deleted) users by email.
+     * Invalid or malformed emails are silently skipped.
+     * Missing emails are absent from the result list.
+     */
+    List<UserSummary> findSummariesByEmails(Collection<String> emails);
+
+    /**
+     * Returns a keyset-scrolled page of {@link UserSummary} projections for active users.
+     * Results are ordered by {@code (created_at DESC, id DESC)}.
+     *
+     * @param cursor decoded cursor from the previous page, or {@code null} for the first page
+     * @param size   page size (max 100)
+     * @param filter optional search filter
+     */
+    CursorPageResponse<UserSummary> searchSummaries(
             @Nullable ScrollCursor cursor, int size, UserScrollFilter filter);
 }

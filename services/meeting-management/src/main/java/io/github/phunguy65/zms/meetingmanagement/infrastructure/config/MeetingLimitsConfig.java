@@ -5,14 +5,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Meeting limits configuration loaded from Consul KV ({@code config/meeting-management/data}).
+ * Meeting limits configuration loaded from environment variables or application.properties.
  *
- * <p>Properties are loaded at startup from Consul. Changes require service restart (use K8s rolling
- * restart for zero-downtime updates).
+ * <p>Properties are resolved at startup. Changes require service restart (use K8s rolling restart
+ * for zero-downtime updates).
  *
- * <p>Note: {@code @RefreshScope} removed for Spring Boot 4.x AOT/native image compatibility.
- *
- * <p>Default values ensure the service starts safely even when Consul is unavailable.
+ * <p>Default values ensure the service starts safely in local development.
  */
 @Component
 @ConfigurationProperties(prefix = "meeting.limits")

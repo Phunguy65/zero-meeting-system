@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferences
 import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +24,11 @@ public class GetUserPreferencesUseCase {
 
     @Transactional(readOnly = true)
     public Result<UserPreferencesResponse, AuthError> execute(UserId userId) {
-        var userOpt = userRepository.findActiveById(userId);
-        if (userOpt.isEmpty()) {
+        var summaryOpt = userRepository.findSummaryActiveById(userId);
+        if (summaryOpt.isEmpty()) {
             return Result.failure(new AuthError.UserNotFound());
         }
-        return Result.success(preferencesParser.parseAsResponse(userOpt.get().getPreferences()));
+        return Result.success(preferencesParser.parseAsResponse(
+                Optional.ofNullable(summaryOpt.get().preferences())));
     }
 }

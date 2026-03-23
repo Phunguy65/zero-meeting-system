@@ -8,7 +8,7 @@ import io.github.phunguy65.zms.proto.user.v1.BatchGetUserResponse;
 import io.github.phunguy65.zms.proto.user.v1.UserServiceGrpc;
 import io.github.phunguy65.zms.proto.user.v1.UserSnapshot;
 import io.github.phunguy65.zms.usermanagement.application.usecase.internal.BatchGetUserUseCase;
-import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
 import java.util.Optional;
@@ -42,20 +42,24 @@ public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
         responseObserver.onCompleted();
     }
 
-    private UserSnapshot toSnapshot(User user) {
+    private UserSnapshot toSnapshot(UserSummary summary) {
         var builder = UserSnapshot.newBuilder()
-                .setId(user.getId().value().toString())
-                .setEmail(user.getEmail().value())
-                .setFullName(user.getFullName().value())
-                .setAuthProvider(user.getAuthProvider())
-                .setCreatedAt(toTimestamp(user.getCreatedAt()))
-                .setUpdatedAt(toTimestamp(user.getUpdatedAt()));
+                .setId(summary.id().toString())
+                .setEmail(summary.email())
+                .setFullName(summary.fullName())
+                .setAuthProvider(summary.authProvider())
+                .setCreatedAt(toTimestamp(summary.createdAt()))
+                .setUpdatedAt(toTimestamp(summary.updatedAt()));
 
-        user.getUsername().ifPresent(u -> builder.setUsername(StringValue.of(u.value())));
-        user.getAvatarUrl().ifPresent(a -> builder.setAvatarUrl(StringValue.of(a)));
-        user.getPreferences()
-                .flatMap(this::parsePreferencesToStruct)
-                .ifPresent(builder::setPreferences);
+        if (summary.username() != null) {
+            builder.setUsername(StringValue.of(summary.username()));
+        }
+        if (summary.avatarUrl() != null) {
+            builder.setAvatarUrl(StringValue.of(summary.avatarUrl()));
+        }
+        if (summary.preferences() != null) {
+            parsePreferencesToStruct(summary.preferences()).ifPresent(builder::setPreferences);
+        }
 
         return builder.build();
     }

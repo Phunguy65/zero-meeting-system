@@ -22,13 +22,10 @@ val libs = the<LibrariesForLibs>()
 
 dependencies {
     implementation(platform("org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"))
-    implementation(platform("org.springframework.cloud:spring-cloud-dependencies:${libs.versions.springCloud.get()}"))
     implementation(platform("org.springframework.grpc:spring-grpc-dependencies:${libs.versions.springGrpc.get()}"))
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.aspectj)
     implementation(libs.spring.boot.starter.data.redis)
-    implementation(libs.spring.cloud.starter.consul.discovery)
-    implementation(libs.spring.cloud.starter.consul.config)
     implementation(libs.spring.boot.starter.log4j2)
     implementation(libs.log4j.layout.template.json)
     modules {

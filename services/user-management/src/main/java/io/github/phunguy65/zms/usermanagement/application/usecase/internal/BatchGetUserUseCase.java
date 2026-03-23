@@ -1,8 +1,8 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase.internal;
 
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.User;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Internal use case for batch-resolving users by email.
  *
- * <p>Returns a map of email → {@link User} for active (non-deleted) users only.
+ * <p>Returns a map of email → {@link UserSummary} for active (non-deleted) users only.
  * Missing or invalid emails are absent from the result map (partial results).
  */
 @Service
@@ -30,7 +30,7 @@ public class BatchGetUserUseCase {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, User> execute(List<String> emails) {
+    public Map<String, UserSummary> execute(List<String> emails) {
         if (emails == null || emails.isEmpty()) return Map.of();
 
         List<String> normalized = emails.stream()
@@ -47,8 +47,8 @@ public class BatchGetUserUseCase {
 
         if (normalized.isEmpty()) return Map.of();
 
-        return userRepository.findActiveByEmails(normalized).stream()
+        return userRepository.findSummariesByEmails(normalized).stream()
                 .collect(Collectors.toMap(
-                        u -> u.getEmail().value(), u -> u, (a, b) -> a, LinkedHashMap::new));
+                        UserSummary::email, s -> s, (a, b) -> a, LinkedHashMap::new));
     }
 }

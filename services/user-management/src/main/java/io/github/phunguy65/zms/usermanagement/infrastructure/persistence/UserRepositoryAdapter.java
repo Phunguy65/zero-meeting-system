@@ -10,6 +10,7 @@ import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPas
 import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserScrollFilter;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -104,6 +105,51 @@ public class UserRepositoryAdapter implements UserRepository {
 
     private String escapeLike(String value) {
         return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+
+    // ── Read-only projection methods ─────────────────────────────────────
+
+    @Override
+    public Optional<UserSummary> findSummaryActiveById(UserId id) {
+        return jpa.findByIdAndDeletedAtIsNull(id.value()).map(this::toSummary);
+    }
+
+    @Override
+    public List<UserSummary> findSummariesByEmails(Collection<String> emails) {
+        if (emails.isEmpty()) return List.of();
+        return jpa.findActiveByEmailIn(emails).stream().map(this::toSummary).toList();
+    }
+
+    @Override
+    public CursorPageResponse<UserSummary> searchSummaries(
+            @Nullable ScrollCursor cursor, int size, UserScrollFilter filter) {
+        int fetchLimit = size + 1;
+
+        var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
+        var cursorId = cursor != null ? cursor.id().toString() : null;
+
+        var query = filter.hasQuery() ? escapeLike(filter.query()) : null;
+
+        List<UserJpaEntity> rows =
+                jpa.findActiveKeyset(cursorCreatedAt, cursorId, query, fetchLimit);
+
+        boolean hasNext = rows.size() > size;
+        List<UserSummary> items = rows.stream().limit(size).map(this::toSummary).toList();
+
+        return CursorPageResponse.of(items, size, hasNext);
+    }
+
+    private UserSummary toSummary(UserJpaEntity e) {
+        return new UserSummary(
+                e.getId(),
+                e.getEmail(),
+                e.getFullName(),
+                e.getUsername(),
+                e.getAvatarUrl(),
+                e.getAuthProvider(),
+                e.getPreferences(),
+                e.getCreatedAt(),
+                e.getUpdatedAt());
     }
 
     private User toDomain(UserJpaEntity e) {
