@@ -4,7 +4,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Published when an invitee accepts a meeting invitation. */
+/**
+ * Published when an invitee accepts a meeting invitation.
+ */
 public record InviteeAcceptedEvent(
         UUID eventId, UUID aggregateId, UUID meetingId, UUID inviterId, Instant acceptedAt)
         implements PublishableEvent {

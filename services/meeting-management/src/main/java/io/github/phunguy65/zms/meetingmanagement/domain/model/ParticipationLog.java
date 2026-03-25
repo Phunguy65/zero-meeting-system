@@ -68,7 +68,9 @@ public class ParticipationLog extends AggregateRoot<ParticipationLogId> {
     // Factory methods
     // -------------------------------------------------------------------------
 
-    /** Records a participant joining a meeting (token issued, not yet connected to LiveKit). */
+    /**
+     * Records a participant joining a meeting (token issued, not yet connected to LiveKit).
+     */
     public static ParticipationLog join(
             MeetingId meetingId,
             @Nullable UUID userId,
@@ -87,7 +89,9 @@ public class ParticipationLog extends AggregateRoot<ParticipationLogId> {
                 null);
     }
 
-    /** Reconstitutes from persistence. */
+    /**
+     * Reconstitutes from persistence.
+     */
     public static ParticipationLog reconstitute(
             ParticipationLogId id,
             MeetingId meetingId,
@@ -125,7 +129,9 @@ public class ParticipationLog extends AggregateRoot<ParticipationLogId> {
         this.livekitParticipantSid = sid;
     }
 
-    /** Records the time the participant left. Can only be called once. */
+    /**
+     * Records the time the participant left. Can only be called once.
+     */
     public void leave(Instant leftAt) {
         if (this.leftAt != null) {
             throw new IllegalStateException("Participant already recorded as left");
@@ -133,7 +139,9 @@ public class ParticipationLog extends AggregateRoot<ParticipationLogId> {
         this.leftAt = leftAt;
     }
 
-    /** Returns true if this is a guest participant (no registered user account). */
+    /**
+     * Returns true if this is a guest participant (no registered user account).
+     */
     public boolean isGuest() {
         return userId == null;
     }
@@ -147,7 +155,9 @@ public class ParticipationLog extends AggregateRoot<ParticipationLogId> {
         return id;
     }
 
-    /** Called by the persistence adapter after insert to set the DB-generated id. */
+    /**
+     * Called by the persistence adapter after insert to set the DB-generated id.
+     */
     public void assignId(ParticipationLogId id) {
         if (this.id != null) throw new IllegalStateException("Id already assigned");
         this.id = id;

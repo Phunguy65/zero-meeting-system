@@ -15,7 +15,9 @@ public interface RecordingRepository {
 
     Optional<Recording> findById(RecordingId id);
 
-    /** Returns the recording currently in PENDING or RECORDING state for the given meeting. */
+    /**
+     * Returns the recording currently in PENDING or RECORDING state for the given meeting.
+     */
     Optional<Recording> findActiveByMeetingId(UUID meetingId);
 
     /**
@@ -26,7 +28,9 @@ public interface RecordingRepository {
 
     List<Recording> findByMeetingId(UUID meetingId);
 
-    /** Keyset-scroll recordings for a meeting, ordered by (created_at DESC, id DESC). */
+    /**
+     * Keyset-scroll recordings for a meeting, ordered by (created_at DESC, id DESC).
+     */
     CursorPageResponse<Recording> findByMeetingIdKeyset(
             UUID meetingId, ScrollCursor cursor, int pageSize);
 }

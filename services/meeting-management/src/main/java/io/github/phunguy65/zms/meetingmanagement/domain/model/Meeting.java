@@ -2,10 +2,7 @@ package io.github.phunguy65.zms.meetingmanagement.domain.model;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
-import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingCancelledEvent;
-import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingEndedEvent;
-import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingScheduledEvent;
-import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingStartedEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.event.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.*;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
 import io.github.phunguy65.zms.shared.domain.Result;
@@ -206,6 +203,26 @@ public class Meeting extends AggregateRoot<MeetingId> {
     }
 
     /**
+     * Updates meeting settings when status is SCHEDULED or LIVE.
+     * Registers {@code MeetingSettingsUpdatedEvent}.
+     *
+     * @param newSettings the new settings to apply
+     * @param updatedBy   the user ID performing the update
+     * @return success, or failure with {@code InvalidStatusTransition} if meeting is ENDED/CANCELLED
+     */
+    public Result<Void, MeetingError> updateSettings(MeetingSettings newSettings, UUID updatedBy) {
+        if (status != MeetingStatus.SCHEDULED && status != MeetingStatus.LIVE) {
+            return Result.failure(
+                    new MeetingError.InvalidStatusTransition(status, MeetingStatus.SCHEDULED));
+        }
+        this.settings = newSettings;
+        Instant now = Instant.now();
+        registerEvent(new MeetingSettingsUpdatedEvent(
+                UUID.randomUUID(), id.value(), hostId.value(), updatedBy, status, now));
+        return Result.success();
+    }
+
+    /**
      * Transitions SCHEDULED → CANCELLED. Registers {@code MeetingCancelledEvent}.
      */
     public Result<Void, MeetingError> cancel() {
@@ -249,7 +266,9 @@ public class Meeting extends AggregateRoot<MeetingId> {
         return Optional.ofNullable(timeRange);
     }
 
-    /** Convenience accessor — start time from the time range, if present. */
+    /**
+     * Convenience accessor — start time from the time range, if present.
+     */
     public Optional<Instant> getStartTime() {
         return Optional.ofNullable(timeRange).map(MeetingTimeRange::start);
     }

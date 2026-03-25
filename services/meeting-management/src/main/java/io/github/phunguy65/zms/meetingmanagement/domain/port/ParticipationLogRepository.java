@@ -28,7 +28,9 @@ public interface ParticipationLogRepository {
 
     List<ParticipationLog> findByMeetingId(UUID meetingId);
 
-    /** Returns the count of currently active (not yet left) participants for a meeting. */
+    /**
+     * Returns the count of currently active (not yet left) participants for a meeting.
+     */
     long countActiveByMeetingId(UUID meetingId);
 
     /**
@@ -38,7 +40,9 @@ public interface ParticipationLogRepository {
      */
     List<ParticipationLog> findActiveByMeetingId(UUID meetingId);
 
-    /** Keyset-scroll participation logs for a meeting, ordered by (joined_at DESC, id DESC). */
+    /**
+     * Keyset-scroll participation logs for a meeting, ordered by (joined_at DESC, id DESC).
+     */
     CursorPageResponse<ParticipationLog> findByMeetingIdKeyset(
             UUID meetingId, ParticipationLogCursor cursor, int pageSize);
 }

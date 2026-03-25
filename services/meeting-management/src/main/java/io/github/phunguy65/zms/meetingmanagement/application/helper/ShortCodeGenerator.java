@@ -27,8 +27,8 @@ public class ShortCodeGenerator {
      * Generates a unique short code, retrying up to {@value DEFAULT_MAX_ATTEMPTS} times.
      *
      * @return {@link Result.Success} with a unique {@link ShortCode}, or
-     *         {@link Result.Failure} with {@link MeetingError.ShortCodeExhausted} if all attempts
-     *         collide
+     * {@link Result.Failure} with {@link MeetingError.ShortCodeExhausted} if all attempts
+     * collide
      */
     public Result<ShortCode, MeetingError> generate() {
         for (int attempt = 0; attempt < DEFAULT_MAX_ATTEMPTS; attempt++) {

@@ -60,7 +60,9 @@ public class JoinRequest extends AggregateRoot<JoinRequestId> {
         this.expiresAt = expiresAt;
     }
 
-    /** Factory method — creates a new PENDING join request. */
+    /**
+     * Factory method — creates a new PENDING join request.
+     */
     public static JoinRequest create(
             MeetingId meetingId,
             @Nullable UserId userId,
@@ -78,7 +80,9 @@ public class JoinRequest extends AggregateRoot<JoinRequestId> {
                 expiresAt);
     }
 
-    /** Reconstitution factory used by the Redis repository adapter. */
+    /**
+     * Reconstitution factory used by the Redis repository adapter.
+     */
     public static JoinRequest reconstitute(
             JoinRequestId id,
             MeetingId meetingId,
@@ -96,8 +100,8 @@ public class JoinRequest extends AggregateRoot<JoinRequestId> {
      * Approves the join request.
      *
      * @return {@code Result.success()} on success (including idempotent re-approval),
-     *         or {@code Result.failure(InvalidJoinRequestTransition)} if the current status
-     *         does not allow transitioning to APPROVED (e.g., DENIED → APPROVED)
+     * or {@code Result.failure(InvalidJoinRequestTransition)} if the current status
+     * does not allow transitioning to APPROVED (e.g., DENIED → APPROVED)
      */
     public Result<Void, MeetingError> approve() {
         if (status == JoinRequestStatus.APPROVED) {
@@ -115,8 +119,8 @@ public class JoinRequest extends AggregateRoot<JoinRequestId> {
      * Denies the join request.
      *
      * @return {@code Result.success()} on success (including idempotent re-denial),
-     *         or {@code Result.failure(InvalidJoinRequestTransition)} if the current status
-     *         does not allow transitioning to DENIED (e.g., APPROVED → DENIED)
+     * or {@code Result.failure(InvalidJoinRequestTransition)} if the current status
+     * does not allow transitioning to DENIED (e.g., APPROVED → DENIED)
      */
     public Result<Void, MeetingError> deny() {
         if (status == JoinRequestStatus.DENIED) {

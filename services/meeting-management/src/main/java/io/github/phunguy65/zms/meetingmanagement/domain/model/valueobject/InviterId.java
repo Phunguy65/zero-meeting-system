@@ -4,7 +4,9 @@ import io.github.phunguy65.zms.shared.domain.ValueObject;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Identity of the user who sent the invitation. */
+/**
+ * Identity of the user who sent the invitation.
+ */
 public record InviterId(UUID value) implements ValueObject {
 
     public InviterId {

@@ -16,13 +16,19 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "meeting.limits")
 public class MeetingLimitsConfig implements MeetingLimitsPort {
 
-    /** System-wide ceiling for maxParticipants. Default: 500. */
+    /**
+     * System-wide ceiling for maxParticipants. Default: 500.
+     */
     private int maxParticipantsCeiling = 500;
 
-    /** Maximum allowed meeting duration in minutes. Default: 480 (8 hours). */
+    /**
+     * Maximum allowed meeting duration in minutes. Default: 480 (8 hours).
+     */
     private int maxDurationMinutes = 480;
 
-    /** Minimum allowed meeting duration in minutes. Default: 15. */
+    /**
+     * Minimum allowed meeting duration in minutes. Default: 15.
+     */
     private int minDurationMinutes = 15;
 
     public int getMaxParticipantsCeiling() {

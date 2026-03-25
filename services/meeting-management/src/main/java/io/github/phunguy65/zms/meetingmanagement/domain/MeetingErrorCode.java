@@ -2,7 +2,9 @@ package io.github.phunguy65.zms.meetingmanagement.domain;
 
 import io.github.phunguy65.zms.shared.domain.ErrorCode;
 
-/** Machine-readable error codes for JSend {@code fail} responses. */
+/**
+ * Machine-readable error codes for JSend {@code fail} responses.
+ */
 public enum MeetingErrorCode implements ErrorCode {
     MEETING_NOT_FOUND,
     INVALID_STATUS_TRANSITION,

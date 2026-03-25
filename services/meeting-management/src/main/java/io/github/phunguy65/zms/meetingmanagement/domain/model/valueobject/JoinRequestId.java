@@ -4,7 +4,9 @@ import io.github.phunguy65.zms.shared.domain.ValueObject;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Identity of a join request in the admission queue. */
+/**
+ * Identity of a join request in the admission queue.
+ */
 public record JoinRequestId(UUID value) implements ValueObject {
 
     public JoinRequestId {

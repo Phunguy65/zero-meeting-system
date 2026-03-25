@@ -17,7 +17,9 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-/** Kafka producer and consumer configuration using CloudEvents binary content mode. */
+/**
+ * Kafka producer and consumer configuration using CloudEvents binary content mode.
+ */
 @Configuration
 @EnableScheduling
 public class KafkaConfig {

@@ -15,16 +15,24 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.livekit")
 public class LiveKitProperties {
 
-    /** LiveKit server HTTP URL. Default: {@code http://localhost:7880}. */
+    /**
+     * LiveKit server HTTP URL. Default: {@code http://localhost:7880}.
+     */
     private String url = "http://localhost:7880";
 
-    /** LiveKit API key. */
+    /**
+     * LiveKit API key.
+     */
     private String apiKey;
 
-    /** LiveKit API secret. */
+    /**
+     * LiveKit API secret.
+     */
     private String apiSecret;
 
-    /** JWT token TTL in seconds. Default: 1800 (30 minutes). */
+    /**
+     * JWT token TTL in seconds. Default: 1800 (30 minutes).
+     */
     private long tokenExpirySeconds = 1800;
 
     public String getUrl() {

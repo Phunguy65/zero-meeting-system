@@ -59,7 +59,9 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
         this.respondedAt = respondedAt;
     }
 
-    /** Factory method — creates a new PENDING invitation. */
+    /**
+     * Factory method — creates a new PENDING invitation.
+     */
     public static MeetingInvitee create(
             MeetingId meetingId,
             InviterId inviterId,
@@ -78,7 +80,9 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
                 null);
     }
 
-    /** Reconstitution factory used by the persistence adapter. */
+    /**
+     * Reconstitution factory used by the persistence adapter.
+     */
     public static MeetingInvitee reconstitute(
             InviteeId id,
             MeetingId meetingId,
@@ -105,7 +109,7 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
      * Accepts the invitation.
      *
      * @return {@code Result.success()} on success, or {@code Result.failure(InvalidInviteeTransition)}
-     *         if the current status does not allow transitioning to ACCEPTED
+     * if the current status does not allow transitioning to ACCEPTED
      */
     public Result<Void, MeetingError> accept() {
         if (!status.canTransitionTo(InviteeStatus.ACCEPTED)) {
@@ -123,7 +127,7 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
      * Declines the invitation.
      *
      * @return {@code Result.success()} on success, or {@code Result.failure(InvalidInviteeTransition)}
-     *         if the current status does not allow transitioning to DECLINED
+     * if the current status does not allow transitioning to DECLINED
      */
     public Result<Void, MeetingError> decline() {
         if (!status.canTransitionTo(InviteeStatus.DECLINED)) {

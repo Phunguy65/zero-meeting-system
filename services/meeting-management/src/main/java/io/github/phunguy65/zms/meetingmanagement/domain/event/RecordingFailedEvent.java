@@ -4,7 +4,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Published when a recording transitions to FAILED. */
+/**
+ * Published when a recording transitions to FAILED.
+ */
 public record RecordingFailedEvent(UUID eventId, UUID aggregateId, UUID meetingId, Instant failedAt)
         implements PublishableEvent {
 

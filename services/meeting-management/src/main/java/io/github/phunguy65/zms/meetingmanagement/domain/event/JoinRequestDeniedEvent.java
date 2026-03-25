@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** Published when a host denies a join request or when a meeting ends with pending requests. */
+/**
+ * Published when a host denies a join request or when a meeting ends with pending requests.
+ */
 public record JoinRequestDeniedEvent(
         UUID eventId,
         UUID meetingId,

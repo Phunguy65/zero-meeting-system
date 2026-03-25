@@ -23,7 +23,9 @@ public record ShortCode(String value) implements ValueObject {
             throw new IllegalArgumentException("ShortCode must not exceed 15 characters");
     }
 
-    /** Generates a random 10-character alphanumeric code. */
+    /**
+     * Generates a random 10-character alphanumeric code.
+     */
     public static ShortCode generate() {
         StringBuilder sb = new StringBuilder(LENGTH);
         for (int i = 0; i < LENGTH; i++) {

@@ -4,7 +4,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Published when a meeting transitions SCHEDULED → LIVE. */
+/**
+ * Published when a meeting transitions SCHEDULED → LIVE.
+ */
 public record MeetingStartedEvent(
         UUID eventId, UUID aggregateId, UUID hostId, String liveKitRoomName, Instant startedAt)
         implements PublishableEvent {

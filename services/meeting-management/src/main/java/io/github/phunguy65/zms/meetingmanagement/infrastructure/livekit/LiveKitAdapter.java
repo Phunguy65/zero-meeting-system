@@ -51,10 +51,6 @@ public class LiveKitAdapter implements LiveKitPort {
         this.roomServiceClient = roomServiceClient;
     }
 
-    // -------------------------------------------------------------------------
-    // Token generation
-    // -------------------------------------------------------------------------
-
     @Override
     public Result<String, MeetingError> generateToken(
             LiveKitRoomName roomName,
@@ -66,7 +62,6 @@ public class LiveKitAdapter implements LiveKitPort {
             token.setIdentity(identity.value());
             token.setName(displayName);
             token.setTtl(props.getTokenExpirySeconds() * 1_000L);
-
             token.addGrants(new RoomJoin(true), new RoomName(roomName.value()));
             token.addGrants(buildRoleGrants(role).toArray(new VideoGrant[0]));
 

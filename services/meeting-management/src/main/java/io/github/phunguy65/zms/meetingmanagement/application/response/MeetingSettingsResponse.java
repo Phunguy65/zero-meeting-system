@@ -21,7 +21,9 @@ public record MeetingSettingsResponse(
         boolean chatEnabled,
         boolean requirePassword) {
 
-    /** Builds a response from the domain value object. */
+    /**
+     * Builds a response from the domain value object.
+     */
     public static MeetingSettingsResponse from(MeetingSettings settings) {
         return new MeetingSettingsResponse(
                 settings.admissionPolicy().name(),

@@ -21,7 +21,9 @@ public record MeetingTimeRange(Instant start, Instant end) implements ValueObjec
                     "MeetingTimeRange start must be strictly before end");
     }
 
-    /** Duration of the meeting. */
+    /**
+     * Duration of the meeting.
+     */
     public Duration duration() {
         return Duration.between(start, end);
     }

@@ -29,14 +29,18 @@ public record LiveKitIdentity(String value) implements ValueObject {
         return new LiveKitIdentity(raw);
     }
 
-    /** Creates an identity for an authenticated user joining from a specific device. */
+    /**
+     * Creates an identity for an authenticated user joining from a specific device.
+     */
     public static LiveKitIdentity fromUser(UserId userId, String deviceId) {
         Objects.requireNonNull(userId, "userId must not be null");
         Objects.requireNonNull(deviceId, "deviceId must not be null");
         return new LiveKitIdentity(userId.value() + ":" + deviceId);
     }
 
-    /** Creates an identity for a guest joining from a specific device. */
+    /**
+     * Creates an identity for a guest joining from a specific device.
+     */
     public static LiveKitIdentity forGuest(String deviceId) {
         Objects.requireNonNull(deviceId, "deviceId must not be null");
         return new LiveKitIdentity("guest:" + deviceId);

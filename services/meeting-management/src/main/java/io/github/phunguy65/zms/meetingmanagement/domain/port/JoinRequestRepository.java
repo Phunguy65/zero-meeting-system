@@ -26,7 +26,7 @@ public interface JoinRequestRepository {
      * </ul>
      *
      * @param request the join request to save
-     * @param ttl the time-to-live for the request metadata
+     * @param ttl     the time-to-live for the request metadata
      */
     void save(JoinRequest request, Duration ttl);
 
@@ -42,7 +42,7 @@ public interface JoinRequestRepository {
      * Finds a join request by meeting ID and device ID (for duplicate detection).
      *
      * @param meetingId the meeting ID
-     * @param deviceId the device ID
+     * @param deviceId  the device ID
      * @return the join request, or {@code Optional.empty()} if not found
      */
     Optional<JoinRequest> findByDeviceId(UUID meetingId, String deviceId);
@@ -59,7 +59,7 @@ public interface JoinRequestRepository {
      * Updates the status of a join request.
      *
      * @param requestId the join request ID
-     * @param status the new status
+     * @param status    the new status
      */
     void updateStatus(UUID requestId, JoinRequestStatus status);
 

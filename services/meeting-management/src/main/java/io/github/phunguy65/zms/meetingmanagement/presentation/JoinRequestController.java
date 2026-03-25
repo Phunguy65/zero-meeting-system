@@ -134,7 +134,9 @@ public class JoinRequestController extends BaseController {
         return ResponseEntity.ok().contentType(MediaType.TEXT_EVENT_STREAM).body(emitter);
     }
 
-    /** GET /v1.0/meetings/{id}/events — SSE stream for host (requires auth) */
+    /**
+     * GET /v1.0/meetings/{id}/events — SSE stream for host (requires auth)
+     */
     @GetMapping(
             value = "/{version}/meetings/{id}/events",
             version = "1.0",

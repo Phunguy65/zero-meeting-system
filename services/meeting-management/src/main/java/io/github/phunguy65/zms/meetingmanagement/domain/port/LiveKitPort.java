@@ -7,7 +7,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKi
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantGrants;
 import io.github.phunguy65.zms.shared.domain.Result;
 
-/** Port for interacting with the LiveKit media server. */
+/**
+ * Port for interacting with the LiveKit media server.
+ */
 public interface LiveKitPort {
 
     /**
@@ -29,7 +31,7 @@ public interface LiveKitPort {
      * @param displayName the participant's display name shown to others
      * @param role        HOST, PARTICIPANT, or GUEST — determines LiveKit grants
      * @return {@link Result.Success} with the signed JWT token, or {@link Result.Failure} with
-     *     {@link MeetingError.LiveKitUnavailable} if the token cannot be generated
+     * {@link MeetingError.LiveKitUnavailable} if the token cannot be generated
      */
     Result<String, MeetingError> generateToken(
             LiveKitRoomName roomName,
@@ -44,7 +46,7 @@ public interface LiveKitPort {
      * @param identity the participant's identity string as embedded in their JWT ({@code sub} claim)
      * @param grants   the new permission set to apply
      * @return {@link Result.Success} on success, or {@link Result.Failure} with
-     *     {@link MeetingError.LiveKitUnavailable} if the server is unreachable
+     * {@link MeetingError.LiveKitUnavailable} if the server is unreachable
      */
     Result<Void, MeetingError> updateParticipantPermissions(
             LiveKitRoomName roomName, String identity, ParticipantGrants grants);
@@ -53,7 +55,7 @@ public interface LiveKitPort {
      * Deletes a LiveKit room and disconnects all participants.
      *
      * @return {@link Result.Success} on success, or {@link Result.Failure} with
-     *     {@link MeetingError.LiveKitUnavailable} if the server is unreachable
+     * {@link MeetingError.LiveKitUnavailable} if the server is unreachable
      */
     Result<Void, MeetingError> deleteRoom(LiveKitRoomName roomName);
 }

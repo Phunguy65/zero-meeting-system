@@ -17,19 +17,25 @@ public interface ParticipationLogJpaRepository
             + "WHERE p.meetingId = :meetingId AND p.leftAt IS NULL")
     long countActiveByMeetingId(@Param("meetingId") UUID meetingId);
 
-    /** Primary lookup for participant_left webhook: find active session by LiveKit SID. */
+    /**
+     * Primary lookup for participant_left webhook: find active session by LiveKit SID.
+     */
     @Query("SELECT p FROM ParticipationLogJpaEntity p "
             + "WHERE p.livekitParticipantSid = :sid AND p.leftAt IS NULL")
     Optional<ParticipationLogJpaEntity> findActiveBySid(@Param("sid") String sid);
 
-    /** Lookup for participant_joined webhook: find pending entry to assign SID. */
+    /**
+     * Lookup for participant_joined webhook: find pending entry to assign SID.
+     */
     @Query("SELECT p FROM ParticipationLogJpaEntity p "
             + "WHERE p.meetingId = :meetingId AND p.livekitIdentity = :identity AND p.leftAt IS NULL "
             + "ORDER BY p.joinedAt DESC")
     Optional<ParticipationLogJpaEntity> findActiveByMeetingIdAndIdentity(
             @Param("meetingId") UUID meetingId, @Param("identity") String identity);
 
-    /** Bulk lookup for room_finished / EndMeeting: all active sessions for a meeting. */
+    /**
+     * Bulk lookup for room_finished / EndMeeting: all active sessions for a meeting.
+     */
     @Query("SELECT p FROM ParticipationLogJpaEntity p "
             + "WHERE p.meetingId = :meetingId AND p.leftAt IS NULL")
     List<ParticipationLogJpaEntity> findActiveByMeetingId(@Param("meetingId") UUID meetingId);

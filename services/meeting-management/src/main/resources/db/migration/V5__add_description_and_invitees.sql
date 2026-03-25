@@ -7,14 +7,14 @@ ALTER TABLE meetings
 -- Create meeting_invitees table
 CREATE TABLE meeting_invitees
 (
-    id           UUID        NOT NULL DEFAULT gen_random_uuid(),
-    meeting_id   UUID        NOT NULL REFERENCES meetings (id) ON DELETE CASCADE,
-    inviter_id   UUID        NOT NULL,
-    user_id      UUID,
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    meeting_id UUID NOT NULL REFERENCES meetings (id) ON DELETE CASCADE,
+    inviter_id UUID NOT NULL,
+    user_id UUID,
     email        VARCHAR(255) NOT NULL,
     display_name VARCHAR(255),
-    status       VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-    invited_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    status       VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
+    invited_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     responded_at TIMESTAMPTZ,
     CONSTRAINT pk_meeting_invitees PRIMARY KEY (id),
     CONSTRAINT uq_meeting_invitees_meeting_email UNIQUE (meeting_id, email),

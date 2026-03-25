@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** Published when a participant submits a join request for a meeting with MANUAL_APPROVAL policy. */
+/**
+ * Published when a participant submits a join request for a meeting with MANUAL_APPROVAL policy.
+ */
 public record JoinRequestCreatedEvent(
         UUID eventId,
         UUID meetingId,

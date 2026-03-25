@@ -9,9 +9,13 @@ package io.github.phunguy65.zms.meetingmanagement.domain.model;
  */
 public enum AdmissionPolicy {
 
-    /** All participants can join immediately without host approval. */
+    /**
+     * All participants can join immediately without host approval.
+     */
     ALLOW_ALL,
 
-    /** Participants must submit a join request and wait for host approval. */
+    /**
+     * Participants must submit a join request and wait for host approval.
+     */
     MANUAL_APPROVAL
 }

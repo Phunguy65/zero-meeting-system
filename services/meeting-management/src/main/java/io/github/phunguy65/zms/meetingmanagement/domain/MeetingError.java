@@ -8,7 +8,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.Record
 import io.github.phunguy65.zms.shared.domain.DomainError;
 import java.util.UUID;
 
-/** Domain errors for the meeting-management bounded context. */
+/**
+ * Domain errors for the meeting-management bounded context.
+ */
 public sealed interface MeetingError extends DomainError {
 
     record MeetingNotFound(UUID id) implements MeetingError {

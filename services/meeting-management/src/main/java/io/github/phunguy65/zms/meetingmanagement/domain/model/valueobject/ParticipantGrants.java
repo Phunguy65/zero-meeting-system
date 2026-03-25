@@ -15,17 +15,23 @@ import io.github.phunguy65.zms.shared.domain.ValueObject;
 public record ParticipantGrants(boolean canPublish, boolean canPublishData, boolean canSubscribe)
         implements ValueObject {
 
-    /** Grants for a promoted speaker: full publish rights. */
+    /**
+     * Grants for a promoted speaker: full publish rights.
+     */
     public static ParticipantGrants speaker() {
         return new ParticipantGrants(true, true, true);
     }
 
-    /** Grants for a demoted viewer: subscribe and chat only, no media publish. */
+    /**
+     * Grants for a demoted viewer: subscribe and chat only, no media publish.
+     */
     public static ParticipantGrants viewer() {
         return new ParticipantGrants(false, true, true);
     }
 
-    /** Grants for a fully muted observer: subscribe only, no publish of any kind. */
+    /**
+     * Grants for a fully muted observer: subscribe only, no publish of any kind.
+     */
     public static ParticipantGrants observer() {
         return new ParticipantGrants(false, false, true);
     }

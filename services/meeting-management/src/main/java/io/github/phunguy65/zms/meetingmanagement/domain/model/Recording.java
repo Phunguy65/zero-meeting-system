@@ -114,7 +114,9 @@ public class Recording extends AggregateRoot<RecordingId> {
         return recording;
     }
 
-    /** Reconstitutes a Recording from persistence. No domain events registered. */
+    /**
+     * Reconstitutes a Recording from persistence. No domain events registered.
+     */
     public static Recording reconstitute(
             RecordingId id,
             MeetingId meetingId,

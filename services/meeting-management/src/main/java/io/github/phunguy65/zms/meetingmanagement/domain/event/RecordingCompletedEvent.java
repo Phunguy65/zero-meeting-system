@@ -4,7 +4,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Published when a recording transitions PROCESSING → COMPLETED with file URL available. */
+/**
+ * Published when a recording transitions PROCESSING → COMPLETED with file URL available.
+ */
 public record RecordingCompletedEvent(
         UUID eventId,
         UUID aggregateId,

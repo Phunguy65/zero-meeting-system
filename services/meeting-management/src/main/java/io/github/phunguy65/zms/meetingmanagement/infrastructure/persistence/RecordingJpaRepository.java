@@ -17,7 +17,9 @@ public interface RecordingJpaRepository extends JpaRepository<RecordingJpaEntity
     Optional<RecordingJpaEntity> findByMeetingIdAndStatusIn(
             @Param("meetingId") UUID meetingId, @Param("statuses") List<String> statuses);
 
-    /** Lookup for egress webhook handlers: find recording by LiveKit egress ID. */
+    /**
+     * Lookup for egress webhook handlers: find recording by LiveKit egress ID.
+     */
     @Query("SELECT r FROM RecordingJpaEntity r WHERE r.livekitEgressId = :egressId")
     Optional<RecordingJpaEntity> findByLivekitEgressId(@Param("egressId") String egressId);
 

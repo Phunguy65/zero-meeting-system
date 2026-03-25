@@ -3,7 +3,9 @@ package io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject;
 import io.github.phunguy65.zms.shared.domain.ValueObject;
 import java.util.Objects;
 
-/** Optional display name for a meeting invitee, max 255 characters. */
+/**
+ * Optional display name for a meeting invitee, max 255 characters.
+ */
 public record InviteeDisplayName(String value) implements ValueObject {
 
     public static final int MAX_LENGTH = 255;

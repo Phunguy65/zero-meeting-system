@@ -1,6 +1,8 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.model;
 
-/** Status of a meeting invitation. */
+/**
+ * Status of a meeting invitation.
+ */
 public enum InviteeStatus {
     PENDING,
     ACCEPTED,

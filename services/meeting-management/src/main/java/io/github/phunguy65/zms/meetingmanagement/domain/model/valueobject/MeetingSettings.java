@@ -29,18 +29,24 @@ public record MeetingSettings(
         @Nullable String passwordHash)
         implements ValueObject {
 
-    /** Allowed values for {@code screenShareMode}. */
+    /**
+     * Allowed values for {@code screenShareMode}.
+     */
     public static final String SCREEN_SHARE_ALL = "ALL";
 
     public static final String SCREEN_SHARE_HOST_ONLY = "HOST_ONLY";
     public static final String SCREEN_SHARE_DISABLED = "DISABLED";
 
-    /** Returns {@code true} if this meeting requires a password to join. */
+    /**
+     * Returns {@code true} if this meeting requires a password to join.
+     */
     public boolean isPasswordProtected() {
         return passwordHash != null && !passwordHash.isBlank();
     }
 
-    /** Default settings (no password). */
+    /**
+     * Default settings (no password).
+     */
     public static MeetingSettings defaults() {
         return new MeetingSettings(
                 AdmissionPolicy.MANUAL_APPROVAL,

@@ -16,6 +16,8 @@ public record ScheduleMeetingCommand(
         List<InviteeInput> invitees,
         @Nullable String rawPassword) {
 
-    /** An invitee identified by their email address. */
+    /**
+     * An invitee identified by their email address.
+     */
     public record InviteeInput(String email) {}
 }

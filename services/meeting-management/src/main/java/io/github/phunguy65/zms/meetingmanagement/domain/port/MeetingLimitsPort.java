@@ -7,12 +7,18 @@ package io.github.phunguy65.zms.meetingmanagement.domain.port;
  */
 public interface MeetingLimitsPort {
 
-    /** System-wide ceiling for maxParticipants. */
+    /**
+     * System-wide ceiling for maxParticipants.
+     */
     int getMaxParticipantsCeiling();
 
-    /** Maximum allowed meeting duration in minutes. */
+    /**
+     * Maximum allowed meeting duration in minutes.
+     */
     int getMaxDurationMinutes();
 
-    /** Minimum allowed meeting duration in minutes. */
+    /**
+     * Minimum allowed meeting duration in minutes.
+     */
     int getMinDurationMinutes();
 }

@@ -82,7 +82,9 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
         return CursorPageResponse.of(items, params.pageSize(), hasNext);
     }
 
-    /** Overload accepting a pre-decoded cursor — used by application layer use cases. */
+    /**
+     * Overload accepting a pre-decoded cursor — used by application layer use cases.
+     */
     public CursorPageResponse<Meeting> findByHostId(
             UUID hostId, ScrollCursor cursor, int pageSize) {
         int fetchLimit = pageSize + 1;

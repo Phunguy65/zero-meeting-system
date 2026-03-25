@@ -1,11 +1,17 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.model;
 
 public enum RecordingStatus {
-    /** Row created by StartRecordingUseCase; waiting for LiveKit egress_started webhook. */
+    /**
+     * Row created by StartRecordingUseCase; waiting for LiveKit egress_started webhook.
+     */
     PENDING,
-    /** LiveKit egress is actively capturing (egress_started webhook received). */
+    /**
+     * LiveKit egress is actively capturing (egress_started webhook received).
+     */
     RECORDING,
-    /** Recording finished and file is available (egress_ended webhook received). */
+    /**
+     * Recording finished and file is available (egress_ended webhook received).
+     */
     COMPLETED,
     FAILED;
 

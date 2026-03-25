@@ -15,7 +15,9 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.sse")
 public class SseProperties {
 
-    /** General SSE connection timeout in milliseconds for host emitters. Default: 300 000 ms (5 min). */
+    /**
+     * General SSE connection timeout in milliseconds for host emitters. Default: 300 000 ms (5 min).
+     */
     private long timeoutMs = 300_000L;
 
     /**

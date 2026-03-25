@@ -4,7 +4,9 @@ import io.github.phunguy65.zms.shared.domain.ValueObject;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Identity of a {@link io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingInvitee}. */
+/**
+ * Identity of a {@link io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingInvitee}.
+ */
 public record InviteeId(UUID value) implements ValueObject {
 
     public InviteeId {

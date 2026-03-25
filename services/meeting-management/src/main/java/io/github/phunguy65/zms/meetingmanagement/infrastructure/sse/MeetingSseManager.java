@@ -43,11 +43,15 @@ public class MeetingSseManager {
 
     private static final Logger log = LoggerFactory.getLogger(MeetingSseManager.class);
 
-    /** HOST emitters keyed by meetingId. Each meeting may have many connected host clients. */
+    /**
+     * HOST emitters keyed by meetingId. Each meeting may have many connected host clients.
+     */
     private final ConcurrentHashMap<UUID, CopyOnWriteArrayList<SseEmitter>> hostEmittersByMeeting =
             new ConcurrentHashMap<>();
 
-    /** GUEST emitters keyed by requestId. Each join request has at most one guest SSE stream. */
+    /**
+     * GUEST emitters keyed by requestId. Each join request has at most one guest SSE stream.
+     */
     private final ConcurrentHashMap<UUID, SseEmitter> guestEmittersByRequest =
             new ConcurrentHashMap<>();
 
@@ -66,7 +70,7 @@ public class MeetingSseManager {
      * Consul KV apply to new connections only; existing connections retain their original timeout.
      *
      * @param meetingId the meeting ID
-     * @param userId the host user ID (for logging/debugging)
+     * @param userId    the host user ID (for logging/debugging)
      * @return an {@link SseEmitter} that will receive join-request lifecycle events
      */
     public SseEmitter subscribeHost(UUID meetingId, UUID userId) {
@@ -198,7 +202,9 @@ public class MeetingSseManager {
         sendToGuestAndComplete(requestId, eventName, sseData);
     }
 
-    /** Push an event to all HOST emitters for a meeting; remove dead emitters on IOException. */
+    /**
+     * Push an event to all HOST emitters for a meeting; remove dead emitters on IOException.
+     */
     private void pushToHostEmitters(UUID meetingId, String eventName, SseEventData data) {
         CopyOnWriteArrayList<SseEmitter> emitters = hostEmittersByMeeting.get(meetingId);
         if (emitters == null || emitters.isEmpty()) return;
@@ -215,7 +221,9 @@ public class MeetingSseManager {
         dead.forEach(emitter -> removeHostEmitter(meetingId, emitter));
     }
 
-    /** Send an event to a GUEST emitter, complete it, and remove from registry. */
+    /**
+     * Send an event to a GUEST emitter, complete it, and remove from registry.
+     */
     private void sendToGuestAndComplete(UUID requestId, String eventName, SseEventData data) {
         SseEmitter emitter = guestEmittersByRequest.get(requestId);
         if (emitter == null) return;
@@ -240,7 +248,9 @@ public class MeetingSseManager {
         }
     }
 
-    /** Deserialize CloudEvent data payload to the given type; returns null on failure. */
+    /**
+     * Deserialize CloudEvent data payload to the given type; returns null on failure.
+     */
     private <T> T deserialize(CloudEvent cloudEvent, Class<T> type) {
         if (cloudEvent.getData() == null) {
             log.warn("Received CloudEvent with no data payload: {}", cloudEvent.getId());

@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** Outbox event row for the Transactional Outbox pattern. */
+/**
+ * Outbox event row for the Transactional Outbox pattern.
+ */
 @Entity
 @Table(name = "outbox_event")
 public class OutboxEventJpaEntity {

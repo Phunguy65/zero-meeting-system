@@ -4,7 +4,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Published when a host approves a join request. */
+/**
+ * Published when a host approves a join request.
+ */
 public record JoinRequestApprovedEvent(
         UUID eventId,
         UUID meetingId,

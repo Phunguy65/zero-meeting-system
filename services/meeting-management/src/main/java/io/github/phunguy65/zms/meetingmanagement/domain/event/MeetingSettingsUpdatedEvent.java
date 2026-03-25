@@ -1,21 +1,20 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.event;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
 import java.time.Instant;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 
 /**
- * Published when a meeting is created (both INSTANT and SCHEDULED types).
+ * Published when a meeting's settings are updated by the host.
  */
-public record MeetingScheduledEvent(
+public record MeetingSettingsUpdatedEvent(
         UUID eventId,
         UUID aggregateId,
         UUID hostId,
-        String shortCode,
-        @Nullable String title,
-        @Nullable Instant startTime,
-        Instant scheduledAt)
+        UUID updatedBy,
+        MeetingStatus meetingStatus,
+        Instant updatedAt)
         implements PublishableEvent {
 
     @Override
@@ -25,16 +24,16 @@ public record MeetingScheduledEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.scheduled.v1";
+        return "io.github.phunguy65.zms.meeting.settings_updated.v1";
     }
 
     @Override
     public String topic() {
-        return "meeting-management.meeting.scheduled";
+        return "meeting-management.meeting.settings_updated";
     }
 
     @Override
     public Instant occurredAt() {
-        return scheduledAt;
+        return updatedAt;
     }
 }

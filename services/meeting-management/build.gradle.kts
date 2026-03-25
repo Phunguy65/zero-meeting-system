@@ -1,5 +1,3 @@
-import com.google.protobuf.gradle.id
-
 plugins {
     id("io.github.phunguy65.zms.plugin.spotless")
     id("io.github.phunguy65.zms.plugin.jvm.base")

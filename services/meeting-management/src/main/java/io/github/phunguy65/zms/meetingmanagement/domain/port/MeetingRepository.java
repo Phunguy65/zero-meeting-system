@@ -13,7 +13,9 @@ public interface MeetingRepository {
 
     Optional<Meeting> findById(UUID id);
 
-    /** Finds a meeting by ID with a pessimistic write lock (SELECT FOR UPDATE). */
+    /**
+     * Finds a meeting by ID with a pessimistic write lock (SELECT FOR UPDATE).
+     */
     Optional<Meeting> findByIdWithLock(UUID id);
 
     Optional<Meeting> findByShortCode(ShortCode shortCode);

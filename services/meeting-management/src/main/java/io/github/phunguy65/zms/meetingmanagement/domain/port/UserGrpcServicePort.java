@@ -45,11 +45,11 @@ public interface UserGrpcServicePort {
     /**
      * A resolved user snapshot captured at invite time.
      *
-     * @param userId      the user's UUID
-     * @param email       the user's email address
-     * @param displayName the user's full name
-     * @param username    the user's username (nullable)
-     * @param avatarUrl   the user's avatar URL (nullable)
+     * @param userId       the user's UUID
+     * @param email        the user's email address
+     * @param displayName  the user's full name
+     * @param username     the user's username (nullable)
+     * @param avatarUrl    the user's avatar URL (nullable)
      * @param authProvider the auth provider string ("EMAIL", "GOOGLE", "BOTH")
      */
     record ResolvedUser(

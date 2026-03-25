@@ -9,13 +9,19 @@ import java.util.UUID;
  */
 public interface PublishableEvent extends DomainEvent {
 
-    /** UUIDv7 unique identifier for this event instance. Used as CloudEvents {@code id}. */
+    /**
+     * UUIDv7 unique identifier for this event instance. Used as CloudEvents {@code id}.
+     */
     UUID eventId();
 
-    /** The ID of the aggregate that produced this event. Used as Kafka message key. */
+    /**
+     * The ID of the aggregate that produced this event. Used as Kafka message key.
+     */
     UUID aggregateId();
 
-    /** The aggregate type (e.g., {@code "meeting"}). */
+    /**
+     * The aggregate type (e.g., {@code "meeting"}).
+     */
     String aggregateType();
 
     /**
@@ -25,7 +31,9 @@ public interface PublishableEvent extends DomainEvent {
      */
     String eventType();
 
-    /** The Kafka topic (e.g., {@code "meeting-management.meeting.scheduled"}). */
+    /**
+     * The Kafka topic (e.g., {@code "meeting-management.meeting.scheduled"}).
+     */
     String topic();
 
     @Override
