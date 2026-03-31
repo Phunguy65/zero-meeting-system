@@ -2,8 +2,8 @@ package io.github.phunguy65.zms.meetingmanagement.domain.port;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
-import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantGrants;
 import io.github.phunguy65.zms.shared.domain.Result;
 
@@ -21,23 +21,16 @@ public interface LiveKitPort {
      *       canUpdateOwnMetadata</li>
      *   <li>{@link ParticipantRole#PARTICIPANT} — canPublish, canPublishData, canSubscribe,
      *       canUpdateOwnMetadata</li>
-     *   <li>{@link ParticipantRole#GUEST} — canPublishData, canSubscribe (no media publish,
-     *       no metadata update)</li>
+     *   <li>{@link ParticipantRole#GUEST} — canSubscribe, canUpdateOwnMetadata (no media
+     *       publish)</li>
      * </ul>
      *
-     * @param roomName    the LiveKit room name
-     * @param identity    the participant's LiveKit identity ({@code sub} JWT claim);
-     *                    format: {@code "userId:deviceId"} or {@code "guest:deviceId"}
-     * @param displayName the participant's display name shown to others
-     * @param role        HOST, PARTICIPANT, or GUEST — determines LiveKit grants
+     * @param request token generation request, including identity, display name, role, and
+     *     token-time participant attributes
      * @return {@link Result.Success} with the signed JWT token, or {@link Result.Failure} with
      * {@link MeetingError.LiveKitUnavailable} if the token cannot be generated
      */
-    Result<String, MeetingError> generateToken(
-            LiveKitRoomName roomName,
-            LiveKitIdentity identity,
-            String displayName,
-            ParticipantRole role);
+    Result<String, MeetingError> generateToken(LiveKitTokenRequest request);
 
     /**
      * Updates a connected participant's permissions mid-session without disconnecting them.

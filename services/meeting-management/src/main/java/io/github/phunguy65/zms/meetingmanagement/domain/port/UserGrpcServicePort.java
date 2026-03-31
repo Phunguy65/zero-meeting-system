@@ -26,6 +26,18 @@ public interface UserGrpcServicePort {
     Map<String, ResolvedUser> resolveUsers(List<String> emails);
 
     /**
+     * Resolves users by ID.
+     *
+     * <p>Returns a map of userId → {@link ResolvedUser} for all IDs that matched an active user.
+     * Missing IDs are absent from the map.
+     *
+     * @param userIds user IDs to resolve (may be empty)
+     * @return map of userId → resolved user
+     * @throws UserServiceException if the user service is unreachable or times out
+     */
+    Map<UUID, ResolvedUser> batchGetUsersByIds(List<UUID> userIds);
+
+    /**
      * Unchecked exception thrown when the user service is unavailable.
      * Carries the typed domain error for use case handling.
      */

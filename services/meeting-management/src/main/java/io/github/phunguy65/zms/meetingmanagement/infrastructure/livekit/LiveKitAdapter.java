@@ -2,8 +2,8 @@ package io.github.phunguy65.zms.meetingmanagement.infrastructure.livekit;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
-import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantGrants;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.LiveKitProperties;
@@ -31,7 +31,7 @@ import retrofit2.Response;
  * <ul>
  *   <li>HOST — roomAdmin, canPublish, canPublishData, canSubscribe, canUpdateOwnMetadata
  *   <li>PARTICIPANT — canPublish, canPublishData, canSubscribe, canUpdateOwnMetadata
- *   <li>GUEST — canPublishData, canSubscribe (subscribe + chat only)
+ *   <li>GUEST — canSubscribe, canUpdateOwnMetadata (subscribe + raise-hand metadata only)
  * </ul>
  *
  * <p>Room operations use blocking {@code call.execute()}, which is safe on virtual threads
@@ -52,24 +52,21 @@ public class LiveKitAdapter implements LiveKitPort {
     }
 
     @Override
-    public Result<String, MeetingError> generateToken(
-            LiveKitRoomName roomName,
-            LiveKitIdentity identity,
-            String displayName,
-            ParticipantRole role) {
+    public Result<String, MeetingError> generateToken(LiveKitTokenRequest request) {
         try {
             AccessToken token = new AccessToken(props.getApiKey(), props.getApiSecret());
-            token.setIdentity(identity.value());
-            token.setName(displayName);
+            token.setIdentity(request.identity().value());
+            token.setName(request.displayName());
             token.setTtl(props.getTokenExpirySeconds() * 1_000L);
-            token.addGrants(new RoomJoin(true), new RoomName(roomName.value()));
-            token.addGrants(buildRoleGrants(role).toArray(new VideoGrant[0]));
+            token.getAttributes().putAll(request.participantAttributes().toMap());
+            token.addGrants(new RoomJoin(true), new RoomName(request.roomName().value()));
+            token.addGrants(buildRoleGrants(request.role()).toArray(new VideoGrant[0]));
 
             return Result.success(token.toJwt());
         } catch (Exception e) {
             log.warn(
                     "Failed to generate LiveKit token for room '{}': {}",
-                    roomName.value(),
+                    request.roomName().value(),
                     e.getMessage());
             return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
         }
@@ -95,7 +92,7 @@ public class LiveKitAdapter implements LiveKitPort {
                         new CanPublish(false),
                         new CanPublishData(false),
                         new CanSubscribe(true),
-                        new CanUpdateOwnMetadata(false));
+                        new CanUpdateOwnMetadata(true));
         };
     }
 

@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.meetingmanagement.application.usecase;
 
 import io.github.phunguy65.zms.meetingmanagement.application.command.ApproveJoinRequestCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.helper.ParticipantAvatarResolver;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestApprovedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
@@ -8,6 +9,8 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipationLog;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantAttributes;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
@@ -30,6 +33,7 @@ public class ApproveJoinRequestUseCase {
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
     private final ParticipationLogRepository participationLogRepository;
+    private final ParticipantAvatarResolver participantAvatarResolver;
     private final LiveKitPort liveKitPort;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -37,11 +41,13 @@ public class ApproveJoinRequestUseCase {
             MeetingRepository meetingRepository,
             JoinRequestRepository joinRequestRepository,
             ParticipationLogRepository participationLogRepository,
+            ParticipantAvatarResolver participantAvatarResolver,
             LiveKitPort liveKitPort,
             ApplicationEventPublisher applicationEventPublisher) {
         this.meetingRepository = meetingRepository;
         this.joinRequestRepository = joinRequestRepository;
         this.participationLogRepository = participationLogRepository;
+        this.participantAvatarResolver = participantAvatarResolver;
         this.liveKitPort = liveKitPort;
         this.applicationEventPublisher = applicationEventPublisher;
     }
@@ -90,8 +96,15 @@ public class ApproveJoinRequestUseCase {
                 ? LiveKitIdentity.fromUser(joinRequest.getUserId().get(), joinRequest.getDeviceId())
                 : LiveKitIdentity.forGuest(joinRequest.getDeviceId());
 
-        var tokenResult =
-                liveKitPort.generateToken(roomName, identity, joinRequest.getDisplayName(), role);
+        var tokenResult = liveKitPort.generateToken(new LiveKitTokenRequest(
+                roomName,
+                identity,
+                joinRequest.getDisplayName(),
+                role,
+                new ParticipantAttributes(
+                        participantAvatarResolver.resolveAvatar(
+                                joinRequest.getUserId().map(UserId::value).orElse(null)),
+                        role)));
         if (tokenResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
             return Result.failure(error);
         }

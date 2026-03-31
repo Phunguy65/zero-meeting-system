@@ -2,6 +2,7 @@ package io.github.phunguy65.zms.meetingmanagement.infrastructure.grpc;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.UserGrpcServicePort;
+import io.github.phunguy65.zms.proto.user.v1.BatchGetUserByIdRequest;
 import io.github.phunguy65.zms.proto.user.v1.BatchGetUserRequest;
 import io.github.phunguy65.zms.proto.user.v1.UserServiceGrpc;
 import io.github.phunguy65.zms.proto.user.v1.UserSnapshot;
@@ -44,6 +45,29 @@ public class UserServiceGrpcAdapter implements UserGrpcServicePort {
         Map<String, ResolvedUser> result = new HashMap<>();
         for (Map.Entry<String, UserSnapshot> entry : response.getUsersMap().entrySet()) {
             result.put(entry.getKey(), toResolvedUser(entry.getValue()));
+        }
+        return result;
+    }
+
+    @Override
+    public Map<UUID, ResolvedUser> batchGetUsersByIds(List<UUID> userIds) {
+        var request = BatchGetUserByIdRequest.newBuilder()
+                .addAllUserIds(userIds.stream().map(UUID::toString).toList())
+                .build();
+
+        io.github.phunguy65.zms.proto.user.v1.BatchGetUserByIdResponse response;
+        try {
+            response = userServiceStub
+                    .withDeadlineAfter(2, TimeUnit.SECONDS)
+                    .batchGetUserById(request);
+        } catch (StatusRuntimeException e) {
+            throw new UserServiceException(new MeetingError.UserServiceUnavailable(
+                    e.getStatus().getCode() + ": " + e.getStatus().getDescription()));
+        }
+
+        Map<UUID, ResolvedUser> result = new HashMap<>();
+        for (Map.Entry<String, UserSnapshot> entry : response.getUsersMap().entrySet()) {
+            result.put(UUID.fromString(entry.getKey()), toResolvedUser(entry.getValue()));
         }
         return result;
     }

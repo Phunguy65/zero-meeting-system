@@ -1,12 +1,15 @@
 package io.github.phunguy65.zms.meetingmanagement.application.usecase;
 
 import io.github.phunguy65.zms.meetingmanagement.application.command.RequestJoinCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.helper.ParticipantAvatarResolver;
 import io.github.phunguy65.zms.meetingmanagement.application.response.RequestJoinResponse;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestCreatedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantAttributes;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.*;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
@@ -29,6 +32,7 @@ public class RequestJoinUseCase {
     private final MeetingRepository meetingRepository;
     private final JoinRequestRepository joinRequestRepository;
     private final ParticipationLogRepository participationLogRepository;
+    private final ParticipantAvatarResolver participantAvatarResolver;
     private final LiveKitPort liveKitPort;
     private final PasswordHasher passwordHasher;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -37,12 +41,14 @@ public class RequestJoinUseCase {
             MeetingRepository meetingRepository,
             JoinRequestRepository joinRequestRepository,
             ParticipationLogRepository participationLogRepository,
+            ParticipantAvatarResolver participantAvatarResolver,
             LiveKitPort liveKitPort,
             PasswordHasher passwordHasher,
             ApplicationEventPublisher applicationEventPublisher) {
         this.meetingRepository = meetingRepository;
         this.joinRequestRepository = joinRequestRepository;
         this.participationLogRepository = participationLogRepository;
+        this.participantAvatarResolver = participantAvatarResolver;
         this.liveKitPort = liveKitPort;
         this.passwordHasher = passwordHasher;
         this.applicationEventPublisher = applicationEventPublisher;
@@ -101,8 +107,13 @@ public class RequestJoinUseCase {
                     ? LiveKitIdentity.fromUser(UserId.of(command.userId()), command.deviceId())
                     : LiveKitIdentity.forGuest(command.deviceId());
 
-            var tokenResult =
-                    liveKitPort.generateToken(roomName, identity, command.displayName(), role);
+            var tokenResult = liveKitPort.generateToken(new LiveKitTokenRequest(
+                    roomName,
+                    identity,
+                    command.displayName(),
+                    role,
+                    new ParticipantAttributes(
+                            participantAvatarResolver.resolveAvatar(command.userId()), role)));
             if (tokenResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
                 return Result.failure(error);
             }

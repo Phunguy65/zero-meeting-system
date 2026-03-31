@@ -5,6 +5,8 @@ import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestApprove
 import io.github.phunguy65.zms.meetingmanagement.domain.model.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantAttributes;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRepository;
@@ -42,16 +44,19 @@ public class PendingJoinRequestApprover {
 
     private final JoinRequestRepository joinRequestRepository;
     private final ParticipationLogRepository participationLogRepository;
+    private final ParticipantAvatarResolver participantAvatarResolver;
     private final LiveKitPort liveKitPort;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     public PendingJoinRequestApprover(
             JoinRequestRepository joinRequestRepository,
             ParticipationLogRepository participationLogRepository,
+            ParticipantAvatarResolver participantAvatarResolver,
             LiveKitPort liveKitPort,
             ApplicationEventPublisher applicationEventPublisher) {
         this.joinRequestRepository = joinRequestRepository;
         this.participationLogRepository = participationLogRepository;
+        this.participantAvatarResolver = participantAvatarResolver;
         this.liveKitPort = liveKitPort;
         this.applicationEventPublisher = applicationEventPublisher;
     }
@@ -75,6 +80,10 @@ public class PendingJoinRequestApprover {
         }
 
         LiveKitRoomName roomName = LiveKitRoomName.fromMeetingId(meeting.getId());
+        var avatarUrls = participantAvatarResolver.resolveAvatars(pendingRequests.stream()
+                .flatMap(joinRequest -> joinRequest.getUserId().stream())
+                .map(UserId::value)
+                .toList());
         int maxParticipants = meeting.getSettings().maxParticipants();
 
         long remainingSlots = maxParticipants > 0
@@ -104,8 +113,18 @@ public class PendingJoinRequestApprover {
                             joinRequest.getUserId().get(), joinRequest.getDeviceId())
                     : LiveKitIdentity.forGuest(joinRequest.getDeviceId());
 
-            var tokenResult = liveKitPort.generateToken(
-                    roomName, identity, joinRequest.getDisplayName(), role);
+            var tokenResult = liveKitPort.generateToken(new LiveKitTokenRequest(
+                    roomName,
+                    identity,
+                    joinRequest.getDisplayName(),
+                    role,
+                    new ParticipantAttributes(
+                            joinRequest
+                                    .getUserId()
+                                    .map(UserId::value)
+                                    .map(avatarUrls::get)
+                                    .orElse(null),
+                            role)));
             if (tokenResult instanceof Result.Failure<?, MeetingError>) {
                 continue;
             }
