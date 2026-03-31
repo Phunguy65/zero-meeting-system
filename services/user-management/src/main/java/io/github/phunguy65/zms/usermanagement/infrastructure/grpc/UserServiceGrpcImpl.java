@@ -3,10 +3,13 @@ package io.github.phunguy65.zms.usermanagement.infrastructure.grpc;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
+import io.github.phunguy65.zms.proto.user.v1.BatchGetUserByIdRequest;
+import io.github.phunguy65.zms.proto.user.v1.BatchGetUserByIdResponse;
 import io.github.phunguy65.zms.proto.user.v1.BatchGetUserRequest;
 import io.github.phunguy65.zms.proto.user.v1.BatchGetUserResponse;
 import io.github.phunguy65.zms.proto.user.v1.UserServiceGrpc;
 import io.github.phunguy65.zms.proto.user.v1.UserSnapshot;
+import io.github.phunguy65.zms.usermanagement.application.usecase.internal.BatchGetUserByIdUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.internal.BatchGetUserUseCase;
 import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import io.grpc.stub.StreamObserver;
@@ -25,9 +28,13 @@ import org.springframework.stereotype.Component;
 public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
 
     private final BatchGetUserUseCase batchGetUserUseCase;
+    private final BatchGetUserByIdUseCase batchGetUserByIdUseCase;
 
-    public UserServiceGrpcImpl(BatchGetUserUseCase batchGetUserUseCase) {
+    public UserServiceGrpcImpl(
+            BatchGetUserUseCase batchGetUserUseCase,
+            BatchGetUserByIdUseCase batchGetUserByIdUseCase) {
         this.batchGetUserUseCase = batchGetUserUseCase;
+        this.batchGetUserByIdUseCase = batchGetUserByIdUseCase;
     }
 
     @Override
@@ -37,6 +44,20 @@ public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
 
         var responseBuilder = BatchGetUserResponse.newBuilder();
         users.forEach((email, user) -> responseBuilder.putUsers(email, toSnapshot(user)));
+
+        responseObserver.onNext(responseBuilder.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void batchGetUserById(
+            BatchGetUserByIdRequest request,
+            StreamObserver<BatchGetUserByIdResponse> responseObserver) {
+        var users = batchGetUserByIdUseCase.execute(request.getUserIdsList());
+
+        var responseBuilder = BatchGetUserByIdResponse.newBuilder();
+        users.forEach(
+                (userId, user) -> responseBuilder.putUsers(userId.toString(), toSnapshot(user)));
 
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();

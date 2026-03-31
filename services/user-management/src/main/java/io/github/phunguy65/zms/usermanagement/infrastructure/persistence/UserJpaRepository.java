@@ -30,6 +30,9 @@ public interface UserJpaRepository extends JpaRepository<UserJpaEntity, UUID> {
     @Query("SELECT u FROM UserJpaEntity u WHERE u.email IN :emails AND u.deletedAt IS NULL")
     List<UserJpaEntity> findActiveByEmailIn(@Param("emails") Collection<String> emails);
 
+    @Query("SELECT u FROM UserJpaEntity u WHERE u.id IN :ids AND u.deletedAt IS NULL")
+    List<UserJpaEntity> findActiveByIdIn(@Param("ids") Collection<UUID> ids);
+
     /**
      * Keyset-scroll query for active users with optional cursor and optional ILIKE search.
      *

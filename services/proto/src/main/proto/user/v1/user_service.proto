@@ -16,6 +16,11 @@ service UserService {
   // Returns a map of email -> UserSnapshot for resolved users only.
   // Missing emails are absent from the response map (partial results).
   rpc BatchGetUser(BatchGetUserRequest) returns (BatchGetUserResponse);
+
+  // BatchGetUserById resolves a batch of users by user ID.
+  // Returns a map of user ID -> UserSnapshot for resolved users only.
+  // Missing IDs are absent from the response map (partial results).
+  rpc BatchGetUserById(BatchGetUserByIdRequest) returns (BatchGetUserByIdResponse);
 }
 
 message BatchGetUserRequest {
@@ -25,6 +30,17 @@ message BatchGetUserRequest {
 
 message BatchGetUserResponse {
   // Map of email -> UserSnapshot.
+  // Only resolved, active (non-deleted) users are included.
+  map<string, UserSnapshot> users = 1;
+}
+
+message BatchGetUserByIdRequest {
+  // User IDs to resolve (may be empty).
+  repeated string user_ids = 1;
+}
+
+message BatchGetUserByIdResponse {
+  // Map of user ID -> UserSnapshot.
   // Only resolved, active (non-deleted) users are included.
   map<string, UserSnapshot> users = 1;
 }

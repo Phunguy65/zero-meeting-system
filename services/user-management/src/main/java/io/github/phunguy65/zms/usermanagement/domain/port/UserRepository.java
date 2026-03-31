@@ -75,6 +75,12 @@ public interface UserRepository {
     List<UserSummary> findSummariesByEmails(Collection<String> emails);
 
     /**
+     * Batch-fetch {@link UserSummary} projections for active (non-deleted) users by ID.
+     * Missing IDs are absent from the result list.
+     */
+    List<UserSummary> findSummariesByIds(Collection<UserId> userIds);
+
+    /**
      * Returns a keyset-scrolled page of {@link UserSummary} projections for active users.
      * Results are ordered by {@code (created_at DESC, id DESC)}.
      *

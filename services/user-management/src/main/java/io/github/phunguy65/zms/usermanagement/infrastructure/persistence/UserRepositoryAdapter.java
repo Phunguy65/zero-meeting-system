@@ -14,6 +14,7 @@ import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
@@ -118,6 +119,13 @@ public class UserRepositoryAdapter implements UserRepository {
     public List<UserSummary> findSummariesByEmails(Collection<String> emails) {
         if (emails.isEmpty()) return List.of();
         return jpa.findActiveByEmailIn(emails).stream().map(this::toSummary).toList();
+    }
+
+    @Override
+    public List<UserSummary> findSummariesByIds(Collection<UserId> userIds) {
+        if (userIds.isEmpty()) return List.of();
+        List<UUID> ids = userIds.stream().map(UserId::value).toList();
+        return jpa.findActiveByIdIn(ids).stream().map(this::toSummary).toList();
     }
 
     @Override
