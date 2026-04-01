@@ -41,6 +41,12 @@ public interface ParticipationLogRepository {
     List<ParticipationLog> findActiveByMeetingId(UUID meetingId);
 
     /**
+     * Returns all active (not yet left) participation logs for a registered user.
+     * Used by the user-profile sync consumer to update every connected session for the user.
+     */
+    List<ParticipationLog> findActiveByUserId(UUID userId);
+
+    /**
      * Keyset-scroll participation logs for a meeting, ordered by (joined_at DESC, id DESC).
      */
     CursorPageResponse<ParticipationLog> findByMeetingIdKeyset(

@@ -4,14 +4,18 @@ import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantAttributes;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantGrants;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.LiveKitProperties;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.livekit.server.*;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import livekit.LivekitModels;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -103,12 +107,7 @@ public class LiveKitAdapter implements LiveKitPort {
     @Override
     public Result<Void, MeetingError> updateParticipantPermissions(
             LiveKitRoomName roomName, String identity, ParticipantGrants grants) {
-        LivekitModels.ParticipantPermission permission =
-                LivekitModels.ParticipantPermission.newBuilder()
-                        .setCanPublish(grants.canPublish())
-                        .setCanPublishData(grants.canPublishData())
-                        .setCanSubscribe(grants.canSubscribe())
-                        .build();
+        LivekitModels.ParticipantPermission permission = toPermission(grants);
 
         try {
             Response<LivekitModels.ParticipantInfo> response = roomServiceClient
@@ -143,6 +142,82 @@ public class LiveKitAdapter implements LiveKitPort {
                     e.getMessage());
             return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
         }
+    }
+
+    @Override
+    public Result<Void, MeetingError> updateParticipantProfile(
+            LiveKitRoomName roomName,
+            String identity,
+            ParticipantRole role,
+            String fullName,
+            @Nullable String avatarUrl) {
+        try {
+            Response<LivekitModels.ParticipantInfo> response = roomServiceClient
+                    .updateParticipant(
+                            roomName.value(),
+                            identity,
+                            fullName,
+                            null,
+                            toPermission(toParticipantGrants(role)),
+                            buildProfileAttributes(avatarUrl, role))
+                    .execute();
+
+            if (!response.isSuccessful()) {
+                if (response.code() == 404) {
+                    log.debug(
+                            "Participant '{}' no longer exists in room '{}' during profile sync",
+                            identity,
+                            roomName.value());
+                    return Result.failure(new MeetingError.LiveKitParticipantNotFound(
+                            roomName.value(), identity));
+                }
+                String msg = "HTTP %d: %s".formatted(response.code(), response.message());
+                log.warn(
+                        "Failed to update profile for participant '{}' in room '{}': {}",
+                        identity,
+                        roomName.value(),
+                        msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            log.info(
+                    "Updated profile for participant '{}' in room '{}': fullName='{}'",
+                    identity,
+                    roomName.value(),
+                    fullName);
+            return Result.success();
+
+        } catch (IOException e) {
+            log.warn(
+                    "Network error updating profile for participant '{}' in room '{}': {}",
+                    identity,
+                    roomName.value(),
+                    e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
+    }
+
+    private ParticipantGrants toParticipantGrants(ParticipantRole role) {
+        return switch (role) {
+            case HOST, PARTICIPANT -> ParticipantGrants.speaker();
+            case GUEST -> ParticipantGrants.observer();
+        };
+    }
+
+    private LivekitModels.ParticipantPermission toPermission(ParticipantGrants grants) {
+        return LivekitModels.ParticipantPermission.newBuilder()
+                .setCanPublish(grants.canPublish())
+                .setCanPublishData(grants.canPublishData())
+                .setCanSubscribe(grants.canSubscribe())
+                .build();
+    }
+
+    private Map<String, String> buildProfileAttributes(
+            @Nullable String avatarUrl, ParticipantRole role) {
+        Map<String, String> attributes =
+                new LinkedHashMap<>(new ParticipantAttributes(null, role).toMap());
+        attributes.put("avatarUrl", avatarUrl != null && !avatarUrl.isBlank() ? avatarUrl : "");
+        return Map.copyOf(attributes);
     }
 
     @Override

@@ -34,6 +34,8 @@ abstract class BaseController {
                     case MeetingError.GuestNotAllowed e -> HttpStatus.FORBIDDEN;
                     case MeetingError.ShortCodeExhausted e -> HttpStatus.SERVICE_UNAVAILABLE;
                     case MeetingError.LiveKitUnavailable e -> HttpStatus.SERVICE_UNAVAILABLE;
+                    case MeetingError.LiveKitParticipantNotFound e ->
+                        HttpStatus.SERVICE_UNAVAILABLE;
                     case MeetingError.UserServiceUnavailable e -> HttpStatus.SERVICE_UNAVAILABLE;
                     case MeetingError.InviteeNotFound e -> HttpStatus.UNPROCESSABLE_CONTENT;
                     case MeetingError.InvalidMeetingDuration e -> HttpStatus.BAD_REQUEST;
@@ -61,6 +63,8 @@ abstract class BaseController {
                     case MeetingError.MeetingFull e -> MeetingErrorCode.MEETING_FULL;
                     case MeetingError.ShortCodeExhausted e -> MeetingErrorCode.SHORT_CODE_EXHAUSTED;
                     case MeetingError.LiveKitUnavailable e -> MeetingErrorCode.LIVEKIT_UNAVAILABLE;
+                    case MeetingError.LiveKitParticipantNotFound e ->
+                        MeetingErrorCode.LIVEKIT_UNAVAILABLE;
                     case MeetingError.UserServiceUnavailable e ->
                         MeetingErrorCode.USER_SERVICE_UNAVAILABLE;
                     case MeetingError.InviteeNotFound e -> MeetingErrorCode.INVITEE_NOT_FOUND;

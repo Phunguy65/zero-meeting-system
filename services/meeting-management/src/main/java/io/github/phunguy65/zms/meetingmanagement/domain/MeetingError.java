@@ -98,6 +98,13 @@ public sealed interface MeetingError extends DomainError {
         }
     }
 
+    record LiveKitParticipantNotFound(String roomName, String identity) implements MeetingError {
+        @Override
+        public String message() {
+            return "LiveKit participant '" + identity + "' not found in room '" + roomName + "'";
+        }
+    }
+
     record MeetingFull(UUID meetingId, int limit) implements MeetingError {
         @Override
         public String message() {

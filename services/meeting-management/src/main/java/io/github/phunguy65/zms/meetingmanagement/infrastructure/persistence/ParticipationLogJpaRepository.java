@@ -40,6 +40,10 @@ public interface ParticipationLogJpaRepository
             + "WHERE p.meetingId = :meetingId AND p.leftAt IS NULL")
     List<ParticipationLogJpaEntity> findActiveByMeetingId(@Param("meetingId") UUID meetingId);
 
+    @Query("SELECT p FROM ParticipationLogJpaEntity p "
+            + "WHERE p.userId = :userId AND p.leftAt IS NULL")
+    List<ParticipationLogJpaEntity> findActiveByUserId(@Param("userId") UUID userId);
+
     /**
      * Keyset-scroll query for participation logs by meeting, ordered by (joined_at DESC, id DESC).
      * Caller should request {@code size + 1} rows to detect next page.
