@@ -1,6 +1,6 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
-import java.time.Instant;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.ParticipantSummary;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,9 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface ParticipationLogJpaRepository
         extends JpaRepository<ParticipationLogJpaEntity, Long> {
-
-    List<ParticipationLogJpaEntity> findByMeetingId(UUID meetingId);
-
     @Query("SELECT COUNT(p) FROM ParticipationLogJpaEntity p "
             + "WHERE p.meetingId = :meetingId AND p.leftAt IS NULL")
     long countActiveByMeetingId(@Param("meetingId") UUID meetingId);
@@ -44,20 +41,13 @@ public interface ParticipationLogJpaRepository
             + "WHERE p.userId = :userId AND p.leftAt IS NULL")
     List<ParticipationLogJpaEntity> findActiveByUserId(@Param("userId") UUID userId);
 
-    /**
-     * Keyset-scroll query for participation logs by meeting, ordered by (joined_at DESC, id DESC).
-     * Caller should request {@code size + 1} rows to detect next page.
-     */
-    @Query(
-            value =
-                    "SELECT * FROM participation_logs p WHERE p.meeting_id = CAST(:meetingId AS uuid) "
-                            + "AND (:cursorJoinedAt IS NULL OR (p.joined_at, p.id) < (CAST(:cursorJoinedAt AS timestamptz), :cursorId)) "
-                            + "ORDER BY p.joined_at DESC, p.id DESC "
-                            + "LIMIT :limit",
-            nativeQuery = true)
-    List<ParticipationLogJpaEntity> findByMeetingIdKeyset(
-            @Param("meetingId") String meetingId,
-            @Param("cursorJoinedAt") Instant cursorJoinedAt,
-            @Param("cursorId") Long cursorId,
-            @Param("limit") int limit);
+    @Query("SELECT new io.github.phunguy65.zms.meetingmanagement.domain.projection"
+            + ".ParticipantSummaryProjection("
+            + "p.id, p.meetingId, p.userId, p.displayName, p.role, "
+            + "p.joinedAt, p.leftAt) "
+            + "FROM ParticipationLogJpaEntity p "
+            + "WHERE p.meetingId = :meetingId "
+            + "ORDER BY p.joinedAt DESC, p.id DESC")
+    List<ParticipantSummary> findParticipantSummariesByMeetingId(
+            @Param("meetingId") UUID meetingId);
 }

@@ -4,10 +4,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipationLog;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitParticipantSid;
-import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipationLogCursor;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipationLogId;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRepository;
-import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.ParticipantSummary;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import java.util.List;
 import java.util.Optional;
@@ -55,11 +54,6 @@ public class ParticipationLogRepositoryAdapter implements ParticipationLogReposi
     }
 
     @Override
-    public List<ParticipationLog> findByMeetingId(UUID meetingId) {
-        return jpa.findByMeetingId(meetingId).stream().map(this::toDomain).toList();
-    }
-
-    @Override
     public long countActiveByMeetingId(UUID meetingId) {
         return jpa.countActiveByMeetingId(meetingId);
     }
@@ -75,19 +69,8 @@ public class ParticipationLogRepositoryAdapter implements ParticipationLogReposi
     }
 
     @Override
-    public CursorPageResponse<ParticipationLog> findByMeetingIdKeyset(
-            UUID meetingId, ParticipationLogCursor cursor, int pageSize) {
-        int fetchLimit = pageSize + 1;
-        var cursorJoinedAt = cursor != null ? cursor.joinedAt() : null;
-        var cursorId = cursor != null ? cursor.id().value() : null;
-
-        List<ParticipationLogJpaEntity> rows = jpa.findByMeetingIdKeyset(
-                meetingId.toString(), cursorJoinedAt, cursorId, fetchLimit);
-
-        boolean hasNext = rows.size() > pageSize;
-        List<ParticipationLog> items =
-                rows.stream().limit(pageSize).map(this::toDomain).toList();
-        return CursorPageResponse.of(items, pageSize, hasNext);
+    public List<ParticipantSummary> findParticipantSummariesByMeetingId(UUID meetingId) {
+        return jpa.findParticipantSummariesByMeetingId(meetingId);
     }
 
     private ParticipationLog toDomain(ParticipationLogJpaEntity e) {

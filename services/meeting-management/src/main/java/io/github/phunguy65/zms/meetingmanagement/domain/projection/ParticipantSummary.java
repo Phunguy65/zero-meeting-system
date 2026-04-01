@@ -1,15 +1,15 @@
-package io.github.phunguy65.zms.meetingmanagement.application.response;
+package io.github.phunguy65.zms.meetingmanagement.domain.projection;
 
-import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
 import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-public record ParticipantResponse(
+/** Read-only projection for meeting participants list endpoints. */
+public record ParticipantSummary(
         Long id,
         UUID meetingId,
         @Nullable UUID userId,
         String displayName,
-        ParticipantRole role,
+        String role,
         Instant joinedAt,
         @Nullable Instant leftAt) {}

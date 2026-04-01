@@ -3,8 +3,7 @@ package io.github.phunguy65.zms.meetingmanagement.domain.port;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipationLog;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitParticipantSid;
-import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipationLogCursor;
-import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.ParticipantSummary;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,9 +24,6 @@ public interface ParticipationLogRepository {
      */
     Optional<ParticipationLog> findActiveByMeetingIdAndIdentity(
             UUID meetingId, LiveKitIdentity identity);
-
-    List<ParticipationLog> findByMeetingId(UUID meetingId);
-
     /**
      * Returns the count of currently active (not yet left) participants for a meeting.
      */
@@ -46,9 +42,6 @@ public interface ParticipationLogRepository {
      */
     List<ParticipationLog> findActiveByUserId(UUID userId);
 
-    /**
-     * Keyset-scroll participation logs for a meeting, ordered by (joined_at DESC, id DESC).
-     */
-    CursorPageResponse<ParticipationLog> findByMeetingIdKeyset(
-            UUID meetingId, ParticipationLogCursor cursor, int pageSize);
+    /** Returns read-only participant summaries for a meeting ordered by newest join first. */
+    List<ParticipantSummary> findParticipantSummariesByMeetingId(UUID meetingId);
 }

@@ -18,5 +18,8 @@ dependencies {
     implementation(libs.spring.boot.starter.security)
     implementation(libs.bouncycastle)
     runtimeOnly(libs.flyway.database.postgresql)
+    testImplementation(libs.spring.boot.webmvc.test)
+    testImplementation(libs.spring.boot.data.jpa.test)
+    testImplementation(libs.spring.boot.jdbc.test)
     testImplementation(testFixtures(libs.shared))
 }
