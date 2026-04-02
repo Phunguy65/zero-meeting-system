@@ -74,7 +74,9 @@ public class ScheduleMeetingUseCase {
         }
 
         String rawPassword = command.rawPassword();
+        String invitationRawPassword = null;
         if (rawPassword != null && !rawPassword.isBlank()) {
+            invitationRawPassword = rawPassword;
             String hash = passwordHasher.hash(rawPassword);
             settings = new MeetingSettings(
                     settings.admissionPolicy(),
@@ -143,7 +145,9 @@ public class ScheduleMeetingUseCase {
                     UUID.randomUUID(),
                     saved.getId().value(),
                     saved.getTitle().map(MeetingTitle::value).orElse(null),
+                    saved.getShortCode().value(),
                     saved.getStartTime().orElse(null),
+                    invitationRawPassword,
                     inviteeInfos,
                     Instant.now()));
         }

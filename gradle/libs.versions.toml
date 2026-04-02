@@ -14,6 +14,7 @@ jjwt = "0.13.0"
 bouncycastle = "1.80"
 uuidCreator = "6.1.1"
 cloudevents = "4.0.1"
+resend = "4.12.0"
 palantirJavaFormat = "2.88.0"
 testcontainers = "1.21.4"
 archunit = "1.4.1"
@@ -80,6 +81,7 @@ spring-kafka = { module = "org.springframework.kafka:spring-kafka" }
 # CloudEvents
 cloudevents-core = { module = "io.cloudevents:cloudevents-core", version.ref = "cloudevents" }
 cloudevents-kafka = { module = "io.cloudevents:cloudevents-kafka", version.ref = "cloudevents" }
+resend-java = { module = "com.resend:resend-java", version.ref = "resend" }
 
 # Spring Boot Starters (version managed by Spring Boot BOM)
 spring-boot-starter-aspectj = { module = "org.springframework.boot:spring-boot-starter-aspectj" }

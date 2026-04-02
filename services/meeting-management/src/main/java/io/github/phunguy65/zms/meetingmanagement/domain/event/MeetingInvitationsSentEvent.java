@@ -13,8 +13,10 @@ import org.jspecify.annotations.Nullable;
 public record MeetingInvitationsSentEvent(
         UUID eventId,
         UUID aggregateId,
-        String meetingTitle,
+        @Nullable String meetingTitle,
+        String meetingShortCode,
         @Nullable Instant startTime,
+        @Nullable String rawPassword,
         List<InviteeInfo> invitees,
         Instant occurredAt)
         implements PublishableEvent {
@@ -43,5 +45,26 @@ public record MeetingInvitationsSentEvent(
     @Override
     public String topic() {
         return "meeting-management.meeting.invitations-sent";
+    }
+
+    @Override
+    public String toString() {
+        return "MeetingInvitationsSentEvent[eventId="
+                + eventId
+                + ", aggregateId="
+                + aggregateId
+                + ", meetingTitle="
+                + meetingTitle
+                + ", meetingShortCode="
+                + meetingShortCode
+                + ", startTime="
+                + startTime
+                + ", rawPassword=<redacted:"
+                + (rawPassword != null)
+                + ">, invitees="
+                + invitees
+                + ", occurredAt="
+                + occurredAt
+                + ']';
     }
 }

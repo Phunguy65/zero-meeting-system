@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-rootProject.name = "services"
+rootProject.name = "notification"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 dependencyResolutionManagement {
@@ -10,9 +10,15 @@ dependencyResolutionManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    versionCatalogs {
+        create("libs") {
+            from(files("../../gradle/libs.versions.toml"))
+        }
+    }
 }
 
 pluginManagement {
+    includeBuild("../../build-logic")
     repositories {
         google()
         mavenCentral()
@@ -20,8 +26,10 @@ pluginManagement {
     }
 }
 
-includeBuild("proto")
-includeBuild("user-management")
-includeBuild("meeting-management")
-includeBuild("chat-management")
-includeBuild("notification")
+includeBuild("../proto") {
+    dependencySubstitution {
+        substitute(module("io.github.phunguy65.zms.services:proto"))
+            .using(project(":"))
+    }
+}
+includeBuild("../shared")
