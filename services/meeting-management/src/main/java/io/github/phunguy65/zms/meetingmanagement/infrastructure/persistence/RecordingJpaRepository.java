@@ -23,6 +23,10 @@ public interface RecordingJpaRepository extends JpaRepository<RecordingJpaEntity
     @Query("SELECT r FROM RecordingJpaEntity r WHERE r.livekitEgressId = :egressId")
     Optional<RecordingJpaEntity> findByLivekitEgressId(@Param("egressId") String egressId);
 
+    @Query("SELECT r FROM RecordingJpaEntity r WHERE r.status = :status AND r.createdAt < :cutoff")
+    List<RecordingJpaEntity> findByStatusAndCreatedAtBefore(
+            @Param("status") String status, @Param("cutoff") Instant cutoff);
+
     /**
      * Keyset-scroll query for recordings by meeting, ordered by (created_at DESC, id DESC).
      * Caller should request {@code size + 1} rows to detect next page.

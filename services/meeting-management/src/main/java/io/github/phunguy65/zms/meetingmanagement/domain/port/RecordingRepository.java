@@ -5,6 +5,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKi
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +26,8 @@ public interface RecordingRepository {
      * Used by {@code egress_started} and {@code egress_ended} webhook handlers.
      */
     Optional<Recording> findByEgressId(LiveKitEgressId egressId);
+
+    List<Recording> findPendingCreatedBefore(Instant cutoff);
 
     List<Recording> findByMeetingId(UUID meetingId);
 

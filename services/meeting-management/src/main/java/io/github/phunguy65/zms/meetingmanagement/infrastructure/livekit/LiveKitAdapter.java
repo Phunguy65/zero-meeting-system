@@ -2,6 +2,7 @@ package io.github.phunguy65.zms.meetingmanagement.infrastructure.livekit;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantAttributes;
@@ -9,11 +10,23 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.Partic
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.LiveKitProperties;
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.livekit.server.*;
+import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
+import io.livekit.server.AccessToken;
+import io.livekit.server.CanPublish;
+import io.livekit.server.CanPublishData;
+import io.livekit.server.CanSubscribe;
+import io.livekit.server.CanUpdateOwnMetadata;
+import io.livekit.server.EgressServiceClient;
+import io.livekit.server.RoomAdmin;
+import io.livekit.server.RoomJoin;
+import io.livekit.server.RoomName;
+import io.livekit.server.RoomServiceClient;
+import io.livekit.server.VideoGrant;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import livekit.LivekitEgress;
 import livekit.LivekitModels;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -49,10 +62,15 @@ public class LiveKitAdapter implements LiveKitPort {
 
     private final LiveKitProperties props;
     private final RoomServiceClient roomServiceClient;
+    private final EgressServiceClient egressServiceClient;
 
-    public LiveKitAdapter(LiveKitProperties props, RoomServiceClient roomServiceClient) {
+    public LiveKitAdapter(
+            LiveKitProperties props,
+            RoomServiceClient roomServiceClient,
+            EgressServiceClient egressServiceClient) {
         this.props = props;
         this.roomServiceClient = roomServiceClient;
+        this.egressServiceClient = egressServiceClient;
     }
 
     @Override
@@ -72,6 +90,70 @@ public class LiveKitAdapter implements LiveKitPort {
                     "Failed to generate LiveKit token for room '{}': {}",
                     request.roomName().value(),
                     e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
+    }
+
+    @Override
+    public Result<LiveKitEgressId, MeetingError> startRoomCompositeEgress(
+            MeetingId meetingId, LiveKitRoomName roomName) {
+        LivekitEgress.EncodedFileOutput fileOutput = LivekitEgress.EncodedFileOutput.newBuilder()
+                .setFilepath(recordingFilepath(meetingId))
+                .setFileType(LivekitEgress.EncodedFileType.MP4)
+                .setS3(LivekitEgress.S3Upload.newBuilder()
+                        .setAccessKey(props.getRecording().getAccessKey())
+                        .setSecret(props.getRecording().getSecretKey())
+                        .setBucket(props.getRecording().getBucket())
+                        .setRegion(props.getRecording().getRegion())
+                        .setEndpoint(props.getRecording().getEndpoint())
+                        .setForcePathStyle(props.getRecording().isForcePathStyle())
+                        .build())
+                .build();
+
+        try {
+            Response<LivekitEgress.EgressInfo> response = egressServiceClient
+                    .startRoomCompositeEgress(
+                            roomName.value(), fileOutput, props.getRecording().getLayout())
+                    .execute();
+
+            if (!response.isSuccessful() || response.body() == null) {
+                String msg = "HTTP %d: %s".formatted(response.code(), response.message());
+                log.warn(
+                        "Failed to start room composite egress for room '{}': {}",
+                        roomName.value(),
+                        msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            String egressId = response.body().getEgressId();
+            log.info(
+                    "Started room composite egress '{}' for room '{}'", egressId, roomName.value());
+            return Result.success(LiveKitEgressId.of(egressId));
+        } catch (IOException e) {
+            log.warn(
+                    "Network error starting room composite egress for room '{}': {}",
+                    roomName.value(),
+                    e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
+    }
+
+    @Override
+    public Result<Void, MeetingError> stopEgress(LiveKitEgressId egressId) {
+        try {
+            Response<LivekitEgress.EgressInfo> response =
+                    egressServiceClient.stopEgress(egressId.value()).execute();
+
+            if (!response.isSuccessful()) {
+                String msg = "HTTP %d: %s".formatted(response.code(), response.message());
+                log.warn("Failed to stop egress '{}': {}", egressId.value(), msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            log.info("Stopped LiveKit egress: {}", egressId.value());
+            return Result.success();
+        } catch (IOException e) {
+            log.warn("Network error stopping egress '{}': {}", egressId.value(), e.getMessage());
             return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
         }
     }
@@ -202,6 +284,10 @@ public class LiveKitAdapter implements LiveKitPort {
             case HOST, PARTICIPANT -> ParticipantGrants.speaker();
             case GUEST -> ParticipantGrants.observer();
         };
+    }
+
+    private String recordingFilepath(MeetingId meetingId) {
+        return "meetings/%s/recording.mp4".formatted(meetingId.value());
     }
 
     private LivekitModels.ParticipantPermission toPermission(ParticipantGrants grants) {

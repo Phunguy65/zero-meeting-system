@@ -1,10 +1,14 @@
 package io.github.phunguy65.zms.meetingmanagement.presentation;
 
+import io.github.phunguy65.zms.meetingmanagement.application.command.ActivateRecordingCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.AssignSidCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.CloseStaleMeetingLogsCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.command.FinalizeRecordingCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.LeaveMeetingCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.ActivateRecordingUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.AssignSidUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.CloseStaleMeetingLogsUseCase;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.FinalizeRecordingUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.LeaveMeetingUseCase;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.LiveKitProperties;
 import io.livekit.server.WebhookReceiver;
@@ -42,6 +46,9 @@ import org.springframework.web.bind.annotation.RestController;
  *   <li>{@code participant_left} — records the participant's departure.</li>
  *   <li>{@code room_finished} — bulk-closes any remaining active participation logs for the
  *       meeting (safety net for missed {@code participant_left} events).</li>
+ *   <li>{@code egress_started} — marks a known recording as actively recording.</li>
+ *   <li>{@code egress_ended} — completes or fails a known recording using LiveKit output
+ *       metadata.</li>
  * </ul>
  */
 @RestController
@@ -55,17 +62,23 @@ public class LiveKitWebhookController {
     private final AssignSidUseCase assignSidUseCase;
     private final LeaveMeetingUseCase leaveMeetingUseCase;
     private final CloseStaleMeetingLogsUseCase closeStaleMeetingLogsUseCase;
+    private final ActivateRecordingUseCase activateRecordingUseCase;
+    private final FinalizeRecordingUseCase finalizeRecordingUseCase;
 
     public LiveKitWebhookController(
             LiveKitProperties liveKitProperties,
             AssignSidUseCase assignSidUseCase,
             LeaveMeetingUseCase leaveMeetingUseCase,
-            CloseStaleMeetingLogsUseCase closeStaleMeetingLogsUseCase) {
+            CloseStaleMeetingLogsUseCase closeStaleMeetingLogsUseCase,
+            ActivateRecordingUseCase activateRecordingUseCase,
+            FinalizeRecordingUseCase finalizeRecordingUseCase) {
         this.webhookReceiver = new WebhookReceiver(
                 liveKitProperties.getApiKey(), liveKitProperties.getApiSecret());
         this.assignSidUseCase = assignSidUseCase;
         this.leaveMeetingUseCase = leaveMeetingUseCase;
         this.closeStaleMeetingLogsUseCase = closeStaleMeetingLogsUseCase;
+        this.activateRecordingUseCase = activateRecordingUseCase;
+        this.finalizeRecordingUseCase = finalizeRecordingUseCase;
     }
 
     /**
@@ -99,6 +112,8 @@ public class LiveKitWebhookController {
                 case "participant_joined" -> handleParticipantJoined(event);
                 case "participant_left" -> handleParticipantLeft(event);
                 case "room_finished" -> handleRoomFinished(event);
+                case "egress_started" -> handleEgressStarted(event);
+                case "egress_ended" -> handleEgressEnded(event);
                 default -> log.trace("Ignoring LiveKit webhook event type: {}", eventType);
             }
         } catch (Exception e) {
@@ -134,6 +149,52 @@ public class LiveKitWebhookController {
         if (meetingId == null) return;
 
         closeStaleMeetingLogsUseCase.execute(new CloseStaleMeetingLogsCommand(meetingId));
+    }
+
+    private void handleEgressStarted(LivekitWebhook.WebhookEvent event) {
+        var egressInfo = event.getEgressInfo();
+        if (egressInfo == null || egressInfo.getEgressId().isBlank()) {
+            log.warn("egress_started webhook missing egress info");
+            return;
+        }
+
+        activateRecordingUseCase.execute(new ActivateRecordingCommand(egressInfo.getEgressId()));
+    }
+
+    private void handleEgressEnded(LivekitWebhook.WebhookEvent event) {
+        var egressInfo = event.getEgressInfo();
+        if (egressInfo == null || egressInfo.getEgressId().isBlank()) {
+            log.warn("egress_ended webhook missing egress info");
+            return;
+        }
+
+        String errorMessage = egressInfo.getError();
+        boolean hasFileOutput = egressInfo.getFileResultsCount() > 0;
+        if (!errorMessage.isBlank() || !hasFileOutput) {
+            finalizeRecordingUseCase.execute(new FinalizeRecordingCommand(
+                    egressInfo.getEgressId(),
+                    false,
+                    null,
+                    null,
+                    !errorMessage.isBlank()
+                            ? errorMessage
+                            : "LiveKit egress ended without file output",
+                    0,
+                    0L));
+            return;
+        }
+
+        var fileResult = egressInfo.getFileResults(0);
+        finalizeRecordingUseCase.execute(new FinalizeRecordingCommand(
+                egressInfo.getEgressId(),
+                true,
+                fileResult.getLocation(),
+                fileResult.getFilename().isBlank()
+                        ? fileResult.getLocation()
+                        : fileResult.getFilename(),
+                null,
+                Math.toIntExact(fileResult.getDuration() / 1_000_000_000L),
+                fileResult.getSize()));
     }
 
     /**

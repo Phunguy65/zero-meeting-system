@@ -154,6 +154,17 @@ public class Recording extends AggregateRoot<RecordingId> {
     // -------------------------------------------------------------------------
 
     /**
+     * Persists the LiveKit egress ID assigned by the initial start request while the recording is
+     * still awaiting webhook confirmation.
+     */
+    public void assignEgressId(LiveKitEgressId egressId) {
+        if (this.livekitEgressId != null && !this.livekitEgressId.equals(egressId)) {
+            throw new IllegalStateException("Recording already linked to a different egress id");
+        }
+        this.livekitEgressId = egressId;
+    }
+
+    /**
      * Transitions PENDING → RECORDING. Called by the {@code egress_started} webhook handler.
      */
     public Result<Void, MeetingError> activate(LiveKitEgressId egressId) {
@@ -186,6 +197,7 @@ public class Recording extends AggregateRoot<RecordingId> {
         this.fileUrl = fileUrl;
         this.storagePath = storagePath;
         this.thumbnailUrl = thumbnailUrl;
+        this.errorMessage = null;
         this.durationSeconds = durationSeconds;
         this.fileSizeBytes = fileSizeBytes;
         this.endedAt = Instant.now();
@@ -209,6 +221,11 @@ public class Recording extends AggregateRoot<RecordingId> {
                     new MeetingError.InvalidRecordingTransition(status, RecordingStatus.FAILED));
         }
         this.status = RecordingStatus.FAILED;
+        this.fileUrl = null;
+        this.storagePath = null;
+        this.thumbnailUrl = null;
+        this.durationSeconds = 0;
+        this.fileSizeBytes = 0L;
         this.errorMessage = errorMessage;
         if (endedAt == null) endedAt = Instant.now();
         registerEvent(new RecordingFailedEvent(

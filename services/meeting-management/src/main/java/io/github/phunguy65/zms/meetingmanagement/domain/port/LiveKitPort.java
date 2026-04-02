@@ -2,10 +2,12 @@ package io.github.phunguy65.zms.meetingmanagement.domain.port;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantGrants;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -63,6 +65,17 @@ public interface LiveKitPort {
             ParticipantRole role,
             String fullName,
             @Nullable String avatarUrl);
+
+    /**
+     * Starts a room-composite egress for a meeting-scoped recording file in S3-compatible storage.
+     */
+    Result<LiveKitEgressId, MeetingError> startRoomCompositeEgress(
+            MeetingId meetingId, LiveKitRoomName roomName);
+
+    /**
+     * Stops a running or pending LiveKit egress session.
+     */
+    Result<Void, MeetingError> stopEgress(LiveKitEgressId egressId);
 
     /**
      * Deletes a LiveKit room and disconnects all participants.

@@ -3,7 +3,6 @@ package io.github.phunguy65.zms.meetingmanagement.application.usecase;
 import io.github.phunguy65.zms.meetingmanagement.application.command.StopRecordingCommand;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
-import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.RecordingRepository;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Stops an active recording by deleting the LiveKit room's egress.
+ * Stops an active recording by stopping its LiveKit egress session.
  *
  * <p>This use case does NOT transition the {@code Recording} aggregate state directly.
  * The state transition (RECORDING → COMPLETED or FAILED) is handled by the
@@ -58,13 +57,25 @@ public class StopRecordingUseCase {
             return Result.failure(new MeetingError.NoActiveRecording(command.meetingId()));
         }
 
-        // Signal LiveKit to stop the egress; state transition happens via egress_ended webhook
-        LiveKitRoomName roomName = LiveKitRoomName.fromMeetingId(m.getId());
-        var deleteResult = liveKitPort.deleteRoom(roomName);
-        if (deleteResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+        var egressId = recording.get().getLivekitEgressId();
+        if (egressId.isEmpty()) {
+            return Result.failure(new MeetingError.LiveKitUnavailable(
+                    "Active recording is missing a LiveKit egress id"));
+        }
+
+        var stopResult = liveKitPort.stopEgress(egressId.get());
+        if (stopResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+            if (isAlreadyStopped(error)) {
+                return Result.success();
+            }
             return Result.failure(error);
         }
 
         return Result.success();
+    }
+
+    private boolean isAlreadyStopped(MeetingError error) {
+        return error instanceof MeetingError.LiveKitUnavailable unavailable
+                && unavailable.detail().startsWith("HTTP 404");
     }
 }

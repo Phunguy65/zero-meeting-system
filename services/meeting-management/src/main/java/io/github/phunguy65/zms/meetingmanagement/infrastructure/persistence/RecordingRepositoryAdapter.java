@@ -9,6 +9,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.port.RecordingRepository
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +46,13 @@ public class RecordingRepositoryAdapter implements RecordingRepository {
     @Override
     public Optional<Recording> findByEgressId(LiveKitEgressId egressId) {
         return jpa.findByLivekitEgressId(egressId.value()).map(this::toDomain);
+    }
+
+    @Override
+    public List<Recording> findPendingCreatedBefore(Instant cutoff) {
+        return jpa.findByStatusAndCreatedAtBefore(RecordingStatus.PENDING.name(), cutoff).stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override

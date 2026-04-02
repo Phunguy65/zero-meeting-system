@@ -6,12 +6,16 @@ import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Recording;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.RecordingRepository;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,16 +23,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class StartRecordingUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(StartRecordingUseCase.class);
+
     private final MeetingRepository meetingRepository;
     private final RecordingRepository recordingRepository;
+    private final LiveKitPort liveKitPort;
     private final ApplicationEventPublisher eventPublisher;
 
     public StartRecordingUseCase(
             MeetingRepository meetingRepository,
             RecordingRepository recordingRepository,
+            LiveKitPort liveKitPort,
             ApplicationEventPublisher eventPublisher) {
         this.meetingRepository = meetingRepository;
         this.recordingRepository = recordingRepository;
+        this.liveKitPort = liveKitPort;
         this.eventPublisher = eventPublisher;
     }
 
@@ -56,8 +65,32 @@ public class StartRecordingUseCase {
         }
 
         LiveKitRoomName roomName = LiveKitRoomName.fromMeetingId(m.getId());
-        Recording recording = Recording.startFor(MeetingId.of(command.meetingId()), roomName);
+        MeetingId meetingId = MeetingId.of(command.meetingId());
+        Recording recording = Recording.startFor(meetingId, roomName);
+
         Recording saved = recordingRepository.save(recording);
+
+        var startEgressResult = liveKitPort.startRoomCompositeEgress(meetingId, roomName);
+        if (startEgressResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+            failRecording(saved, error.message());
+            return Result.failure(error);
+        }
+        if (!(startEgressResult instanceof Result.Success<LiveKitEgressId, MeetingError> success)) {
+            throw new IllegalStateException("Expected LiveKit egress start to succeed or fail");
+        }
+
+        saved.assignEgressId(success.value());
+        try {
+            saved = recordingRepository.save(saved);
+        } catch (RuntimeException e) {
+            log.error(
+                    "Failed to persist recording '{}' after starting LiveKit egress '{}'; stopping egress",
+                    saved.getId().value(),
+                    success.value().value(),
+                    e);
+            liveKitPort.stopEgress(success.value());
+            throw e;
+        }
 
         saved.getDomainEvents().stream()
                 .filter(e -> e instanceof PublishableEvent)
@@ -66,6 +99,18 @@ public class StartRecordingUseCase {
         saved.clearDomainEvents();
 
         return Result.success(toResponse(saved));
+    }
+
+    private void failRecording(Recording recording, String errorMessage) {
+        var failResult = recording.fail(errorMessage);
+        if (failResult instanceof Result.Success<?, ?>) {
+            var saved = recordingRepository.save(recording);
+            saved.getDomainEvents().stream()
+                    .filter(e -> e instanceof PublishableEvent)
+                    .map(e -> (PublishableEvent) e)
+                    .forEach(eventPublisher::publishEvent);
+            saved.clearDomainEvents();
+        }
     }
 
     static RecordingResponse toResponse(Recording r) {

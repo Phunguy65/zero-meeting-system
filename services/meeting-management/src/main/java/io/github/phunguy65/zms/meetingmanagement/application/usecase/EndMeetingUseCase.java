@@ -7,6 +7,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.RecordingRepository;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import org.springframework.context.ApplicationEventPublisher;
@@ -17,16 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class EndMeetingUseCase {
 
     private final MeetingRepository meetingRepository;
+    private final RecordingRepository recordingRepository;
     private final LiveKitPort liveKitPort;
     private final ApplicationEventPublisher eventPublisher;
     private final ParticipationLogCloser participationLogCloser;
 
     public EndMeetingUseCase(
             MeetingRepository meetingRepository,
+            RecordingRepository recordingRepository,
             LiveKitPort liveKitPort,
             ApplicationEventPublisher eventPublisher,
             ParticipationLogCloser participationLogCloser) {
         this.meetingRepository = meetingRepository;
+        this.recordingRepository = recordingRepository;
         this.liveKitPort = liveKitPort;
         this.eventPublisher = eventPublisher;
         this.participationLogCloser = participationLogCloser;
@@ -48,6 +52,20 @@ public class EndMeetingUseCase {
         var endResult = m.end();
         if (endResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
             return Result.failure(error);
+        }
+
+        var activeRecording = recordingRepository.findActiveByMeetingId(command.meetingId());
+        if (activeRecording.isPresent()) {
+            var egressId = activeRecording.get().getLivekitEgressId();
+            if (egressId.isEmpty()) {
+                return Result.failure(new MeetingError.LiveKitUnavailable(
+                        "Active recording is missing a LiveKit egress id"));
+            }
+
+            var stopResult = liveKitPort.stopEgress(egressId.get());
+            if (stopResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+                return Result.failure(error);
+            }
         }
 
         var deleteResult = liveKitPort.deleteRoom(LiveKitRoomName.fromMeetingId(m.getId()));
