@@ -2,8 +2,8 @@ package io.github.phunguy65.zms.meetingmanagement.presentation;
 
 import io.github.phunguy65.zms.meetingmanagement.application.command.StartRecordingCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.StopRecordingCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.query.GetMeetingRecordingsQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetRecordingQuery;
-import io.github.phunguy65.zms.meetingmanagement.application.query.ListMeetingRecordingsQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.CompleteRecordingRequest;
@@ -30,7 +30,7 @@ public class RecordingController extends BaseController {
     private final StopRecordingUseCase stopRecordingUseCase;
     private final CompleteRecordingUseCase completeRecordingUseCase;
     private final GetRecordingUseCase getRecordingUseCase;
-    private final ListMeetingRecordingsUseCase listMeetingRecordingsUseCase;
+    private final GetMeetingRecordingsUseCase getMeetingRecordingsUseCase;
     private final CursorTokenEncoder cursorTokenEncoder;
 
     public RecordingController(
@@ -38,13 +38,13 @@ public class RecordingController extends BaseController {
             StopRecordingUseCase stopRecordingUseCase,
             CompleteRecordingUseCase completeRecordingUseCase,
             GetRecordingUseCase getRecordingUseCase,
-            ListMeetingRecordingsUseCase listMeetingRecordingsUseCase,
+            GetMeetingRecordingsUseCase getMeetingRecordingsUseCase,
             CursorTokenEncoder cursorTokenEncoder) {
         this.startRecordingUseCase = startRecordingUseCase;
         this.stopRecordingUseCase = stopRecordingUseCase;
         this.completeRecordingUseCase = completeRecordingUseCase;
         this.getRecordingUseCase = getRecordingUseCase;
-        this.listMeetingRecordingsUseCase = listMeetingRecordingsUseCase;
+        this.getMeetingRecordingsUseCase = getMeetingRecordingsUseCase;
         this.cursorTokenEncoder = cursorTokenEncoder;
     }
 
@@ -96,10 +96,8 @@ public class RecordingController extends BaseController {
             @PathVariable UUID id,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) @Nullable String pageToken) {
-        ListMeetingRecordingsQuery query = new ListMeetingRecordingsQuery(id, pageSize, pageToken);
-
         if (pageToken == null) {
-            return executeListRecordings(query, null);
+            return executeGetRecordings(new GetMeetingRecordingsQuery(id, pageSize, null));
         }
         var decodeResult = cursorTokenEncoder.decode(pageToken);
         return switch (decodeResult) {
@@ -108,18 +106,16 @@ public class RecordingController extends BaseController {
                         .body(JsendResponse.fail(
                                 new FailData(f.error().name(), f.error(), List.of())));
             case Result.Success<ScrollCursor, CursorErrorCode> s ->
-                executeListRecordings(query, s.value());
+                executeGetRecordings(new GetMeetingRecordingsQuery(id, pageSize, s.value()));
         };
     }
 
-    private ResponseEntity<JsendResponse<?>> executeListRecordings(
-            ListMeetingRecordingsQuery query, @Nullable ScrollCursor cursor) {
-        var pageResult = listMeetingRecordingsUseCase.execute(query, cursor);
+    private ResponseEntity<JsendResponse<?>> executeGetRecordings(GetMeetingRecordingsQuery query) {
+        var pageResult = getMeetingRecordingsUseCase.execute(query);
         String nextPageToken = null;
         if (pageResult.hasNext() && !pageResult.items().isEmpty()) {
             var last = pageResult.items().getLast();
-            nextPageToken =
-                    cursorTokenEncoder.encode(last.createdAt(), last.id().value());
+            nextPageToken = cursorTokenEncoder.encode(last.createdAt(), last.id());
         }
         var response =
                 new CursorScrollResponse<>(pageResult.items(), query.pageSize(), nextPageToken);

@@ -102,6 +102,7 @@ class RecordingFlowUseCaseTest {
                                 MeetingError>)
                         result)
                 .value();
+        assertThat(response.id()).isNotNull().isInstanceOf(UUID.class);
         assertThat(response.status()).isEqualTo(RecordingStatus.PENDING);
 
         ArgumentCaptor<Recording> recordingCaptor = ArgumentCaptor.forClass(Recording.class);

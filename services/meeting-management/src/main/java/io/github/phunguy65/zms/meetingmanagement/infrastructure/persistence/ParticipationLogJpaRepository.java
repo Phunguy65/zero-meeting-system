@@ -42,7 +42,7 @@ public interface ParticipationLogJpaRepository
     List<ParticipationLogJpaEntity> findActiveByUserId(@Param("userId") UUID userId);
 
     @Query("SELECT new io.github.phunguy65.zms.meetingmanagement.domain.projection"
-            + ".ParticipantSummaryProjection("
+            + ".ParticipantSummary("
             + "p.id, p.meetingId, p.userId, p.displayName, p.role, "
             + "p.joinedAt, p.leftAt) "
             + "FROM ParticipationLogJpaEntity p "

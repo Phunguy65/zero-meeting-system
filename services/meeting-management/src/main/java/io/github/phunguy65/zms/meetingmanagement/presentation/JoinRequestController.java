@@ -3,12 +3,15 @@ package io.github.phunguy65.zms.meetingmanagement.presentation;
 import io.github.phunguy65.zms.meetingmanagement.application.command.ApproveAllJoinRequestsCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.ApproveJoinRequestCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.DenyJoinRequestCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.query.GetJoinRequestsQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.sse.MeetingSseManager;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.JoinRequestRequest;
+import io.github.phunguy65.zms.shared.domain.OffsetPageResponse;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.github.phunguy65.zms.shared.infrastructure.web.OffsetScrollResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.MediaType;
@@ -24,7 +27,7 @@ public class JoinRequestController extends BaseController {
     private final ApproveJoinRequestUseCase approveJoinRequestUseCase;
     private final DenyJoinRequestUseCase denyJoinRequestUseCase;
     private final ApproveAllJoinRequestsUseCase approveAllJoinRequestsUseCase;
-    private final ListJoinRequestsUseCase listJoinRequestsUseCase;
+    private final GetJoinRequestsUseCase getJoinRequestsUseCase;
     private final MeetingSseManager meetingSseManager;
 
     public JoinRequestController(
@@ -32,13 +35,13 @@ public class JoinRequestController extends BaseController {
             ApproveJoinRequestUseCase approveJoinRequestUseCase,
             DenyJoinRequestUseCase denyJoinRequestUseCase,
             ApproveAllJoinRequestsUseCase approveAllJoinRequestsUseCase,
-            ListJoinRequestsUseCase listJoinRequestsUseCase,
+            GetJoinRequestsUseCase getJoinRequestsUseCase,
             MeetingSseManager meetingSseManager) {
         this.requestJoinUseCase = requestJoinUseCase;
         this.approveJoinRequestUseCase = approveJoinRequestUseCase;
         this.denyJoinRequestUseCase = denyJoinRequestUseCase;
         this.approveAllJoinRequestsUseCase = approveAllJoinRequestsUseCase;
-        this.listJoinRequestsUseCase = listJoinRequestsUseCase;
+        this.getJoinRequestsUseCase = getJoinRequestsUseCase;
         this.meetingSseManager = meetingSseManager;
     }
 
@@ -67,14 +70,27 @@ public class JoinRequestController extends BaseController {
 
     @GetMapping(value = "/{version}/meetings/{id}/joinRequests", version = "1.0")
     public ResponseEntity<JsendResponse<?>> listJoinRequests(
-            @PathVariable UUID id, Authentication auth) {
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "0") int offset,
+            Authentication auth) {
         UUID requesterId = extractUserId(auth);
         if (requesterId == null) return unauthenticated();
-        return switch (listJoinRequestsUseCase.execute(id, requesterId)) {
-            case Result.Success<?, MeetingError> s ->
-                ResponseEntity.ok(JsendResponse.success(s.value()));
+        return switch (getJoinRequestsUseCase.execute(
+                new GetJoinRequestsQuery(id, requesterId, pageSize, offset))) {
+            case Result.Success<
+                            OffsetPageResponse<
+                                    io.github.phunguy65.zms.meetingmanagement.application.response
+                                            .JoinRequestResponse>,
+                            MeetingError>
+                    s -> ResponseEntity.ok(JsendResponse.success(toOffsetResponse(s.value())));
             case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
         };
+    }
+
+    private <T> OffsetScrollResponse<T> toOffsetResponse(OffsetPageResponse<T> page) {
+        Integer nextOffset = page.hasNext() ? page.offset() + page.pageSize() : null;
+        return new OffsetScrollResponse<>(page.items(), page.pageSize(), nextOffset);
     }
 
     @PostMapping(

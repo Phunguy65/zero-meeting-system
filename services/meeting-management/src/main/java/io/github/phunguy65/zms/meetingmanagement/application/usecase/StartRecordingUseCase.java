@@ -115,7 +115,7 @@ public class StartRecordingUseCase {
 
     static RecordingResponse toResponse(Recording r) {
         return new RecordingResponse(
-                r.getId(),
+                r.getId().value(),
                 r.getMeetingId().value(),
                 r.getFileUrl().orElse(null),
                 r.getThumbnailUrl().orElse(null),

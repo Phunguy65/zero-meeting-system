@@ -3,9 +3,9 @@ package io.github.phunguy65.zms.meetingmanagement.presentation;
 import io.github.phunguy65.zms.meetingmanagement.application.command.CancelMeetingCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.EndMeetingCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.StartMeetingCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.query.GetHostMeetingsQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetMeetingByShortCodeQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetMeetingQuery;
-import io.github.phunguy65.zms.meetingmanagement.application.query.ListHostMeetingsQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.CreateInstantMeetingRequest;
@@ -34,7 +34,7 @@ public class MeetingController extends BaseController {
     private final CreateInstantMeetingUseCase createInstantMeetingUseCase;
     private final GetMeetingUseCase getMeetingUseCase;
     private final GetMeetingByShortCodeUseCase getMeetingByShortCodeUseCase;
-    private final ListHostMeetingsUseCase listHostMeetingsUseCase;
+    private final GetHostMeetingsUseCase getHostMeetingsUseCase;
     private final StartMeetingUseCase startMeetingUseCase;
     private final EndMeetingUseCase endMeetingUseCase;
     private final CancelMeetingUseCase cancelMeetingUseCase;
@@ -46,7 +46,7 @@ public class MeetingController extends BaseController {
             CreateInstantMeetingUseCase createInstantMeetingUseCase,
             GetMeetingUseCase getMeetingUseCase,
             GetMeetingByShortCodeUseCase getMeetingByShortCodeUseCase,
-            ListHostMeetingsUseCase listHostMeetingsUseCase,
+            GetHostMeetingsUseCase getHostMeetingsUseCase,
             StartMeetingUseCase startMeetingUseCase,
             EndMeetingUseCase endMeetingUseCase,
             CancelMeetingUseCase cancelMeetingUseCase,
@@ -56,7 +56,7 @@ public class MeetingController extends BaseController {
         this.createInstantMeetingUseCase = createInstantMeetingUseCase;
         this.getMeetingUseCase = getMeetingUseCase;
         this.getMeetingByShortCodeUseCase = getMeetingByShortCodeUseCase;
-        this.listHostMeetingsUseCase = listHostMeetingsUseCase;
+        this.getHostMeetingsUseCase = getHostMeetingsUseCase;
         this.startMeetingUseCase = startMeetingUseCase;
         this.endMeetingUseCase = endMeetingUseCase;
         this.cancelMeetingUseCase = cancelMeetingUseCase;
@@ -114,25 +114,22 @@ public class MeetingController extends BaseController {
         UUID hostId = extractUserId(auth);
         if (hostId == null) return unauthenticated();
 
-        ListHostMeetingsQuery query = new ListHostMeetingsQuery(hostId, pageSize, pageToken);
-
-        if (query.pageToken().isEmpty()) {
-            return executeListMeetings(query, null);
+        if (pageToken == null) {
+            return executeGetMeetings(new GetHostMeetingsQuery(hostId, pageSize, null));
         }
-        var decodeResult = cursorTokenEncoder.decode(query.pageToken().get());
+        var decodeResult = cursorTokenEncoder.decode(pageToken);
         return switch (decodeResult) {
             case Result.Failure<ScrollCursor, CursorErrorCode> f ->
                 ResponseEntity.badRequest()
                         .body(JsendResponse.fail(
                                 new FailData(f.error().name(), f.error(), List.of())));
             case Result.Success<ScrollCursor, CursorErrorCode> s ->
-                executeListMeetings(query, s.value());
+                executeGetMeetings(new GetHostMeetingsQuery(hostId, pageSize, s.value()));
         };
     }
 
-    private ResponseEntity<JsendResponse<?>> executeListMeetings(
-            ListHostMeetingsQuery query, @Nullable ScrollCursor cursor) {
-        var pageResult = listHostMeetingsUseCase.execute(query, cursor);
+    private ResponseEntity<JsendResponse<?>> executeGetMeetings(GetHostMeetingsQuery query) {
+        var pageResult = getHostMeetingsUseCase.execute(query);
         String nextPageToken = null;
         if (pageResult.hasNext() && !pageResult.items().isEmpty()) {
             var last = pageResult.items().getLast();

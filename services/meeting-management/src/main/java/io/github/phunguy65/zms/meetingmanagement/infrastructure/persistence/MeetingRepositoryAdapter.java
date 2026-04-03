@@ -9,6 +9,8 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.Meetin
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTitle;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ShortCode;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.MeetingSettingsSummary;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.MeetingSummary;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.ScrollParams;
@@ -18,6 +20,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -82,6 +85,22 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
         return CursorPageResponse.of(items, params.pageSize(), hasNext);
     }
 
+    @Override
+    public CursorPageResponse<MeetingSummary> findSummariesByHostId(
+            UUID hostId, @Nullable ScrollCursor cursor, int pageSize) {
+        int fetchLimit = pageSize + 1;
+        var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
+        var cursorId = cursor != null ? cursor.id().toString() : null;
+
+        List<MeetingJpaEntity> rows =
+                jpa.findByHostIdKeyset(hostId.toString(), cursorCreatedAt, cursorId, fetchLimit);
+
+        boolean hasNext = rows.size() > pageSize;
+        List<MeetingSummary> items =
+                rows.stream().limit(pageSize).map(this::toSummary).toList();
+        return CursorPageResponse.of(items, pageSize, hasNext);
+    }
+
     /**
      * Overload accepting a pre-decoded cursor — used by application layer use cases.
      */
@@ -128,6 +147,30 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
                 MeetingType.valueOf(e.getType()),
                 MeetingStatus.valueOf(e.getStatus()),
                 settings,
+                e.getCreatedAt());
+    }
+
+    private MeetingSummary toSummary(MeetingJpaEntity e) {
+        return new MeetingSummary(
+                e.getId(),
+                e.getHostId(),
+                e.getShortCode(),
+                e.getTitle(),
+                e.getDescription(),
+                e.getStartTime(),
+                e.getEndTime(),
+                MeetingType.valueOf(e.getType()),
+                MeetingStatus.valueOf(e.getStatus()),
+                new MeetingSettingsSummary(
+                        e.getSettings().admissionPolicy(),
+                        e.getSettings().joinRequestTimeoutSeconds(),
+                        e.getSettings().allowGuest(),
+                        e.getSettings().muteOnEntry(),
+                        e.getSettings().maxParticipants(),
+                        e.getSettings().recordingEnabled(),
+                        e.getSettings().screenShareMode(),
+                        e.getSettings().chatEnabled(),
+                        e.getSettings().passwordHash() != null),
                 e.getCreatedAt());
     }
 

@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKi
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.RecordingRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.RecordingSummary;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
@@ -76,6 +77,22 @@ public class RecordingRepositoryAdapter implements RecordingRepository {
         return CursorPageResponse.of(items, pageSize, hasNext);
     }
 
+    @Override
+    public CursorPageResponse<RecordingSummary> findSummariesByMeetingId(
+            UUID meetingId, ScrollCursor cursor, int pageSize) {
+        int fetchLimit = pageSize + 1;
+        var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
+        var cursorId = cursor != null ? cursor.id().toString() : null;
+
+        List<RecordingJpaEntity> rows = jpa.findByMeetingIdKeyset(
+                meetingId.toString(), cursorCreatedAt, cursorId, fetchLimit);
+
+        boolean hasNext = rows.size() > pageSize;
+        List<RecordingSummary> items =
+                rows.stream().limit(pageSize).map(this::toSummary).toList();
+        return CursorPageResponse.of(items, pageSize, hasNext);
+    }
+
     private Recording toDomain(RecordingJpaEntity e) {
         return Recording.reconstitute(
                 RecordingId.of(e.getId()),
@@ -88,6 +105,20 @@ public class RecordingRepositoryAdapter implements RecordingRepository {
                 e.getThumbnailUrl(),
                 e.getStoragePath(),
                 e.getErrorMessage(),
+                RecordingStatus.valueOf(e.getStatus()),
+                e.getStartedAt(),
+                e.getEndedAt(),
+                e.getDurationSeconds(),
+                e.getFileSizeBytes(),
+                e.getCreatedAt());
+    }
+
+    private RecordingSummary toSummary(RecordingJpaEntity e) {
+        return new RecordingSummary(
+                e.getId(),
+                e.getMeetingId(),
+                e.getFileUrl(),
+                e.getThumbnailUrl(),
                 RecordingStatus.valueOf(e.getStatus()),
                 e.getStartedAt(),
                 e.getEndedAt(),

@@ -3,6 +3,7 @@ package io.github.phunguy65.zms.meetingmanagement.domain.port;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Recording;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.RecordingSummary;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import java.time.Instant;
@@ -35,5 +36,8 @@ public interface RecordingRepository {
      * Keyset-scroll recordings for a meeting, ordered by (created_at DESC, id DESC).
      */
     CursorPageResponse<Recording> findByMeetingIdKeyset(
+            UUID meetingId, ScrollCursor cursor, int pageSize);
+
+    CursorPageResponse<RecordingSummary> findSummariesByMeetingId(
             UUID meetingId, ScrollCursor cursor, int pageSize);
 }

@@ -3,7 +3,9 @@ package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequest;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.JoinRequestSummary;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence.model.JoinRequestData;
+import io.github.phunguy65.zms.shared.domain.OffsetPageResponse;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -97,6 +99,36 @@ public class JoinRequestRedisRepositoryAdapter implements JoinRequestRepository 
     }
 
     @Override
+    public OffsetPageResponse<JoinRequestSummary> findPendingSummariesByMeetingId(
+            UUID meetingId, int offset, int pageSize) {
+        String queueKey = queueKey(meetingId.toString());
+
+        Set<String> requestIds = stringRedisTemplate.opsForZSet().range(queueKey, 0, -1);
+        if (requestIds == null || requestIds.isEmpty()) {
+            return OffsetPageResponse.empty(pageSize, offset);
+        }
+
+        List<JoinRequestSummary> allItems = new ArrayList<>();
+        for (String requestId : requestIds) {
+            JoinRequestData data = joinRequestRedisTemplate.opsForValue().get(metaKey(requestId));
+            if (data != null
+                    && JoinRequestStatus.valueOf(data.status()) == JoinRequestStatus.PENDING) {
+                allItems.add(toSummary(data));
+            }
+        }
+
+        allItems.sort(Comparator.comparing(JoinRequestSummary::requestedAt));
+        if (offset >= allItems.size()) {
+            return OffsetPageResponse.empty(pageSize, offset);
+        }
+
+        int endExclusive = Math.min(offset + pageSize, allItems.size());
+        boolean hasNext = endExclusive < allItems.size();
+        return OffsetPageResponse.of(
+                allItems.subList(offset, endExclusive), pageSize, offset, hasNext);
+    }
+
+    @Override
     public void updateStatus(UUID requestId, JoinRequestStatus status) {
         String metaKey = metaKey(requestId.toString());
 
@@ -179,5 +211,16 @@ public class JoinRequestRedisRepositoryAdapter implements JoinRequestRepository 
 
     private String deviceKey(String meetingId, String deviceId) {
         return "join_request_device:" + meetingId + ":" + deviceId;
+    }
+
+    private JoinRequestSummary toSummary(JoinRequestData data) {
+        return new JoinRequestSummary(
+                UUID.fromString(data.id()),
+                UUID.fromString(data.meetingId()),
+                data.userId() != null ? UUID.fromString(data.userId()) : null,
+                data.displayName(),
+                JoinRequestStatus.valueOf(data.status()),
+                java.time.Instant.parse(data.requestedAt()),
+                java.time.Instant.parse(data.expiresAt()));
     }
 }

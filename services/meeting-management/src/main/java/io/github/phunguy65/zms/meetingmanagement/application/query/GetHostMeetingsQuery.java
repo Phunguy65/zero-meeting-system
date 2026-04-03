@@ -1,12 +1,13 @@
 package io.github.phunguy65.zms.meetingmanagement.application.query;
 
+import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-public record ListMeetingRecordingsQuery(
-        UUID meetingId, int pageSize, @Nullable String pageTokenValue) {
+public record GetHostMeetingsQuery(
+        UUID hostId, int pageSize, @Nullable ScrollCursor cursor) {
 
-    public ListMeetingRecordingsQuery {
+    public GetHostMeetingsQuery {
         if (pageSize < 1) pageSize = 1;
         if (pageSize > 100) pageSize = 100;
     }

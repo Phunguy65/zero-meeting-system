@@ -2,6 +2,8 @@ package io.github.phunguy65.zms.meetingmanagement.domain.port;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequest;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.JoinRequestSummary;
+import io.github.phunguy65.zms.shared.domain.OffsetPageResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +56,9 @@ public interface JoinRequestRepository {
      * @return list of pending join requests (may be empty)
      */
     List<JoinRequest> findPendingByMeetingId(UUID meetingId);
+
+    OffsetPageResponse<JoinRequestSummary> findPendingSummariesByMeetingId(
+            UUID meetingId, int offset, int pageSize);
 
     /**
      * Updates the status of a join request.
