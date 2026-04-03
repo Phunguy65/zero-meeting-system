@@ -14,10 +14,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = JoinRequestCreatedData.class, name = "join_request_created"),
     @JsonSubTypes.Type(value = JoinRequestApprovedData.class, name = "join_request_approved"),
     @JsonSubTypes.Type(value = JoinRequestDeniedData.class, name = "join_request_denied"),
-    @JsonSubTypes.Type(value = JoinRequestExpiredData.class, name = "join_request_expired")
+    @JsonSubTypes.Type(value = JoinRequestExpiredData.class, name = "join_request_expired"),
+    @JsonSubTypes.Type(value = ParticipantKickedData.class, name = "participant_kicked")
 })
 public sealed interface SseEventData
         permits JoinRequestCreatedData,
                 JoinRequestApprovedData,
                 JoinRequestDeniedData,
-                JoinRequestExpiredData {}
+                JoinRequestExpiredData,
+                ParticipantKickedData {}

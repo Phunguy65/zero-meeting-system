@@ -42,6 +42,18 @@ public interface ParticipationLogRepository {
      */
     List<ParticipationLog> findActiveByUserId(UUID userId);
 
+    /**
+     * Returns all active sessions for a registered user within a specific meeting.
+     * Used by the host kick flow to remove all devices of a user at once.
+     */
+    List<ParticipationLog> findActiveByMeetingIdAndUserId(UUID meetingId, UUID userId);
+
+    /**
+     * Returns all active sessions for a guest (identified by display name) within a specific meeting.
+     * Used by the host kick flow to remove all sessions matching the guest's display name.
+     */
+    List<ParticipationLog> findActiveByMeetingIdAndDisplayName(UUID meetingId, String displayName);
+
     /** Returns read-only participant summaries for a meeting ordered by newest join first. */
     List<ParticipantSummary> findParticipantSummariesByMeetingId(UUID meetingId);
 }

@@ -44,6 +44,9 @@ abstract class BaseController {
                     case MeetingError.InvalidPassword e -> HttpStatus.UNAUTHORIZED;
                     case MeetingError.JoinRequestExpired e -> HttpStatus.GONE;
                     case MeetingError.NotWaitingForApproval e -> HttpStatus.UNPROCESSABLE_CONTENT;
+                    case MeetingError.CanNotKickSelf e -> HttpStatus.BAD_REQUEST;
+                    case MeetingError.UserNotInMeeting e -> HttpStatus.NOT_FOUND;
+                    case MeetingError.InvalidKickTarget e -> HttpStatus.BAD_REQUEST;
                 };
         MeetingErrorCode code =
                 switch (error) {
@@ -83,6 +86,9 @@ abstract class BaseController {
                         MeetingErrorCode.INVALID_JOIN_REQUEST_TRANSITION;
                     case MeetingError.NotWaitingForApproval e ->
                         MeetingErrorCode.NOT_WAITING_FOR_APPROVAL;
+                    case MeetingError.CanNotKickSelf e -> MeetingErrorCode.CAN_NOT_KICK_SELF;
+                    case MeetingError.UserNotInMeeting e -> MeetingErrorCode.USER_NOT_IN_MEETING;
+                    case MeetingError.InvalidKickTarget e -> MeetingErrorCode.INVALID_KICK_TARGET;
                 };
         return ResponseEntity.status(status)
                 .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));

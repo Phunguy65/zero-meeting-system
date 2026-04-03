@@ -182,4 +182,131 @@ class ParticipationLogJpaRepositoryTest {
                                         .ParticipantSummary::displayName)
                 .containsExactly("Still Here", "Already Left");
     }
+
+    @Test
+    void findActiveByMeetingIdAndUserId_excludesGuestsAndLeftSessions() {
+        UUID meetingId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        saveMeeting(meetingId);
+        UUID otherUserId = UUID.randomUUID();
+
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                targetUserId,
+                "Target User",
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.PARTICIPANT
+                        .name(),
+                "target:device-1",
+                null,
+                Instant.parse("2026-04-01T10:00:00Z"),
+                null));
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                targetUserId,
+                "Target User",
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.PARTICIPANT
+                        .name(),
+                "target:device-2",
+                null,
+                Instant.parse("2026-04-01T10:05:00Z"),
+                null));
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                null,
+                "Target User",
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.GUEST.name(),
+                "guest:device-xyz",
+                null,
+                Instant.parse("2026-04-01T10:10:00Z"),
+                null));
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                targetUserId,
+                "Target User",
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.PARTICIPANT
+                        .name(),
+                "target:device-left",
+                null,
+                Instant.parse("2026-04-01T09:00:00Z"),
+                Instant.parse("2026-04-01T09:30:00Z")));
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                otherUserId,
+                "Other User",
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.PARTICIPANT
+                        .name(),
+                "other:device-1",
+                null,
+                Instant.parse("2026-04-01T10:15:00Z"),
+                null));
+
+        var results = repository.findActiveByMeetingIdAndUserId(meetingId, targetUserId);
+
+        assertThat(results).hasSize(2);
+        assertThat(results)
+                .extracting("livekitIdentity")
+                .containsExactlyInAnyOrder("target:device-1", "target:device-2");
+    }
+
+    @Test
+    void findActiveByMeetingIdAndDisplayName_returnsOnlyGuestsWithMatchingName() {
+        UUID meetingId = UUID.randomUUID();
+        String guestName = "Wandering Guest";
+        saveMeeting(meetingId);
+        UUID registeredUserId = UUID.randomUUID();
+
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                null,
+                guestName,
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.GUEST.name(),
+                "guest:device-A",
+                null,
+                Instant.parse("2026-04-01T10:00:00Z"),
+                null));
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                null,
+                guestName,
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.GUEST.name(),
+                "guest:device-B",
+                null,
+                Instant.parse("2026-04-01T10:05:00Z"),
+                null));
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                registeredUserId,
+                guestName,
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.PARTICIPANT
+                        .name(),
+                "registered:same-name",
+                null,
+                Instant.parse("2026-04-01T10:10:00Z"),
+                null));
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                null,
+                "Different Guest",
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.GUEST.name(),
+                "guest:other",
+                null,
+                Instant.parse("2026-04-01T10:15:00Z"),
+                null));
+        repository.save(new ParticipationLogJpaEntity(
+                meetingId,
+                null,
+                guestName,
+                io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole.GUEST.name(),
+                "guest:device-left",
+                null,
+                Instant.parse("2026-04-01T09:00:00Z"),
+                Instant.parse("2026-04-01T09:30:00Z")));
+
+        var results = repository.findActiveByMeetingIdAndDisplayName(meetingId, guestName);
+
+        assertThat(results).hasSize(2);
+        assertThat(results)
+                .extracting("livekitIdentity")
+                .containsExactlyInAnyOrder("guest:device-A", "guest:device-B");
+    }
 }

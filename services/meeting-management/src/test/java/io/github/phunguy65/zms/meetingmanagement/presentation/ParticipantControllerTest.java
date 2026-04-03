@@ -5,11 +5,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.phunguy65.zms.meetingmanagement.application.response.ParticipantListItemResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetParticipantsUseCase;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.KickParticipantUseCase;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.web.WebConfig;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,6 +36,9 @@ class ParticipantControllerTest {
 
     @MockitoBean
     GetParticipantsUseCase getParticipantsUseCase;
+
+    @MockitoBean
+    KickParticipantUseCase kickParticipantUseCase;
 
     @Test
     void getParticipants_returnsSimpleListResponse() throws Exception {
@@ -127,5 +133,128 @@ class ParticipantControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(getParticipantsUseCase);
+    }
+
+    @Test
+    void kickParticipant_byUserId_returns204() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        when(kickParticipantUseCase.execute(any())).thenReturn(Result.success());
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:kick", meetingId)
+                        .param("userId", targetUserId.toString())
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isNoContent());
+
+        verify(kickParticipantUseCase).execute(any());
+    }
+
+    @Test
+    void kickParticipant_byDisplayName_returns204() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        when(kickParticipantUseCase.execute(any())).thenReturn(Result.success());
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:kick", meetingId)
+                        .param("displayName", "Bob Guest")
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void kickParticipant_notHost_returns403() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        when(kickParticipantUseCase.execute(any()))
+                .thenReturn(Result.failure(
+                        new MeetingError.NotAuthorized(UUID.randomUUID(), UUID.randomUUID())));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:kick", meetingId)
+                        .param("userId", targetUserId.toString())
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("NOT_AUTHORIZED"));
+    }
+
+    @Test
+    void kickParticipant_inactiveTarget_returns404() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        when(kickParticipantUseCase.execute(any()))
+                .thenReturn(Result.failure(
+                        new MeetingError.UserNotInMeeting(meetingId, targetUserId.toString())));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:kick", meetingId)
+                        .param("userId", targetUserId.toString())
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("USER_NOT_IN_MEETING"));
+    }
+
+    @Test
+    void kickParticipant_selfKick_returns400() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID hostId = UUID.randomUUID();
+        when(kickParticipantUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.CanNotKickSelf(meetingId, hostId)));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:kick", meetingId)
+                        .param("userId", hostId.toString())
+                        .principal(new TestingAuthenticationToken(hostId.toString(), null)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("CAN_NOT_KICK_SELF"));
+    }
+
+    @Test
+    void kickParticipant_meetingNotLive_returns409() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        when(kickParticipantUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.InvalidStatusTransition(
+                        io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus
+                                .SCHEDULED,
+                        io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus
+                                .LIVE)));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:kick", meetingId)
+                        .param("userId", targetUserId.toString())
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_STATUS_TRANSITION"));
+    }
+
+    @Test
+    void kickParticipant_noAuthentication_returns401() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:kick", meetingId)
+                        .param("userId", UUID.randomUUID().toString()))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"));
+
+        verifyNoInteractions(kickParticipantUseCase);
+    }
+
+    @Test
+    void kickParticipant_invalidTarget_returns400() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        when(kickParticipantUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.InvalidKickTarget(
+                        "either userId or displayName must be provided")));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:kick", meetingId)
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_KICK_TARGET"));
     }
 }

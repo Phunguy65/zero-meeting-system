@@ -84,4 +84,21 @@ public interface LiveKitPort {
      * {@link MeetingError.LiveKitUnavailable} if the server is unreachable
      */
     Result<Void, MeetingError> deleteRoom(LiveKitRoomName roomName);
+
+    /**
+     * Forcibly removes a connected participant from a LiveKit room without ending the room.
+     *
+     * <p>Used by the host kick flow. The participant's {@code participant_left} webhook will
+     * fire as normal, closing the corresponding participation log through the existing leave
+     * lifecycle.
+     *
+     * <p>If the participant is no longer in the room (already left), this method returns
+     * {@link Result.Success} — the kick is idempotent at the room level.
+     *
+     * @param roomName the LiveKit room containing the participant
+     * @param identity the participant's identity string as embedded in their JWT
+     * @return {@link Result.Success} if the participant was removed or is already gone, or
+     * {@link Result.Failure} with {@link MeetingError.LiveKitUnavailable} on network error
+     */
+    Result<Void, MeetingError> removeParticipant(LiveKitRoomName roomName, String identity);
 }

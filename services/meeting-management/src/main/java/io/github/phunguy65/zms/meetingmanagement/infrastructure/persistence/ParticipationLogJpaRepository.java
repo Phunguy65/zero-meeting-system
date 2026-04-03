@@ -41,6 +41,17 @@ public interface ParticipationLogJpaRepository
             + "WHERE p.userId = :userId AND p.leftAt IS NULL")
     List<ParticipationLogJpaEntity> findActiveByUserId(@Param("userId") UUID userId);
 
+    @Query("SELECT p FROM ParticipationLogJpaEntity p "
+            + "WHERE p.meetingId = :meetingId AND p.userId = :userId AND p.leftAt IS NULL")
+    List<ParticipationLogJpaEntity> findActiveByMeetingIdAndUserId(
+            @Param("meetingId") UUID meetingId, @Param("userId") UUID userId);
+
+    @Query("SELECT p FROM ParticipationLogJpaEntity p "
+            + "WHERE p.meetingId = :meetingId AND p.displayName = :displayName AND p.leftAt IS NULL "
+            + "AND p.userId IS NULL")
+    List<ParticipationLogJpaEntity> findActiveByMeetingIdAndDisplayName(
+            @Param("meetingId") UUID meetingId, @Param("displayName") String displayName);
+
     @Query("SELECT new io.github.phunguy65.zms.meetingmanagement.domain.projection"
             + ".ParticipantSummary("
             + "p.id, p.meetingId, p.userId, p.displayName, p.role, "

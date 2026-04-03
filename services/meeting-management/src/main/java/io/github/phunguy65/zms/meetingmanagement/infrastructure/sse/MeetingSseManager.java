@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestApprove
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestCreatedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestDeniedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestExpiredEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.event.ParticipantKickedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.SseProperties;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.sse.model.*;
@@ -200,6 +201,26 @@ public class MeetingSseManager {
         pushToHostEmitters(meetingId, eventName, sseData);
 
         sendToGuestAndComplete(requestId, eventName, sseData);
+    }
+
+    /**
+     * Handles {@code participant.kicked} events: notifies all connected hosts for the meeting so
+     * their participant list view can refresh.
+     */
+    @KafkaListener(
+            topics = "meeting-management.participant.kicked",
+            containerFactory = "cloudEventKafkaListenerContainerFactory")
+    public void onParticipantKicked(CloudEvent cloudEvent) {
+        ParticipantKickedEvent event = deserialize(cloudEvent, ParticipantKickedEvent.class);
+        if (event == null) return;
+
+        UUID meetingId = event.meetingId();
+        SseEventData sseData = new ParticipantKickedData(
+                meetingId.toString(),
+                event.kickedUserId() != null ? event.kickedUserId().toString() : null,
+                event.kickedDisplayName() != null ? event.kickedDisplayName() : "unknown");
+
+        pushToHostEmitters(meetingId, "participant_kicked", sseData);
     }
 
     /**

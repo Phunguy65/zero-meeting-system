@@ -69,6 +69,21 @@ public class ParticipationLogRepositoryAdapter implements ParticipationLogReposi
     }
 
     @Override
+    public List<ParticipationLog> findActiveByMeetingIdAndUserId(UUID meetingId, UUID userId) {
+        return jpa.findActiveByMeetingIdAndUserId(meetingId, userId).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<ParticipationLog> findActiveByMeetingIdAndDisplayName(
+            UUID meetingId, String displayName) {
+        return jpa.findActiveByMeetingIdAndDisplayName(meetingId, displayName).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<ParticipantSummary> findParticipantSummariesByMeetingId(UUID meetingId) {
         return jpa.findParticipantSummariesByMeetingId(meetingId);
     }

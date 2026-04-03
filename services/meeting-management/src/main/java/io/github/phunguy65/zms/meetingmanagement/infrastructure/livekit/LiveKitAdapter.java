@@ -326,4 +326,42 @@ public class LiveKitAdapter implements LiveKitPort {
             return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
         }
     }
+
+    @Override
+    public Result<Void, MeetingError> removeParticipant(LiveKitRoomName roomName, String identity) {
+        try {
+            Response<?> response = roomServiceClient
+                    .removeParticipant(roomName.value(), identity)
+                    .execute();
+
+            if (response.isSuccessful()) {
+                log.info("Removed participant '{}' from room '{}'", identity, roomName.value());
+                return Result.success();
+            }
+
+            if (response.code() == 404) {
+                log.debug(
+                        "Participant '{}' not found in room '{}' during kick (already gone)",
+                        identity,
+                        roomName.value());
+                return Result.success();
+            }
+
+            String msg = "HTTP %d: %s".formatted(response.code(), response.message());
+            log.warn(
+                    "Failed to remove participant '{}' from room '{}': {}",
+                    identity,
+                    roomName.value(),
+                    msg);
+            return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+
+        } catch (IOException e) {
+            log.warn(
+                    "Network error removing participant '{}' from room '{}': {}",
+                    identity,
+                    roomName.value(),
+                    e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
+    }
 }

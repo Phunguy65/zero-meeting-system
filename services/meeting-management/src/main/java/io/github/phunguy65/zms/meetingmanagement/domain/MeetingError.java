@@ -184,4 +184,28 @@ public sealed interface MeetingError extends DomainError {
             return "Meeting " + meetingId + " does not require manual approval";
         }
     }
+
+    /** The host attempted to kick themselves from their own meeting. */
+    record CanNotKickSelf(UUID meetingId, UUID hostId) implements MeetingError {
+        @Override
+        public String message() {
+            return "Host " + hostId + " cannot kick themselves from meeting " + meetingId;
+        }
+    }
+
+    /** The kick target (registered user or guest) has no active sessions in the meeting. */
+    record UserNotInMeeting(UUID meetingId, String identifier) implements MeetingError {
+        @Override
+        public String message() {
+            return "Target '" + identifier + "' has no active session in meeting " + meetingId;
+        }
+    }
+
+    /** The kick request provided neither or both of userId and displayName. */
+    record InvalidKickTarget(String detail) implements MeetingError {
+        @Override
+        public String message() {
+            return "Invalid kick target: " + detail;
+        }
+    }
 }
