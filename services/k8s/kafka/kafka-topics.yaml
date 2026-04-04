@@ -73,3 +73,111 @@ spec:
     config:
         retention.ms: 604800000
         cleanup.policy: delete
+---
+# ─── meeting-management: join request lifecycle (30-min retention = token TTL) ─
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-join-request-created
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.join_request.created
+    config:
+        retention.ms: 1800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-join-request-approved
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.join_request.approved
+    config:
+        retention.ms: 1800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-join-request-denied
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.join_request.denied
+    config:
+        retention.ms: 1800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-join-request-expired
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.join_request.expired
+    config:
+        retention.ms: 1800000
+        cleanup.policy: delete
+---
+# ─── meeting-management: invitations (30-min retention = sensitive payload) ───
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-meeting-invitations-sent
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.meeting.invitations-sent
+    config:
+        retention.ms: 1800000 # 30 minutes
+        cleanup.policy: delete
+---
+# ─── chat-management: real-time messaging ───────────────────────────────────
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: chat-management-message-sent
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: chat-management.message.sent
+    config:
+        retention.ms: 86400000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: chat-management-room-created
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: chat-management.room.created
+    config:
+        retention.ms: 86400000
+        cleanup.policy: delete

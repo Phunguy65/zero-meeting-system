@@ -11,6 +11,8 @@ import io.github.phunguy65.zms.meetingmanagement.application.usecase.AssignSidUs
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.CloseStaleMeetingLogsUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.FinalizeRecordingUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.LeaveMeetingUseCase;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.EventPublisher;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRepository;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.LiveKitProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -52,6 +54,12 @@ class LiveKitWebhookControllerTest {
     @Mock
     FinalizeRecordingUseCase finalizeRecordingUseCase;
 
+    @Mock
+    EventPublisher eventPublisher;
+
+    @Mock
+    ParticipationLogRepository participationLogRepository;
+
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -66,7 +74,9 @@ class LiveKitWebhookControllerTest {
                         leaveMeetingUseCase,
                         closeStaleMeetingLogsUseCase,
                         activateRecordingUseCase,
-                        finalizeRecordingUseCase))
+                        finalizeRecordingUseCase,
+                        eventPublisher,
+                        participationLogRepository))
                 .build();
     }
 

@@ -3,13 +3,22 @@ package io.github.phunguy65.zms.shared.infrastructure.web;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Handles validation errors and unexpected exceptions for servlet-based controllers, producing
+ * JSend {@code fail} responses.
+ *
+ * <p>Only active when running in a SERVLET container (not Netty/WebFlux).
+ */
 @RestControllerAdvice
+@ConditionalOnWebApplication(type = Type.SERVLET)
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);

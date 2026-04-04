@@ -7,14 +7,19 @@ import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 
 /**
  * AOP aspect that intercepts all {@code @Service}-annotated beans and emits DEBUG-level log
  * entries with {@code -->} on method entry and {@code <--} on exit (with duration). Exceptions are
  * logged at ERROR level and re-thrown. Argument logging is opt-in via
  * {@code logging.aspect.include-args=true}.
+ *
+ * <p>Only active when running in a SERVLET container (not Netty/WebFlux).
  */
 @Aspect
+@ConditionalOnWebApplication(type = Type.SERVLET)
 public class LoggingAspect {
 
     @Value("${logging.aspect.include-args:false}")

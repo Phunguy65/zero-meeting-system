@@ -19,6 +19,7 @@ dependencies {
     testFixturesImplementation(platform("org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"))
     testFixturesImplementation(libs.spring.boot.starter.webmvc)
     testFixturesImplementation(libs.spring.boot.starter.data.jpa)
+    testFixturesImplementation(libs.spring.boot.starter.data.mongodb)
 }
 
 tasks.bootJar {

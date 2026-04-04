@@ -89,6 +89,7 @@ spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boo
 shared = { module = "io.github.phunguy65.zms.services:shared" }
 proto = { module = "io.github.phunguy65.zms.services:proto" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 spring-boot-starter-integration = { module = "org.springframework.boot:spring-boot-starter-integration" }
@@ -121,6 +122,7 @@ bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "boun
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-webmvc-test = { module = "org.springframework.boot:spring-boot-webmvc-test" }
+spring-boot-data-mongodb-test = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
 spring-boot-data-jpa-test = { module = "org.springframework.boot:spring-boot-data-jpa-test" }
 spring-boot-jdbc-test = { module = "org.springframework.boot:spring-boot-jdbc-test" }
 spring-boot-starter-security-test = { module = "org.springframework.security:spring-security-test" }
@@ -130,6 +132,7 @@ spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-te
 spring-boot-grpc-test = { module = "org.springframework.grpc:spring-grpc-test" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "testcontainers" }
 
 # ArchUnit
 archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
