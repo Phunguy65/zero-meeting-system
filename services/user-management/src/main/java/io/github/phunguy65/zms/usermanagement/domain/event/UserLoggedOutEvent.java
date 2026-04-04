@@ -5,8 +5,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 /** Published when a user successfully logs out. Topic: {@code user-management.user.logged-out}. */
-public record UserLoggedOutEvent(UUID eventId, UUID aggregateId, Instant logoutAt)
+public record UserLoggedOutEvent(UUID eventId, UUID userId, Instant logoutAt)
         implements PublishableEvent {
+
+    @Override
+    public UUID aggregateId() {
+        return userId;
+    }
 
     @Override
     public String aggregateType() {

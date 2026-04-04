@@ -1,14 +1,14 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.application.command.RegisterCommand;
 import io.github.phunguy65.zms.usermanagement.application.response.RegisterResponse;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.Username;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -57,7 +57,7 @@ public class RegisterUserUseCase {
         saved.clearDomainEvents();
 
         return Result.success(new RegisterResponse(
-                saved.getId(),
+                saved.getId().value(),
                 saved.getEmail().value(),
                 saved.getFullName().value(),
                 saved.getUsername().map(Username::value).orElse(null)));

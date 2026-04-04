@@ -5,11 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.application.command.RegisterCommand;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import org.junit.jupiter.api.Test;

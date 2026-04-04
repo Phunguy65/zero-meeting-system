@@ -28,7 +28,7 @@
 ## 4. Domain — User Aggregate
 
 - [x] 4.1 Add
-      `updateProfile(@Nullable FullName fullName, @Nullable String avatarUrl)`
+      `updateProfile(@Nullable io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName fullName, @Nullable String avatarUrl)`
       method to `User`: apply non-null args, update `updatedAt`, call
       `registerEvent(new     UserUpdatedEvent(...))` with current state after
       mutation
@@ -65,12 +65,12 @@
 ## 8. Application — Use Cases
 
 - [x] 8.1 Create `GetUserUseCase` in `application/usecase/`: accepts
-      `UUID userId`, calls `userRepository.findActiveById(userId)`, maps to
+      `UUID userId`, calls `userGrpcServicePort.findActiveById(userId)`, maps to
       `UserResponse` using `UserPreferencesParser.parseAsResponse()`; returns
       `Result<UserResponse, AuthErrorCode>`
 - [x] 8.2 Create `GetUsersSliceUseCase` in `application/usecase/`: accepts
       `int page`, `int     size`, `UserFilter filter`; calls
-      `userRepository.findActiveUsers()`; maps `PageResult<User>` to
+      `userGrpcServicePort.findActiveUsers()`; maps `PageResult<User>` to
       `SliceHttpResponse<UserResponse>`; returns
       `Result<SliceHttpResponse<UserResponse>, AuthErrorCode>`
 - [x] 8.3 Create `PatchUpdateUserUseCase` in `application/usecase/`: accepts

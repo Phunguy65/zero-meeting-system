@@ -17,7 +17,7 @@ import org.openapitools.jackson.nullable.JsonNullable;
  */
 public record PatchUserRequest(
         @Size(max = 255) @NotBlank JsonNullable<String> fullName,
-        @Size(max = 2048) JsonNullable<String> avatarUrl,
+        @Size(max = 2048) @NotBlank JsonNullable<String> avatarUrl,
 
         @Size(min = 3, max = 30) @NotBlank @Pattern(
                 regexp = "^[a-zA-Z0-9_-]+$",

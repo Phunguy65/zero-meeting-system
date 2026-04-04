@@ -2,20 +2,24 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserDeletedEvent;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserUpdatedEvent;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
  * User aggregate root. Represents a registered account in the system.
  */
-public class User extends AggregateRoot<UUID> {
+public class User extends AggregateRoot<UserId> {
 
-    private final UUID id;
+    private final UserId id;
     private Email email;
     /** Null for Google-only accounts. */
     private @Nullable HashedPassword hashedPassword;
@@ -31,7 +35,7 @@ public class User extends AggregateRoot<UUID> {
     private @Nullable Instant deletedAt;
 
     private User(
-            UUID id,
+            UserId id,
             Email email,
             @Nullable HashedPassword hashedPassword,
             FullName fullName,
@@ -62,7 +66,7 @@ public class User extends AggregateRoot<UUID> {
             Email email, HashedPassword hashedPassword, FullName fullName, Username username) {
         Instant now = Instant.now();
         var user = new User(
-                UuidCreator.getTimeOrderedEpoch(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 email,
                 hashedPassword,
                 fullName,
@@ -76,7 +80,7 @@ public class User extends AggregateRoot<UUID> {
                 null);
         user.registerEvent(new UserRegisteredEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                user.id,
+                user.id.value(),
                 email.value(),
                 fullName.value(),
                 username.value(),
@@ -96,7 +100,7 @@ public class User extends AggregateRoot<UUID> {
             Username username) {
         Instant now = Instant.now();
         var user = new User(
-                UuidCreator.getTimeOrderedEpoch(),
+                UserId.of(UuidCreator.getTimeOrderedEpoch()),
                 email,
                 null,
                 fullName,
@@ -110,7 +114,7 @@ public class User extends AggregateRoot<UUID> {
                 null);
         user.registerEvent(new UserRegisteredEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                user.id,
+                user.id.value(),
                 email.value(),
                 fullName.value(),
                 username.value(),
@@ -135,11 +139,11 @@ public class User extends AggregateRoot<UUID> {
 
     /** Reconstitution factory used by the persistence adapter. */
     public static User reconstitute(
-            UUID id,
+            UserId id,
             Email email,
             @Nullable HashedPassword hashedPassword,
             FullName fullName,
-            @Nullable String username,
+            @Nullable Username username,
             @Nullable String avatarUrl,
             @Nullable String googleUid,
             String authProvider,
@@ -152,7 +156,7 @@ public class User extends AggregateRoot<UUID> {
                 email,
                 hashedPassword,
                 fullName,
-                username != null ? Username.of(username) : null,
+                username,
                 avatarUrl,
                 googleUid,
                 authProvider,
@@ -168,7 +172,7 @@ public class User extends AggregateRoot<UUID> {
         this.deletedAt = now;
         this.updatedAt = now;
         registerEvent(new UserDeletedEvent(
-                UuidCreator.getTimeOrderedEpoch(), this.id, this.email.value(), now));
+                UuidCreator.getTimeOrderedEpoch(), this.id.value(), this.email.value(), now));
     }
 
     /** Updates the raw JSON preferences string. */
@@ -178,61 +182,26 @@ public class User extends AggregateRoot<UUID> {
     }
 
     /**
-     * Partially updates the user's profile fields. Only non-null arguments are applied.
-     * Updates {@code updatedAt} and registers a {@link UserUpdatedEvent} with the state
-     * after mutation.
-     *
-     * @param newFullName   new full name, or {@code null} to leave unchanged
-     * @param newAvatarUrl  new avatar URL (may be {@code null} to clear), or use a sentinel
-     *                      — callers must pass the value only when the field is present in the
-     *                      PATCH body; use {@link #updateProfile(FullName, String, boolean, Username)}
-     *                      when clearing is needed
-     * @param newUsername   new username, or {@code null} to leave unchanged
-     */
-    public void updateProfile(
-            @Nullable FullName newFullName,
-            @Nullable String newAvatarUrl,
-            @Nullable Username newUsername) {
-        if (newFullName != null) {
-            this.fullName = newFullName;
-        }
-        if (newAvatarUrl != null) {
-            this.avatarUrl = newAvatarUrl;
-        }
-        if (newUsername != null) {
-            this.username = newUsername;
-        }
-        this.updatedAt = Instant.now();
-        registerEvent(new UserUpdatedEvent(
-                UuidCreator.getTimeOrderedEpoch(),
-                this.id,
-                this.email.value(),
-                this.fullName.value(),
-                this.username != null ? this.username.value() : null,
-                this.avatarUrl,
-                this.authProvider,
-                this.updatedAt));
-    }
-
-    /**
-     * Partially updates the user's profile fields with explicit avatar-clear support.
+     * Partially updates the user's profile fields.
      *
      * @param newFullName    new full name, or {@code null} to leave unchanged
-     * @param newAvatarUrl   new avatar URL value (may be {@code null} to clear)
-     * @param applyAvatarUrl {@code true} if the avatarUrl argument should be applied
-     *                       (even when null, which clears the field)
+     * @param avatarUpdate   {@link AvatarUpdate.Keep} to skip, {@link AvatarUpdate.Set} to replace,
+     *                       {@link AvatarUpdate.Clear} to remove
      * @param newUsername    new username, or {@code null} to leave unchanged
      */
     public void updateProfile(
             @Nullable FullName newFullName,
-            @Nullable String newAvatarUrl,
-            boolean applyAvatarUrl,
+            AvatarUpdate avatarUpdate,
             @Nullable Username newUsername) {
         if (newFullName != null) {
             this.fullName = newFullName;
         }
-        if (applyAvatarUrl) {
-            this.avatarUrl = newAvatarUrl;
+        switch (avatarUpdate) {
+            case AvatarUpdate.Set s -> this.avatarUrl = s.url();
+            case AvatarUpdate.Clear ignored -> this.avatarUrl = null;
+            case AvatarUpdate.Keep ignored -> {
+                /* no-op */
+            }
         }
         if (newUsername != null) {
             this.username = newUsername;
@@ -240,7 +209,7 @@ public class User extends AggregateRoot<UUID> {
         this.updatedAt = Instant.now();
         registerEvent(new UserUpdatedEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                this.id,
+                this.id.value(),
                 this.email.value(),
                 this.fullName.value(),
                 this.username != null ? this.username.value() : null,
@@ -255,7 +224,7 @@ public class User extends AggregateRoot<UUID> {
     }
 
     @Override
-    public UUID getId() {
+    public UserId getId() {
         return id;
     }
 

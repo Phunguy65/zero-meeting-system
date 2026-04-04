@@ -1,0 +1,19 @@
+package io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject;
+
+import io.github.phunguy65.zms.shared.domain.ValueObject;
+import java.util.Objects;
+import java.util.UUID;
+
+/**
+ * Identity of a {@link io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingInvitee}.
+ */
+public record InviteeId(UUID value) implements ValueObject {
+
+    public InviteeId {
+        Objects.requireNonNull(value, "InviteeId value must not be null");
+    }
+
+    public static InviteeId of(UUID value) {
+        return new InviteeId(value);
+    }
+}

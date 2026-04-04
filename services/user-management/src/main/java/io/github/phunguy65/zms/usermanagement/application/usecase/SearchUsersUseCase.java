@@ -1,14 +1,14 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
-import io.github.phunguy65.zms.shared.domain.CursorPageResult;
+import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
-import io.github.phunguy65.zms.usermanagement.application.command.SearchUsersQuery;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
+import io.github.phunguy65.zms.usermanagement.application.query.SearchUsersQuery;
 import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
-import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserScrollFilter;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +28,7 @@ public class SearchUsersUseCase {
      * Searches users by optional query string with keyset pagination.
      *
      * <p>Cursor decoding is delegated to the caller (controller) via {@link CursorTokenEncoder}.
-     * The returned {@link CursorPageResult} carries the raw domain items and a flag indicating
+     * The returned {@link CursorPageResponse} carries the raw domain items and a flag indicating
      * whether more pages exist; the controller is responsible for encoding the next page token and
      * wrapping the result in the HTTP response envelope.
      *
@@ -37,27 +37,27 @@ public class SearchUsersUseCase {
      * @return a page of {@link UserResponse} items
      */
     @Transactional(readOnly = true)
-    public CursorPageResult<UserResponse> execute(SearchUsersQuery query, ScrollCursor cursor) {
+    public CursorPageResponse<UserResponse> execute(SearchUsersQuery query, ScrollCursor cursor) {
         UserScrollFilter filter = new UserScrollFilter(query.query().orElse(null));
 
-        CursorPageResult<User> pageResult =
-                userRepository.searchUsers(cursor, query.pageSize(), filter);
+        CursorPageResponse<UserSummary> pageResult =
+                userRepository.searchSummaries(cursor, query.pageSize(), filter);
 
         var items = pageResult.items().stream().map(this::toResponse).toList();
 
-        return new CursorPageResult<>(items, pageResult.pageSize(), pageResult.hasNext());
+        return new CursorPageResponse<>(items, pageResult.pageSize(), pageResult.hasNext());
     }
 
-    private UserResponse toResponse(User user) {
+    private UserResponse toResponse(UserSummary summary) {
         return new UserResponse(
-                user.getId(),
-                user.getEmail().value(),
-                user.getFullName().value(),
-                user.getUsername().map(Username::value).orElse(null),
-                user.getAvatarUrl().orElse(null),
-                user.getAuthProvider(),
-                preferencesParser.parseAsResponse(user.getPreferences()),
-                user.getCreatedAt(),
-                user.getUpdatedAt());
+                summary.id(),
+                summary.email(),
+                summary.fullName(),
+                summary.username(),
+                summary.avatarUrl(),
+                summary.authProvider(),
+                preferencesParser.parseAsResponse(Optional.ofNullable(summary.preferences())),
+                summary.createdAt(),
+                summary.updatedAt());
     }
 }

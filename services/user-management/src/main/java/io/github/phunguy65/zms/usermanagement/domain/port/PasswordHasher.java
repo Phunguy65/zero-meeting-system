@@ -1,6 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.domain.port;
 
-import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
 
 /** Outbound port: password hashing and verification. */
 public interface PasswordHasher {

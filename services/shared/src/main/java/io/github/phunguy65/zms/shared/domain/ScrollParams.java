@@ -5,7 +5,7 @@ import java.util.Optional;
 /**
  * Marker interface for keyset (cursor) scroll pagination request parameters.
  *
- * <p>Mirrors {@link SliceParams} for offset-based pagination. Implement this interface on any
+ * <p>Implement this interface on any
  * request DTO that carries {@code pageSize}, {@code pageToken}, and optional {@code query}
  * parameters for cursor-based scrolling.
  *

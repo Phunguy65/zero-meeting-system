@@ -4,22 +4,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.command.RefreshTokenCommand;
-import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
+import io.github.phunguy65.zms.usermanagement.application.helper.RefreshTokenIssuer;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
-import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.RefreshToken;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.RefreshTokenId;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +45,7 @@ class RefreshTokenUseCaseTest {
     RefreshTokenIssuer refreshTokenIssuer;
 
     private static final String RAW_TOKEN = "rawRefreshTokenValue";
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final UserId USER_ID = UserId.of(UuidCreator.getTimeOrderedEpoch());
 
     @BeforeEach
     void setUp() {
@@ -61,7 +63,7 @@ class RefreshTokenUseCaseTest {
     void expiredTokenReturnsFailure() {
         String tokenHash = refreshTokenIssuer.hash(RAW_TOKEN);
         var expired = RefreshToken.reconstitute(
-                UUID.randomUUID(),
+                RefreshTokenId.of(UuidCreator.getTimeOrderedEpoch()),
                 USER_ID,
                 tokenHash,
                 Instant.now().minusSeconds(1),
@@ -79,7 +81,7 @@ class RefreshTokenUseCaseTest {
     void revokedTokenTriggersReuseDetection() {
         String tokenHash = refreshTokenIssuer.hash(RAW_TOKEN);
         var revoked = RefreshToken.reconstitute(
-                UUID.randomUUID(),
+                RefreshTokenId.of(UuidCreator.getTimeOrderedEpoch()),
                 USER_ID,
                 tokenHash,
                 Instant.now().plusSeconds(3600),
@@ -98,7 +100,7 @@ class RefreshTokenUseCaseTest {
     void validTokenRotation() {
         String tokenHash = refreshTokenIssuer.hash(RAW_TOKEN);
         var valid = RefreshToken.reconstitute(
-                UUID.randomUUID(),
+                RefreshTokenId.of(UuidCreator.getTimeOrderedEpoch()),
                 USER_ID,
                 tokenHash,
                 Instant.now().plusSeconds(3600),

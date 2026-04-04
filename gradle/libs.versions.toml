@@ -4,7 +4,7 @@ firebaseAdmin = "9.8.0"
 java = "25"
 # ─── Backend ─────────────────────────────────────────────────────────────────
 springBoot = "4.0.3"
-springCloud = "2025.1.1"
+springGrpc = "1.0.2"
 springDependencyManagement = "1.1.7"
 hibernateOrm = "7.2.1.Final"
 graalvmNative = "0.11.4"
@@ -14,11 +14,14 @@ jjwt = "0.13.0"
 bouncycastle = "1.80"
 uuidCreator = "6.1.1"
 cloudevents = "4.0.1"
+resend = "4.12.0"
 palantirJavaFormat = "2.88.0"
 testcontainers = "1.21.4"
-protoBuf = "0.9.6"
+archunit = "1.4.1"
+protobuf = "0.9.6"
 protoc = "4.34.0"
 protocGenGrpcJava = "1.79.0"
+buildBuf = "0.11.0"
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 agp = "9.0.0"
 androidCompileSdk = "36"
@@ -36,6 +39,7 @@ junit4 = "4.13.2"
 kotlin = "2.3.10"
 ksp = "2.3.4"
 material = "1.13.0"
+livekit = "0.12.1"
 okhttp = "5.3.2"
 retrofit = "3.0.0"
 runtime = "1.10.3"
@@ -49,6 +53,11 @@ ktlint = "1.8.0"
 firebase-admin = { module = "com.google.firebase:firebase-admin", version.ref = "firebaseAdmin" }
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protoc" }
 protoc-gen-grpc-java = { module = "io.grpc:protoc-gen-grpc-java", version.ref = "protocGenGrpcJava" }
+protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protoc" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protoc" }
+# gRPC runtime
+grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "protocGenGrpcJava" }
+grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "protocGenGrpcJava" }
 
 # jjwt dependencies (version managed by jjwt BOM)
 jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable" }
@@ -72,15 +81,13 @@ spring-kafka = { module = "org.springframework.kafka:spring-kafka" }
 # CloudEvents
 cloudevents-core = { module = "io.cloudevents:cloudevents-core", version.ref = "cloudevents" }
 cloudevents-kafka = { module = "io.cloudevents:cloudevents-kafka", version.ref = "cloudevents" }
-
-# Spring Cloud (version managed by Spring Cloud BOM)
-spring-cloud-starter-consul-discovery = { module = "org.springframework.cloud:spring-cloud-starter-consul-discovery" }
-spring-cloud-starter-consul-config = { module = "org.springframework.cloud:spring-cloud-starter-consul-config" }
+resend-java = { module = "com.resend:resend-java", version.ref = "resend" }
 
 # Spring Boot Starters (version managed by Spring Boot BOM)
 spring-boot-starter-aspectj = { module = "org.springframework.boot:spring-boot-starter-aspectj" }
 spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 shared = { module = "io.github.phunguy65.zms.services:shared" }
+proto = { module = "io.github.phunguy65.zms.services:proto" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
@@ -90,6 +97,8 @@ spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-st
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-logging = { module = "org.springframework.boot:spring-boot-starter-logging" }
 spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2" }
+spring-boot-starter-server-grpc = { module = "org.springframework.grpc:spring-grpc-server-web-spring-boot-starter" }
+spring-boot-starter-client-grpc = { module = "org.springframework.grpc:spring-grpc-client-spring-boot-starter" }
 log4j-layout-template-json = { module = "org.apache.logging.log4j:log4j-layout-template-json" }
 spring-boot-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
@@ -111,12 +120,19 @@ bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "boun
 # JUnit Platform
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-webmvc-test = { module = "org.springframework.boot:spring-boot-webmvc-test" }
+spring-boot-data-jpa-test = { module = "org.springframework.boot:spring-boot-data-jpa-test" }
+spring-boot-jdbc-test = { module = "org.springframework.boot:spring-boot-jdbc-test" }
 spring-boot-starter-security-test = { module = "org.springframework.security:spring-security-test" }
 
 # Testcontainers (version managed by Spring Boot BOM)
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+spring-boot-grpc-test = { module = "org.springframework.grpc:spring-grpc-test" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+
+# ArchUnit
+archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 
 # ─── Frontend – AndroidX ─────────────────────────────────────────────────────
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -137,6 +153,9 @@ junit4 = { module = "junit:junit", version.ref = "junit4" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 
+# ─── Backend – LiveKit ───────────────────────────────────────────────────────
+livekit-server = { module = "io.livekit:livekit-server", version.ref = "livekit" }
+
 # ─── Frontend – OkHttp ───────────────────────────────────────────────────────
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
 okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
@@ -153,7 +172,8 @@ springDependencyManagement = { id = "io.spring.dependency-management", version.r
 hibernateOrm = { id = "org.hibernate.orm", version.ref = "hibernateOrm" }
 graalvmNative = { id = "org.graalvm.buildtools.native", version.ref = "graalvmNative" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-protobuf = { id = "com.google.protobuf", version.ref = "protoBuf" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobuf" }
+buildBuf = { id = "build.buf", version.ref = "buildBuf" }
 
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 android-application = { id = "com.android.application", version.ref = "agp" }

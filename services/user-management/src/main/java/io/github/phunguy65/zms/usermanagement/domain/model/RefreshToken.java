@@ -2,24 +2,26 @@ package io.github.phunguy65.zms.usermanagement.domain.model;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.AggregateRoot;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.RefreshTokenId;
 import java.time.Instant;
-import java.util.UUID;
+import java.util.Optional;
 
 /**
  * RefreshToken aggregate root. Represents a single issued refresh token.
  */
-public class RefreshToken extends AggregateRoot<UUID> {
+public class RefreshToken extends AggregateRoot<RefreshTokenId> {
 
-    private final UUID id;
-    private final UUID userId;
+    private final RefreshTokenId id;
+    private final UserId userId;
     private final String tokenHash;
     private final Instant expiresAt;
     private Instant revokedAt;
     private final Instant createdAt;
 
     private RefreshToken(
-            UUID id,
-            UUID userId,
+            RefreshTokenId id,
+            UserId userId,
             String tokenHash,
             Instant expiresAt,
             Instant revokedAt,
@@ -33,9 +35,9 @@ public class RefreshToken extends AggregateRoot<UUID> {
     }
 
     /** Factory method for issuing a new refresh token. Generates a UUIDv7 primary key. */
-    public static RefreshToken issue(UUID userId, String tokenHash, Instant expiresAt) {
+    public static RefreshToken issue(UserId userId, String tokenHash, Instant expiresAt) {
         return new RefreshToken(
-                UuidCreator.getTimeOrderedEpoch(),
+                RefreshTokenId.of(UuidCreator.getTimeOrderedEpoch()),
                 userId,
                 tokenHash,
                 expiresAt,
@@ -45,8 +47,8 @@ public class RefreshToken extends AggregateRoot<UUID> {
 
     /** Reconstitution factory used by the persistence adapter. */
     public static RefreshToken reconstitute(
-            UUID id,
-            UUID userId,
+            RefreshTokenId id,
+            UserId userId,
             String tokenHash,
             Instant expiresAt,
             Instant revokedAt,
@@ -67,11 +69,11 @@ public class RefreshToken extends AggregateRoot<UUID> {
     }
 
     @Override
-    public UUID getId() {
+    public RefreshTokenId getId() {
         return id;
     }
 
-    public UUID getUserId() {
+    public UserId getUserId() {
         return userId;
     }
 
@@ -83,8 +85,8 @@ public class RefreshToken extends AggregateRoot<UUID> {
         return expiresAt;
     }
 
-    public Instant getRevokedAt() {
-        return revokedAt;
+    public Optional<Instant> getRevokedAt() {
+        return Optional.ofNullable(revokedAt);
     }
 
     public Instant getCreatedAt() {

@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.config.TestcontainersConfiguration;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.GoogleAuthClaims;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.GoogleAuthClaims;
 import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTokenVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

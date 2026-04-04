@@ -4,19 +4,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.command.PatchPreferencesCommand;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +34,7 @@ class PatchUpdatePreferencesUseCaseTest {
 
     PatchUpdatePreferencesUseCase useCase;
 
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final UserId USER_ID = UserId.of(UuidCreator.getTimeOrderedEpoch());
 
     @BeforeEach
     void setUp() {

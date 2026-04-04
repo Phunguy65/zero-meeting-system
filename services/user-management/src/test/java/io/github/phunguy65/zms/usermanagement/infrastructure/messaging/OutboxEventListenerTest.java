@@ -4,11 +4,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import com.github.f4b6a3.uuid.UuidCreator;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserRegisteredEvent;
-import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventEntity;
+import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventJpaEntity;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventRepository;
 import java.time.Instant;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,10 +31,10 @@ class OutboxEventListenerTest {
 
     @Test
     void onPublishableEvent_persistsOutboxRow() {
-        UUID userId = UUID.randomUUID();
+        var userId = UserId.of(UuidCreator.getTimeOrderedEpoch());
         var event = new UserRegisteredEvent(
                 UuidCreator.getTimeOrderedEpoch(),
-                userId,
+                userId.value(),
                 "alice@example.com",
                 "Alice",
                 "alice_user",
@@ -42,6 +42,6 @@ class OutboxEventListenerTest {
 
         listener.onPublishableEvent(event);
 
-        verify(outboxEventRepository).save(any(OutboxEventEntity.class));
+        verify(outboxEventRepository).save(any(OutboxEventJpaEntity.class));
     }
 }

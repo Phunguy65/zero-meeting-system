@@ -1,16 +1,16 @@
 package io.github.phunguy65.zms.usermanagement.domain.port;
 
-import java.util.UUID;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 
 public interface TokenProvider {
 
-    String generateAccessToken(UUID userId, String email);
+    String generateAccessToken(UserId userId, String email);
 
     long getAccessTokenExpirySeconds();
 
     boolean validateToken(String token);
 
-    UUID extractUserId(String token);
+    UserId extractUserId(String token);
 
     String extractEmail(String token);
 }

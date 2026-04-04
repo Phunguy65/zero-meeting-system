@@ -1,14 +1,14 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.command.PatchPreferencesCommand;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class PatchUpdatePreferencesUseCase {
 
     @Transactional
     public Result<UserPreferencesResponse, AuthError> execute(
-            UUID userId, PatchPreferencesCommand command) {
+            UserId userId, PatchPreferencesCommand command) {
         var userOpt = userRepository.findActiveById(userId);
         if (userOpt.isEmpty()) {
             return Result.failure(new AuthError.UserNotFound());

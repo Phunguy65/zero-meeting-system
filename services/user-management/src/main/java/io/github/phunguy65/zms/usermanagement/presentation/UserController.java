@@ -4,6 +4,7 @@ import io.github.phunguy65.zms.shared.domain.CursorErrorCode;
 import io.github.phunguy65.zms.shared.domain.CursorTokenEncoder;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.shared.infrastructure.web.CursorScrollResponse;
 import io.github.phunguy65.zms.shared.infrastructure.web.FailData;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
@@ -35,7 +36,7 @@ public class UserController extends BaseController {
 
     @GetMapping(value = "/{version}/users/{id}", version = "1.0")
     public ResponseEntity<JsendResponse<?>> getUserById(@PathVariable UUID id) {
-        return switch (getUserUseCase.execute(id)) {
+        return switch (getUserUseCase.execute(UserId.of(id))) {
             case Result.Success<?, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<?, AuthError> f -> errorResponse(f.error());

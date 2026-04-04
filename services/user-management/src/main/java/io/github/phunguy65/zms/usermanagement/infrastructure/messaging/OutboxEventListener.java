@@ -1,7 +1,7 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.messaging;
 
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
-import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventEntity;
+import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventJpaEntity;
 import io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventRepository;
 import java.time.Instant;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public class OutboxEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPublishableEvent(PublishableEvent event) {
         String payload = objectMapper.writeValueAsString(event);
-        var entity = new OutboxEventEntity(
+        var entity = new OutboxEventJpaEntity(
                 event.aggregateId(),
                 event.aggregateType(),
                 event.eventType(),

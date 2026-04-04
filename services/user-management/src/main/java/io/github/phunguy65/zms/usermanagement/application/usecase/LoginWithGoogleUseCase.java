@@ -1,16 +1,16 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.application.command.GoogleLoginCommand;
+import io.github.phunguy65.zms.usermanagement.application.helper.RefreshTokenIssuer;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.response.LoginResponse;
-import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.Username;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.GoogleAuthVerifier;
 import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
@@ -50,11 +50,11 @@ public class LoginWithGoogleUseCase {
     @Transactional
     public Result<LoginResponse, AuthError> execute(GoogleLoginCommand command) {
         var verifyResult = googleAuthVerifier.verify(command.idToken());
-        if (verifyResult instanceof Result.Failure<?, AuthError> f) {
-            return Result.failure(f.error());
+        if (verifyResult instanceof Result.Failure<?, AuthError>(AuthError error)) {
+            return Result.failure(error);
         }
         var claims = ((Result.Success<
-                                io.github.phunguy65.zms.usermanagement.domain.model
+                                io.github.phunguy65.zms.usermanagement.domain.model.valueobject
                                         .GoogleAuthClaims,
                                 AuthError>)
                         verifyResult)

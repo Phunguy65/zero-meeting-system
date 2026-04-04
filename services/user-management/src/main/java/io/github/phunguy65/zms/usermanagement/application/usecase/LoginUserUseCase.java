@@ -2,13 +2,13 @@ package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.usermanagement.application.command.LoginCommand;
+import io.github.phunguy65.zms.usermanagement.application.helper.RefreshTokenIssuer;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.response.LoginResponse;
-import io.github.phunguy65.zms.usermanagement.application.service.RefreshTokenIssuer;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.event.UserLoggedInEvent;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
 import io.github.phunguy65.zms.usermanagement.domain.port.PasswordHasher;
 import io.github.phunguy65.zms.usermanagement.domain.port.TokenProvider;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
@@ -78,7 +78,10 @@ public class LoginUserUseCase {
 
         Instant loginAt = Instant.now();
         eventPublisher.publishEvent(new UserLoggedInEvent(
-                UuidCreator.getTimeOrderedEpoch(), user.getId(), user.getEmail().value(), loginAt));
+                UuidCreator.getTimeOrderedEpoch(),
+                user.getId().value(),
+                user.getEmail().value(),
+                loginAt));
 
         return Result.success(new LoginResponse(
                 accessToken,

@@ -4,7 +4,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.GoogleAuthClaims;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.GoogleAuthClaims;
 import io.github.phunguy65.zms.usermanagement.domain.port.GoogleAuthVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

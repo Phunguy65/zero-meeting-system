@@ -33,7 +33,9 @@
       `UserJpaRepository` (replaces `existsByEmail`)
 - [x] 3.6 Add `findByIdAndDeletedAtIsNull(UUID id)` to `UserJpaRepository`
 - [x] 3.7 Update `UserRepository` port interface: add `findActiveById(UUID id)`
-      and `findActiveByEmail(Email email)` methods
+      and
+      `findActiveByEmail(io.github.phunguy65.zms.shared.domain.valueobject.Email email)`
+      methods
 - [x] 3.8 Update `UserRepositoryAdapter` to implement new port methods using the
       new JPA queries
 
@@ -49,7 +51,7 @@
 ## 5. Security Filter Update
 
 - [x] 5.1 Update `JwtAuthFilter`: after extracting `userId` from JWT, call
-      `userRepository.findActiveById(userId)`; if empty (user not found or
+      `userGrpcServicePort.findActiveById(userId)`; if empty (user not found or
       deleted), reject with `401 Unauthorized`
 
 ## 6. Existing Use Case Updates

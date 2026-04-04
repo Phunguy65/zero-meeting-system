@@ -1,14 +1,17 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.persistence;
 
-import io.github.phunguy65.zms.shared.domain.CursorPageResult;
+import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
-import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.Username;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserScrollFilter;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,13 +33,13 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
-        return jpa.findById(id).map(this::toDomain);
+    public Optional<User> findById(UserId id) {
+        return jpa.findById(id.value()).map(this::toDomain);
     }
 
     @Override
-    public Optional<User> findActiveById(UUID id) {
-        return jpa.findByIdAndDeletedAtIsNull(id).map(this::toDomain);
+    public Optional<User> findActiveById(UserId id) {
+        return jpa.findByIdAndDeletedAtIsNull(id.value()).map(this::toDomain);
     }
 
     @Override
@@ -77,7 +80,13 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public CursorPageResult<User> searchUsers(
+    public List<User> findActiveByEmails(Collection<String> emails) {
+        if (emails.isEmpty()) return List.of();
+        return jpa.findActiveByEmailIn(emails).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public CursorPageResponse<User> searchUsers(
             @Nullable ScrollCursor cursor, int size, UserScrollFilter filter) {
         int fetchLimit = size + 1;
 
@@ -92,21 +101,73 @@ public class UserRepositoryAdapter implements UserRepository {
         boolean hasNext = rows.size() > size;
         List<User> items = rows.stream().limit(size).map(this::toDomain).toList();
 
-        return CursorPageResult.of(items, size, hasNext);
+        return CursorPageResponse.of(items, size, hasNext);
     }
 
     private String escapeLike(String value) {
         return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
+    // ── Read-only projection methods ─────────────────────────────────────
+
+    @Override
+    public Optional<UserSummary> findSummaryActiveById(UserId id) {
+        return jpa.findByIdAndDeletedAtIsNull(id.value()).map(this::toSummary);
+    }
+
+    @Override
+    public List<UserSummary> findSummariesByEmails(Collection<String> emails) {
+        if (emails.isEmpty()) return List.of();
+        return jpa.findActiveByEmailIn(emails).stream().map(this::toSummary).toList();
+    }
+
+    @Override
+    public List<UserSummary> findSummariesByIds(Collection<UserId> userIds) {
+        if (userIds.isEmpty()) return List.of();
+        List<UUID> ids = userIds.stream().map(UserId::value).toList();
+        return jpa.findActiveByIdIn(ids).stream().map(this::toSummary).toList();
+    }
+
+    @Override
+    public CursorPageResponse<UserSummary> searchSummaries(
+            @Nullable ScrollCursor cursor, int size, UserScrollFilter filter) {
+        int fetchLimit = size + 1;
+
+        var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
+        var cursorId = cursor != null ? cursor.id().toString() : null;
+
+        var query = filter.hasQuery() ? escapeLike(filter.query()) : null;
+
+        List<UserJpaEntity> rows =
+                jpa.findActiveKeyset(cursorCreatedAt, cursorId, query, fetchLimit);
+
+        boolean hasNext = rows.size() > size;
+        List<UserSummary> items = rows.stream().limit(size).map(this::toSummary).toList();
+
+        return CursorPageResponse.of(items, size, hasNext);
+    }
+
+    private UserSummary toSummary(UserJpaEntity e) {
+        return new UserSummary(
+                e.getId(),
+                e.getEmail(),
+                e.getFullName(),
+                e.getUsername(),
+                e.getAvatarUrl(),
+                e.getAuthProvider(),
+                e.getPreferences(),
+                e.getCreatedAt(),
+                e.getUpdatedAt());
+    }
+
     private User toDomain(UserJpaEntity e) {
         String hash = e.getPasswordHash();
         return User.reconstitute(
-                e.getId(),
+                UserId.of(e.getId()),
                 Email.of(e.getEmail()),
                 hash != null ? HashedPassword.of(hash) : null,
                 FullName.of(e.getFullName()),
-                e.getUsername(),
+                e.getUsername() != null ? Username.of(e.getUsername()) : null,
                 e.getAvatarUrl(),
                 e.getGoogleUid(),
                 e.getAuthProvider(),
@@ -118,7 +179,7 @@ public class UserRepositoryAdapter implements UserRepository {
 
     private UserJpaEntity toEntity(User u) {
         return new UserJpaEntity(
-                u.getId(),
+                u.getId().value(),
                 u.getEmail().value(),
                 u.getHashedPassword().map(HashedPassword::value).orElse(null),
                 u.getFullName().value(),

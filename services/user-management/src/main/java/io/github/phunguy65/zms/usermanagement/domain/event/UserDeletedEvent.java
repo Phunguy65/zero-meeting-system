@@ -7,8 +7,13 @@ import java.util.UUID;
 /**
  * Published when a user account is soft-deleted. Topic: {@code user-management.user.deleted}.
  */
-public record UserDeletedEvent(UUID eventId, UUID aggregateId, String email, Instant deletedAt)
+public record UserDeletedEvent(UUID eventId, UUID userId, String email, Instant deletedAt)
         implements PublishableEvent {
+
+    @Override
+    public UUID aggregateId() {
+        return userId;
+    }
 
     @Override
     public String aggregateType() {

@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.jackson.databind.nullable)
     implementation(libs.firebase.admin)
     runtimeOnly(libs.flyway.database.postgresql)
+    testImplementation(testFixtures(libs.shared))
 }
 
 hibernate {
@@ -29,7 +30,7 @@ hibernate {
         classNames.addAll(
             "io.github.phunguy65.zms.usermanagement.infrastructure.persistence.UserJpaEntity",
             "io.github.phunguy65.zms.usermanagement.infrastructure.persistence.RefreshTokenJpaEntity",
-            "io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventEntity",
+            "io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventJpaEntity",
         )
     }
 }

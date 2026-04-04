@@ -1,13 +1,13 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
-import java.util.UUID;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,23 +23,23 @@ public class GetUserUseCase {
     }
 
     @Transactional(readOnly = true)
-    public Result<UserResponse, AuthError> execute(UUID userId) {
+    public Result<UserResponse, AuthError> execute(UserId userId) {
         return userRepository
-                .findActiveById(userId)
-                .map(user -> Result.<UserResponse, AuthError>success(toResponse(user)))
+                .findSummaryActiveById(userId)
+                .map(summary -> Result.<UserResponse, AuthError>success(toResponse(summary)))
                 .orElseGet(() -> Result.failure(new AuthError.UserNotFound()));
     }
 
-    private UserResponse toResponse(User user) {
+    private UserResponse toResponse(UserSummary summary) {
         return new UserResponse(
-                user.getId(),
-                user.getEmail().value(),
-                user.getFullName().value(),
-                user.getUsername().map(Username::value).orElse(null),
-                user.getAvatarUrl().orElse(null),
-                user.getAuthProvider(),
-                preferencesParser.parseAsResponse(user.getPreferences()),
-                user.getCreatedAt(),
-                user.getUpdatedAt());
+                summary.id(),
+                summary.email(),
+                summary.fullName(),
+                summary.username(),
+                summary.avatarUrl(),
+                summary.authProvider(),
+                preferencesParser.parseAsResponse(Optional.ofNullable(summary.preferences())),
+                summary.createdAt(),
+                summary.updatedAt());
     }
 }

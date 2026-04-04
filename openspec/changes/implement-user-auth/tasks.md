@@ -30,12 +30,15 @@
 
 ## 4. Domain Layer
 
-- [x] 4.1 Create `Email` value object: validates format, case-normalizes to
-      lowercase, implements `ValueObject`
-- [x] 4.2 Create `HashedPassword` value object: wraps Argon2id hash string,
-      implements `ValueObject`
-- [x] 4.3 Create `FullName` value object: validates non-blank, max 255 chars,
-      implements `ValueObject`
+- [x] 4.1 Create `io.github.phunguy65.zms.shared.domain.valueobject.Email` value
+      object: validates format, case-normalizes to lowercase, implements
+      `ValueObject`
+- [x] 4.2 Create
+      `io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword`
+      value object: wraps Argon2id hash string, implements `ValueObject`
+- [x] 4.3 Create
+      `io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName`
+      value object: validates non-blank, max 255 chars, implements `ValueObject`
 - [x] 4.4 Create `User` aggregate: extends `AggregateRoot<UUID>`, fields
       `email`, `hashedPassword`, `fullName`, `avatarUrl`, `preferences`,
       `createdAt`, `updatedAt`; factory method
@@ -45,14 +48,15 @@
       method `RefreshToken.issue(userId, tokenHash, expiresAt)` generates UUIDv7
       id; method `isExpired()`, `isRevoked()`, `revoke()`
 - [x] 4.6 Create `UserRepository` port interface:
-      `findByEmail(Email): Optional<User>`, `findById(UUID): Optional<User>`,
-      `save(User): User`, `existsByEmail(Email): boolean`
+      `findByEmail(io.github.phunguy65.zms.shared.domain.valueobject.Email): Optional<User>`,
+      `findById(UUID): Optional<User>`, `save(User): User`,
+      `existsByEmail(io.github.phunguy65.zms.shared.domain.valueobject.Email): boolean`
 - [x] 4.7 Create `RefreshTokenRepository` port interface:
       `findByTokenHash(String): Optional<RefreshToken>`,
       `save(RefreshToken): RefreshToken`, `revokeAllByUserId(UUID): void`
 - [x] 4.8 Create `PasswordHasher` port interface:
-      `hash(String rawPassword): HashedPassword`,
-      `verify(String rawPassword, HashedPassword hash): boolean`
+      `hash(String rawPassword): io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword`,
+      `verify(String rawPassword, io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword hash): boolean`
 
 ## 5. Infrastructure — Persistence
 

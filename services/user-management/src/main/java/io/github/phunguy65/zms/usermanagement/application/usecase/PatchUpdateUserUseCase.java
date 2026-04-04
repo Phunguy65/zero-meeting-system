@@ -1,16 +1,17 @@
 package io.github.phunguy65.zms.usermanagement.application.usecase;
 
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.command.PatchUserCommand;
+import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
-import io.github.phunguy65.zms.usermanagement.application.service.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.PublishableEvent;
-import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.AvatarUpdate;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.Username;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.Username;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -40,7 +41,7 @@ public class PatchUpdateUserUseCase {
     }
 
     @Transactional
-    public Result<UserResponse, AuthError> execute(UUID userId, PatchUserCommand command) {
+    public Result<UserResponse, AuthError> execute(UserId userId, PatchUserCommand command) {
         var userOpt = userRepository.findActiveById(userId);
         if (userOpt.isEmpty()) {
             return Result.failure(new AuthError.UserNotFound());
@@ -77,9 +78,12 @@ public class PatchUpdateUserUseCase {
             FullName newFullName = command.fullName().isPresent()
                     ? FullName.of(command.fullName().get())
                     : null;
-            boolean applyAvatar = command.avatarUrl().isPresent();
-            String newAvatarUrl = applyAvatar ? command.avatarUrl().get() : null;
-            user.updateProfile(newFullName, newAvatarUrl, applyAvatar, newUsername);
+            AvatarUpdate avatarUpdate = !command.avatarUrl().isPresent()
+                    ? new AvatarUpdate.Keep()
+                    : command.avatarUrl().get() != null
+                            ? new AvatarUpdate.Set(command.avatarUrl().get())
+                            : new AvatarUpdate.Clear();
+            user.updateProfile(newFullName, avatarUpdate, newUsername);
         }
 
         if (command.preferences().isPresent()) {
@@ -107,7 +111,7 @@ public class PatchUpdateUserUseCase {
 
     private UserResponse toResponse(User user) {
         return new UserResponse(
-                user.getId(),
+                user.getId().value(),
                 user.getEmail().value(),
                 user.getFullName().value(),
                 user.getUsername().map(Username::value).orElse(null),

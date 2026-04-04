@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.usermanagement.presentation;
 
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
 import io.github.phunguy65.zms.usermanagement.application.usecase.DeleteAccountUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserPreferencesUseCase;
@@ -42,7 +43,7 @@ public class MeController extends BaseController {
 
     @GetMapping(value = "/{version}/me", version = "1.0")
     public ResponseEntity<JsendResponse<?>> getMe(Authentication auth) {
-        UUID userId = extractUserId(auth);
+        UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
@@ -56,7 +57,7 @@ public class MeController extends BaseController {
     @PatchMapping(value = "/{version}/me", version = "1.0")
     public ResponseEntity<JsendResponse<?>> patchMe(
             @Valid @RequestBody PatchUserRequest dto, Authentication auth) {
-        UUID userId = extractUserId(auth);
+        UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
@@ -69,7 +70,7 @@ public class MeController extends BaseController {
 
     @GetMapping(value = "/{version}/me/preferences", version = "1.0")
     public ResponseEntity<JsendResponse<?>> getPreferences(Authentication auth) {
-        UUID userId = extractUserId(auth);
+        UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
@@ -83,7 +84,7 @@ public class MeController extends BaseController {
     @PatchMapping(value = "/{version}/me/preferences", version = "1.0")
     public ResponseEntity<JsendResponse<?>> patchPreferences(
             @Valid @RequestBody Map<String, Object> body, Authentication auth) {
-        UUID userId = extractUserId(auth);
+        UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
@@ -97,7 +98,7 @@ public class MeController extends BaseController {
 
     @DeleteMapping(value = "/{version}/me", version = "1.0")
     public ResponseEntity<JsendResponse<?>> deleteMe(Authentication auth) {
-        UUID userId = extractUserId(auth);
+        UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
@@ -108,12 +109,12 @@ public class MeController extends BaseController {
         };
     }
 
-    private UUID extractUserId(Authentication auth) {
+    private UserId extractUserId(Authentication auth) {
         if (auth == null || !(auth.getPrincipal() instanceof String principalId)) {
             return null;
         }
         try {
-            return UUID.fromString(principalId);
+            return UserId.of(UUID.fromString(principalId));
         } catch (IllegalArgumentException e) {
             return null;
         }

@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.usermanagement.infrastructure.security;
 
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -44,9 +44,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        UUID userId = jwtTokenProvider.extractUserId(token);
+        UserId userId = jwtTokenProvider.extractUserId(token);
 
-        // Reject if user is soft-deleted or does not exist
         var userOpt = userRepository.findActiveById(userId);
         if (userOpt.isEmpty()) {
             filterChain.doFilter(request, response);
@@ -54,7 +53,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(userId.toString(), null, List.of());
+                new UsernamePasswordAuthenticationToken(userId.value().toString(), null, List.of());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 

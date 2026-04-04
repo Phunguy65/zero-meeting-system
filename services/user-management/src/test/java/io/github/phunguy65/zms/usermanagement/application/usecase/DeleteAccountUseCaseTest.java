@@ -4,17 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
+import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.Email;
-import io.github.phunguy65.zms.usermanagement.domain.model.FullName;
-import io.github.phunguy65.zms.usermanagement.domain.model.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.model.User;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
+import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.HashedPassword;
 import io.github.phunguy65.zms.usermanagement.domain.port.RefreshTokenRepository;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,13 +39,13 @@ class DeleteAccountUseCaseTest {
     @InjectMocks
     DeleteAccountUseCase useCase;
 
-    private UUID userId;
+    private UserId userId;
     private User activeUser;
     private User deletedUser;
 
     @BeforeEach
     void setUp() {
-        userId = UUID.randomUUID();
+        userId = UserId.of(UuidCreator.getTimeOrderedEpoch());
         activeUser = User.reconstitute(
                 userId,
                 Email.of("alice@example.com"),
