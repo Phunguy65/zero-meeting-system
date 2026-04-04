@@ -30,7 +30,7 @@ public record ParticipantKickedEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.participant_kicked.v1";
+        return "io.github.phunguy65.zms.meeting.participant.kicked.v1";
     }
 
     @Override

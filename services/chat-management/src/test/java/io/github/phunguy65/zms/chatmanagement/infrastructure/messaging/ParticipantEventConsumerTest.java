@@ -61,7 +61,8 @@ class ParticipantEventConsumerTest {
                         Instant.now());
 
         CloudEventData data = () -> objectMapper.writeValueAsBytes(msg);
-        CloudEvent cloudEvent = mockCloudEvent("meeting-management.participant.joined", data);
+        CloudEvent cloudEvent =
+                mockCloudEvent("io.github.phunguy65.zms.meeting.participant.joined.v1", data);
 
         consumer.onParticipantJoined(cloudEvent);
 
@@ -83,7 +84,8 @@ class ParticipantEventConsumerTest {
     @Test
     void onParticipantJoined_whenDeserializeThrows_doesNotCrash() {
         CloudEventData badData = () -> "not valid json {{{".getBytes(StandardCharsets.UTF_8);
-        CloudEvent cloudEvent = mockCloudEvent("meeting-management.participant.joined", badData);
+        CloudEvent cloudEvent =
+                mockCloudEvent("io.github.phunguy65.zms.meeting.participant.joined.v1", badData);
 
         consumer.onParticipantJoined(cloudEvent);
 
@@ -105,7 +107,8 @@ class ParticipantEventConsumerTest {
                         Instant.now());
 
         CloudEventData data = () -> objectMapper.writeValueAsBytes(msg);
-        CloudEvent cloudEvent = mockCloudEvent("meeting-management.participant.left", data);
+        CloudEvent cloudEvent =
+                mockCloudEvent("io.github.phunguy65.zms.meeting.participant.left.v1", data);
 
         consumer.onParticipantLeft(cloudEvent);
 
@@ -140,7 +143,8 @@ class ParticipantEventConsumerTest {
                         Instant.now());
 
         CloudEventData data = () -> objectMapper.writeValueAsBytes(msg);
-        CloudEvent cloudEvent = mockCloudEvent("meeting-management.participant.kicked", data);
+        CloudEvent cloudEvent =
+                mockCloudEvent("io.github.phunguy65.zms.meeting.participant.kicked.v1", data);
 
         consumer.onParticipantKicked(cloudEvent);
 
@@ -161,7 +165,8 @@ class ParticipantEventConsumerTest {
                         Instant.now());
 
         CloudEventData data = () -> objectMapper.writeValueAsBytes(msg);
-        CloudEvent cloudEvent = mockCloudEvent("meeting-management.participant.kicked", data);
+        CloudEvent cloudEvent =
+                mockCloudEvent("io.github.phunguy65.zms.meeting.participant.kicked.v1", data);
 
         consumer.onParticipantKicked(cloudEvent);
 

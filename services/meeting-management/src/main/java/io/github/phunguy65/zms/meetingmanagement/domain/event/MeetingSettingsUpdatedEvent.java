@@ -24,12 +24,12 @@ public record MeetingSettingsUpdatedEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.settings_updated.v1";
+        return "io.github.phunguy65.zms.meeting.settings.updated.v1";
     }
 
     @Override
     public String topic() {
-        return "meeting-management.meeting.settings_updated";
+        return "meeting-management.meeting.settings.updated";
     }
 
     @Override

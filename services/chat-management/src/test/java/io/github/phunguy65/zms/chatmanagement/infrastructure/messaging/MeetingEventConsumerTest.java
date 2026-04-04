@@ -64,7 +64,8 @@ class MeetingEventConsumerTest {
                         Instant.parse("2024-01-01T10:00:00Z"));
 
         CloudEvent cloudEvent = mockCloudEventWithData(
-                "meeting-management.meeting.started", "{}".getBytes(StandardCharsets.UTF_8));
+                "io.github.phunguy65.zms.meeting.started.v1",
+                "{}".getBytes(StandardCharsets.UTF_8));
         when(objectMapper.readValue(any(byte[].class), any(Class.class))).thenReturn(msg);
 
         consumer.onMeetingStarted(cloudEvent);
@@ -83,7 +84,7 @@ class MeetingEventConsumerTest {
                 Instant.parse("2024-01-01T11:00:00Z"));
 
         CloudEvent cloudEvent = mockCloudEventWithData(
-                "meeting-management.meeting.ended", "{}".getBytes(StandardCharsets.UTF_8));
+                "io.github.phunguy65.zms.meeting.ended.v1", "{}".getBytes(StandardCharsets.UTF_8));
         when(objectMapper.readValue(any(byte[].class), any(Class.class))).thenReturn(msg);
 
         consumer.onMeetingEnded(cloudEvent);
@@ -107,7 +108,8 @@ class MeetingEventConsumerTest {
     @Test
     void onMeetingStarted_whenDeserializeThrows_doesNotCrash() {
         CloudEvent cloudEvent = mockCloudEventWithData(
-                "meeting-management.meeting.started", "{}".getBytes(StandardCharsets.UTF_8));
+                "io.github.phunguy65.zms.meeting.started.v1",
+                "{}".getBytes(StandardCharsets.UTF_8));
         // Only stub objectMapper — getData() is stubbed in mockCloudEventWithData()
         when(objectMapper.readValue(any(byte[].class), any(Class.class)))
                 .thenThrow(new RuntimeException("deserialize error"));
@@ -132,7 +134,7 @@ class MeetingEventConsumerTest {
     @Test
     void onMeetingEnded_whenDeserializeThrows_doesNotCrash() {
         CloudEvent cloudEvent = mockCloudEventWithData(
-                "meeting-management.meeting.ended", "{}".getBytes(StandardCharsets.UTF_8));
+                "io.github.phunguy65.zms.meeting.ended.v1", "{}".getBytes(StandardCharsets.UTF_8));
         // Only stub objectMapper — getData() is stubbed in mockCloudEventWithData()
         when(objectMapper.readValue(any(byte[].class), any(Class.class)))
                 .thenThrow(new RuntimeException("deserialize error"));

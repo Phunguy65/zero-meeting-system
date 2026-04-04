@@ -25,7 +25,7 @@ public class MeetingInvitationsSentConsumer {
     }
 
     @KafkaListener(
-            topics = "meeting-management.meeting.invitations-sent",
+            topics = "meeting-management.meeting.invitations.sent",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onMeetingInvitationsSent(CloudEvent cloudEvent) {
         MeetingInvitationsSentMessage message = deserialize(cloudEvent);
@@ -52,7 +52,7 @@ public class MeetingInvitationsSentConsumer {
     private @Nullable MeetingInvitationsSentMessage deserialize(CloudEvent cloudEvent) {
         if (cloudEvent.getData() == null) {
             log.warn(
-                    "Received meeting.invitations-sent CloudEvent with no data payload: {}",
+                    "Received meeting-management.meeting.invitations.sent CloudEvent with no data payload: {}",
                     cloudEvent.getId());
             return null;
         }
@@ -61,7 +61,7 @@ public class MeetingInvitationsSentConsumer {
                     cloudEvent.getData().toBytes(), MeetingInvitationsSentMessage.class);
         } catch (Exception exception) {
             log.error(
-                    "Failed to deserialize meeting.invitations-sent CloudEvent {}: {}",
+                    "Failed to deserialize meeting-management.meeting.invitations.sent CloudEvent {}: {}",
                     cloudEvent.getId(),
                     exception.getMessage());
             return null;

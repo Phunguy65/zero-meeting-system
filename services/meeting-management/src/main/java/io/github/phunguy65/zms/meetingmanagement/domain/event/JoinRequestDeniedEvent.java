@@ -28,11 +28,11 @@ public record JoinRequestDeniedEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.join_request_denied.v1";
+        return "io.github.phunguy65.zms.meeting.join-request.denied.v1";
     }
 
     @Override
     public String topic() {
-        return "meeting-management.join_request.denied";
+        return "meeting-management.join-request.denied";
     }
 }

@@ -25,7 +25,7 @@ public record ParticipantJoinedEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.participant_joined.v1";
+        return "io.github.phunguy65.zms.meeting.participant.joined.v1";
     }
 
     @Override

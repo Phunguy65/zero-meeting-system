@@ -25,7 +25,7 @@ public record ParticipantLeftEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.participant_left.v1";
+        return "io.github.phunguy65.zms.meeting.participant.left.v1";
     }
 
     @Override
