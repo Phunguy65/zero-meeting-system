@@ -152,4 +152,30 @@ class MeetingDomainEventsTest {
                 .isEqualTo("io.github.phunguy65.zms.meeting.invitations.sent.v1");
         assertThat(event.topic()).isEqualTo("meeting-management.meeting.invitations.sent");
     }
+
+    @Test
+    void meetingCancelledEvent_exposesExpectedMetadata() {
+        var event = new MeetingCancelledEvent(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "Planning Session",
+                "ABC1234567",
+                Instant.parse("2026-04-02T10:15:30Z"),
+                List.of(new MeetingCancelledEvent.InviteeInfo(
+                        UUID.randomUUID(),
+                        "alice@example.com",
+                        "Alice",
+                        "ACCEPTED",
+                        Instant.parse("2026-04-02T09:00:00Z"))),
+                Instant.parse("2026-04-02T11:00:00Z"));
+
+        assertThat(event.aggregateType()).isEqualTo("meeting");
+        assertThat(event.eventType()).isEqualTo("io.github.phunguy65.zms.meeting.cancelled.v1");
+        assertThat(event.topic()).isEqualTo("meeting-management.meeting.cancelled");
+        assertThat(event.invitees()).singleElement().satisfies(invitee -> {
+            assertThat(invitee.email()).isEqualTo("alice@example.com");
+            assertThat(invitee.status()).isEqualTo("ACCEPTED");
+        });
+    }
 }

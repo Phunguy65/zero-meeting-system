@@ -144,6 +144,55 @@ class MeetingEventConsumerTest {
         verify(closeChatRoomUseCase, never()).execute(anyString());
     }
 
+    @Test
+    void onMeetingCancelled_withValidMessage_callsCloseChatRoomUseCase() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        MeetingEventConsumer.MeetingCancelledMessage msg =
+                new MeetingEventConsumer.MeetingCancelledMessage(
+                        UUID.randomUUID(),
+                        meetingId,
+                        UUID.randomUUID(),
+                        "Planning Session",
+                        "ABC1234567",
+                        Instant.parse("2024-01-01T10:00:00Z"),
+                        java.util.List.of(),
+                        Instant.parse("2024-01-01T09:00:00Z"));
+
+        CloudEvent cloudEvent = mockCloudEventWithData(
+                "io.github.phunguy65.zms.meeting.cancelled.v1",
+                "{}".getBytes(StandardCharsets.UTF_8));
+        when(objectMapper.readValue(any(byte[].class), any(Class.class))).thenReturn(msg);
+
+        consumer.onMeetingCancelled(cloudEvent);
+
+        verify(closeChatRoomUseCase).execute(meetingId.toString());
+        verify(openChatRoomUseCase, never()).execute(anyString());
+    }
+
+    @Test
+    void onMeetingCancelled_withNullData_doesNotCrash() {
+        CloudEvent cloudEvent = mock(CloudEvent.class);
+        when(cloudEvent.getData()).thenReturn(null);
+        when(cloudEvent.getId()).thenReturn("evt-null-cancelled");
+
+        consumer.onMeetingCancelled(cloudEvent);
+
+        verify(closeChatRoomUseCase, never()).execute(anyString());
+    }
+
+    @Test
+    void onMeetingCancelled_whenDeserializeThrows_doesNotCrash() {
+        CloudEvent cloudEvent = mockCloudEventWithData(
+                "io.github.phunguy65.zms.meeting.cancelled.v1",
+                "{}".getBytes(StandardCharsets.UTF_8));
+        when(objectMapper.readValue(any(byte[].class), any(Class.class)))
+                .thenThrow(new RuntimeException("deserialize error"));
+
+        consumer.onMeetingCancelled(cloudEvent);
+
+        verify(closeChatRoomUseCase, never()).execute(anyString());
+    }
+
     private CloudEvent mockCloudEvent(String type) {
         CloudEvent event = mock(CloudEvent.class);
         lenient().when(event.getId()).thenReturn(UUID.randomUUID().toString());

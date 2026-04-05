@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Consumes meeting lifecycle events (started / ended) from Kafka and opens/closes chat rooms.
+ * Consumes meeting lifecycle events (started / ended / cancelled) from Kafka and opens/closes
+ * chat rooms.
  */
 @Component
 public class MeetingEventConsumer {
@@ -52,6 +53,17 @@ public class MeetingEventConsumer {
         closeChatRoomUseCase.execute(event.aggregateId().toString());
     }
 
+    @KafkaListener(
+            topics = "meeting-management.meeting.cancelled",
+            groupId = "chat-management-meeting",
+            containerFactory = "cloudEventKafkaListenerContainerFactory")
+    public void onMeetingCancelled(CloudEvent cloudEvent) {
+        MeetingCancelledMessage event = deserialize(cloudEvent, MeetingCancelledMessage.class);
+        if (event == null) return;
+        log.debug("Received meeting.cancelled event for meeting {}", event.aggregateId());
+        closeChatRoomUseCase.execute(event.aggregateId().toString());
+    }
+
     private <T> T deserialize(CloudEvent cloudEvent, Class<T> type) {
         if (cloudEvent.getData() == null) {
             log.warn("Received CloudEvent with no data payload: {}", cloudEvent.getId());
@@ -83,4 +95,15 @@ public class MeetingEventConsumer {
             java.util.UUID aggregateId,
             java.util.UUID hostId,
             java.time.Instant endedAt) {}
+
+    /** DTO for {@code meeting-management.meeting.cancelled}. */
+    record MeetingCancelledMessage(
+            java.util.UUID eventId,
+            java.util.UUID aggregateId,
+            java.util.UUID hostId,
+            String meetingTitle,
+            String meetingShortCode,
+            java.time.Instant startTime,
+            java.util.List<?> invitees,
+            java.time.Instant cancelledAt) {}
 }

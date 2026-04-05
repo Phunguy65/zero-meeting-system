@@ -26,6 +26,7 @@ public class MeetingInvitationsSentConsumer {
 
     @KafkaListener(
             topics = "meeting-management.meeting.invitations.sent",
+            groupId = "#{@notificationProperties.kafka.invitationConsumerGroup}",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onMeetingInvitationsSent(CloudEvent cloudEvent) {
         MeetingInvitationsSentMessage message = deserialize(cloudEvent);

@@ -9,6 +9,7 @@ import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -226,14 +227,36 @@ public class Meeting extends AggregateRoot<MeetingId> {
      * Transitions SCHEDULED → CANCELLED. Registers {@code MeetingCancelledEvent}.
      */
     public Result<Void, MeetingError> cancel() {
+        return cancel(
+                title != null ? title.value() : null,
+                shortCode.value(),
+                timeRange != null ? timeRange.start() : null,
+                List.of());
+    }
+
+    /**
+     * Transitions SCHEDULED → CANCELLED and includes notification payload for invitees.
+     */
+    public Result<Void, MeetingError> cancel(
+            @Nullable String meetingTitle,
+            String meetingShortCode,
+            @Nullable Instant startTime,
+            List<MeetingCancelledEvent.InviteeInfo> invitees) {
         if (!status.canTransitionTo(MeetingStatus.CANCELLED)) {
             return Result.failure(
                     new MeetingError.InvalidStatusTransition(status, MeetingStatus.CANCELLED));
         }
         status = MeetingStatus.CANCELLED;
         Instant now = Instant.now();
-        registerEvent(
-                new MeetingCancelledEvent(UUID.randomUUID(), id.value(), hostId.value(), now));
+        registerEvent(new MeetingCancelledEvent(
+                UUID.randomUUID(),
+                id.value(),
+                hostId.value(),
+                meetingTitle,
+                meetingShortCode,
+                startTime,
+                List.copyOf(invitees),
+                now));
         return Result.success();
     }
 

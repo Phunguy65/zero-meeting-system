@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -206,5 +207,84 @@ class MeetingControllerTest {
                 .andExpect(jsonPath("$.data.code").value("INVALID_CURSOR"));
 
         verifyNoInteractions(getHostMeetingsUseCase);
+    }
+
+    @Test
+    void cancelMeeting_returnsOkWhenSuccessful() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        when(cancelMeetingUseCase.execute(argThat(command -> command.meetingId().equals(meetingId)
+                        && command.requesterId().equals(requesterId))))
+                .thenReturn(Result.success());
+
+        mockMvc.perform(post("/api/v1/meetings/{id}:cancel", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"));
+    }
+
+    @Test
+    void cancelMeeting_returns401WhenUnauthenticated() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+
+        mockMvc.perform(post("/api/v1/meetings/{id}:cancel", meetingId))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+
+        verifyNoInteractions(cancelMeetingUseCase);
+    }
+
+    @Test
+    void cancelMeeting_returns403WhenRequesterIsNotHost() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        UUID hostId = UUID.randomUUID();
+        when(cancelMeetingUseCase.execute(argThat(command -> command.meetingId().equals(meetingId)
+                        && command.requesterId().equals(requesterId))))
+                .thenReturn(Result.failure(
+                        new io.github.phunguy65.zms.meetingmanagement.domain.MeetingError
+                                .NotAuthorized(requesterId, hostId)));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}:cancel", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("NOT_AUTHORIZED"));
+    }
+
+    @Test
+    void cancelMeeting_returns404WhenMeetingNotFound() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        when(cancelMeetingUseCase.execute(argThat(command -> command.meetingId().equals(meetingId)
+                        && command.requesterId().equals(requesterId))))
+                .thenReturn(Result.failure(
+                        new io.github.phunguy65.zms.meetingmanagement.domain.MeetingError
+                                .MeetingNotFound(meetingId)));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}:cancel", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("MEETING_NOT_FOUND"));
+    }
+
+    @Test
+    void cancelMeeting_returns409WhenMeetingIsAlreadyLive() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        when(cancelMeetingUseCase.execute(argThat(command -> command.meetingId().equals(meetingId)
+                        && command.requesterId().equals(requesterId))))
+                .thenReturn(
+                        Result.failure(new io.github.phunguy65.zms.meetingmanagement.domain
+                                .MeetingError.InvalidStatusTransition(
+                                MeetingStatus.LIVE, MeetingStatus.CANCELLED)));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}:cancel", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_STATUS_TRANSITION"));
     }
 }

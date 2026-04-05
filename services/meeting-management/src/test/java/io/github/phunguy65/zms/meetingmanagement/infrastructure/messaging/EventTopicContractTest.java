@@ -7,10 +7,12 @@ import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestApprove
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestCreatedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestDeniedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestExpiredEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingCancelledEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.ParticipantKickedEvent;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.sse.MeetingSseManager;
 import java.lang.reflect.Method;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -62,6 +64,22 @@ class EventTopicContractTest {
                                 "Charlie",
                                 Instant.parse("2026-04-02T09:10:00Z"))
                         .topic());
+    }
+
+    @Test
+    void meetingCancelledEvent_usesExpectedTopicAndType() {
+        MeetingCancelledEvent event = new MeetingCancelledEvent(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "Planning Session",
+                "ABC1234567",
+                Instant.parse("2026-04-03T10:00:00Z"),
+                List.of(),
+                Instant.parse("2026-04-02T11:00:00Z"));
+
+        assertThat(event.topic()).isEqualTo("meeting-management.meeting.cancelled");
+        assertThat(event.eventType()).isEqualTo("io.github.phunguy65.zms.meeting.cancelled.v1");
     }
 
     private static String[] listenerTopics(Class<?> owner, String methodName) throws Exception {

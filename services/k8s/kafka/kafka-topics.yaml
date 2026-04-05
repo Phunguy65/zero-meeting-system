@@ -74,6 +74,97 @@ spec:
         retention.ms: 604800000
         cleanup.policy: delete
 ---
+# ─── meeting-management: lifecycle and participant stream ───────────────────
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-meeting-started
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.meeting.started
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-meeting-ended
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.meeting.ended
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-meeting-cancelled
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.meeting.cancelled
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-participant-joined
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.participant.joined
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-participant-left
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.participant.left
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-participant-kicked
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.participant.kicked
+    config:
+        retention.ms: 604800000
+        cleanup.policy: delete
+---
 # ─── meeting-management: join request lifecycle (30-min retention = token TTL) ─
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -85,7 +176,7 @@ metadata:
 spec:
     partitions: 3
     replicas: 1
-    topicName: meeting-management.join_request.created
+    topicName: meeting-management.join-request.created
     config:
         retention.ms: 1800000
         cleanup.policy: delete
@@ -100,7 +191,7 @@ metadata:
 spec:
     partitions: 3
     replicas: 1
-    topicName: meeting-management.join_request.approved
+    topicName: meeting-management.join-request.approved
     config:
         retention.ms: 1800000
         cleanup.policy: delete
@@ -115,7 +206,7 @@ metadata:
 spec:
     partitions: 3
     replicas: 1
-    topicName: meeting-management.join_request.denied
+    topicName: meeting-management.join-request.denied
     config:
         retention.ms: 1800000
         cleanup.policy: delete
@@ -130,7 +221,7 @@ metadata:
 spec:
     partitions: 3
     replicas: 1
-    topicName: meeting-management.join_request.expired
+    topicName: meeting-management.join-request.expired
     config:
         retention.ms: 1800000
         cleanup.policy: delete
@@ -146,9 +237,24 @@ metadata:
 spec:
     partitions: 3
     replicas: 1
-    topicName: meeting-management.meeting.invitations-sent
+    topicName: meeting-management.meeting.invitations.sent
     config:
         retention.ms: 1800000 # 30 minutes
+        cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+    name: meeting-management-meeting-settings-updated
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    partitions: 3
+    replicas: 1
+    topicName: meeting-management.meeting.settings.updated
+    config:
+        retention.ms: 604800000
         cleanup.policy: delete
 ---
 # ─── chat-management: real-time messaging ───────────────────────────────────

@@ -25,6 +25,8 @@ class ConsumerTopicContractTest {
                 .containsExactly("meeting-management.meeting.started");
         assertThat(listenerTopics(MeetingEventConsumer.class, "onMeetingEnded"))
                 .containsExactly("meeting-management.meeting.ended");
+        assertThat(listenerTopics(MeetingEventConsumer.class, "onMeetingCancelled"))
+                .containsExactly("meeting-management.meeting.cancelled");
     }
 
     private static String[] listenerTopics(Class<?> owner, String methodName) throws Exception {
