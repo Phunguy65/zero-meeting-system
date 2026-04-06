@@ -88,6 +88,29 @@ public class ParticipationLogRepositoryAdapter implements ParticipationLogReposi
         return jpa.findParticipantSummariesByMeetingId(meetingId);
     }
 
+    @Override
+    public boolean existsByMeetingIdAndUserId(UUID meetingId, UUID userId) {
+        return jpa.existsByMeetingIdAndUserId(meetingId, userId);
+    }
+
+    @Override
+    public List<ParticipantSummary> findDistinctParticipantSummariesByMeetingId(UUID meetingId) {
+        return jpa.findDistinctSessionsByMeetingId(meetingId).stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+    private ParticipantSummary toSummary(ParticipationLogJpaEntity e) {
+        return new ParticipantSummary(
+                e.getId(),
+                e.getMeetingId(),
+                e.getUserId(),
+                e.getDisplayName(),
+                e.getRole(),
+                e.getJoinedAt(),
+                e.getLeftAt());
+    }
+
     private ParticipationLog toDomain(ParticipationLogJpaEntity e) {
         return ParticipationLog.reconstitute(
                 ParticipationLogId.of(e.getId()),

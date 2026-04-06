@@ -31,6 +31,8 @@ abstract class BaseController {
                     case MeetingError.MeetingFull e -> HttpStatus.CONFLICT;
                     case MeetingError.InvalidJoinRequestTransition e -> HttpStatus.CONFLICT;
                     case MeetingError.NotAuthorized e -> HttpStatus.FORBIDDEN;
+                    case MeetingError.NotOwner e -> HttpStatus.FORBIDDEN;
+                    case MeetingError.NotParticipant e -> HttpStatus.FORBIDDEN;
                     case MeetingError.GuestNotAllowed e -> HttpStatus.FORBIDDEN;
                     case MeetingError.ShortCodeExhausted e -> HttpStatus.SERVICE_UNAVAILABLE;
                     case MeetingError.LiveKitUnavailable e -> HttpStatus.SERVICE_UNAVAILABLE;
@@ -79,6 +81,8 @@ abstract class BaseController {
                     case MeetingError.InvalidPassword e -> MeetingErrorCode.INVALID_PASSWORD;
                     case MeetingError.GuestNotAllowed e -> MeetingErrorCode.GUEST_NOT_ALLOWED;
                     case MeetingError.NotAuthorized e -> MeetingErrorCode.NOT_AUTHORIZED;
+                    case MeetingError.NotOwner e -> MeetingErrorCode.NOT_OWNER;
+                    case MeetingError.NotParticipant e -> MeetingErrorCode.NOT_PARTICIPANT;
                     case MeetingError.JoinRequestNotFound e ->
                         MeetingErrorCode.JOIN_REQUEST_NOT_FOUND;
                     case MeetingError.JoinRequestExpired e -> MeetingErrorCode.JOIN_REQUEST_EXPIRED;
