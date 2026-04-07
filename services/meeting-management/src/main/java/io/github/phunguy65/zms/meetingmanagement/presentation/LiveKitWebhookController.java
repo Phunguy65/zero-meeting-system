@@ -17,6 +17,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.port.EventPublisher;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRepository;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.LiveKitProperties;
 import io.livekit.server.WebhookReceiver;
+import io.swagger.v3.oas.annotations.Hidden;
 import java.time.Instant;
 import java.util.UUID;
 import livekit.LivekitWebhook;
@@ -57,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
  *       metadata.</li>
  * </ul>
  */
+@Hidden
 @RestController
 public class LiveKitWebhookController {
 
@@ -102,7 +104,8 @@ public class LiveKitWebhookController {
      * would break signature verification.
      */
     @PostMapping(
-            value = "/webhook/livekit",
+            value = "/{version}/webhook/livekit",
+            version = "1.0",
             consumes = {"application/webhook+json", "application/json"})
     public ResponseEntity<Void> handleWebhook(
             @RequestBody String rawBody,

@@ -14,7 +14,8 @@ import org.springframework.http.ResponseEntity;
  */
 abstract class BaseController {
 
-    protected ResponseEntity<JsendResponse<?>> errorResponse(AuthError error) {
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> errorResponse(AuthError error) {
         HttpStatus status =
                 switch (error) {
                     case AuthError.UserNotFound e -> HttpStatus.NOT_FOUND;
@@ -48,9 +49,11 @@ abstract class BaseController {
                     case AuthError.PreferencesSerializationError e ->
                         AuthErrorCode.PREFERENCES_SERIALIZATION_ERROR;
                 };
-        return status == HttpStatus.INTERNAL_SERVER_ERROR
-                ? ResponseEntity.status(status).body(JsendResponse.error(error.message()))
-                : ResponseEntity.status(status)
-                        .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
+        if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
+            return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>)
+                    ResponseEntity.status(status).body(JsendResponse.error(error.message()));
+        }
+        return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.status(status)
+                .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
     }
 }

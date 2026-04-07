@@ -1,6 +1,12 @@
 spring:
     application:
         name: chat-management
+    mvc:
+        apiversion:
+            use:
+                path-segment: 1
+            default: 1.0
+            supported: 1.0
     data:
         mongodb:
             uri: mongodb://localhost:27017/chat_management
@@ -23,3 +29,12 @@ app:
 logging:
     level:
         io.github.phunguy65.zms.chatmanagement: DEBUG
+
+springdoc:
+    api-docs:
+        enabled: true
+    swagger-ui:
+        enabled: false
+    servers:
+        - url: ${GATEWAY_URL:http://localhost:8080}
+          description: API Gateway

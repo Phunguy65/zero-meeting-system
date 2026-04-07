@@ -61,8 +61,9 @@ class BaseControllerTest {
 
     private static final class TestController extends BaseController {
 
+        @SuppressWarnings("unchecked")
         private ResponseEntity<JsendResponse<?>> map(ChatError error) {
-            return errorResponse(error);
+            return (ResponseEntity<JsendResponse<?>>) (ResponseEntity<?>) errorResponse(error);
         }
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 /** Shared controller base that centralises {@link ChatError} response mapping. */
 abstract class BaseController {
 
-    protected ResponseEntity<JsendResponse<?>> errorResponse(ChatError error) {
+    protected <T> ResponseEntity<JsendResponse<T>> errorResponse(ChatError error) {
         HttpStatus status =
                 switch (error) {
                     case ChatError.RoomNotFound e -> HttpStatus.NOT_FOUND;
@@ -20,7 +20,8 @@ abstract class BaseController {
                     case ChatError.PersistenceFailure e -> HttpStatus.INTERNAL_SERVER_ERROR;
                 };
         if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
-            return ResponseEntity.status(status).body(JsendResponse.error(error.message()));
+            return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>)
+                    ResponseEntity.status(status).body(JsendResponse.error(error.message()));
         }
 
         ChatErrorCode code =
@@ -31,7 +32,14 @@ abstract class BaseController {
                     case ChatError.PersistenceFailure e -> ChatErrorCode.PERSISTENCE_FAILURE;
                 };
 
-        return ResponseEntity.status(status)
+        return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.status(status)
                 .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> unauthenticated() {
+        return (ResponseEntity<JsendResponse<T>>)
+                (ResponseEntity<?>) ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(JsendResponse.error("Authentication required"));
     }
 }

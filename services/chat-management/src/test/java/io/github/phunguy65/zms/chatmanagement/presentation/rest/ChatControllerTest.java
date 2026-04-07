@@ -31,6 +31,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.accept.DefaultApiVersionStrategy;
+import org.springframework.web.accept.PathApiVersionResolver;
+import org.springframework.web.accept.SemanticApiVersionParser;
 
 /**
  * Unit tests for ChatController REST endpoints.
@@ -55,7 +58,17 @@ class ChatControllerTest {
     void setUp() {
         ChatController controller =
                 new ChatController(sendMessageUseCase, getMessagesUseCase, getRoomUseCase);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        var versionStrategy = new DefaultApiVersionStrategy(
+                List.of(new PathApiVersionResolver(0)),
+                new SemanticApiVersionParser(),
+                null,
+                "1.0",
+                true,
+                null,
+                null);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setApiVersionStrategy(versionStrategy)
+                .build();
         // Default: authenticated user
         SecurityContextHolder.getContext()
                 .setAuthentication(
@@ -72,7 +85,7 @@ class ChatControllerTest {
         when(sendMessageUseCase.execute(eq(roomId), anyString(), anyString(), anyString(), any()))
                 .thenReturn(Result.success(message));
 
-        mockMvc.perform(post("/api/chat/rooms/{roomId}/messages", roomId)
+        mockMvc.perform(post("/1.0/chat/rooms/{roomId}/messages", roomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"senderName": "Alice", "content": "Hello!", "replyToSeqNum": null}
@@ -88,7 +101,7 @@ class ChatControllerTest {
         when(sendMessageUseCase.execute(eq(roomId), anyString(), anyString(), anyString(), any()))
                 .thenReturn(Result.failure(new ChatError.RoomNotFound(roomId)));
 
-        mockMvc.perform(post("/api/chat/rooms/{roomId}/messages", roomId)
+        mockMvc.perform(post("/1.0/chat/rooms/{roomId}/messages", roomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"senderName": "Alice", "content": "Hello!", "replyToSeqNum": null}
@@ -106,7 +119,7 @@ class ChatControllerTest {
         when(sendMessageUseCase.execute(eq(roomId), anyString(), anyString(), anyString(), any()))
                 .thenReturn(Result.failure(new ChatError.Unauthorized("Meeting has ended")));
 
-        mockMvc.perform(post("/api/chat/rooms/{roomId}/messages", roomId)
+        mockMvc.perform(post("/1.0/chat/rooms/{roomId}/messages", roomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"senderName": "Alice", "content": "Hello!", "replyToSeqNum": null}
@@ -123,7 +136,7 @@ class ChatControllerTest {
         when(sendMessageUseCase.execute(eq(roomId), anyString(), anyString(), anyString(), any()))
                 .thenReturn(Result.failure(new ChatError.MessageTooLong(100, 150)));
 
-        mockMvc.perform(post("/api/chat/rooms/{roomId}/messages", roomId)
+        mockMvc.perform(post("/1.0/chat/rooms/{roomId}/messages", roomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"senderName": "Alice", "content": "too long", "replyToSeqNum": null}
@@ -142,7 +155,7 @@ class ChatControllerTest {
                 .thenReturn(
                         Result.failure(new ChatError.PersistenceFailure("MongoDB write failed")));
 
-        mockMvc.perform(post("/api/chat/rooms/{roomId}/messages", roomId)
+        mockMvc.perform(post("/1.0/chat/rooms/{roomId}/messages", roomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"senderName": "Alice", "content": "Hello!", "replyToSeqNum": null}
@@ -155,22 +168,18 @@ class ChatControllerTest {
     }
 
     @Test
-    void sendMessage_unauthenticated_extractsAnonymous() throws Exception {
+    void sendMessage_unauthenticated_returns401() throws Exception {
         String roomId = "room-1";
-        // No authentication in context → senderId falls back to "anonymous"
         SecurityContextHolder.clearContext();
 
-        ChatMessage message = ChatMessage.send(1L, roomId, "anonymous", "Alice", "Hello!", null);
-        when(sendMessageUseCase.execute(
-                        eq(roomId), eq("anonymous"), anyString(), anyString(), any()))
-                .thenReturn(Result.success(message));
-
-        mockMvc.perform(post("/api/chat/rooms/{roomId}/messages", roomId)
+        mockMvc.perform(post("/1.0/chat/rooms/{roomId}/messages", roomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"senderName": "Alice", "content": "Hello!", "replyToSeqNum": null}
                             """))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
     // ─── GET /{roomId}/messages ───────────────────────────────────────────────
@@ -183,7 +192,7 @@ class ChatControllerTest {
 
         when(getMessagesUseCase.execute(eq(roomId), anyInt(), any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}/messages", roomId).param("size", "20"))
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}/messages", roomId).param("size", "20"))
                 .andExpect(status().isOk())
                 // CursorScrollResponse uses "content" not "items", "nextPageToken" not "hasNext"
                 .andExpect(jsonPath("$.data.content[0].seqNum").value(1))
@@ -200,7 +209,7 @@ class ChatControllerTest {
         when(getMessagesUseCase.execute(eq(roomId), anyInt(), eq(Optional.of(5L))))
                 .thenReturn(page);
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}/messages", roomId)
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}/messages", roomId)
                         .param("size", "20")
                         .param("beforeSeqNum", "5"))
                 .andExpect(status().isOk());
@@ -215,7 +224,7 @@ class ChatControllerTest {
 
         when(getMessagesUseCase.execute(eq(roomId), eq(100), any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}/messages", roomId).param("size", "500"))
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}/messages", roomId).param("size", "500"))
                 .andExpect(status().isOk());
 
         // Controller uses Math.clamp(size, 1, MAX_SIZE=100)
@@ -229,7 +238,7 @@ class ChatControllerTest {
 
         when(getMessagesUseCase.execute(eq(roomId), eq(1), any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}/messages", roomId).param("size", "0"))
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}/messages", roomId).param("size", "0"))
                 .andExpect(status().isOk());
 
         verify(getMessagesUseCase).execute(roomId, 1, Optional.empty());
@@ -242,7 +251,7 @@ class ChatControllerTest {
 
         when(getMessagesUseCase.execute(eq(roomId), eq(1), any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}/messages", roomId).param("size", "-5"))
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}/messages", roomId).param("size", "-5"))
                 .andExpect(status().isOk());
 
         verify(getMessagesUseCase).execute(roomId, 1, Optional.empty());
@@ -258,7 +267,7 @@ class ChatControllerTest {
 
         when(getMessagesUseCase.execute(eq(roomId), anyInt(), any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}/messages", roomId).param("size", "20"))
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}/messages", roomId).param("size", "20"))
                 .andExpect(status().isOk())
                 // nextPageToken = String.valueOf(last item's seqNum = 9)
                 .andExpect(jsonPath("$.data.nextPageToken").value("9"))
@@ -274,7 +283,7 @@ class ChatControllerTest {
 
         when(getRoomUseCase.execute(roomId)).thenReturn(Result.success(room));
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}", roomId))
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}", roomId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.roomId").value(roomId));
     }
@@ -285,7 +294,7 @@ class ChatControllerTest {
         when(getRoomUseCase.execute(roomId))
                 .thenReturn(Result.failure(new ChatError.RoomNotFound(roomId)));
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}", roomId))
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}", roomId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value("fail"))
                 .andExpect(jsonPath("$.data.code").value("ROOM_NOT_FOUND"))
@@ -300,7 +309,7 @@ class ChatControllerTest {
                 .thenReturn(
                         Result.failure(new ChatError.PersistenceFailure("MongoDB read failed")));
 
-        mockMvc.perform(get("/api/chat/rooms/{roomId}", roomId))
+        mockMvc.perform(get("/1.0/chat/rooms/{roomId}", roomId))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message")

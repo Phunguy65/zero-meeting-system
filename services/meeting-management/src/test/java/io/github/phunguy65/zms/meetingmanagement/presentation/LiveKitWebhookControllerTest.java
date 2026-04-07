@@ -19,6 +19,7 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
+import java.util.List;
 import livekit.LivekitEgress;
 import livekit.LivekitWebhook;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.accept.DefaultApiVersionStrategy;
+import org.springframework.web.accept.PathApiVersionResolver;
+import org.springframework.web.accept.SemanticApiVersionParser;
 
 @ExtendWith(MockitoExtension.class)
 class LiveKitWebhookControllerTest {
@@ -67,6 +71,14 @@ class LiveKitWebhookControllerTest {
         LiveKitProperties properties = new LiveKitProperties();
         properties.setApiKey(API_KEY);
         properties.setApiSecret(API_SECRET);
+        var versionStrategy = new DefaultApiVersionStrategy(
+                List.of(new PathApiVersionResolver(0)),
+                new SemanticApiVersionParser(),
+                null,
+                "1.0",
+                true,
+                null,
+                null);
 
         mockMvc = MockMvcBuilders.standaloneSetup(new LiveKitWebhookController(
                         properties,
@@ -77,6 +89,7 @@ class LiveKitWebhookControllerTest {
                         finalizeRecordingUseCase,
                         eventPublisher,
                         participationLogRepository))
+                .setApiVersionStrategy(versionStrategy)
                 .build();
     }
 
@@ -84,7 +97,7 @@ class LiveKitWebhookControllerTest {
     void handleWebhook_rejectsInvalidSignature() throws Exception {
         String rawBody = rawJson(egressStartedEvent());
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/webhook/livekit")
+        mockMvc.perform(MockMvcRequestBuilders.post("/1.0/webhook/livekit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "invalid-token")
                         .content(rawBody))
@@ -99,7 +112,7 @@ class LiveKitWebhookControllerTest {
     void handleWebhook_egressStartedDelegatesAfterSignatureVerification() throws Exception {
         String rawBody = rawJson(egressStartedEvent());
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/webhook/livekit")
+        mockMvc.perform(MockMvcRequestBuilders.post("/1.0/webhook/livekit")
                         .contentType(MediaType.valueOf("application/webhook+json"))
                         .header("Authorization", signedWebhookToken(rawBody))
                         .content(rawBody))
@@ -118,7 +131,7 @@ class LiveKitWebhookControllerTest {
     void handleWebhook_egressEndedSuccessMapsFileOutput() throws Exception {
         String rawBody = rawJson(egressEndedSuccessEvent());
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/webhook/livekit")
+        mockMvc.perform(MockMvcRequestBuilders.post("/1.0/webhook/livekit")
                         .contentType(MediaType.valueOf("application/webhook+json"))
                         .header("Authorization", signedWebhookToken(rawBody))
                         .content(rawBody))
@@ -143,7 +156,7 @@ class LiveKitWebhookControllerTest {
     void handleWebhook_egressEndedFailureMapsErrorPayload() throws Exception {
         String rawBody = rawJson(egressEndedFailureEvent());
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/webhook/livekit")
+        mockMvc.perform(MockMvcRequestBuilders.post("/1.0/webhook/livekit")
                         .contentType(MediaType.valueOf("application/webhook+json"))
                         .header("Authorization", signedWebhookToken(rawBody))
                         .content(rawBody))

@@ -16,7 +16,8 @@ import org.springframework.security.core.Authentication;
  */
 abstract class BaseController {
 
-    protected ResponseEntity<JsendResponse<?>> errorResponse(MeetingError error) {
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> errorResponse(MeetingError error) {
         HttpStatus status =
                 switch (error) {
                     case MeetingError.MeetingNotFound e -> HttpStatus.NOT_FOUND;
@@ -94,7 +95,7 @@ abstract class BaseController {
                     case MeetingError.UserNotInMeeting e -> MeetingErrorCode.USER_NOT_IN_MEETING;
                     case MeetingError.InvalidKickTarget e -> MeetingErrorCode.INVALID_KICK_TARGET;
                 };
-        return ResponseEntity.status(status)
+        return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.status(status)
                 .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
     }
 
@@ -109,8 +110,10 @@ abstract class BaseController {
         }
     }
 
-    protected ResponseEntity<JsendResponse<?>> unauthenticated() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(JsendResponse.error("Authentication required"));
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> unauthenticated() {
+        return (ResponseEntity<JsendResponse<T>>)
+                (ResponseEntity<?>) ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(JsendResponse.error("Authentication required"));
     }
 }

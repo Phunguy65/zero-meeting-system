@@ -2,6 +2,8 @@ package io.github.phunguy65.zms.meetingmanagement.presentation;
 
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetParticipatedMeetingDetailQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetParticipatedMeetingsQuery;
+import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingDetailResponse;
+import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.response.ParticipatedMeetingPageResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetParticipatedMeetingDetailUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetParticipatedMeetingsUseCase;
@@ -15,6 +17,8 @@ import io.github.phunguy65.zms.shared.infrastructure.web.CommonErrorCode;
 import io.github.phunguy65.zms.shared.infrastructure.web.CursorScrollResponse;
 import io.github.phunguy65.zms.shared.infrastructure.web.FailData;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Tag(name = "User Meetings", description = "User participated meetings")
 public class UserMeetingController extends BaseController {
 
     private final GetParticipatedMeetingsUseCase getParticipatedMeetingsUseCase;
@@ -44,13 +49,16 @@ public class UserMeetingController extends BaseController {
         this.participatedMeetingCursorCodec = participatedMeetingCursorCodec;
     }
 
+    @Operation(summary = "List participated meetings with optional status filter")
+    @SuppressWarnings("unchecked")
     @GetMapping(value = "/{version}/users/{userId}/meetings:filter", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> listParticipatedMeetings(
-            @PathVariable UUID userId,
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) @Nullable String pageToken,
-            @RequestParam(required = false) @Nullable String status,
-            Authentication auth) {
+    public ResponseEntity<JsendResponse<CursorScrollResponse<MeetingResponse>>>
+            listParticipatedMeetings(
+                    @PathVariable UUID userId,
+                    @RequestParam(defaultValue = "20") int pageSize,
+                    @RequestParam(required = false) @Nullable String pageToken,
+                    @RequestParam(required = false) @Nullable String status,
+                    Authentication auth) {
         UUID requesterId = extractUserId(auth);
         if (requesterId == null) return unauthenticated();
 
@@ -64,31 +72,33 @@ public class UserMeetingController extends BaseController {
 
         return switch (participatedMeetingCursorCodec.decode(pageToken)) {
             case Result.Failure<ParticipatedMeetingCursor, CursorErrorCode> f ->
-                ResponseEntity.badRequest()
-                        .body(JsendResponse.fail(
-                                new FailData(f.error().name(), f.error(), List.of())));
+                (ResponseEntity<JsendResponse<CursorScrollResponse<MeetingResponse>>>)
+                        (ResponseEntity<?>) ResponseEntity.badRequest()
+                                .body(JsendResponse.fail(
+                                        new FailData(f.error().name(), f.error(), List.of())));
             case Result.Success<ParticipatedMeetingCursor, CursorErrorCode> s ->
                 executeListMeetings(new GetParticipatedMeetingsQuery(
                         userId, requesterId, statuses, pageSize, s.value()));
         };
     }
 
+    @Operation(summary = "Get participated meeting detail")
     @GetMapping(value = "/{version}/users/{userId}/meetings/{meetingId}", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> getParticipatedMeetingDetail(
+    public ResponseEntity<JsendResponse<MeetingDetailResponse>> getParticipatedMeetingDetail(
             @PathVariable UUID userId, @PathVariable UUID meetingId, Authentication auth) {
         UUID requesterId = extractUserId(auth);
         if (requesterId == null) return unauthenticated();
 
         return switch (getParticipatedMeetingDetailUseCase.execute(
                 new GetParticipatedMeetingDetailQuery(userId, meetingId, requesterId))) {
-            case Result.Success<?, MeetingError> s ->
+            case Result.Success<MeetingDetailResponse, MeetingError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Failure<MeetingDetailResponse, MeetingError> f -> errorResponse(f.error());
         };
     }
 
-    private ResponseEntity<JsendResponse<?>> executeListMeetings(
-            GetParticipatedMeetingsQuery query) {
+    private ResponseEntity<JsendResponse<CursorScrollResponse<MeetingResponse>>>
+            executeListMeetings(GetParticipatedMeetingsQuery query) {
         return switch (getParticipatedMeetingsUseCase.execute(query)) {
             case Result.Success<ParticipatedMeetingPageResponse, MeetingError> s -> {
                 var page = s.value();
@@ -104,7 +114,8 @@ public class UserMeetingController extends BaseController {
                         page.pageSize(),
                         nextPageToken)));
             }
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Failure<ParticipatedMeetingPageResponse, MeetingError> f ->
+                errorResponse(f.error());
         };
     }
 
@@ -121,8 +132,9 @@ public class UserMeetingController extends BaseController {
         }
     }
 
-    private ResponseEntity<JsendResponse<?>> invalidStatuses() {
-        return ResponseEntity.badRequest()
+    @SuppressWarnings("unchecked")
+    private <T> ResponseEntity<JsendResponse<T>> invalidStatuses() {
+        return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.badRequest()
                 .body(JsendResponse.fail(new FailData(
                         "Invalid status filter", CommonErrorCode.VALIDATION_ERROR, List.of())));
     }

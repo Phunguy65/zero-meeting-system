@@ -14,6 +14,8 @@ import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.CursorScrollResponse;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/chat/rooms")
+@Tag(name = "Chat", description = "Chat room messages and rooms")
 public class ChatController extends BaseController {
 
     private final SendMessageUseCase sendMessageUseCase;
@@ -38,17 +40,14 @@ public class ChatController extends BaseController {
         this.getRoomUseCase = getRoomUseCase;
     }
 
-    /**
-     * Sends a message to a chat room.
-     *
-     * <p>The senderId is extracted from the JWT in the Authorization header.
-     * Errors are mapped to HTTP responses by the controller base class.
-     */
-    @PostMapping("/{roomId}/messages")
-    public ResponseEntity<JsendResponse<?>> sendMessage(
+    @Operation(summary = "Send a message to a chat room")
+    @PostMapping(value = "/{version}/chat/rooms/{roomId}/messages", version = "1.0")
+    public ResponseEntity<JsendResponse<ChatMessageResponse>> sendMessage(
             @PathVariable String roomId, @RequestBody SendMessageRequest request) {
-
         String senderId = extractSenderId();
+        if (senderId == null) {
+            return unauthenticated();
+        }
         Result<ChatMessage, ChatError> result = sendMessageUseCase.execute(
                 roomId, senderId, request.senderName(), request.content(), request.replyToSeqNum());
 
@@ -61,15 +60,9 @@ public class ChatController extends BaseController {
         };
     }
 
-    /**
-     * Retrieves a page of messages from a chat room with cursor pagination.
-     *
-     * <p>Pass the {@code beforeSeqNum} from the previous response's last item to get the next page.
-     * This endpoint does not surface domain errors; when the room is missing, the use case returns
-     * an empty page.
-     */
-    @GetMapping("/{roomId}/messages")
-    public ResponseEntity<JsendResponse<?>> getMessages(
+    @Operation(summary = "Get messages from a chat room with cursor pagination")
+    @GetMapping(value = "/{version}/chat/rooms/{roomId}/messages", version = "1.0")
+    public ResponseEntity<JsendResponse<CursorScrollResponse<ChatMessageResponse>>> getMessages(
             @PathVariable String roomId,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Long beforeSeqNum) {
@@ -90,11 +83,9 @@ public class ChatController extends BaseController {
         return ResponseEntity.ok(JsendResponse.success(response));
     }
 
-    /**
-     * Returns the chat room info for the given room ID.
-     */
-    @GetMapping("/{roomId}")
-    public ResponseEntity<JsendResponse<?>> getRoom(@PathVariable String roomId) {
+    @Operation(summary = "Get chat room info")
+    @GetMapping(value = "/{version}/chat/rooms/{roomId}", version = "1.0")
+    public ResponseEntity<JsendResponse<ChatRoomResponse>> getRoom(@PathVariable String roomId) {
         Result<ChatRoom, ChatError> result = getRoomUseCase.execute(roomId);
 
         return switch (result) {
@@ -109,7 +100,7 @@ public class ChatController extends BaseController {
     private String extractSenderId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal() == null) {
-            return "anonymous";
+            return null;
         }
         return auth.getPrincipal().toString();
     }

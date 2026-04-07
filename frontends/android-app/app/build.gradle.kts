@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.openapiGenerator)
 }
 
 kotlin {
@@ -21,6 +22,31 @@ kotlin {
             )
         }
     }
+}
+
+val unifiedSpec = rootProject.file("../../openapi/unified-openapi.yaml").absolutePath
+val generatedDir =
+    layout.buildDirectory
+        .dir("generated/openapi")
+        .get()
+        .asFile.absolutePath
+
+openApiGenerate {
+    generatorName.set("java")
+    library.set("retrofit2")
+    inputSpec.set(unifiedSpec)
+    outputDir.set(generatedDir)
+    apiPackage.set("io.github.phunguy65.zms.sdk.api")
+    modelPackage.set("io.github.phunguy65.zms.sdk.model")
+    invokerPackage.set("io.github.phunguy65.zms.sdk.invoker")
+    configOptions.set(
+        mapOf(
+            "dateLibrary" to "java8",
+            "serializationLibrary" to "gson",
+        ),
+    )
+    generateApiTests.set(false)
+    generateModelTests.set(false)
 }
 
 android {
@@ -56,6 +82,12 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
+    sourceSets {
+        named("main") {
+            java.srcDir("$generatedDir/src/main/java")
+        }
+    }
 }
 
 dependencies {
@@ -65,12 +97,24 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.hilt.android)
     implementation(platform(libs.okhttp.bom))
-    implementation(libs.okhttp.android)
+    implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
+    implementation(libs.swagger.annotations)
+    implementation(libs.jsr305)
+    implementation(libs.gson)
+    implementation(libs.gson.fire)
+    implementation(libs.retrofit.converter.scalars)
+    implementation(libs.javax.annotation.api)
+    implementation(libs.oltu.oauth2.client)
+    implementation(libs.jackson.databind.nullable)
     ksp(libs.hilt.android.compiler)
     testImplementation(libs.junit4)
     androidTestImplementation(libs.androidx.testExt.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+tasks.named("preBuild") {
+    dependsOn(tasks.named("openApiGenerate"))
 }
