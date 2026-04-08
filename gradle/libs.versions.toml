@@ -29,7 +29,6 @@ jsr305 = "3.0.2"
 gson = "2.12.1"
 gsonFire = "1.9.0"
 javaxAnnotation = "1.3.2"
-oltuOauth2 = "1.0.0"
 jacksonDatabindNullable = "0.2.10"
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 agp = "9.0.0"
@@ -78,7 +77,6 @@ jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gson-fire = { module = "io.gsonfire:gson-fire", version.ref = "gsonFire" }
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javaxAnnotation" }
-oltu-oauth2-client = { module = "org.apache.oltu.oauth2:org.apache.oltu.oauth2.client", version.ref = "oltuOauth2" }
 
 # Jspecify
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }

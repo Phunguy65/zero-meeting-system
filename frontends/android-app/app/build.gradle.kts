@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -36,6 +37,7 @@ openApiGenerate {
     library.set("retrofit2")
     inputSpec.set(unifiedSpec)
     outputDir.set(generatedDir)
+    ignoreFileOverride.set(rootProject.file("app/.openapi-generator-ignore").absolutePath)
     apiPackage.set("io.github.phunguy65.zms.sdk.api")
     modelPackage.set("io.github.phunguy65.zms.sdk.model")
     invokerPackage.set("io.github.phunguy65.zms.sdk.invoker")
@@ -107,7 +109,6 @@ dependencies {
     implementation(libs.gson.fire)
     implementation(libs.retrofit.converter.scalars)
     implementation(libs.javax.annotation.api)
-    implementation(libs.oltu.oauth2.client)
     implementation(libs.jackson.databind.nullable)
     ksp(libs.hilt.android.compiler)
     testImplementation(libs.junit4)
@@ -117,4 +118,10 @@ dependencies {
 
 tasks.named("preBuild") {
     dependsOn(tasks.named("openApiGenerate"))
+}
+
+tasks.named("openApiGenerate") {
+    doFirst {
+        delete(generatedDir)
+    }
 }
