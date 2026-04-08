@@ -1,7 +1,9 @@
-// MongoDB init script for chat-management
-// Creates indexes on chat_messages and chat_rooms collections
+// V1: Create indexes for chat_messages and chat_rooms collections.
+// All createIndex() calls are idempotent — safe to run on both fresh and
+// existing databases (MongoDB silently skips if an identical index exists).
 
-// chat_messages indexes
+// ── chat_messages indexes ───────────────────────────────────────────────
+
 db.chat_messages.createIndex(
     { 'roomId': 1, 'seqNum': 1 },
     { name: 'idx_room_seqnum', unique: false },
@@ -22,11 +24,12 @@ db.chat_messages.createIndex(
     { 'createdAt': 1 },
     {
         name: 'idx_ttl_30d',
-        expireAfterSeconds: 2592000, // 30 days in seconds
+        expireAfterSeconds: 2592000,
     },
 );
 
-// chat_rooms indexes
+// ── chat_rooms indexes ──────────────────────────────────────────────────
+
 db.chat_rooms.createIndex(
     { 'roomId': 1 },
     { name: 'idx_room_id', unique: true },

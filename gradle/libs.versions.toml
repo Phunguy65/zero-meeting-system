@@ -89,6 +89,7 @@ uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuidC
 # Flyway
 flyway-core = { module = "org.flywaydb:flyway-core" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
+flyway-database-mongodb = { module = "org.flywaydb:flyway-database-mongodb" }
 
 # Spring Kafka (version managed by Spring Boot BOM)
 spring-kafka = { module = "org.springframework.kafka:spring-kafka" }

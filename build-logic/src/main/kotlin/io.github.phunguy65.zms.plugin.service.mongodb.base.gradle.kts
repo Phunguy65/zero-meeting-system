@@ -3,13 +3,11 @@ import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.the
 
-
 plugins {
     id("io.github.phunguy65.zms.plugin.jvm.base")
     id("io.github.phunguy65.zms.plugin.spotless")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
-    id("org.hibernate.orm")
     id("org.graalvm.buildtools.native")
     id("com.google.protobuf")
     java
@@ -45,13 +43,14 @@ dependencies {
     }
     implementation(libs.spring.kafka)
     implementation(libs.cloudevents.core)
-    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.data.mongodb)
+    implementation(libs.spring.boot.starter.flyway)
+    runtimeOnly(libs.flyway.database.mongodb)
     implementation(libs.spring.boot.starter.integration)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.integration.http)
-    implementation(libs.spring.integration.jpa)
     implementation(libs.spring.security.messaging)
     implementation(libs.jjwt.api)
     implementation(libs.proto)
@@ -61,7 +60,6 @@ dependencies {
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
     developmentOnly(libs.spring.boot.devtools)
-    runtimeOnly(libs.postgresql)
     runtimeOnly(libs.bouncycastle)
     annotationProcessor(libs.spring.boot.configuration.processor)
     testImplementation(libs.spring.boot.starter.test)
@@ -70,7 +68,7 @@ dependencies {
     testImplementation(libs.spring.boot.grpc.test)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.testcontainers.junit.jupiter)
-    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.mongodb)
     testImplementation(libs.archunit.junit5)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
@@ -81,11 +79,6 @@ configurations {
     }
 }
 
-hibernate {
-    enhancement {
-        enableAssociationManagement = false
-    }
-}
 protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:${libs.versions.protoc.get()}"
@@ -111,8 +104,10 @@ tasks.named<org.springframework.boot.gradle.tasks.bundling.BootBuildImage>("boot
     environment.set(
         mapOf(
             "BP_JVM_VERSION" to "25",
+            "BP_APT_INSTALL_PACKAGES" to "mongosh",
         ),
     )
+    bindings.set(listOf("${project.projectDir}/bindings/apt:/platform/bindings/apt"))
 }
 
 tasks.withType<Test> {

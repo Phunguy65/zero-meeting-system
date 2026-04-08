@@ -5,8 +5,6 @@ services:
             - '27017:27017'
         environment:
             MONGO_INITDB_DATABASE: chat_management
-        volumes:
-            - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
 
     kafka:
         image: confluentinc/cp-kafka:7.9.0
