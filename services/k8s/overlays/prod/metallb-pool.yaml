@@ -1,0 +1,22 @@
+# MetalLB IP address pool for local K8s (minikube/kind/k3s)
+# Adjust the address range to match your local bridge subnet:
+#   minikube: run `minikube ip` to find the node IP, use that /24 range
+#   kind:     run `docker network inspect kind | grep Subnet`
+#   k3s:      use your host LAN subnet
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+    name: kong-pool
+    namespace: metallb-system
+spec:
+    addresses:
+        - 172.19.0.200-172.19.0.210
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+    name: kong-l2
+    namespace: metallb-system
+spec:
+    ipAddressPools:
+        - kong-pool
