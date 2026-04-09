@@ -10,4 +10,5 @@ description = "chat-management"
 
 dependencies {
     implementation(libs.shared)
+    testImplementation(testFixtures(libs.shared))
 }

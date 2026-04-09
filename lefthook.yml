@@ -24,10 +24,27 @@ pre-commit:
             run: ./gradlew spotlessApply
             stage_fixed: true
 
-        database-format:
-            root: 'database/'
-            glob: '**/*.sql'
-            run: bun --bun run format
+        proto-lint:
+            root: services/proto
+            glob: '**/*.proto'
+            exclude:
+                - 'third_party/**'
+            run: ./gradlew bufLint
+            stage_fixed: false
+
+        proto-format:
+            root: services/proto
+            glob: '**/*.proto'
+            exclude:
+                - 'third_party/**'
+            run: ./gradlew bufFormatApply
+            stage_fixed: true
+        
+        general-format:
+            glob: '**/*.{md, json, toml, yaml, yml, sh}'
+            exclude:
+                - 'third_party/**'
+            run: bun run format
             stage_fixed: true
 
 commit-msg:
