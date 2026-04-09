@@ -20,6 +20,8 @@ pluginManagement {
     }
 }
 
+includeBuild("proto")
 includeBuild("user-management")
 includeBuild("meeting-management")
 includeBuild("chat-management")
+includeBuild("notification")

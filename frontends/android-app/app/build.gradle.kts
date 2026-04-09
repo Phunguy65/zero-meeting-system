@@ -59,10 +59,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.appcompat)
+    implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.activity)
-    implementation(libs.constraintlayout)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
     implementation(libs.hilt.android)
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp.android)
@@ -70,7 +70,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     ksp(libs.hilt.android.compiler)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
+    testImplementation(libs.junit4)
+    androidTestImplementation(libs.androidx.testExt.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

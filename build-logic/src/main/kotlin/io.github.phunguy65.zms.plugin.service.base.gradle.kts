@@ -19,33 +19,59 @@ group = "io.github.phunguy65.zms"
 version = "0.0.1-SNAPSHOT"
 
 val libs = the<LibrariesForLibs>()
+
 dependencies {
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"))
+    implementation(platform("org.springframework.grpc:spring-grpc-dependencies:${libs.versions.springGrpc.get()}"))
     implementation(libs.spring.boot.starter.actuator)
-    implementation(libs.spring.boot.starter.amqp)
+    implementation(libs.spring.boot.starter.aspectj)
+    implementation(libs.spring.boot.starter.data.redis)
+    implementation(libs.spring.boot.starter.log4j2)
+    implementation(libs.log4j.layout.template.json)
+    modules {
+        module(
+            libs.spring.boot.starter.logging
+                .get()
+                .module,
+        ) {
+            replacedBy(
+                libs.spring.boot.starter.log4j2
+                    .get()
+                    .module,
+                "Use Log4j2 instead of Logback",
+            )
+        }
+    }
+    implementation(libs.spring.kafka)
+    implementation(libs.cloudevents.core)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.integration)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.validation)
-    implementation(libs.spring.rabbit.stream)
-    implementation(libs.spring.integration.amqp)
     implementation(libs.spring.integration.http)
     implementation(libs.spring.integration.jpa)
     implementation(libs.spring.security.messaging)
     implementation(libs.jjwt.api)
+    implementation(libs.proto)
+    implementation(libs.spring.boot.starter.server.grpc)
+    implementation(libs.spring.boot.starter.client.grpc)
     compileOnly(libs.jspecify)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
     developmentOnly(libs.spring.boot.devtools)
     runtimeOnly(libs.postgresql)
+    runtimeOnly(libs.bouncycastle)
     annotationProcessor(libs.spring.boot.configuration.processor)
-    testImplementation(libs.spring.boot.starter.actuator.test)
-    testImplementation(libs.spring.boot.starter.data.jpa.test)
+    testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.starter.security.test)
-    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.spring.integration.test)
+    testImplementation(libs.spring.boot.grpc.test)
+    testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.archunit.junit5)
     testRuntimeOnly(libs.junit.platform.launcher)
-    testRuntimeOnly(libs.h2)
 }
 
 configurations {
@@ -56,16 +82,16 @@ configurations {
 
 hibernate {
     enhancement {
-        enableAssociationManagement = true
+        enableAssociationManagement = false
     }
 }
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protoc.get()}"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.protocGenGrpcJava.get()}"
         }
     }
     generateProtoTasks {

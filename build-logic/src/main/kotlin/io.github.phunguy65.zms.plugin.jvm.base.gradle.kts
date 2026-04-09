@@ -1,20 +1,14 @@
-import org.gradle.accessors.dm.LibrariesForLibs
-
 plugins {
-    `java-base`
+    java
 }
 group = "io.github.phunguy65.ttbs.conventions"
 version = "0.0.1-SNAPSHOT"
-
-val libs = the<LibrariesForLibs>()
-
 java {
     toolchain {
-        languageVersion =
-            JavaLanguageVersion.of(
-                libs.versions.java
-                    .get()
-                    .toInt(),
-            )
+        languageVersion = JavaLanguageVersion.of(25)
     }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-parameters")
 }
