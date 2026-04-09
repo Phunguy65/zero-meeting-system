@@ -1,4 +1,4 @@
-package com.example.zeromeeting.view.auth;
+package com.example.zeromeeting.view.auth.login;
 
 import androidx.lifecycle.ViewModel;
 import dagger.hilt.android.lifecycle.HiltViewModel;

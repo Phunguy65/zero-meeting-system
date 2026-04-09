@@ -24,10 +24,10 @@
             android:name="com.example.zeromeeting.view.welcome.WelcomeActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.auth.RegisterActivity"
+            android:name="com.example.zeromeeting.view.auth.register.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.auth.LoginActivity"
+            android:name="com.example.zeromeeting.view.auth.login.LoginActivity"
             android:exported="false" />
         <activity
             android:name="com.example.zeromeeting.view.guest.JoinGuestActivity"
@@ -39,7 +39,7 @@
             android:name="com.example.zeromeeting.view.meetingcreate.CreateMeetingActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.meetingroom.JoinMeetingActivity"
+            android:name="com.example.zeromeeting.view.meetingroom.joinmeeting.JoinMeetingActivity"
             android:exported="false" />
         <activity
             android:name="com.example.zeromeeting.view.calendar.CalendarActivity"
@@ -54,7 +54,7 @@
             android:name="com.example.zeromeeting.view.meetingroom.MeetingRoomActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.meetingroom.ParticipantsActivity"
+            android:name="com.example.zeromeeting.view.meetingroom.participant.ParticipantsActivity"
             android:exported="false" />
         <activity
             android:name="com.example.zeromeeting.view.meetingroom.chat.MeetingChatActivity"

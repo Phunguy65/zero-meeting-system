@@ -1,4 +1,4 @@
-package com.example.zeromeeting.view.meetingroom;
+package com.example.zeromeeting.view.meetingroom.participant;
 
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -56,7 +56,9 @@ public class ParticipantsActivity extends AppCompatActivity {
 
     private void setupListeners() {
         // Đóng màn hình
-        btnClose.setOnClickListener(v -> finish());
+        btnClose.setOnClickListener(v -> {
+            finish();
+        });
 
         // Xử lý nút Mute All
         btnMuteAll.setOnClickListener(v -> {

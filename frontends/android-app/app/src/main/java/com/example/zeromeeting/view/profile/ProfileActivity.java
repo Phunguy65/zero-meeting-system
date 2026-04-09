@@ -6,9 +6,9 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.zeromeeting.view.auth.LoginActivity;
 import com.example.zeromeeting.view.calendar.CalendarActivity;
 import com.example.zeromeeting.view.dashboard.DashboardActivity;
+import com.example.zeromeeting.view.welcome.WelcomeActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -59,7 +59,7 @@ public class ProfileActivity extends AppCompatActivity {
             viewModel.logOut();
             Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
             // Quay về màn hình Login và xóa toàn bộ Activity cũ (để user ko bấm Back quay lại được)
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(this, WelcomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
@@ -69,16 +69,13 @@ public class ProfileActivity extends AppCompatActivity {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
                 startActivity(new Intent(this, DashboardActivity.class));
-                overridePendingTransition(0, 0); // Bỏ hiệu ứng để cảm giác mượt
                 finish();
                 return true;
             } else if (itemId == R.id.nav_calendar) {
                 startActivity(new Intent(this, CalendarActivity.class));
-                overridePendingTransition(0, 0);
                 finish();
                 return true;
             } else if (itemId == R.id.nav_profile) {
-                // Đang ở trang này rồi
                 return true;
             }
             return false;

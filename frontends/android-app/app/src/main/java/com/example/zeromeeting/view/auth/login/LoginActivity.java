@@ -1,4 +1,4 @@
-package com.example.zeromeeting.view.auth;
+package com.example.zeromeeting.view.auth.login;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import com.example.zeromeeting.view.auth.register.RegisterActivity;
+import com.example.zeromeeting.view.dashboard.DashboardActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -51,7 +53,7 @@ public class LoginActivity extends AppCompatActivity {
         // Chuyển sang màn hình Đăng ký
         tvNeedAccount.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-            // finish(); // Bỏ comment nếu muốn đóng màn login khi sang đăng ký
+            finish(); // Bỏ comment nếu muốn đóng màn login khi sang đăng ký
         });
 
         tvForgotPassword.setOnClickListener(v -> {
@@ -60,10 +62,13 @@ public class LoginActivity extends AppCompatActivity {
 
         // Xử lý nút Đăng nhập chính
         btnLoginSubmit.setOnClickListener(v -> {
-            String email = edtEmail.getText().toString().trim();
-            String password = edtPassword.getText().toString().trim();
-            viewModel.loginUser(email, password);
-            Toast.makeText(this, "Đang xử lý đăng nhập...", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+            finish();
+            //            String email = edtEmail.getText().toString().trim();
+            //            String password = edtPassword.getText().toString().trim();
+            //            viewModel.loginUser(email, password);
+            //            Toast.makeText(this, "Đang xử lý đăng nhập...",
+            // Toast.LENGTH_SHORT).show();
         });
     }
 }

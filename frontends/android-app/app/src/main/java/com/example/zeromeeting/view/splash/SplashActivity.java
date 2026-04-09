@@ -4,10 +4,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.zeromeeting.view.meetingroom.chat.MeetingChatActivity;
+import com.example.zeromeeting.view.welcome.WelcomeActivity;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
-// Import thêm đường dẫn tới WelcomeActivity của bạn
 
 @AndroidEntryPoint
 public class SplashActivity extends AppCompatActivity {
@@ -17,7 +16,6 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        // Tạo độ trễ 2 giây (2000 mili-giây) rồi chuyển màn hình
         new Handler(Looper.getMainLooper())
                 .postDelayed(
                         new Runnable() {
@@ -25,7 +23,7 @@ public class SplashActivity extends AppCompatActivity {
                             public void run() {
                                 // Tạo lệnh di chuyển từ Splash sang Welcome
                                 Intent intent =
-                                        new Intent(SplashActivity.this, MeetingChatActivity.class);
+                                        new Intent(SplashActivity.this, WelcomeActivity.class);
                                 startActivity(intent);
 
                                 // Đóng SplashActivity lại để khi người dùng bấm nút Back ở màn

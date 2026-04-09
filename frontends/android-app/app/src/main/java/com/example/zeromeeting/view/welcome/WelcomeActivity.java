@@ -3,6 +3,9 @@ package com.example.zeromeeting.view.welcome;
 import android.os.Bundle;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.zeromeeting.view.auth.login.LoginActivity;
+import com.example.zeromeeting.view.auth.register.RegisterActivity;
+import com.example.zeromeeting.view.guest.JoinGuestActivity;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
@@ -32,18 +35,18 @@ public class WelcomeActivity extends AppCompatActivity {
     private void setupListeners() {
         // Xử lý sự kiện bấm nút Sign In
         btnSignIn.setOnClickListener(v -> {
-            // startActivity(new Intent(WelcomeActivity.this, LoginActivity.class));
+            startActivity(new Intent(WelcomeActivity.this, LoginActivity.class));
         });
 
         // Xử lý sự kiện bấm nút Create Account
         btnCreateAccount.setOnClickListener(v -> {
-            // startActivity(new Intent(WelcomeActivity.this, RegisterActivity.class));
+            startActivity(new Intent(WelcomeActivity.this, RegisterActivity.class));
         });
 
         // Xử lý sự kiện bấm chữ Join as Guest
         tvJoinGuest.setOnClickListener(v -> {
             // Xử lý logic vào thẳng phòng họp mà không cần đăng nhập
-            // startActivity(new Intent(WelcomeActivity.this, DashboardActivity.class));
+            startActivity(new Intent(WelcomeActivity.this, JoinGuestActivity.class));
         });
     }
 }

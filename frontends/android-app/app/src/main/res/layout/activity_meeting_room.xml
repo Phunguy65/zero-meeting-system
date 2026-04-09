@@ -213,27 +213,28 @@
         android:weightSum="4"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:padding="16dp"
-            android:src="@android:drawable/ic_btn_speak_now"
-            app:tint="#1877F2" />
+<!--        <ImageView-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_weight="1"-->
+<!--            android:padding="16dp"-->
+<!--            android:src="@android:drawable/ic_btn_speak_now"-->
+<!--            app:tint="#1877F2" />-->
 
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:padding="16dp"
-            android:src="@android:drawable/presence_video_online"
-            app:tint="#1877F2" />
+<!--        <ImageView-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_weight="1"-->
+<!--            android:padding="16dp"-->
+<!--            android:src="@android:drawable/presence_video_online"-->
+<!--            app:tint="#1877F2" />-->
 
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1">
             <ImageView
+                android:id="@+id/btnNAVParticipant"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="16dp"

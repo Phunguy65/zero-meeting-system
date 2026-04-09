@@ -1,10 +1,13 @@
 package com.example.zeromeeting.view.meetingcreate;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import com.example.zeromeeting.view.dashboard.DashboardActivity;
+import com.example.zeromeeting.view.meetingroom.MeetingRoomActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -39,7 +42,11 @@ public class CreateMeetingActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> {
+            Toast.makeText(this, "Chuyển sang tab Lịch", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(CreateMeetingActivity.this, DashboardActivity.class));
+            finish();
+        });
 
         btnCopyLink.setOnClickListener(v -> {
             // Logic copy vào Clipboard
@@ -53,7 +60,8 @@ public class CreateMeetingActivity extends AppCompatActivity {
 
             viewModel.startNewMeeting(isVideoOn, isAudioOn);
             Toast.makeText(this, "Starting meeting...", Toast.LENGTH_SHORT).show();
-            // Điều hướng sang màn hình MeetingRoomActivity
+            startActivity(new Intent(CreateMeetingActivity.this, MeetingRoomActivity.class));
+            finish();
         });
     }
 }

@@ -1,5 +1,6 @@
 package com.example.zeromeeting.view.meetingroom;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -7,6 +8,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import com.example.zeromeeting.view.meetingroom.chat.MeetingChatActivity;
+import com.example.zeromeeting.view.meetingroom.participant.ParticipantsActivity;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 
@@ -16,7 +19,7 @@ public class MeetingRoomActivity extends AppCompatActivity {
     private MeetingRoomViewModel viewModel;
 
     private TextView btnLeave;
-    private ImageView btnFloatVideo, btnFloatMic, btnFloatChat;
+    private ImageView btnFloatVideo, btnFloatMic, btnFloatChat, btnNAVParticipant;
 
     private boolean isMicOn = true;
     private boolean isVideoOn = true;
@@ -37,6 +40,7 @@ public class MeetingRoomActivity extends AppCompatActivity {
         btnFloatVideo = findViewById(R.id.btnFloatVideo);
         btnFloatMic = findViewById(R.id.btnFloatMic);
         btnFloatChat = findViewById(R.id.btnFloatChat);
+        btnNAVParticipant = findViewById(R.id.btnNAVParticipant);
     }
 
     private void setupListeners() {
@@ -67,6 +71,11 @@ public class MeetingRoomActivity extends AppCompatActivity {
         // Nút Chat
         btnFloatChat.setOnClickListener(v -> {
             Toast.makeText(this, "Mở khung Chat", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(MeetingRoomActivity.this, MeetingChatActivity.class));
+        });
+        btnNAVParticipant.setOnClickListener(v -> {
+            Toast.makeText(this, "Mở trang người tham gia", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(MeetingRoomActivity.this, ParticipantsActivity.class));
         });
     }
 

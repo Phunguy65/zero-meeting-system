@@ -6,7 +6,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.zeromeeting.view.guest.JoinGuestActivity;
+import com.example.zeromeeting.view.calendar.CalendarActivity;
+import com.example.zeromeeting.view.meetingcreate.CreateMeetingActivity;
+import com.example.zeromeeting.view.profile.ProfileActivity;
+import com.example.zeromeeting.view.schedule.ScheduleActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -45,17 +48,22 @@ public class DashboardActivity extends AppCompatActivity {
         cardNewMeeting.setOnClickListener(v -> {
             Toast.makeText(this, "Mở màn hình Tạo phòng họp nhanh", Toast.LENGTH_SHORT)
                     .show();
-            // startActivity(new Intent(this, CreateMeetingActivity.class));
+            startActivity(new Intent(DashboardActivity.this, CreateMeetingActivity.class));
+            finish();
         });
 
         cardJoinMeeting.setOnClickListener(v -> {
-            // Tạm thời gọi lại màn hình Join Meeting mà chúng ta đã làm
-            startActivity(new Intent(this, JoinGuestActivity.class));
+            Toast.makeText(this, "Mở màn hình Vào phòng họp nhanh", Toast.LENGTH_SHORT)
+                    .show();
+            startActivity(new Intent(DashboardActivity.this, CreateMeetingActivity.class));
+            finish();
         });
 
         cardSchedule.setOnClickListener(v -> {
             Toast.makeText(this, "Mở tính năng Lên lịch họp", Toast.LENGTH_SHORT)
                     .show();
+            startActivity(new Intent(DashboardActivity.this, ScheduleActivity.class));
+            finish();
         });
 
         btnSettings.setOnClickListener(v -> {
@@ -69,10 +77,14 @@ public class DashboardActivity extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.nav_calendar) {
                 Toast.makeText(this, "Chuyển sang tab Lịch", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(DashboardActivity.this, CalendarActivity.class));
+                finish();
                 return true;
             } else if (itemId == R.id.nav_profile) {
                 Toast.makeText(this, "Chuyển sang tab Cá nhân", Toast.LENGTH_SHORT)
                         .show();
+                startActivity(new Intent(DashboardActivity.this, ProfileActivity.class));
+                finish();
                 return true;
             }
             return false;

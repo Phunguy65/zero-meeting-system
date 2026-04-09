@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.zeromeeting.view.dashboard.DashboardActivity;
+import com.example.zeromeeting.view.profile.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
@@ -35,18 +35,17 @@ public class CalendarActivity extends AppCompatActivity {
         bottomNavigation.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                // Chuyển về lại trang Dashboard
                 startActivity(new Intent(this, DashboardActivity.class));
-                // overridePendingTransition(0, 0); // Bỏ hiệu ứng chuyển cảnh để nhìn giống
-                // Fragment
                 finish();
                 return true;
             } else if (itemId == R.id.nav_calendar) {
-                // Đang ở trang này rồi thì không làm gì cả
+
                 return true;
             } else if (itemId == R.id.nav_profile) {
                 Toast.makeText(this, "Chuyển sang tab Cá nhân", Toast.LENGTH_SHORT)
                         .show();
+                startActivity(new Intent(CalendarActivity.this, ProfileActivity.class));
+                finish();
                 return true;
             }
             return false;
