@@ -30,15 +30,18 @@ public class SecurityConfig {
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
                         new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .authorizeHttpRequests(auth -> auth.requestMatchers(
-                                "/api/v1/auth/register",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/google-login",
-                                "/api/v1/auth/refresh",
-                                "/api/v1/auth/logout")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
+                .authorizeHttpRequests(
+                        auth -> auth.requestMatchers("/v3/api-docs", "/v3/api-docs.yaml")
+                                .permitAll()
+                                .requestMatchers(
+                                        "/api/v1/auth/register",
+                                        "/api/v1/auth/login",
+                                        "/api/v1/auth/google-login",
+                                        "/api/v1/auth/refresh",
+                                        "/api/v1/auth/logout")
+                                .permitAll()
+                                .anyRequest()
+                                .authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(grpcUserIdFilter, jwtAuthFilter.getClass())
                 .build();

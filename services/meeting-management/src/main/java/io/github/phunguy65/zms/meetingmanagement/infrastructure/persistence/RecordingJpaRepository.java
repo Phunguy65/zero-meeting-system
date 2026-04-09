@@ -12,6 +12,9 @@ public interface RecordingJpaRepository extends JpaRepository<RecordingJpaEntity
 
     List<RecordingJpaEntity> findByMeetingId(UUID meetingId);
 
+    List<RecordingJpaEntity> findByMeetingIdAndStatusOrderByCreatedAtDescIdDesc(
+            UUID meetingId, String status);
+
     @Query(
             "SELECT r FROM RecordingJpaEntity r WHERE r.meetingId = :meetingId AND r.status IN :statuses")
     Optional<RecordingJpaEntity> findByMeetingIdAndStatusIn(

@@ -30,11 +30,11 @@ public record JoinRequestCreatedEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.join_request_created.v1";
+        return "io.github.phunguy65.zms.meeting.join-request.created.v1";
     }
 
     @Override
     public String topic() {
-        return "meeting-management.join_request.created";
+        return "meeting-management.join-request.created";
     }
 }

@@ -56,4 +56,8 @@ public interface ParticipationLogRepository {
 
     /** Returns read-only participant summaries for a meeting ordered by newest join first. */
     List<ParticipantSummary> findParticipantSummariesByMeetingId(UUID meetingId);
+
+    boolean existsByMeetingIdAndUserId(UUID meetingId, UUID userId);
+
+    List<ParticipantSummary> findDistinctParticipantSummariesByMeetingId(UUID meetingId);
 }

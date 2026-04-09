@@ -1,7 +1,7 @@
+import org.gradle.api.tasks.testing.Test
+
 plugins {
-    id("io.github.phunguy65.zms.plugin.spotless")
-    id("io.github.phunguy65.zms.plugin.jvm.base")
-    id("io.github.phunguy65.zms.plugin.service.base")
+    id("io.github.phunguy65.zms.plugin.service.mongodb.base")
 }
 
 group = "io.github.phunguy65.zms.services"
@@ -10,5 +10,22 @@ description = "chat-management"
 
 dependencies {
     implementation(libs.shared)
+    implementation(libs.cloudevents.kafka)
+    implementation(libs.livekit.server)
     testImplementation(testFixtures(libs.shared))
+}
+
+val testTask = tasks.named<Test>("test")
+
+tasks.register<Test>("generateOpenApiDocsFromTests") {
+    group = "openapi"
+    description = "Generate the chat-management OpenAPI spec via SpringBootTest"
+    testClassesDirs = testTask.get().testClassesDirs
+    classpath = testTask.get().classpath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("*OpenApiGenerationTest")
+    }
+    outputs.file(layout.buildDirectory.file("openapi/openapi.yaml"))
+    shouldRunAfter(testTask)
 }

@@ -77,6 +77,20 @@ public sealed interface MeetingError extends DomainError {
         }
     }
 
+    record NotOwner(UUID requesterId, UUID ownerId) implements MeetingError {
+        @Override
+        public String message() {
+            return "Requester " + requesterId + " does not own user scope " + ownerId;
+        }
+    }
+
+    record NotParticipant(UUID userId, UUID meetingId) implements MeetingError {
+        @Override
+        public String message() {
+            return "User " + userId + " has not participated in meeting " + meetingId;
+        }
+    }
+
     record ParticipationLogNotFound(UUID meetingId, String deviceId) implements MeetingError {
         @Override
         public String message() {

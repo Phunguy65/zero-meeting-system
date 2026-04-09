@@ -93,6 +93,16 @@ public class RecordingRepositoryAdapter implements RecordingRepository {
         return CursorPageResponse.of(items, pageSize, hasNext);
     }
 
+    @Override
+    public List<RecordingSummary> findCompletedSummariesByMeetingId(UUID meetingId) {
+        return jpa
+                .findByMeetingIdAndStatusOrderByCreatedAtDescIdDesc(
+                        meetingId, RecordingStatus.COMPLETED.name())
+                .stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
     private Recording toDomain(RecordingJpaEntity e) {
         return Recording.reconstitute(
                 RecordingId.of(e.getId()),

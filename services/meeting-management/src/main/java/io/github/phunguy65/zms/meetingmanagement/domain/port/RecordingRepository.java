@@ -40,4 +40,6 @@ public interface RecordingRepository {
 
     CursorPageResponse<RecordingSummary> findSummariesByMeetingId(
             UUID meetingId, ScrollCursor cursor, int pageSize);
+
+    List<RecordingSummary> findCompletedSummariesByMeetingId(UUID meetingId);
 }

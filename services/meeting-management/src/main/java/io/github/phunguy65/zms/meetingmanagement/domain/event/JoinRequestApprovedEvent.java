@@ -28,11 +28,11 @@ public record JoinRequestApprovedEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.join_request_approved.v1";
+        return "io.github.phunguy65.zms.meeting.join-request.approved.v1";
     }
 
     @Override
     public String topic() {
-        return "meeting-management.join_request.approved";
+        return "meeting-management.join-request.approved";
     }
 }
