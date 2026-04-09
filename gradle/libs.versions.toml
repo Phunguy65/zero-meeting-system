@@ -6,6 +6,7 @@ java = "25"
 springBoot = "4.0.3"
 springGrpc = "1.0.2"
 springDependencyManagement = "1.1.7"
+flyway = "11.14.1"
 hibernateOrm = "7.2.1.Final"
 graalvmNative = "0.11.4"
 spotless = "8.2.1"
@@ -87,7 +88,7 @@ uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuidC
 # Flyway
 flyway-core = { module = "org.flywaydb:flyway-core" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
-flyway-database-mongodb = { module = "org.flywaydb:flyway-database-mongodb" }
+flyway-database-mongodb = { module = "org.flywaydb:flyway-database-nc-mongodb", version.ref = "flyway" }
 
 # Spring Kafka (version managed by Spring Boot BOM)
 spring-kafka = { module = "org.springframework.kafka:spring-kafka" }
@@ -160,10 +161,7 @@ androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "an
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidxActivity" }
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
-androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
-androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 
 # ─── Frontend – Material & Test ───────────────────────────────────────────────
 material = { module = "com.google.android.material:material", version.ref = "material" }
