@@ -1,6 +1,6 @@
-import { client } from "@/generated/client.gen";
-import { createJsendMiddleware } from "./jsend-middleware";
-import type { ErrorTranslator } from "./types";
+import { client } from '@/generated/client.gen.ts';
+import { createJsendMiddleware } from './jsend-middleware.ts';
+import type { ErrorTranslator } from './types.ts';
 
 /**
  * Configures the shared @hey-api client with the JSend unwrap middleware.
@@ -10,9 +10,9 @@ import type { ErrorTranslator } from "./types";
  * @param baseUrl    — API gateway base URL (defaults to empty string for relative URLs)
  * @param translator — optional i18n hook for error message translation
  */
-export function configureApiClient(baseUrl = "", translator?: ErrorTranslator) {
-  client.setConfig({ baseUrl });
-  client.interceptors.response.use(createJsendMiddleware(translator));
+export function configureApiClient(baseUrl = '', translator?: ErrorTranslator) {
+    client.setConfig({ baseUrl });
+    client.interceptors.response.use(createJsendMiddleware(translator));
 }
 
 export { client };
