@@ -37,9 +37,9 @@ openApiGenerate {
     inputSpec.set(unifiedSpec)
     outputDir.set(generatedDir)
     ignoreFileOverride.set(rootProject.file("app/.openapi-generator-ignore").absolutePath)
-    apiPackage.set("io.github.phunguy65.zms.sdk.api")
-    modelPackage.set("io.github.phunguy65.zms.sdk.model")
-    invokerPackage.set("io.github.phunguy65.zms.sdk.invoker")
+    apiPackage.set("io.github.phunguy65.zms.data.remote.api")
+    modelPackage.set("io.github.phunguy65.zms.data.remote.dto")
+    invokerPackage.set("io.github.phunguy65.zms.data.remote.client")
     configOptions.set(
         mapOf(
             "dateLibrary" to "java8",

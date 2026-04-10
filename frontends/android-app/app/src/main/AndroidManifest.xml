@@ -13,7 +13,7 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.ZeroMeeting">
         <activity
-                android:name="io.github.phunguy65.zms.view.splash.SplashActivity"
+                android:name="io.github.phunguy65.zms.presentation.splash.SplashActivity"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -21,43 +21,43 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="io.github.phunguy65.zms.view.welcome.WelcomeActivity"
+            android:name="io.github.phunguy65.zms.presentation.welcome.WelcomeActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.auth.register.RegisterActivity"
+            android:name="io.github.phunguy65.zms.presentation.auth.register.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.auth.login.LoginActivity"
+            android:name="io.github.phunguy65.zms.presentation.auth.login.LoginActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.guest.JoinGuestActivity"
+            android:name="io.github.phunguy65.zms.presentation.guest.JoinGuestActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.dashboard.DashboardActivity"
+            android:name="io.github.phunguy65.zms.presentation.dashboard.DashboardActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.meetingcreate.CreateMeetingActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.create.CreateMeetingActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.meetingroom.joinmeeting.JoinMeetingActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.join.JoinMeetingActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.calendar.CalendarActivity"
+            android:name="io.github.phunguy65.zms.presentation.calendar.CalendarActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.profile.ProfileActivity"
+            android:name="io.github.phunguy65.zms.presentation.profile.ProfileActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.schedule.ScheduleActivity"
+            android:name="io.github.phunguy65.zms.presentation.schedule.ScheduleActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.meetingroom.MeetingRoomActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.room.MeetingRoomActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.meetingroom.participant.ParticipantsActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.participant.ParticipantsActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.view.meetingroom.chat.MeetingChatActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.chat.MeetingChatActivity"
             android:exported="false" />
     </application>
 
