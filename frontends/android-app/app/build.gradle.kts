@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.openapiGenerator)
 }
 
@@ -87,7 +86,7 @@ android {
 
     sourceSets {
         named("main") {
-            java.srcDir("$generatedDir/src/main/java")
+            java.directories.add(("$generatedDir/src/main/java"))
         }
     }
 }
@@ -110,7 +109,7 @@ dependencies {
     implementation(libs.retrofit.converter.scalars)
     implementation(libs.javax.annotation.api)
     implementation(libs.jackson.databind.nullable)
-    ksp(libs.hilt.android.compiler)
+    annotationProcessor(libs.hilt.android.compiler)
     testImplementation(libs.junit4)
     androidTestImplementation(libs.androidx.testExt.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -121,6 +120,9 @@ tasks.named("preBuild") {
 }
 
 tasks.named("openApiGenerate") {
+    notCompatibleWithConfigurationCache(
+        "openapi-generator-gradle-plugin does not support configuration cache",
+    )
     doFirst {
         delete(generatedDir)
     }
