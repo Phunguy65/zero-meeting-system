@@ -33,7 +33,7 @@ tags:
 paths:
   /api/v1/auth/register:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     post:
       tags:
@@ -52,11 +52,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/UserManagement_JsendResponseRegisterResponse
+                $ref: '#/components/schemas/UserManagement_RegisterResponse'
   /api/v1/auth/refresh:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     post:
       tags:
@@ -75,10 +74,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/UserManagement_JsendResponseLoginResponse'
+                $ref: '#/components/schemas/UserManagement_LoginResponse'
   /api/v1/auth/logout:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     post:
       tags:
@@ -94,13 +93,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/UserManagement_JsendResponseVoid'
   /api/v1/auth/login:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     post:
       tags:
@@ -119,10 +114,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/UserManagement_JsendResponseLoginResponse'
+                $ref: '#/components/schemas/UserManagement_LoginResponse'
   /api/v1/auth/google-login:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     post:
       tags:
@@ -141,10 +136,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/UserManagement_JsendResponseLoginResponse'
+                $ref: '#/components/schemas/UserManagement_LoginResponse'
   /api/v1/me:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     get:
       tags:
@@ -157,7 +152,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/UserManagement_JsendResponseUserResponse'
+                $ref: '#/components/schemas/UserManagement_UserResponse'
     delete:
       tags:
         - Me
@@ -169,8 +164,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/UserManagement_JsendResponseDeleteAccountResponse
+                $ref: '#/components/schemas/UserManagement_DeleteAccountResponse'
     patch:
       tags:
         - Me
@@ -188,10 +182,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/UserManagement_JsendResponseUserResponse'
+                $ref: '#/components/schemas/UserManagement_UserResponse'
   /api/v1/me/preferences:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     get:
       tags:
@@ -204,8 +198,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/UserManagement_JsendResponseUserPreferencesResponse
+                $ref: '#/components/schemas/UserManagement_UserPreferencesResponse'
     patch:
       tags:
         - Me
@@ -224,11 +217,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/UserManagement_JsendResponseUserPreferencesResponse
+                $ref: '#/components/schemas/UserManagement_UserPreferencesResponse'
   /api/v1/users:search:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     get:
       tags:
@@ -248,10 +240,10 @@ paths:
             '*/*':
               schema:
                 $ref: >-
-                  #/components/schemas/UserManagement_JsendResponseCursorScrollResponseUserResponse
+                  #/components/schemas/UserManagement_CursorScrollResponseUserResponse
   /api/v1/users/{id}:
     servers:
-      - url: http://localhost:42185
+      - url: http://localhost:45337
         description: Generated server url
     get:
       tags:
@@ -271,10 +263,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/UserManagement_JsendResponseUserResponse'
+                $ref: '#/components/schemas/UserManagement_UserResponse'
   /api/v1/meetings:schedule:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -293,11 +285,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseMeetingResponse
+                $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings:instant:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -317,11 +308,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseMeetingResponse
+                $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{id}:start:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -338,13 +328,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MeetingManagement_JsendResponseVoid'
   /api/v1/meetings/{id}:requestJoin:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -370,11 +356,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseRequestJoinResponse
+                $ref: '#/components/schemas/MeetingManagement_RequestJoinResponse'
   /api/v1/meetings/{id}:end:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -391,13 +376,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MeetingManagement_JsendResponseVoid'
   /api/v1/meetings/{id}:cancel:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -414,13 +395,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MeetingManagement_JsendResponseVoid'
   /api/v1/meetings/{id}/recordings:stop:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -437,13 +414,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MeetingManagement_JsendResponseVoid'
   /api/v1/meetings/{id}/recordings:start:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -463,11 +436,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseRecordingResponse
+                $ref: '#/components/schemas/MeetingManagement_RecordingResponse'
   /api/v1/meetings/{id}/participants:kick:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -495,13 +467,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MeetingManagement_JsendResponseVoid'
   /api/v1/meetings/{id}/joinRequests:approveAll:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -521,11 +489,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseApproveAllResponse
+                $ref: '#/components/schemas/MeetingManagement_ApproveAllResponse'
   /api/v1/meetings/{id}/joinRequests/{requestId}:deny:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -548,13 +515,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MeetingManagement_JsendResponseVoid'
   /api/v1/meetings/{id}/joinRequests/{requestId}:approve:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     post:
       tags:
@@ -577,13 +540,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MeetingManagement_JsendResponseString'
   /api/v1/meetings/{id}/settings:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     patch:
       tags:
@@ -610,11 +569,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseMeetingSettingsResponse
+                $ref: '#/components/schemas/MeetingManagement_MeetingSettingsResponse'
   /api/v1/users/{userId}/meetings:filter:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -652,10 +610,10 @@ paths:
             '*/*':
               schema:
                 $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseCursorScrollResponseMeetingResponse
+                  #/components/schemas/MeetingManagement_CursorScrollResponseMeetingResponse
   /api/v1/users/{userId}/meetings/{meetingId}:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -681,11 +639,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseMeetingDetailResponse
+                $ref: '#/components/schemas/MeetingManagement_MeetingDetailResponse'
   /api/v1/recordings/{id}:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -705,11 +662,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseRecordingResponse
+                $ref: '#/components/schemas/MeetingManagement_RecordingResponse'
   /api/v1/meetings:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -736,10 +692,10 @@ paths:
             '*/*':
               schema:
                 $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseCursorScrollResponseMeetingResponse
+                  #/components/schemas/MeetingManagement_CursorScrollResponseMeetingResponse
   /api/v1/meetings:byShortCode:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -758,11 +714,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseMeetingResponse
+                $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{id}:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -782,11 +737,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseMeetingResponse
+                $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{id}/recordings:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -819,10 +773,10 @@ paths:
             '*/*':
               schema:
                 $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseCursorScrollResponseRecordingResponse
+                  #/components/schemas/MeetingManagement_CursorScrollResponseRecordingResponse
   /api/v1/meetings/{id}/participants:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -839,14 +793,9 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseListParticipantListItemResponse
   /api/v1/meetings/{id}/joinRequests:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -881,10 +830,10 @@ paths:
             '*/*':
               schema:
                 $ref: >-
-                  #/components/schemas/MeetingManagement_JsendResponseOffsetScrollResponseJoinRequestResponse
+                  #/components/schemas/MeetingManagement_OffsetScrollResponseJoinRequestResponse
   /api/v1/meetings/{id}/events:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -907,7 +856,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_SseEmitter'
   /api/v1/joinRequests/{requestId}/events:
     servers:
-      - url: http://localhost:33825
+      - url: http://localhost:39957
         description: Generated server url
     get:
       tags:
@@ -930,7 +879,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_SseEmitter'
   /api/v1/chat/rooms/{roomId}/messages:
     servers:
-      - url: http://localhost:35473
+      - url: http://localhost:39487
         description: Generated server url
     get:
       tags:
@@ -963,7 +912,7 @@ paths:
             '*/*':
               schema:
                 $ref: >-
-                  #/components/schemas/ChatManagement_JsendResponseCursorScrollResponseChatMessageResponse
+                  #/components/schemas/ChatManagement_CursorScrollResponseChatMessageResponse
     post:
       tags:
         - Chat
@@ -987,11 +936,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/ChatManagement_JsendResponseChatMessageResponse
+                $ref: '#/components/schemas/ChatManagement_ChatMessageResponse'
   /api/v1/chat/rooms/{roomId}:
     servers:
-      - url: http://localhost:35473
+      - url: http://localhost:39487
         description: Generated server url
     get:
       tags:
@@ -1010,8 +958,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: >-
-                  #/components/schemas/ChatManagement_JsendResponseChatRoomResponse
+                $ref: '#/components/schemas/ChatManagement_ChatRoomResponse'
 components:
   schemas:
     UserManagement_RegisterRequest:
@@ -1039,15 +986,6 @@ components:
         - fullName
         - password
         - username
-    UserManagement_JsendResponseRegisterResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/UserManagement_RegisterResponse'
-        message:
-          type: string
     UserManagement_RegisterResponse:
       type: object
       properties:
@@ -1068,15 +1006,6 @@ components:
           minLength: 1
       required:
         - refreshToken
-    UserManagement_JsendResponseLoginResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/UserManagement_LoginResponse'
-        message:
-          type: string
     UserManagement_LoginResponse:
       type: object
       properties:
@@ -1103,14 +1032,6 @@ components:
           minLength: 1
       required:
         - refreshToken
-    UserManagement_JsendResponseVoid:
-      type: object
-      properties:
-        status:
-          type: string
-        data: {}
-        message:
-          type: string
     UserManagement_LoginRequest:
       type: object
       properties:
@@ -1161,15 +1082,6 @@ components:
         - avatarUrl
         - fullName
         - username
-    UserManagement_JsendResponseUserResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/UserManagement_UserResponse'
-        message:
-          type: string
     UserManagement_UserResponse:
       type: object
       properties:
@@ -1194,15 +1106,6 @@ components:
         updatedAt:
           type: string
           format: date-time
-    UserManagement_JsendResponseUserPreferencesResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/UserManagement_UserPreferencesResponse'
-        message:
-          type: string
     UserManagement_SearchUsersRequest:
       type: object
       properties:
@@ -1227,15 +1130,6 @@ components:
           format: int32
         nextPageToken:
           type: string
-    UserManagement_JsendResponseCursorScrollResponseUserResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/UserManagement_CursorScrollResponseUserResponse'
-        message:
-          type: string
     UserManagement_DeleteAccountResponse:
       type: object
       properties:
@@ -1249,15 +1143,6 @@ components:
         deletedAt:
           type: string
           format: date-time
-    UserManagement_JsendResponseDeleteAccountResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/UserManagement_DeleteAccountResponse'
-        message:
-          type: string
     MeetingManagement_InviteeRequest:
       type: object
       properties:
@@ -1332,15 +1217,6 @@ components:
         - endTime
         - settings
         - startTime
-    MeetingManagement_JsendResponseMeetingResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
-        message:
-          type: string
     MeetingManagement_MeetingResponse:
       type: object
       properties:
@@ -1411,14 +1287,6 @@ components:
           $ref: '#/components/schemas/MeetingManagement_MeetingSettingsRequest'
       required:
         - settings
-    MeetingManagement_JsendResponseVoid:
-      type: object
-      properties:
-        status:
-          type: string
-        data: {}
-        message:
-          type: string
     MeetingManagement_JoinRequestRequest:
       type: object
       properties:
@@ -1436,15 +1304,6 @@ components:
       required:
         - deviceId
         - displayName
-    MeetingManagement_JsendResponseRequestJoinResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/MeetingManagement_RequestJoinResponse'
-        message:
-          type: string
     MeetingManagement_RequestJoinResponse:
       type: object
       properties:
@@ -1461,15 +1320,6 @@ components:
         token:
           type: string
         roomName:
-          type: string
-    MeetingManagement_JsendResponseRecordingResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/MeetingManagement_RecordingResponse'
-        message:
           type: string
     MeetingManagement_RecordingResponse:
       type: object
@@ -1512,24 +1362,6 @@ components:
         approvedCount:
           type: integer
           format: int32
-    MeetingManagement_JsendResponseApproveAllResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/MeetingManagement_ApproveAllResponse'
-        message:
-          type: string
-    MeetingManagement_JsendResponseString:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          type: string
-        message:
-          type: string
     MeetingManagement_JsonNullableBoolean:
       type: object
       properties:
@@ -1570,15 +1402,6 @@ components:
           $ref: '#/components/schemas/MeetingManagement_JsonNullableBoolean'
         joinRequestTimeoutSeconds:
           $ref: '#/components/schemas/MeetingManagement_JsonNullableInteger'
-    MeetingManagement_JsendResponseMeetingSettingsResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/MeetingManagement_MeetingSettingsResponse'
-        message:
-          type: string
     MeetingManagement_CursorScrollResponseMeetingResponse:
       type: object
       properties:
@@ -1590,16 +1413,6 @@ components:
           type: integer
           format: int32
         nextPageToken:
-          type: string
-    MeetingManagement_JsendResponseCursorScrollResponseMeetingResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: >-
-            #/components/schemas/MeetingManagement_CursorScrollResponseMeetingResponse
-        message:
           type: string
     MeetingManagement_InviteeResponse:
       type: object
@@ -1623,15 +1436,6 @@ components:
         respondedAt:
           type: string
           format: date-time
-    MeetingManagement_JsendResponseMeetingDetailResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/MeetingManagement_MeetingDetailResponse'
-        message:
-          type: string
     MeetingManagement_MeetingDetailResponse:
       type: object
       properties:
@@ -1717,27 +1521,6 @@ components:
           format: int32
         nextPageToken:
           type: string
-    MeetingManagement_JsendResponseCursorScrollResponseRecordingResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: >-
-            #/components/schemas/MeetingManagement_CursorScrollResponseRecordingResponse
-        message:
-          type: string
-    MeetingManagement_JsendResponseListParticipantListItemResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/MeetingManagement_ParticipantListItemResponse'
-        message:
-          type: string
     MeetingManagement_ParticipantListItemResponse:
       type: object
       properties:
@@ -1791,16 +1574,6 @@ components:
         expiresAt:
           type: string
           format: date-time
-    MeetingManagement_JsendResponseOffsetScrollResponseJoinRequestResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: >-
-            #/components/schemas/MeetingManagement_OffsetScrollResponseJoinRequestResponse
-        message:
-          type: string
     MeetingManagement_OffsetScrollResponseJoinRequestResponse:
       type: object
       properties:
@@ -1851,15 +1624,6 @@ components:
         createdAt:
           type: string
           format: date-time
-    ChatManagement_JsendResponseChatMessageResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/ChatManagement_ChatMessageResponse'
-        message:
-          type: string
     ChatManagement_ChatRoomResponse:
       type: object
       properties:
@@ -1872,15 +1636,6 @@ components:
         createdAt:
           type: string
           format: date-time
-    ChatManagement_JsendResponseChatRoomResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: '#/components/schemas/ChatManagement_ChatRoomResponse'
-        message:
-          type: string
     ChatManagement_CursorScrollResponseChatMessageResponse:
       type: object
       properties:
@@ -1892,16 +1647,6 @@ components:
           type: integer
           format: int32
         nextPageToken:
-          type: string
-    ChatManagement_JsendResponseCursorScrollResponseChatMessageResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        data:
-          $ref: >-
-            #/components/schemas/ChatManagement_CursorScrollResponseChatMessageResponse
-        message:
           type: string
 x-tagGroups:
   - name: UserManagement

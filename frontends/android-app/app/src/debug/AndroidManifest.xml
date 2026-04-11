@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only manifest overlay.
+  Enables cleartext HTTP traffic so the app can reach the API gateway
+  on the host machine via http://10.0.2.2:8080 from the Android emulator.
+  This attribute is merged into the main manifest ONLY for debug builds.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application android:usesCleartextTraffic="true"/>
+
+</manifest>
