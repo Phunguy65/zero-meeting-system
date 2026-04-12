@@ -14,3 +14,5 @@
 .cxx
 local.properties
 .ace-tool/
+# Firebase config (developer-provided, contains API keys)
+app/google-services.json

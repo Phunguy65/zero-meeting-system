@@ -26,10 +26,7 @@
             android:name="io.github.phunguy65.zms.presentation.welcome.WelcomeActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.presentation.auth.register.RegisterActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.auth.login.LoginActivity"
+            android:name="io.github.phunguy65.zms.presentation.auth.AuthActivity"
             android:exported="false" />
         <activity
             android:name="io.github.phunguy65.zms.presentation.guest.JoinGuestActivity"

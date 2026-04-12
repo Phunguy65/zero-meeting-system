@@ -128,7 +128,9 @@ public final class JsendUnwrapInterceptor implements Interceptor {
                         String field = v.has("field") ? v.get("field").getAsString() : "";
                         String msg = v.has("message") ? v.get("message").getAsString() : "";
                         String vCode = v.has("code") ? v.get("code").getAsString() : "";
-                        violations.add(new ApiFailException.Violation(field, msg, vCode));
+                        String translatedViolationMsg = translator.translate(vCode, msg);
+                        violations.add(new ApiFailException.Violation(
+                                field, translatedViolationMsg, vCode));
                     }
                 }
             }
@@ -143,6 +145,7 @@ public final class JsendUnwrapInterceptor implements Interceptor {
         if (message == null || message.isEmpty()) {
             message = "An unexpected server error occurred";
         }
-        return new ApiErrorException(message);
+        String translatedMessage = translator.translate("SERVER_ERROR", message);
+        return new ApiErrorException(translatedMessage);
     }
 }

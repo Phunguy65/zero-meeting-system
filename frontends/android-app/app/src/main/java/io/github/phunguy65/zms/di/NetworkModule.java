@@ -1,9 +1,11 @@
 package io.github.phunguy65.zms.di;
 
+import android.content.Context;
 import com.google.gson.Gson;
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.components.SingletonComponent;
 import io.github.phunguy65.zms.data.remote.api.AuthApi;
 import io.github.phunguy65.zms.data.remote.api.ChatApi;
@@ -15,6 +17,7 @@ import io.github.phunguy65.zms.data.remote.api.RecordingsApi;
 import io.github.phunguy65.zms.data.remote.api.UserMeetingsApi;
 import io.github.phunguy65.zms.data.remote.api.UsersApi;
 import io.github.phunguy65.zms.data.remote.client.JSON;
+import io.github.phunguy65.zms.data.remote.interceptor.AndroidErrorTranslator;
 import io.github.phunguy65.zms.data.remote.interceptor.ErrorTranslator;
 import io.github.phunguy65.zms.data.remote.interceptor.JsendUnwrapInterceptor;
 import io.github.phunguy65.zms.frontends.BuildConfig;
@@ -48,8 +51,8 @@ public final class NetworkModule {
 
     @Provides
     @Singleton
-    ErrorTranslator provideErrorTranslator() {
-        return ErrorTranslator.DEFAULT;
+    ErrorTranslator provideErrorTranslator(@ApplicationContext Context context) {
+        return new AndroidErrorTranslator(context);
     }
 
     @Provides

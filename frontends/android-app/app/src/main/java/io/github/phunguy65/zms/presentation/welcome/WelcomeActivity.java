@@ -7,8 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
-import io.github.phunguy65.zms.presentation.auth.login.LoginActivity;
-import io.github.phunguy65.zms.presentation.auth.register.RegisterActivity;
+import io.github.phunguy65.zms.presentation.auth.AuthActivity;
 import io.github.phunguy65.zms.presentation.guest.JoinGuestActivity;
 
 @AndroidEntryPoint
@@ -34,19 +33,17 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        // Xử lý sự kiện bấm nút Sign In
         btnSignIn.setOnClickListener(v -> {
-            startActivity(new Intent(WelcomeActivity.this, LoginActivity.class));
+            startActivity(new Intent(WelcomeActivity.this, AuthActivity.class));
         });
 
-        // Xử lý sự kiện bấm nút Create Account
         btnCreateAccount.setOnClickListener(v -> {
-            startActivity(new Intent(WelcomeActivity.this, RegisterActivity.class));
+            Intent intent = new Intent(WelcomeActivity.this, AuthActivity.class);
+            intent.putExtra(AuthActivity.EXTRA_START_DESTINATION, R.id.registerFragment);
+            startActivity(intent);
         });
 
-        // Xử lý sự kiện bấm chữ Join as Guest
         tvJoinGuest.setOnClickListener(v -> {
-            // Xử lý logic vào thẳng phòng họp mà không cần đăng nhập
             startActivity(new Intent(WelcomeActivity.this, JoinGuestActivity.class));
         });
     }

@@ -1,0 +1,63 @@
+<resources>
+    <string name="app_name">Zero Meeting</string>
+
+    <!-- ═══ Màn hình đăng nhập ═══ -->
+    <string name="login_title">Chào mừng trở lại</string>
+    <string name="login_subtitle">Đăng nhập để truy cập cuộc họp của bạn</string>
+    <string name="login_label_email">Email</string>
+    <string name="login_hint_email">ten@congty.com</string>
+    <string name="login_label_password">Mật khẩu</string>
+    <string name="login_hint_password">••••••••</string>
+    <string name="login_forgot_password">Quên mật khẩu?</string>
+    <string name="login_btn_sign_in">Đăng nhập</string>
+    <string name="login_or_continue_with">HOẶC TIẾP TỤC VỚI</string>
+    <string name="login_btn_google">Đăng nhập với Google</string>
+    <string name="login_need_account">Chưa có tài khoản? Đăng ký</string>
+    <string name="login_forgot_password_coming_soon">Tính năng khôi phục mật khẩu sắp ra mắt</string>
+
+    <!-- ═══ Màn hình đăng ký ═══ -->
+    <string name="register_title">Tạo tài khoản</string>
+    <string name="register_hint_full_name">Nhập họ và tên</string>
+    <string name="register_hint_username">john_doe</string>
+    <string name="register_helper_username">3–30 ký tự: chữ cái, số, _ hoặc - </string>
+    <string name="register_hint_email">ten@example.com</string>
+    <string name="register_hint_password">Nhập mật khẩu</string>
+    <string name="register_helper_password">8–128 ký tự</string>
+    <string name="register_hint_confirm_password">Xác nhận mật khẩu</string>
+    <string name="register_btn_create">Tạo tài khoản</string>
+    <string name="register_have_account">Đã có tài khoản? Đăng nhập</string>
+    <string name="register_success_message">Tạo tài khoản thành công! Vui lòng đăng nhập.</string>
+
+    <!-- ═══ Trợ năng ═══ -->
+    <string name="navigate_up">Quay lại</string>
+
+    <!-- ═══ Lỗi xác thực phía client ═══ -->
+    <string name="validation_required">Trường này là bắt buộc</string>
+    <string name="validation_invalid_format">Định dạng không hợp lệ</string>
+    <string name="validation_passwords_mismatch">Mật khẩu không khớp</string>
+    <string name="validation_failed">Vui lòng sửa các lỗi ở trên</string>
+    <string name="validation_too_short">Giá trị quá ngắn</string>
+    <string name="validation_too_long">Giá trị quá dài</string>
+    <string name="validation_invalid_value">Giá trị không hợp lệ</string>
+    <string name="validation_fullname_too_long">Tên không được vượt quá 255 ký tự</string>
+    <string name="validation_username_too_short">Tên người dùng phải có ít nhất 3 ký tự</string>
+    <string name="validation_username_too_long">Tên người dùng không được vượt quá 30 ký tự</string>
+    <string name="validation_username_format">Chỉ cho phép chữ cái, số, _ và -</string>
+    <string name="validation_password_too_short">Mật khẩu phải có ít nhất 8 ký tự</string>
+    <string name="validation_password_too_long">Mật khẩu không được vượt quá 128 ký tự</string>
+
+    <!-- ═══ Lỗi chung ═══ -->
+    <string name="error_server">Đã xảy ra lỗi. Vui lòng thử lại sau.</string>
+    <string name="error_network">Không có kết nối mạng. Vui lòng kiểm tra mạng và thử lại.</string>
+    <string name="error_unknown">Đã xảy ra lỗi không mong muốn.</string>
+    <string name="error_google_signin_failed">Đăng nhập Google thất bại. Vui lòng thử lại.</string>
+    <string name="error_validation">Xác thực thất bại</string>
+
+    <!-- ═══ Bản dịch mã lỗi từ backend ═══ -->
+    <string name="error_invalid_credentials">Email hoặc mật khẩu không đúng</string>
+    <string name="error_email_already_exists">Địa chỉ email đã được sử dụng</string>
+    <string name="error_username_already_exists">Tên người dùng đã được sử dụng</string>
+    <string name="error_user_deleted">Tài khoản này đã bị xóa</string>
+    <string name="error_invalid_firebase_token">Đăng nhập Google thất bại. Vui lòng thử lại.</string>
+    <string name="error_firebase_auth">Dịch vụ không khả dụng. Vui lòng thử lại sau.</string>
+</resources>

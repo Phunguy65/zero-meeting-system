@@ -2,4 +2,31 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Material 3 — Light theme -->
+    <color name="md_theme_light_primary">#1877F2</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#1E1E1E</color>
+    <color name="md_theme_light_onSurfaceVariant">#666666</color>
+    <color name="md_theme_light_error">#B3261E</color>
+    <color name="md_theme_light_outline">#E0E0E0</color>
+
+    <!-- Material 3 — Dark theme -->
+    <color name="md_theme_dark_primary">#4A90E2</color>
+    <color name="md_theme_dark_onPrimary">#FFFFFF</color>
+    <color name="md_theme_dark_surface">#121212</color>
+    <color name="md_theme_dark_onSurface">#E3E3E3</color>
+    <color name="md_theme_dark_onSurfaceVariant">#A0A0A0</color>
+    <color name="md_theme_dark_error">#F2B8B5</color>
+    <color name="md_theme_dark_outline">#444746</color>
+
+    <!-- Brand — Google Sign-In button only -->
+    <color name="google_blue">#4285F4</color>
+
+    <!-- Semantic — success feedback -->
+    <color name="md_theme_success">#2E7D32</color>
+
+    <!-- Gradient tints (drawable XML cannot use ?attr/) -->
+    <color name="md_theme_light_primary_tint">#B3D4FF</color>
 </resources>

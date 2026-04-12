@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.google.services)
     alias(libs.plugins.openapiGenerator)
 }
 
@@ -117,8 +118,21 @@ dependencies {
     implementation(libs.retrofit.converter.scalars)
     implementation(libs.javax.annotation.api)
     implementation(libs.jackson.databind.nullable)
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.id)
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.glide)
+    implementation(libs.lottie)
     annotationProcessor(libs.hilt.android.compiler)
     testImplementation(libs.junit4)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.inline)
+    testImplementation(libs.androidx.arch.core.testing)
     androidTestImplementation(libs.androidx.testExt.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

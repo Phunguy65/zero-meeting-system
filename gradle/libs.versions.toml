@@ -50,6 +50,17 @@ material = "1.13.0"
 livekit = "0.12.1"
 okhttp = "4.12.0"
 retrofit = "2.12.0"
+androidxNavigation = "2.9.7"
+androidxSecurityCrypto = "1.1.0"
+androidxCredentials = "1.6.0"
+firebaseBom = "34.12.0"
+googleServices = "4.4.4"
+googleId = "1.2.0"
+glide = "5.0.5"
+lottie = "6.7.1"
+mockito = "5.23.0"
+mockitoInline = "5.2.0"
+androidxArchCoreTesting = "2.2.0"
 # Utilities
 ktlint = "1.8.0"
 
@@ -164,6 +175,9 @@ androidx-lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata"
 # ─── Frontend – Material & Test ───────────────────────────────────────────────
 material = { module = "com.google.android.material:material", version.ref = "material" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInline" }
+androidx-arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "androidxArchCoreTesting" }
 
 # ─── Frontend – Hilt ─────────────────────────────────────────────────────────
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
@@ -182,6 +196,26 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 retrofit-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 retrofit-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
 
+# ─── Frontend – Navigation ───────────────────────────────────────────────────
+androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment", version.ref = "androidxNavigation" }
+androidx-navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "androidxNavigation" }
+
+# ─── Frontend – Firebase ─────────────────────────────────────────────────────
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+
+# ─── Frontend – Credentials / Google Sign-In ─────────────────────────────────
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidxCredentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidxCredentials" }
+google-id = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleId" }
+
+# ─── Frontend – Security ─────────────────────────────────────────────────────
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidxSecurityCrypto" }
+
+# ─── Frontend – Image & Animation ────────────────────────────────────────────
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
+
 [plugins]
 # ─── Backend ─────────────────────────────────────────────────────────────────
 springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
@@ -196,6 +230,7 @@ buildBuf = { id = "build.buf", version.ref = "buildBuf" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 
 # ─── Custom Plugin ─────────────────────────────────────────────────────────────
 springdocOpenapi = { id = "org.springdoc.openapi-gradle-plugin", version = "1.9.0" }

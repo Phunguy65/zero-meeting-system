@@ -18,7 +18,8 @@ Hilt `@Module` classes wiring the app together.
 ```
 di/
 ├── NetworkModule.java                      @Module — provides OkHttpClient, Retrofit, API interfaces
-└── RepositoryModule.java                   @Module — @Binds repository interfaces → implementations
+├── RepositoryModule.java                   @Module — @Binds repository interfaces → implementations
+└── StorageModule.java                      @Module — provides EncryptedSharedPreferences
 ```
 
 ## data/ — Data Layer
@@ -29,6 +30,8 @@ depended on by `domain/`.
 
 ```
 data/
+├── local/
+│   └── TokenManager.java                   @Singleton — EncryptedSharedPreferences token storage
 ├── remote/
 │   ├── api/          [auto-generated]      Retrofit API interfaces (build/generated/openapi/)
 │   ├── dto/          [auto-generated]      JSON model classes (build/generated/openapi/)
@@ -37,6 +40,7 @@ data/
 │       ├── JsendUnwrapInterceptor.java     Unwraps JSend envelopes before Retrofit deserialization
 │       ├── JsendEnvelope.java              JSend response envelope model (status/data/message)
 │       ├── ErrorTranslator.java            i18n hook for error code → locale message
+│       ├── AndroidErrorTranslator.java     @Singleton — translates error codes to locale strings via R.string
 │       ├── ApiFailException.java           Thrown on JSend "fail" (HTTP 4xx) with violations
 │       └── ApiErrorException.java          Thrown on JSend "error" (HTTP 5xx)
 ├── mapper/                                 DTO → Domain model converters
@@ -45,7 +49,7 @@ data/
 │   ├── ParticipantMapper.java              Maps Participant DTOs → domain Participant
 │   └── ChatMessageMapper.java             Maps ChatMessage DTOs → domain ChatMessage
 └── repository/                             Repository implementations
-    ├── AuthRepositoryImpl.java             Implements AuthRepository
+    ├── AuthRepositoryImpl.java             Implements AuthRepository (login, register, googleLogin)
     ├── MeetingRepositoryImpl.java          Implements MeetingRepository
     ├── ChatRepositoryImpl.java             Implements ChatRepository
     ├── CalendarRepositoryImpl.java         Implements CalendarRepository
@@ -62,13 +66,15 @@ use cases. Depends on: **nothing** (innermost layer).
 domain/
 ├── model/                                  Business entities (POJOs)
 │   ├── User.java                           Authenticated user
+│   ├── LoginResult.java                    Login/Google sign-in result (accessToken, refreshToken, expiresIn)
+│   ├── RegisterResult.java                 Registration result (userId, email, fullName, username)
 │   ├── Meeting.java                        Meeting room session
 │   ├── Participant.java                    Meeting participant (name, role, mic/video state)
 │   ├── ChatMessage.java                    In-meeting chat message
 │   ├── Schedule.java                       Scheduled meeting
 │   └── CalendarEvent.java                  Calendar event entry
 ├── repository/                             Repository interfaces (contracts)
-│   ├── AuthRepository.java                 Authentication operations
+│   ├── AuthRepository.java                 Authentication operations (login, register, googleLogin)
 │   ├── MeetingRepository.java              Meeting room operations
 │   ├── ChatRepository.java                 In-meeting chat operations
 │   ├── CalendarRepository.java             Calendar event operations
@@ -77,7 +83,8 @@ domain/
 └── usecase/                                Business actions (one action per class)
     ├── auth/
     │   ├── LoginUseCase.java               User login via email/password
-    │   └── RegisterUseCase.java            New user registration
+    │   ├── RegisterUseCase.java            New user registration
+    │   └── GoogleLoginUseCase.java         Google Sign-In via Firebase ID token
     ├── meeting/
     │   ├── CreateMeetingUseCase.java        Create a new meeting room
     │   ├── JoinMeetingUseCase.java          Join an existing meeting
@@ -94,21 +101,24 @@ domain/
 
 ## presentation/ — Presentation Layer
 
-UI components: Activities, ViewModels, Adapters. Grouped by feature. Depends on:
-`domain/` (uses models, use cases). NEVER imports `data/`.
+UI components: Activities, Fragments, ViewModels, Adapters. Grouped by feature.
+Depends on: `domain/` (uses models, use cases). NEVER imports `data/`.
 
 ```
 presentation/
 ├── common/
 │   └── state/
-│       └── UiState.java                    Sealed interface: Loading | Success<T> | Error
+│       ├── UiState.java                    Sealed interface: Idle | Loading | Success<T> | Error
+│       ├── UiError.java                    Sealed interface: Fail | ServerError | NetworkError | Unknown
+│       └── FieldError.java                 Field-level validation error (field, message, code); 2-arg constructor for client-side (message=null)
 ├── auth/
+│   ├── AuthActivity.java                   @AndroidEntryPoint — NavHost for auth flow
 │   ├── login/
-│   │   ├── LoginActivity.java              @AndroidEntryPoint — login screen
-│   │   └── LoginViewModel.java             @HiltViewModel — login state
+│   │   ├── LoginFragment.java              @AndroidEntryPoint — login screen (email/pw + Google)
+│   │   └── LoginViewModel.java             @HiltViewModel — login state + Google Sign-In
 │   └── register/
-│       ├── RegisterActivity.java           @AndroidEntryPoint — registration screen
-│       └── RegisterViewModel.java          @HiltViewModel — registration state
+│       ├── RegisterFragment.java           @AndroidEntryPoint — registration screen
+│       └── RegisterViewModel.java          @HiltViewModel — registration state + validation
 ├── dashboard/
 │   ├── DashboardActivity.java              @AndroidEntryPoint — main dashboard with bottom nav
 │   └── DashboardViewModel.java             @HiltViewModel — dashboard state
@@ -142,10 +152,38 @@ presentation/
 │   ├── SplashActivity.java                @AndroidEntryPoint — app launch screen (LAUNCHER)
 │   └── SplashViewModel.java               @HiltViewModel
 ├── welcome/
-│   └── WelcomeActivity.java               Welcome/onboarding screen
+│   └── WelcomeActivity.java               Welcome/onboarding screen → launches AuthActivity
 └── guest/
     ├── JoinGuestActivity.java             @AndroidEntryPoint — guest join (no account)
     └── JoinGuestViewModel.java            @HiltViewModel
+```
+
+## res/ — Resources (key files)
+
+```
+res/
+├── layout/
+│   ├── activity_auth.xml                   NavHost container for auth flow
+│   ├── fragment_login.xml                  Login screen (email/pw + Google, no Apple)
+│   ├── fragment_register.xml               Register screen (fullName, username, email, pw, confirm)
+│   └── ...                                 Other activity layouts
+├── values/
+│   ├── strings.xml                         English string resources (app + auth i18n)
+│   ├── colors.xml                          Material 3 color palette (light + dark)
+│   ├── dimens.xml                          Spacing tokens (xs/sm/md/lg/xl), touch targets, corner radii
+│   └── themes.xml                          Light theme (Material 3 DayNight)
+├── values-night/
+│   └── themes.xml                          Dark theme overrides
+├── values-vi/
+│   └── strings.xml                         Vietnamese translations for auth flow
+├── drawable/
+│   ├── ic_google_logo.xml                  Google "G" multicolor vector drawable
+│   ├── bg_login_header.xml                 Login header gradient (light)
+│   └── bg_image_placeholder.xml            Circular image placeholder
+├── drawable-night/
+│   └── bg_login_header.xml                 Login header gradient (dark)
+└── navigation/
+    └── nav_graph_auth.xml                  Auth navigation graph (loginFragment ↔ registerFragment)
 ```
 
 ## util/ — Utilities
