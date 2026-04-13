@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Zero Meeting</string>
 
+    <!-- ═══ Màn hình chào mừng ═══ -->
+    <string name="welcome_title">Chào mừng đến AI Meet</string>
+    <string name="welcome_subtitle">Trải nghiệm cuộc gọi rõ ràng với công nghệ AI khử tiếng ồn và làm mờ nền.</string>
+    <string name="welcome_sign_in">Đăng nhập</string>
+    <string name="welcome_create_account">Tạo tài khoản</string>
+    <string name="welcome_join_guest">Tham gia với tư cách khách</string>
+
     <!-- ═══ Màn hình đăng nhập ═══ -->
     <string name="login_title">Chào mừng trở lại</string>
     <string name="login_subtitle">Đăng nhập để truy cập cuộc họp của bạn</string>
@@ -30,6 +37,20 @@
 
     <!-- ═══ Trợ năng ═══ -->
     <string name="navigate_up">Quay lại</string>
+    <string name="language_selector">Chọn ngôn ngữ</string>
+    <string name="language_selected">đã chọn</string>
+    <string name="cd_language_button">Chọn ngôn ngữ. Ngôn ngữ hiện tại là %1$s</string>
+
+    <!-- ═══ Chọn ngôn ngữ ═══ -->
+    <string name="language_picker_title">Chọn ngôn ngữ</string>
+    <string name="language_english_native">English</string>
+    <string name="language_english_label">English (Tiếng Anh)</string>
+    <string name="language_vietnamese_native">Tiếng Việt</string>
+    <string name="language_vietnamese_label">Tiếng Việt (Vietnamese)</string>
+
+    <!-- ═══ Tên ngôn ngữ (hiển thị bằng ngôn ngữ gốc) ═══ -->
+    <string name="language_english">English</string>
+    <string name="language_vietnamese">Tiếng Việt</string>
 
     <!-- ═══ Lỗi xác thực phía client ═══ -->
     <string name="validation_required">Trường này là bắt buộc</string>

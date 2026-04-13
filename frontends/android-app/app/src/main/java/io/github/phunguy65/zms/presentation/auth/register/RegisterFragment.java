@@ -8,20 +8,22 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
+import io.github.phunguy65.zms.presentation.common.LanguagePickerSheet;
 import io.github.phunguy65.zms.presentation.common.state.FieldError;
 import io.github.phunguy65.zms.presentation.common.state.UiError;
 import io.github.phunguy65.zms.presentation.common.state.UiState;
@@ -46,12 +48,13 @@ public class RegisterFragment extends Fragment {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Runnable pendingNavigation;
 
-    private ImageView btnBack;
+    private MaterialToolbar toolbar;
+    private MaterialButton btnLanguage;
     private TextInputLayout tilFullName, tilUsername, tilEmail, tilPassword, tilConfirmPassword;
     private TextInputEditText edtFullName, edtUsername, edtEmail, edtPassword, edtConfirmPassword;
     private MaterialButton btnRegisterSubmit;
     private ProgressBar progressRegister;
-    private TextView tvGeneralError, tvHaveAccount;
+    private TextView tvHaveAccount;
 
     @Nullable @Override
     public View onCreateView(
@@ -68,12 +71,15 @@ public class RegisterFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
 
         initViews(view);
+        setupToolbar();
+        setupAccessibility();
         setupListeners();
         observeState();
     }
 
     private void initViews(View view) {
-        btnBack = view.findViewById(R.id.btnBack);
+        toolbar = view.findViewById(R.id.toolbar);
+        btnLanguage = view.findViewById(R.id.btnLanguage);
         tilFullName = view.findViewById(R.id.tilFullName);
         tilUsername = view.findViewById(R.id.tilUsername);
         tilEmail = view.findViewById(R.id.tilEmail);
@@ -86,13 +92,40 @@ public class RegisterFragment extends Fragment {
         edtConfirmPassword = view.findViewById(R.id.edtConfirmPassword);
         btnRegisterSubmit = view.findViewById(R.id.btnRegisterSubmit);
         progressRegister = view.findViewById(R.id.progressRegister);
-        tvGeneralError = view.findViewById(R.id.tvGeneralError);
         tvHaveAccount = view.findViewById(R.id.tvHaveAccount);
     }
 
-    private void setupListeners() {
-        btnBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
+    private void setupToolbar() {
+        toolbar.setNavigationOnClickListener(
+                v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+        btnLanguage.setOnClickListener(v -> LanguagePickerSheet.show(getChildFragmentManager()));
+        updateLanguageButton();
+    }
 
+    /**
+     * Updates the language button text to show current language code (EN/VI).
+     * Also sets accessibility content description.
+     */
+    private void updateLanguageButton() {
+        String langTag = AppCompatDelegate.getApplicationLocales().toLanguageTags();
+        String code;
+        String displayName;
+
+        if (langTag.startsWith("vi")) {
+            code = "VI";
+            displayName = getString(R.string.language_vietnamese_native);
+        } else {
+            code = "EN";
+            displayName = getString(R.string.language_english_native);
+        }
+
+        btnLanguage.setText(code);
+        btnLanguage.setContentDescription(getString(R.string.cd_language_button, displayName));
+    }
+
+    private void setupAccessibility() {}
+
+    private void setupListeners() {
         btnRegisterSubmit.setOnClickListener(v -> {
             clearErrors();
             String fullName = getTextTrimmed(edtFullName);
@@ -154,11 +187,6 @@ public class RegisterFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Clear general error when typing
-                if (tvGeneralError.getVisibility() == View.VISIBLE) {
-                    tvGeneralError.setVisibility(View.GONE);
-                }
-
                 String password = s.toString();
                 FieldError error = viewModel.validatePassword(password);
                 if (error != null) {
@@ -192,11 +220,6 @@ public class RegisterFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Clear general error when typing
-                if (tvGeneralError.getVisibility() == View.VISIBLE) {
-                    tvGeneralError.setVisibility(View.GONE);
-                }
-
                 String confirmPassword = s.toString();
                 String password = getTextOrEmpty(edtPassword);
                 FieldError error = viewModel.validateConfirmPassword(confirmPassword, password);
@@ -220,8 +243,8 @@ public class RegisterFragment extends Fragment {
     }
 
     /**
-     * Adds a TextWatcher that clears the field error and hides the general error
-     * when the user begins typing. Optionally restores helper text.
+     * Adds a TextWatcher that clears the field error when the user begins typing.
+     * Optionally restores helper text.
      */
     private void addErrorClearingWatcher(
             TextInputEditText editText, TextInputLayout layout, @Nullable Integer helperTextResId) {
@@ -236,9 +259,6 @@ public class RegisterFragment extends Fragment {
                     if (helperTextResId != null) {
                         layout.setHelperText(getString(helperTextResId));
                     }
-                }
-                if (tvGeneralError.getVisibility() == View.VISIBLE) {
-                    tvGeneralError.setVisibility(View.GONE);
                 }
             }
 
@@ -326,17 +346,16 @@ public class RegisterFragment extends Fragment {
                         default -> {}
                     }
                 }
-                // Show general error for domain errors (not field validation)
-                if (fail.fieldErrors().isEmpty() || !"VALIDATION".equals(fail.code())) {
-                    String generalMsg = fail.message() != null
-                            ? fail.message()
-                            : getString(R.string.error_validation);
-                    showGeneralError(generalMsg);
+                if (fail.fieldErrors().isEmpty() && fail.message() != null) {
+                    tilConfirmPassword.setError(fail.message());
                 }
             }
-            case UiError.ServerError s -> showGeneralError(getString(R.string.error_server));
-            case UiError.NetworkError n -> showGeneralError(getString(R.string.error_network));
-            case UiError.Unknown u -> showGeneralError(getString(R.string.error_unknown));
+            case UiError.ServerError s ->
+                tilConfirmPassword.setError(getString(R.string.error_server));
+            case UiError.NetworkError n ->
+                tilConfirmPassword.setError(getString(R.string.error_network));
+            case UiError.Unknown u ->
+                tilConfirmPassword.setError(getString(R.string.error_unknown));
         }
     }
 
@@ -362,17 +381,11 @@ public class RegisterFragment extends Fragment {
         };
     }
 
-    private void showGeneralError(String message) {
-        tvGeneralError.setText(message);
-        tvGeneralError.setVisibility(View.VISIBLE);
-    }
-
     private void clearErrors() {
         tilFullName.setError(null);
         tilUsername.setError(null);
         tilEmail.setError(null);
         tilPassword.setError(null);
         tilConfirmPassword.setError(null);
-        tvGeneralError.setVisibility(View.GONE);
     }
 }

@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Zero Meeting</string>
 
+    <!-- ═══ Welcome screen ═══ -->
+    <string name="welcome_title">Welcome to AI Meet</string>
+    <string name="welcome_subtitle">Experience crystal clear calls with AI-powered noise cancellation and background blur.</string>
+    <string name="welcome_sign_in">Sign In</string>
+    <string name="welcome_create_account">Create Account</string>
+    <string name="welcome_join_guest">Join as Guest</string>
+
     <!-- ═══ Login screen ═══ -->
     <string name="login_title">Welcome Back</string>
     <string name="login_subtitle">Sign in to access your AI meetings</string>
@@ -30,6 +37,20 @@
 
     <!-- ═══ Accessibility ═══ -->
     <string name="navigate_up">Navigate up</string>
+    <string name="language_selector">Select language</string>
+    <string name="language_selected">selected</string>
+    <string name="cd_language_button">Select language. Current language is %1$s</string>
+
+    <!-- ═══ Language picker ═══ -->
+    <string name="language_picker_title">Select Language</string>
+    <string name="language_english_native">English</string>
+    <string name="language_english_label">English (English)</string>
+    <string name="language_vietnamese_native">Tiếng Việt</string>
+    <string name="language_vietnamese_label">Tiếng Việt (Vietnamese)</string>
+
+    <!-- ═══ Language names (displayed in their native form) ═══ -->
+    <string name="language_english">English</string>
+    <string name="language_vietnamese">Tiếng Việt</string>
 
     <!-- ═══ Client-side validation ═══ -->
     <string name="validation_required">This field is required</string>

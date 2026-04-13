@@ -11,11 +11,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.credentials.CredentialManager;
 import androidx.credentials.CredentialManagerCallback;
 import androidx.credentials.GetCredentialRequest;
@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -36,6 +37,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.domain.model.LoginResult;
 import io.github.phunguy65.zms.frontends.R;
+import io.github.phunguy65.zms.presentation.common.LanguagePickerSheet;
 import io.github.phunguy65.zms.presentation.common.state.FieldError;
 import io.github.phunguy65.zms.presentation.common.state.UiError;
 import io.github.phunguy65.zms.presentation.common.state.UiState;
@@ -47,7 +49,7 @@ import java.util.concurrent.Executors;
  *
  * <p>Observes {@link LoginViewModel#getLoginState()} and reacts to state transitions:
  * Idle, Loading (disable button + show progress), Success (navigate Dashboard),
- * Error (show inline field errors + general error message).
+ * Error (show inline field errors).
  */
 @AndroidEntryPoint
 public class LoginFragment extends Fragment {
@@ -60,12 +62,13 @@ public class LoginFragment extends Fragment {
     private Runnable pendingNavigation;
 
     // Views
-    private ImageView btnBack;
+    private MaterialToolbar toolbar;
+    private MaterialButton btnLanguage;
     private TextInputLayout tilEmail, tilPassword;
     private TextInputEditText edtEmail, edtPassword;
     private MaterialButton btnLoginSubmit, btnGoogle;
     private ProgressBar progressLogin;
-    private TextView tvGeneralError, tvNeedAccount, tvForgotPassword;
+    private TextView tvNeedAccount, tvForgotPassword;
 
     @Nullable @Override
     public View onCreateView(
@@ -83,15 +86,17 @@ public class LoginFragment extends Fragment {
         credentialManager = CredentialManager.create(requireContext());
 
         initViews(view);
+        setupToolbar();
+        setupAccessibility();
         setupListeners();
         observeState();
 
-        // Dim "Forgot password?" to indicate it is not fully functional yet
-        tvForgotPassword.setAlpha(0.5f);
+        tvForgotPassword.setEnabled(false);
     }
 
     private void initViews(View view) {
-        btnBack = view.findViewById(R.id.btnBack);
+        toolbar = view.findViewById(R.id.toolbar);
+        btnLanguage = view.findViewById(R.id.btnLanguage);
         tilEmail = view.findViewById(R.id.tilEmail);
         tilPassword = view.findViewById(R.id.tilPassword);
         edtEmail = view.findViewById(R.id.edtEmail);
@@ -99,14 +104,40 @@ public class LoginFragment extends Fragment {
         btnLoginSubmit = view.findViewById(R.id.btnLoginSubmit);
         btnGoogle = view.findViewById(R.id.btnGoogle);
         progressLogin = view.findViewById(R.id.progressLogin);
-        tvGeneralError = view.findViewById(R.id.tvGeneralError);
         tvNeedAccount = view.findViewById(R.id.tvNeedAccount);
         tvForgotPassword = view.findViewById(R.id.tvForgotPassword);
     }
 
-    private void setupListeners() {
-        btnBack.setOnClickListener(v -> requireActivity().finish());
+    private void setupToolbar() {
+        toolbar.setNavigationOnClickListener(v -> requireActivity().finish());
+        btnLanguage.setOnClickListener(v -> LanguagePickerSheet.show(getChildFragmentManager()));
+        updateLanguageButton();
+    }
 
+    /**
+     * Updates the language button text to show current language code (EN/VI).
+     * Also sets accessibility content description.
+     */
+    private void updateLanguageButton() {
+        String langTag = AppCompatDelegate.getApplicationLocales().toLanguageTags();
+        String code;
+        String displayName;
+
+        if (langTag.startsWith("vi")) {
+            code = "VI";
+            displayName = getString(R.string.language_vietnamese_native);
+        } else {
+            code = "EN";
+            displayName = getString(R.string.language_english_native);
+        }
+
+        btnLanguage.setText(code);
+        btnLanguage.setContentDescription(getString(R.string.cd_language_button, displayName));
+    }
+
+    private void setupAccessibility() {}
+
+    private void setupListeners() {
         btnLoginSubmit.setOnClickListener(v -> {
             clearErrors();
             String email =
@@ -126,14 +157,12 @@ public class LoginFragment extends Fragment {
                         v, R.string.login_forgot_password_coming_soon, Snackbar.LENGTH_SHORT)
                 .show());
 
-        // Error recovery: clear field error when user starts typing
         addErrorClearingWatcher(edtEmail, tilEmail);
         addErrorClearingWatcher(edtPassword, tilPassword);
     }
 
     /**
-     * Adds a TextWatcher that clears the field error and hides the general error
-     * when the user begins typing.
+     * Adds a TextWatcher that clears the field error when the user begins typing.
      */
     private void addErrorClearingWatcher(TextInputEditText editText, TextInputLayout layout) {
         editText.addTextChangedListener(new TextWatcher() {
@@ -144,9 +173,6 @@ public class LoginFragment extends Fragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (layout.getError() != null) {
                     layout.setError(null);
-                }
-                if (tvGeneralError.getVisibility() == View.VISIBLE) {
-                    tvGeneralError.setVisibility(View.GONE);
                 }
             }
 
@@ -204,7 +230,6 @@ public class LoginFragment extends Fragment {
         setIdleState();
         switch (error) {
             case UiError.Fail fail -> {
-                // Show field-level errors with localized messages
                 for (FieldError fe : fail.fieldErrors()) {
                     String msg = fe.message() != null
                             ? fe.message()
@@ -212,20 +237,16 @@ public class LoginFragment extends Fragment {
                     switch (fe.field()) {
                         case "email" -> tilEmail.setError(msg);
                         case "password" -> tilPassword.setError(msg);
-                        default -> {} // ignore unknown fields
+                        default -> {}
                     }
                 }
-                // Show general error if no field-level errors or it's a domain error
-                if (fail.fieldErrors().isEmpty() || !"VALIDATION".equals(fail.code())) {
-                    String generalMsg = fail.message() != null
-                            ? fail.message()
-                            : getString(R.string.error_validation);
-                    showGeneralError(generalMsg);
+                if (fail.fieldErrors().isEmpty() && fail.message() != null) {
+                    tilPassword.setError(fail.message());
                 }
             }
-            case UiError.ServerError s -> showGeneralError(getString(R.string.error_server));
-            case UiError.NetworkError n -> showGeneralError(getString(R.string.error_network));
-            case UiError.Unknown u -> showGeneralError(getString(R.string.error_unknown));
+            case UiError.ServerError s -> tilPassword.setError(getString(R.string.error_server));
+            case UiError.NetworkError n -> tilPassword.setError(getString(R.string.error_network));
+            case UiError.Unknown u -> tilPassword.setError(getString(R.string.error_unknown));
         }
     }
 
@@ -242,15 +263,9 @@ public class LoginFragment extends Fragment {
         };
     }
 
-    private void showGeneralError(String message) {
-        tvGeneralError.setText(message);
-        tvGeneralError.setVisibility(View.VISIBLE);
-    }
-
     private void clearErrors() {
         tilEmail.setError(null);
         tilPassword.setError(null);
-        tvGeneralError.setVisibility(View.GONE);
     }
 
     @Override
@@ -260,8 +275,6 @@ public class LoginFragment extends Fragment {
             mainHandler.removeCallbacks(pendingNavigation);
         }
     }
-
-    // ── Google Sign-In via Credential Manager + Firebase Auth ─────────────────
 
     private void startGoogleSignIn() {
         clearErrors();
@@ -280,7 +293,7 @@ public class LoginFragment extends Fragment {
         credentialManager.getCredentialAsync(
                 requireContext(),
                 request,
-                null, // cancellation signal
+                null,
                 Executors.newSingleThreadExecutor(),
                 new CredentialManagerCallback<>() {
                     @Override
@@ -290,8 +303,17 @@ public class LoginFragment extends Fragment {
 
                     @Override
                     public void onError(@NonNull GetCredentialException e) {
-                        // User cancelled or no credentials available — silent dismiss
-                        Log.d(TAG, "Google Sign-In cancelled or failed: " + e.getMessage());
+                        if (e
+                                instanceof
+                                androidx.credentials.exceptions
+                                        .GetCredentialCancellationException) {
+                            Log.d(TAG, "Google Sign-In cancelled by user");
+                            return;
+                        }
+                        Log.e(TAG, "Google Sign-In failed: " + e.getMessage(), e);
+                        requireActivity()
+                                .runOnUiThread(() -> tilPassword.setError(
+                                        getString(R.string.error_google_signin_failed)));
                     }
                 });
     }
@@ -303,7 +325,6 @@ public class LoginFragment extends Fragment {
 
             String googleIdToken = googleCredential.getIdToken();
 
-            // Exchange Google ID token for Firebase ID token
             AuthCredential firebaseCredential =
                     GoogleAuthProvider.getCredential(googleIdToken, null);
 
@@ -317,8 +338,9 @@ public class LoginFragment extends Fragment {
                                         String firebaseIdToken = tokenResult.getToken();
                                         if (firebaseIdToken == null) {
                                             requireActivity()
-                                                    .runOnUiThread(() -> showGeneralError(getString(
-                                                            R.string.error_google_signin_failed)));
+                                                    .runOnUiThread(() ->
+                                                            tilPassword.setError(getString(R.string
+                                                                    .error_google_signin_failed)));
                                             return;
                                         }
                                         viewModel.loginWithGoogle(firebaseIdToken);
@@ -326,7 +348,7 @@ public class LoginFragment extends Fragment {
                                     .addOnFailureListener(e -> {
                                         Log.e(TAG, "Failed to get Firebase ID token", e);
                                         requireActivity()
-                                                .runOnUiThread(() -> showGeneralError(getString(
+                                                .runOnUiThread(() -> tilPassword.setError(getString(
                                                         R.string.error_google_signin_failed)));
                                     });
                         }
@@ -334,14 +356,14 @@ public class LoginFragment extends Fragment {
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "Firebase signInWithCredential failed", e);
                         requireActivity()
-                                .runOnUiThread(() -> showGeneralError(
+                                .runOnUiThread(() -> tilPassword.setError(
                                         getString(R.string.error_google_signin_failed)));
                     });
         } catch (Exception e) {
             Log.e(TAG, "Failed to extract Google credential", e);
             requireActivity()
-                    .runOnUiThread(
-                            () -> showGeneralError(getString(R.string.error_google_signin_failed)));
+                    .runOnUiThread(() ->
+                            tilPassword.setError(getString(R.string.error_google_signin_failed)));
         }
     }
 }
