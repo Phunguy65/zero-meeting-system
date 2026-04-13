@@ -46,6 +46,8 @@ public class JoinMeetingActivity extends AppCompatActivity {
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
 
+        btnJoin.setEnabled(false);
+
         btnJoin.setOnClickListener(v -> {
             String meetingId = edtMeetingId.getText().toString().trim();
             boolean isAudioOn = switchAudio.isChecked();
@@ -59,6 +61,24 @@ public class JoinMeetingActivity extends AppCompatActivity {
             viewModel.joinMeeting(meetingId, isAudioOn, isVideoOn);
             Toast.makeText(this, "Joining meeting " + meetingId + "...", Toast.LENGTH_SHORT).show();
             // Điều hướng sang màn hình Phòng họp (MeetingRoomActivity) sau khi API trả về thành công
+        });
+
+        edtMeetingId.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Nếu có chữ thì bật nút, đổi màu xanh đậm. Nếu xóa hết thì tắt nút.
+                boolean hasText = s.toString().trim().length() > 0;
+                btnJoin.setEnabled(hasText);
+                btnJoin.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                    hasText ? android.graphics.Color.parseColor("#1877F2") : android.graphics.Color.parseColor("#81B4F8")
+                ));
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
         });
     }
 }

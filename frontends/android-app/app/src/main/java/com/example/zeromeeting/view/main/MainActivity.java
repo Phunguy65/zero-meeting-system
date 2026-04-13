@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_home) {
-                viewPager.setCurrentItem(0, true); // Chữ 'true' để tạo hiệu ứng trượt mượt mà
+                if (viewPager.getCurrentItem() != 0) viewPager.setCurrentItem(0, true); // Chữ 'true' để tạo hiệu ứng trượt mượt mà
             } else if (itemId == R.id.nav_calendar) {
                 viewPager.setCurrentItem(1, true);
             } else if (itemId == R.id.nav_profile) {

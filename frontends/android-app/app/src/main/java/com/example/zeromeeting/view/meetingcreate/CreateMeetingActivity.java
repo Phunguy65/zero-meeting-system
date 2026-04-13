@@ -46,8 +46,6 @@ public class CreateMeetingActivity extends AppCompatActivity {
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> {
-            Toast.makeText(this, "Chuyển sang tab Lịch", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(CreateMeetingActivity.this, DashboardFragment.class));
             finish();
         });
 
