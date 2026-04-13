@@ -13,7 +13,7 @@ val libs = the<LibrariesForLibs>()
 spotless {
     java {
         target("**/src/**/*.java")
-        targetExclude("**/build/**", "**/generated/**", "**/third-party/**")
+        targetExclude("**/build/**", "**/generated/**")
         palantirJavaFormat(libs.versions.palantirJavaFormat.get()).style("AOSP")
         formatAnnotations()
         trimTrailingWhitespace()
@@ -23,7 +23,7 @@ spotless {
     }
     kotlinGradle {
         target("**/*.gradle.kts")
-        targetExclude("**/build/**", "**/generated/**", "**/gradle/**", "**/bin/**", "**/third-party/**")
+        targetExclude("**/build/**", "**/generated/**", "**/gradle/**", "**/bin/**")
         ktlint(libs.versions.ktlint.get())
         trimTrailingWhitespace()
         endWithNewline()
