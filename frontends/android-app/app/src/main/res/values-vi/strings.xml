@@ -22,6 +22,32 @@
     <string name="login_need_account">Chưa có tài khoản? Đăng ký</string>
     <string name="login_forgot_password_coming_soon">Tính năng khôi phục mật khẩu sắp ra mắt</string>
 
+    <!-- ═══ Màn hình quên mật khẩu ═══ -->
+    <string name="forgot_password_title">Quên mật khẩu</string>
+    <string name="forgot_password_subtitle">Nhập địa chỉ email của bạn và chúng tôi sẽ gửi mã xác nhận</string>
+    <string name="forgot_password_hint_email">ten@congty.com</string>
+    <string name="forgot_password_btn_send">Gửi mã xác nhận</string>
+    <string name="forgot_password_back_to_login">Quay lại đăng nhập</string>
+    <string name="forgot_password_success_message">Đã gửi mã! Kiểm tra email của bạn.</string>
+
+    <!-- ═══ Màn hình đặt lại mật khẩu ═══ -->
+    <string name="reset_password_title">Đặt lại mật khẩu</string>
+    <string name="reset_password_subtitle">Nhập mã 6 chữ số đã gửi đến email của bạn</string>
+    <string name="reset_password_subtitle_format">Nhập mã 6 chữ số đã gửi đến %1$s</string>
+    <string name="reset_password_label_otp">Mã xác nhận</string>
+    <string name="reset_password_hint_otp">000000</string>
+    <string name="reset_password_label_new_password">Mật khẩu mới</string>
+    <string name="reset_password_hint_new_password">Nhập mật khẩu mới</string>
+    <string name="reset_password_hint_confirm_password">Xác nhận mật khẩu mới</string>
+    <string name="reset_password_label_confirm">Xác nhận mật khẩu</string>
+    <string name="reset_password_hint_confirm">Xác nhận mật khẩu mới</string>
+    <string name="reset_password_btn_reset">Đặt lại mật khẩu</string>
+    <string name="reset_password_didnt_receive">Không nhận được mã?</string>
+    <string name="reset_password_resend">Gửi lại mã</string>
+    <string name="reset_password_resend_countdown">Gửi lại sau %1$d giây</string>
+    <string name="reset_password_code_resent">Đã gửi mã! Kiểm tra email của bạn.</string>
+    <string name="reset_password_success_message">Đặt lại mật khẩu thành công! Vui lòng đăng nhập.</string>
+
     <!-- ═══ Màn hình đăng ký ═══ -->
     <string name="register_title">Tạo tài khoản</string>
     <string name="register_hint_full_name">Nhập họ và tên</string>
@@ -65,6 +91,7 @@
     <string name="validation_username_too_long">Tên người dùng không được vượt quá 30 ký tự</string>
     <string name="validation_username_format">Chỉ cho phép chữ cái, số, _ và -</string>
     <string name="validation_password_too_short">Mật khẩu phải có ít nhất 8 ký tự</string>
+    <string name="validation_password_min_length">Mật khẩu phải có ít nhất 8 ký tự</string>
     <string name="validation_password_too_long">Mật khẩu không được vượt quá 128 ký tự</string>
 
     <!-- ═══ Lỗi chung ═══ -->
@@ -81,4 +108,10 @@
     <string name="error_user_deleted">Tài khoản này đã bị xóa</string>
     <string name="error_invalid_firebase_token">Đăng nhập Google thất bại. Vui lòng thử lại.</string>
     <string name="error_firebase_auth">Dịch vụ không khả dụng. Vui lòng thử lại sau.</string>
+    <string name="error_otp_expired">Mã xác nhận đã hết hạn. Vui lòng yêu cầu mã mới.</string>
+    <string name="error_otp_invalid">Mã xác nhận không đúng. Vui lòng kiểm tra và thử lại.</string>
+    <string name="error_otp_already_used">Mã xác nhận đã được sử dụng. Vui lòng yêu cầu mã mới.</string>
+    <string name="error_otp_locked">Quá nhiều lần thử sai. Vui lòng yêu cầu mã mới.</string>
+    <string name="error_rate_limit_exceeded">Quá nhiều yêu cầu. Vui lòng đợi vài phút và thử lại.</string>
+    <string name="error_google_only_account">Tài khoản này sử dụng đăng nhập Google. Vui lòng đăng nhập bằng Google.</string>
 </resources>

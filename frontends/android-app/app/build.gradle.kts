@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.google.services)
     alias(libs.plugins.openapiGenerator)
+    alias(libs.plugins.navigation.safe.args)
 }
 
 kotlin {

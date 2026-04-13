@@ -40,4 +40,22 @@ public interface AuthRepository {
      * @return a future that completes with login result containing tokens
      */
     CompletableFuture<LoginResult> googleLogin(String idToken);
+
+    /**
+     * Requests a password reset OTP to be sent to the given email.
+     *
+     * @param email user's email address
+     * @return a future that completes on success (always succeeds to prevent enumeration)
+     */
+    CompletableFuture<Void> forgotPassword(String email);
+
+    /**
+     * Resets the user's password using an OTP.
+     *
+     * @param email user's email address
+     * @param otp the 6-digit OTP received via email
+     * @param newPassword the new password to set
+     * @return a future that completes on success
+     */
+    CompletableFuture<Void> resetPassword(String email, String otp, String newPassword);
 }

@@ -36,6 +36,12 @@ public final class AndroidErrorTranslator implements ErrorTranslator {
             Map.entry("INVALID_FIREBASE_TOKEN", R.string.error_invalid_firebase_token),
             Map.entry("FIREBASE_AUTH_ERROR", R.string.error_firebase_auth),
             Map.entry("VALIDATION_ERROR", R.string.error_validation),
+            Map.entry("OTP_EXPIRED", R.string.error_otp_expired),
+            Map.entry("OTP_INVALID", R.string.error_otp_invalid),
+            Map.entry("OTP_ALREADY_USED", R.string.error_otp_already_used),
+            Map.entry("OTP_LOCKED", R.string.error_otp_locked),
+            Map.entry("RATE_LIMIT_EXCEEDED", R.string.error_rate_limit_exceeded),
+            Map.entry("GOOGLE_ONLY_ACCOUNT", R.string.error_google_only_account),
             // Violation codes (ViolationCode)
             Map.entry("REQUIRED", R.string.validation_required),
             Map.entry("INVALID_FORMAT", R.string.validation_invalid_format),

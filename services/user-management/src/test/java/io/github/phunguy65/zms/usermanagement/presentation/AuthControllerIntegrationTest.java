@@ -8,12 +8,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import io.github.phunguy65.zms.usermanagement.config.TestcontainersConfiguration;
+import io.github.phunguy65.zms.usermanagement.domain.model.PasswordResetToken;
+import io.github.phunguy65.zms.usermanagement.domain.port.OtpGenerator;
+import io.github.phunguy65.zms.usermanagement.domain.port.OtpHasher;
+import io.github.phunguy65.zms.usermanagement.domain.port.PasswordResetTokenRepository;
+import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
 import io.github.phunguy65.zms.usermanagement.infrastructure.security.FirebaseTokenVerifier;
+import io.github.phunguy65.zms.usermanagement.presentation.request.ForgotPasswordRequest;
 import io.github.phunguy65.zms.usermanagement.presentation.request.LoginRequest;
 import io.github.phunguy65.zms.usermanagement.presentation.request.LogoutRequest;
 import io.github.phunguy65.zms.usermanagement.presentation.request.RefreshTokenRequest;
 import io.github.phunguy65.zms.usermanagement.presentation.request.RegisterRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.ResetPasswordRequest;
+import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +43,18 @@ class AuthControllerIntegrationTest {
 
     @Autowired
     WebApplicationContext wac;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    PasswordResetTokenRepository tokenRepository;
+
+    @Autowired
+    OtpGenerator otpGenerator;
+
+    @Autowired
+    OtpHasher otpHasher;
 
     /** Mock Firebase so the context starts without real credentials. */
     @MockitoBean
@@ -366,5 +387,241 @@ class AuthControllerIntegrationTest {
                                 username))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.username").value(username));
+    }
+
+    // ==================== Password Reset Tests ====================
+
+    @Nested
+    class ForgotPasswordEndpoint {
+
+        @Test
+        void validEmailReturns200WithSuccess() throws Exception {
+            String email = "forgot-" + System.nanoTime() + "@example.com";
+            mockMvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                    email,
+                                    "password123",
+                                    "Test User",
+                                    "forgot_user_" + System.nanoTime() % 100000))))
+                    .andExpect(status().isCreated());
+
+            mockMvc.perform(post("/api/v1/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new ForgotPasswordRequest(email))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value("success"));
+        }
+
+        @Test
+        void nonExistentEmailReturns200ToPreventEnumeration() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ForgotPasswordRequest(
+                                    "nobody-" + System.nanoTime() + "@example.com"))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value("success"));
+        }
+
+        @Test
+        void invalidEmailFormatReturns400() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email\":\"not-an-email\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value("fail"))
+                    .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+        }
+
+        @Test
+        void blankEmailReturns400() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email\":\"\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+        }
+    }
+
+    @Nested
+    class ResetPasswordEndpoint {
+
+        @Test
+        void validOtpAndPasswordReturns200() throws Exception {
+            // Register user
+            String email = "reset-" + System.nanoTime() + "@example.com";
+            mockMvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                    email,
+                                    "oldpassword123",
+                                    "Test User",
+                                    "reset_user_" + System.nanoTime() % 100000))))
+                    .andExpect(status().isCreated());
+
+            // Create a valid token directly in DB for testing
+            var user = userRepository
+                    .findActiveByEmail(
+                            io.github.phunguy65.zms.shared.domain.valueobject.Email.of(email))
+                    .orElseThrow();
+            String otp = "123456";
+            String otpHash = otpHasher.hash(otp);
+            PasswordResetToken token = PasswordResetToken.issue(
+                    user.getId(), otpHash, Instant.now().plusSeconds(900));
+            tokenRepository.save(token);
+
+            // Reset password
+            mockMvc.perform(post("/api/v1/auth/reset-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new ResetPasswordRequest(email, otp, "newpassword123"))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value("success"));
+
+            // Verify new password works
+            mockMvc.perform(post("/api/v1/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new LoginRequest(email, "newpassword123"))))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        void invalidOtpReturns400() throws Exception {
+            // Register user
+            String email = "invalid-otp-" + System.nanoTime() + "@example.com";
+            mockMvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                    email,
+                                    "password123",
+                                    "Test User",
+                                    "inv_otp_user_" + System.nanoTime() % 100000))))
+                    .andExpect(status().isCreated());
+
+            // Create a valid token with known OTP
+            var user = userRepository
+                    .findActiveByEmail(
+                            io.github.phunguy65.zms.shared.domain.valueobject.Email.of(email))
+                    .orElseThrow();
+            String otpHash = otpHasher.hash("123456");
+            PasswordResetToken token = PasswordResetToken.issue(
+                    user.getId(), otpHash, Instant.now().plusSeconds(900));
+            tokenRepository.save(token);
+
+            // Try with wrong OTP
+            mockMvc.perform(post("/api/v1/auth/reset-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new ResetPasswordRequest(email, "999999", "newpassword123"))))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.data.code").value("OTP_INVALID"));
+        }
+
+        @Test
+        void expiredOtpReturns400() throws Exception {
+            // Register user
+            String email = "expired-otp-" + System.nanoTime() + "@example.com";
+            mockMvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                    email,
+                                    "password123",
+                                    "Test User",
+                                    "exp_otp_user_" + System.nanoTime() % 100000))))
+                    .andExpect(status().isCreated());
+
+            // Create an expired token
+            var user = userRepository
+                    .findActiveByEmail(
+                            io.github.phunguy65.zms.shared.domain.valueobject.Email.of(email))
+                    .orElseThrow();
+            String otp = "123456";
+            String otpHash = otpHasher.hash(otp);
+            PasswordResetToken token = PasswordResetToken.issue(
+                    user.getId(), otpHash, Instant.now().minusSeconds(60)); // Already expired
+            tokenRepository.save(token);
+
+            // Try reset with expired OTP
+            mockMvc.perform(post("/api/v1/auth/reset-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new ResetPasswordRequest(email, otp, "newpassword123"))))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.data.code").value("OTP_EXPIRED"));
+        }
+
+        @Test
+        void shortPasswordReturns400ValidationError() throws Exception {
+            mockMvc.perform(
+                            post("/api/v1/auth/reset-password")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(
+                                            "{\"email\":\"test@example.com\",\"otp\":\"123456\",\"newPassword\":\"short\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+        }
+
+        @Test
+        void invalidOtpFormatReturns400() throws Exception {
+            mockMvc.perform(
+                            post("/api/v1/auth/reset-password")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(
+                                            "{\"email\":\"test@example.com\",\"otp\":\"12345\",\"newPassword\":\"password123\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+        }
+
+        @Test
+        void passwordResetRevokesAllRefreshTokens() throws Exception {
+            // Register and login to get a refresh token
+            String email = "revoke-" + System.nanoTime() + "@example.com";
+            mockMvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new RegisterRequest(
+                                    email,
+                                    "oldpassword123",
+                                    "Test User",
+                                    "revoke_user_" + System.nanoTime() % 100000))))
+                    .andExpect(status().isCreated());
+
+            MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new LoginRequest(email, "oldpassword123"))))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            String refreshToken = objectMapper
+                    .readTree(loginResult.getResponse().getContentAsString())
+                    .at("/data/refreshToken")
+                    .asText();
+
+            // Create a valid password reset token
+            var user = userRepository
+                    .findActiveByEmail(
+                            io.github.phunguy65.zms.shared.domain.valueobject.Email.of(email))
+                    .orElseThrow();
+            String otp = "123456";
+            PasswordResetToken token = PasswordResetToken.issue(
+                    user.getId(), otpHasher.hash(otp), Instant.now().plusSeconds(900));
+            tokenRepository.save(token);
+
+            // Reset password
+            mockMvc.perform(post("/api/v1/auth/reset-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new ResetPasswordRequest(email, otp, "newpassword123"))))
+                    .andExpect(status().isOk());
+
+            // Old refresh token should now be invalid
+            mockMvc.perform(post("/api/v1/auth/refresh")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RefreshTokenRequest(refreshToken))))
+                    .andExpect(status().isUnauthorized());
+        }
     }
 }

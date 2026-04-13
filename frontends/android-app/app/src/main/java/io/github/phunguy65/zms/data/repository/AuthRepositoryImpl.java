@@ -1,11 +1,13 @@
 package io.github.phunguy65.zms.data.repository;
 
 import io.github.phunguy65.zms.data.remote.api.AuthApi;
+import io.github.phunguy65.zms.data.remote.dto.UserManagementForgotPasswordRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementGoogleLoginRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementLoginRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementLoginResponse;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementRegisterRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementRegisterResponse;
+import io.github.phunguy65.zms.data.remote.dto.UserManagementResetPasswordRequest;
 import io.github.phunguy65.zms.di.IoExecutor;
 import io.github.phunguy65.zms.domain.model.LoginResult;
 import io.github.phunguy65.zms.domain.model.RegisterResult;
@@ -114,5 +116,49 @@ public class AuthRepositoryImpl implements AuthRepository {
                 body.getAccessToken(),
                 body.getRefreshToken(),
                 body.getExpiresIn() != null ? body.getExpiresIn() : 0L);
+    }
+
+    @Override
+    public CompletableFuture<Void> forgotPassword(String email) {
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        UserManagementForgotPasswordRequest request =
+                                new UserManagementForgotPasswordRequest();
+                        request.setEmail(email);
+
+                        Response<Void> response =
+                                authApi.forgotPassword(request).execute();
+                        if (!response.isSuccessful()) {
+                            throw new IOException(
+                                    "Forgot password failed: HTTP " + response.code());
+                        }
+                    } catch (Exception e) {
+                        throw new CompletionException(e);
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Void> resetPassword(String email, String otp, String newPassword) {
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        UserManagementResetPasswordRequest request =
+                                new UserManagementResetPasswordRequest();
+                        request.setEmail(email);
+                        request.setOtp(otp);
+                        request.setNewPassword(newPassword);
+
+                        Response<Void> response = authApi.resetPassword(request).execute();
+                        if (!response.isSuccessful()) {
+                            throw new IOException("Reset password failed: HTTP " + response.code());
+                        }
+                    } catch (Exception e) {
+                        throw new CompletionException(e);
+                    }
+                },
+                ioExecutor);
     }
 }

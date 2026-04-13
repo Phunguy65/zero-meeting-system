@@ -22,6 +22,32 @@
     <string name="login_need_account">Don\'t have an account? Sign up</string>
     <string name="login_forgot_password_coming_soon">Password recovery coming soon</string>
 
+    <!-- ═══ Forgot Password screen ═══ -->
+    <string name="forgot_password_title">Forgot Password</string>
+    <string name="forgot_password_subtitle">Enter your email address and we\'ll send you a reset code</string>
+    <string name="forgot_password_hint_email">name@company.com</string>
+    <string name="forgot_password_btn_send">Send Reset Code</string>
+    <string name="forgot_password_back_to_login">Back to Sign In</string>
+    <string name="forgot_password_success_message">Reset code sent! Check your email.</string>
+
+    <!-- ═══ Reset Password screen ═══ -->
+    <string name="reset_password_title">Reset Password</string>
+    <string name="reset_password_subtitle">Enter the 6-digit code sent to your email</string>
+    <string name="reset_password_subtitle_format">Enter the 6-digit code sent to %1$s</string>
+    <string name="reset_password_label_otp">Reset Code</string>
+    <string name="reset_password_hint_otp">000000</string>
+    <string name="reset_password_label_new_password">New Password</string>
+    <string name="reset_password_hint_new_password">Enter new password</string>
+    <string name="reset_password_hint_confirm_password">Confirm new password</string>
+    <string name="reset_password_label_confirm">Confirm Password</string>
+    <string name="reset_password_hint_confirm">Confirm new password</string>
+    <string name="reset_password_btn_reset">Reset Password</string>
+    <string name="reset_password_didnt_receive">Didn\'t receive the code?</string>
+    <string name="reset_password_resend">Resend Code</string>
+    <string name="reset_password_resend_countdown">Resend in %1$ds</string>
+    <string name="reset_password_code_resent">Code sent! Check your email.</string>
+    <string name="reset_password_success_message">Password reset successful! Please sign in.</string>
+
     <!-- ═══ Register screen ═══ -->
     <string name="register_title">Create Account</string>
     <string name="register_hint_full_name">Enter your full name</string>
@@ -65,6 +91,7 @@
     <string name="validation_username_too_long">Username must be at most 30 characters</string>
     <string name="validation_username_format">Only letters, numbers, _ and - allowed</string>
     <string name="validation_password_too_short">Password must be at least 8 characters</string>
+    <string name="validation_password_min_length">Password must be at least 8 characters</string>
     <string name="validation_password_too_long">Password must be at most 128 characters</string>
 
     <!-- ═══ General errors ═══ -->
@@ -81,4 +108,10 @@
     <string name="error_user_deleted">This account has been deleted</string>
     <string name="error_invalid_firebase_token">Google sign-in failed. Please try again.</string>
     <string name="error_firebase_auth">Service unavailable. Please try again later.</string>
+    <string name="error_otp_expired">Password reset code has expired. Please request a new one.</string>
+    <string name="error_otp_invalid">Invalid password reset code. Please check and try again.</string>
+    <string name="error_otp_already_used">This reset code has already been used. Please request a new one.</string>
+    <string name="error_otp_locked">Too many failed attempts. Please request a new code.</string>
+    <string name="error_rate_limit_exceeded">Too many requests. Please wait a few minutes and try again.</string>
+    <string name="error_google_only_account">This account uses Google Sign-In. Please sign in with Google.</string>
 </resources>

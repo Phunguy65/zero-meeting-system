@@ -31,9 +31,27 @@ tags:
     description: Chat room messages and rooms
     x-displayName: Chat
 paths:
+  /api/v1/auth/reset-password:
+    servers:
+      - url: http://localhost:36643
+        description: Generated server url
+    post:
+      tags:
+        - Auth
+      summary: Reset password using OTP
+      operationId: resetPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserManagement_ResetPasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
   /api/v1/auth/register:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     post:
       tags:
@@ -55,7 +73,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_RegisterResponse'
   /api/v1/auth/refresh:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     post:
       tags:
@@ -77,7 +95,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_LoginResponse'
   /api/v1/auth/logout:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     post:
       tags:
@@ -95,7 +113,7 @@ paths:
           description: OK
   /api/v1/auth/login:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     post:
       tags:
@@ -117,7 +135,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_LoginResponse'
   /api/v1/auth/google-login:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     post:
       tags:
@@ -137,9 +155,27 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserManagement_LoginResponse'
+  /api/v1/auth/forgot-password:
+    servers:
+      - url: http://localhost:36643
+        description: Generated server url
+    post:
+      tags:
+        - Auth
+      summary: Request password reset OTP
+      operationId: forgotPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserManagement_ForgotPasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
   /api/v1/me:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     get:
       tags:
@@ -185,7 +221,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_UserResponse'
   /api/v1/me/preferences:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     get:
       tags:
@@ -220,7 +256,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_UserPreferencesResponse'
   /api/v1/users:search:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     get:
       tags:
@@ -243,7 +279,7 @@ paths:
                   #/components/schemas/UserManagement_CursorScrollResponseUserResponse
   /api/v1/users/{id}:
     servers:
-      - url: http://localhost:45337
+      - url: http://localhost:36643
         description: Generated server url
     get:
       tags:
@@ -266,7 +302,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_UserResponse'
   /api/v1/meetings:schedule:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -288,7 +324,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings:instant:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -311,7 +347,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{id}:start:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -330,7 +366,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}:requestJoin:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -359,7 +395,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_RequestJoinResponse'
   /api/v1/meetings/{id}:end:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -378,7 +414,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}:cancel:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -397,7 +433,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/recordings:stop:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -416,7 +452,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/recordings:start:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -439,7 +475,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_RecordingResponse'
   /api/v1/meetings/{id}/participants:kick:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -469,7 +505,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/joinRequests:approveAll:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -492,7 +528,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_ApproveAllResponse'
   /api/v1/meetings/{id}/joinRequests/{requestId}:deny:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -517,7 +553,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/joinRequests/{requestId}:approve:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     post:
       tags:
@@ -542,7 +578,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/settings:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     patch:
       tags:
@@ -572,7 +608,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingSettingsResponse'
   /api/v1/users/{userId}/meetings:filter:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -613,7 +649,7 @@ paths:
                   #/components/schemas/MeetingManagement_CursorScrollResponseMeetingResponse
   /api/v1/users/{userId}/meetings/{meetingId}:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -642,7 +678,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingDetailResponse'
   /api/v1/recordings/{id}:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -665,7 +701,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_RecordingResponse'
   /api/v1/meetings:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -695,7 +731,7 @@ paths:
                   #/components/schemas/MeetingManagement_CursorScrollResponseMeetingResponse
   /api/v1/meetings:byShortCode:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -717,7 +753,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{id}:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -740,7 +776,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{id}/recordings:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -776,7 +812,7 @@ paths:
                   #/components/schemas/MeetingManagement_CursorScrollResponseRecordingResponse
   /api/v1/meetings/{id}/participants:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -795,7 +831,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/joinRequests:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -833,7 +869,7 @@ paths:
                   #/components/schemas/MeetingManagement_OffsetScrollResponseJoinRequestResponse
   /api/v1/meetings/{id}/events:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -856,7 +892,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_SseEmitter'
   /api/v1/joinRequests/{requestId}/events:
     servers:
-      - url: http://localhost:39957
+      - url: http://localhost:36877
         description: Generated server url
     get:
       tags:
@@ -879,7 +915,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_SseEmitter'
   /api/v1/chat/rooms/{roomId}/messages:
     servers:
-      - url: http://localhost:39487
+      - url: http://localhost:41123
         description: Generated server url
     get:
       tags:
@@ -939,7 +975,7 @@ paths:
                 $ref: '#/components/schemas/ChatManagement_ChatMessageResponse'
   /api/v1/chat/rooms/{roomId}:
     servers:
-      - url: http://localhost:39487
+      - url: http://localhost:41123
         description: Generated server url
     get:
       tags:
@@ -961,6 +997,25 @@ paths:
                 $ref: '#/components/schemas/ChatManagement_ChatRoomResponse'
 components:
   schemas:
+    UserManagement_ResetPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        otp:
+          type: string
+          minLength: 1
+          pattern: ^\d{6}$
+        newPassword:
+          type: string
+          maxLength: 2147483647
+          minLength: 8
+      required:
+        - email
+        - newPassword
+        - otp
     UserManagement_RegisterRequest:
       type: object
       properties:
@@ -1053,6 +1108,15 @@ components:
           minLength: 1
       required:
         - idToken
+    UserManagement_ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+        - email
     UserManagement_JsonNullableMapStringObject:
       type: object
       properties:

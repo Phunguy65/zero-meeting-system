@@ -28,7 +28,6 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
@@ -90,8 +89,6 @@ public class LoginFragment extends Fragment {
         setupAccessibility();
         setupListeners();
         observeState();
-
-        tvForgotPassword.setEnabled(false);
     }
 
     private void initViews(View view) {
@@ -153,9 +150,8 @@ public class LoginFragment extends Fragment {
         tvNeedAccount.setOnClickListener(
                 v -> Navigation.findNavController(v).navigate(R.id.action_login_to_register));
 
-        tvForgotPassword.setOnClickListener(v -> Snackbar.make(
-                        v, R.string.login_forgot_password_coming_soon, Snackbar.LENGTH_SHORT)
-                .show());
+        tvForgotPassword.setOnClickListener(
+                v -> Navigation.findNavController(v).navigate(R.id.action_login_to_forgotPassword));
 
         addErrorClearingWatcher(edtEmail, tilEmail);
         addErrorClearingWatcher(edtPassword, tilPassword);
