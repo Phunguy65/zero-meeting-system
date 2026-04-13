@@ -50,3 +50,6 @@ dist/
 
 # opencode
 .opencode/
+
+# hprof
+*.hprof

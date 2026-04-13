@@ -5,15 +5,15 @@
  * and an optional list of field-level {@link errors}.
  */
 export class ApiFailError extends Error {
-  readonly code: string;
-  readonly errors: Violation[];
+    readonly code: string;
+    readonly errors: Violation[];
 
-  constructor(code: string, message: string, errors: Violation[] = []) {
-    super(message);
-    this.name = "ApiFailError";
-    this.code = code;
-    this.errors = errors;
-  }
+    constructor(code: string, message: string, errors: Violation[] = []) {
+        super(message);
+        this.name = 'ApiFailError';
+        this.code = code;
+        this.errors = errors;
+    }
 }
 
 /**
@@ -23,17 +23,17 @@ export class ApiFailError extends Error {
  * machine-readable error codes for 5xx failures.
  */
 export class ApiError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "ApiError";
-  }
+    constructor(message: string) {
+        super(message);
+        this.name = 'ApiError';
+    }
 }
 
 /** Single field-level validation failure. */
 export interface Violation {
-  field: string;
-  message: string;
-  code: string;
+    field: string;
+    message: string;
+    code: string;
 }
 
 /**
@@ -46,6 +46,6 @@ export type ErrorTranslator = (code: string, defaultMessage: string) => string;
 
 /** Pass-through translator that always returns the original message. */
 export const defaultTranslator: ErrorTranslator = (
-  _code: string,
-  defaultMessage: string,
+    _code: string,
+    defaultMessage: string,
 ) => defaultMessage;

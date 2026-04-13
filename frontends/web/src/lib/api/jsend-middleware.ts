@@ -4,7 +4,7 @@ import {
     defaultTranslator,
     type ErrorTranslator,
     type Violation,
-} from './types';
+} from './types.ts';
 
 /**
  * JSend envelope shape as returned by the server.
@@ -27,10 +27,10 @@ interface FailData {
 
 function isJsendEnvelope(value: unknown): value is JsendEnvelope {
     return (
-        typeof value === 'object' &&
-        value !== null &&
-        'status' in value &&
-        typeof (value as JsendEnvelope).status === 'string'
+        typeof value === 'object'
+        && value !== null
+        && 'status' in value
+        && typeof (value as JsendEnvelope).status === 'string'
     );
 }
 
@@ -53,11 +53,10 @@ export function createJsendMiddleware(
 ) {
     return async (response: Response): Promise<Response> => {
         const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('json')) {
+        if (!contentType?.includes('json')) {
             return response;
         }
 
-        // Clone so the original body stream is not consumed if we bail out
         const cloned = response.clone();
         let body: unknown;
         try {

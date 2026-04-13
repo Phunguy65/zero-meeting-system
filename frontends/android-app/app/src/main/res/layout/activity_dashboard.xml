@@ -3,328 +3,225 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#F8F9FA"> <ScrollView
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:fillViewport="true"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
+    android:layout_height="match_parent" android:background="#F8F9FA">
+    <ScrollView android:layout_width="match_parent"
+        android:layout_height="0dp" android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical"
+            android:padding="20dp">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            <RelativeLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <ImageView
-                android:id="@+id/imgAvatar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/bg_image_placeholder"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true" />
+                <ImageView android:id="@+id/imgAvatar"
+                    android:layout_width="40dp" android:layout_height="40dp"
+                    android:background="@drawable/bg_image_placeholder"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true" />
 
-            <TextView
-                android:layout_width="wrap_content"
+                <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Meet AI"
+                    android:textSize="20sp" android:textStyle="bold"
+                    android:textColor="@android:color/black"
+                    android:layout_centerInParent="true" />
+
+                <ImageView android:id="@+id/btnSettings"
+                    android:layout_width="28dp" android:layout_height="28dp"
+                    android:src="@android:drawable/ic_menu_preferences"
+                    app:tint="@android:color/black"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+            <LinearLayout android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Meet AI"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_centerInParent="true" />
+                android:orientation="horizontal" android:baselineAligned="false"
+                android:layout_marginTop="24dp">
 
-            <ImageView
-                android:id="@+id/btnSettings"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@android:drawable/ic_menu_preferences"
-                app:tint="@android:color/black"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true" />
-        </RelativeLayout>
+                <LinearLayout android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:orientation="vertical" android:gravity="center">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:baselineAligned="false"
-            android:layout_marginTop="24dp">
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardNewMeeting" android:layout_width="80dp"
+                        android:layout_height="80dp" app:cardBackgroundColor="#1877F2"
+                        app:cardCornerRadius="20dp" app:cardElevation="0dp"
+                        android:clickable="true" android:focusable="true">
+                        <ImageView android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/presence_video_online"
+                            app:tint="@android:color/white" android:layout_gravity="center" />
+                    </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="New Meeting"
+                        android:textColor="@android:color/black" android:textStyle="bold"
+                        android:textSize="13sp" android:layout_marginTop="8dp" />
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Start instantly" android:textColor="#666666"
+                        android:textSize="11sp" />
+                </LinearLayout>
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardNewMeeting"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    app:cardBackgroundColor="#1877F2"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="0dp"
-                    android:clickable="true"
-                    android:focusable="true">
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                <LinearLayout android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:orientation="vertical" android:gravity="center">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardJoinMeeting" android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="20dp" app:cardElevation="2dp"
+                        android:clickable="true" android:focusable="true">
+                        <ImageView android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_menu_add" app:tint="#1877F2"
+                            android:layout_gravity="center" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="Join Meeting"
+                        android:textColor="@android:color/black" android:textStyle="bold"
+                        android:textSize="13sp" android:layout_marginTop="8dp" />
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="With a code"
+                        android:textColor="#666666" android:textSize="11sp" />
+                </LinearLayout>
+
+                <LinearLayout android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:orientation="vertical" android:gravity="center">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardSchedule" android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="20dp" app:cardElevation="2dp"
+                        android:clickable="true" android:focusable="true">
+                        <ImageView android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_menu_today" app:tint="#1877F2"
+                            android:layout_gravity="center" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="Schedule"
+                        android:textColor="@android:color/black" android:textStyle="bold"
+                        android:textSize="13sp" android:layout_marginTop="8dp" />
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="Plan ahead"
+                        android:textColor="#666666" android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <RelativeLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="32dp">
+
+                <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Upcoming Meetings"
+                    android:textColor="@android:color/black" android:textSize="20sp"
+                    android:textStyle="bold" android:layout_alignParentStart="true" />
+
+                <TextView android:id="@+id/tvSeeAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="See all"
+                    android:textColor="#1877F2" android:textSize="14sp"
+                    android:textStyle="bold" android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="16dp" app:cardElevation="1dp">
+
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_image_placeholder"
+                        android:backgroundTint="#E3F2FD" android:padding="12dp"
                         android:src="@android:drawable/presence_video_online"
-                        app:tint="@android:color/white"
-                        android:layout_gravity="center" />
-                </com.google.android.material.card.MaterialCardView>
+                        app:tint="#1877F2" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                    <LinearLayout android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="1"
+                        android:orientation="vertical" android:layout_marginStart="16dp">
+
+                        <TextView android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="Design Sync"
+                            android:textColor="@android:color/black" android:textStyle="bold"
+                            android:textSize="16sp" />
+                        <TextView android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="10:30 AM - 11:30 AM" android:textColor="#666666"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:layout_width="80dp" android:layout_height="wrap_content"
+                        android:text="Join" android:textAllCaps="false"
+                        app:cornerRadius="24dp" app:backgroundTint="#1877F2" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="16dp" app:cardElevation="1dp">
+
+                <LinearLayout android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="New Meeting"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    android:layout_marginTop="8dp" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Start instantly"
-                    android:textColor="#666666"
-                    android:textSize="11sp" />
-            </LinearLayout>
+                    android:orientation="horizontal" android:padding="16dp"
+                    android:gravity="center_vertical">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                    <ImageView android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_image_placeholder"
+                        android:backgroundTint="#F5F5F5" android:padding="12dp"
+                        android:src="@android:drawable/ic_menu_myplaces"
+                        app:tint="#333333" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardJoinMeeting"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    app:cardBackgroundColor="@android:color/white"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    android:clickable="true"
-                    android:focusable="true">
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@android:drawable/ic_menu_add"
-                        app:tint="#1877F2"
-                        android:layout_gravity="center" />
-                </com.google.android.material.card.MaterialCardView>
+                    <LinearLayout android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="1"
+                        android:orientation="vertical" android:layout_marginStart="16dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Join Meeting"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    android:layout_marginTop="8dp" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="With a code"
-                    android:textColor="#666666"
-                    android:textSize="11sp" />
-            </LinearLayout>
+                        <TextView android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Product Review"
+                            android:textColor="@android:color/black" android:textStyle="bold"
+                            android:textSize="16sp" />
+                        <TextView android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1:00 PM - 2:00 PM" android:textColor="#666666"
+                            android:textSize="12sp" />
+                    </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                    <com.google.android.material.button.MaterialButton
+                        android:layout_width="80dp" android:layout_height="wrap_content"
+                        android:text="Wait" android:textColor="@android:color/black"
+                        android:textAllCaps="false" app:cornerRadius="24dp"
+                        app:backgroundTint="#EEEEEE" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardSchedule"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    app:cardBackgroundColor="@android:color/white"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    android:clickable="true"
-                    android:focusable="true">
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@android:drawable/ic_menu_today"
-                        app:tint="#1877F2"
-                        android:layout_gravity="center" />
-                </com.google.android.material.card.MaterialCardView>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Schedule"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    android:layout_marginTop="8dp" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Plan ahead"
-                    android:textColor="#666666"
-                    android:textSize="11sp" />
-            </LinearLayout>
         </LinearLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Upcoming Meetings"
-                android:textColor="@android:color/black"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_alignParentStart="true" />
-
-            <TextView
-                android:id="@+id/tvSeeAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="See all"
-                android:textColor="#1877F2"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true" />
-        </RelativeLayout>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_image_placeholder"
-                    android:backgroundTint="#E3F2FD"
-                    android:padding="12dp"
-                    android:src="@android:drawable/presence_video_online"
-                    app:tint="#1877F2" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Design Sync"
-                        android:textColor="@android:color/black"
-                        android:textStyle="bold"
-                        android:textSize="16sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="10:30 AM - 11:30 AM"
-                        android:textColor="#666666"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:layout_width="80dp"
-                    android:layout_height="wrap_content"
-                    android:text="Join"
-                    android:textAllCaps="false"
-                    app:cornerRadius="24dp"
-                    app:backgroundTint="#1877F2" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_image_placeholder"
-                    android:backgroundTint="#F5F5F5"
-                    android:padding="12dp"
-                    android:src="@android:drawable/ic_menu_myplaces"
-                    app:tint="#333333" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Product Review"
-                        android:textColor="@android:color/black"
-                        android:textStyle="bold"
-                        android:textSize="16sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="1:00 PM - 2:00 PM"
-                        android:textColor="#666666"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:layout_width="80dp"
-                    android:layout_height="wrap_content"
-                    android:text="Wait"
-                    android:textColor="@android:color/black"
-                    android:textAllCaps="false"
-                    app:cornerRadius="24dp"
-                    app:backgroundTint="#EEEEEE" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
-        android:layout_width="match_parent"
+        android:id="@+id/bottomNavigation" android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/black"
+        app:menu="@menu/bottom_nav_menu" app:itemIconTint="@color/black"
         app:itemTextColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent" />
 

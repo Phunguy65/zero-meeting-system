@@ -105,4 +105,52 @@ public sealed interface AuthError extends DomainError {
             return "Failed to serialize user preferences";
         }
     }
+
+    /** Password reset OTP has expired (past 15-minute window). */
+    record OtpExpired() implements AuthError {
+        @Override
+        public String message() {
+            return "Password reset code has expired";
+        }
+    }
+
+    /** Password reset OTP does not match the stored hash. */
+    record OtpInvalid() implements AuthError {
+        @Override
+        public String message() {
+            return "Invalid password reset code";
+        }
+    }
+
+    /** Password reset OTP has already been used. */
+    record OtpAlreadyUsed() implements AuthError {
+        @Override
+        public String message() {
+            return "Password reset code has already been used";
+        }
+    }
+
+    /** Too many wrong OTP attempts — token is locked. */
+    record OtpLocked() implements AuthError {
+        @Override
+        public String message() {
+            return "Too many failed attempts. Please request a new code.";
+        }
+    }
+
+    /** Password reset request rate limit exceeded. */
+    record RateLimitExceeded() implements AuthError {
+        @Override
+        public String message() {
+            return "Too many password reset requests. Please try again later.";
+        }
+    }
+
+    /** Password reset attempted for a Google-only account (no password set). */
+    record GoogleOnlyAccount() implements AuthError {
+        @Override
+        public String message() {
+            return "This account uses Google Sign-In. Please sign in with Google.";
+        }
+    }
 }

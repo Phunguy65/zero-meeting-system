@@ -218,6 +218,21 @@ public class User extends AggregateRoot<UserId> {
                 this.updatedAt));
     }
 
+    /**
+     * Updates the user's password.
+     * Used during password reset flow.
+     *
+     * @param newPassword the new hashed password
+     * @throws IllegalStateException if user is a Google-only account (no password)
+     */
+    public void updatePassword(HashedPassword newPassword) {
+        if (!hasPassword() && "GOOGLE".equals(authProvider)) {
+            throw new IllegalStateException("Cannot set password on Google-only account");
+        }
+        this.hashedPassword = newPassword;
+        this.updatedAt = Instant.now();
+    }
+
     /** Returns {@code true} if this user has been soft-deleted. */
     public boolean isDeleted() {
         return deletedAt != null;

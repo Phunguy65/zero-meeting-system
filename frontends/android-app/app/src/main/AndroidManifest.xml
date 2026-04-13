@@ -1,63 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission
+        android:name="android.permission.INTERNET" />
 
     <application
-            android:name="com.example.zeromeeting.ZeroMeetingApp"
-            android:allowBackup="true"
-            android:dataExtractionRules="@xml/data_extraction_rules"
-            android:fullBackupContent="@xml/backup_rules"
-            android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name"
-            android:roundIcon="@mipmap/ic_launcher_round"
-            android:supportsRtl="true"
-            android:theme="@style/Theme.ZeroMeeting">
+        android:name="io.github.phunguy65.zms.ZeroMeetingApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher" android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true" android:theme="@style/Theme.ZeroMeeting">
         <activity
-                android:name="com.example.zeromeeting.view.splash.SplashActivity"
-                android:exported="true">
+            android:name="io.github.phunguy65.zms.presentation.splash.SplashActivity"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.zeromeeting.view.welcome.WelcomeActivity"
+            android:name="io.github.phunguy65.zms.presentation.welcome.WelcomeActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.auth.register.RegisterActivity"
+            android:name="io.github.phunguy65.zms.presentation.auth.AuthActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.auth.login.LoginActivity"
+            android:name="io.github.phunguy65.zms.presentation.guest.JoinGuestActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.guest.JoinGuestActivity"
+            android:name="io.github.phunguy65.zms.presentation.dashboard.DashboardActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.dashboard.DashboardActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.create.CreateMeetingActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.meetingcreate.CreateMeetingActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.join.JoinMeetingActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.meetingroom.joinmeeting.JoinMeetingActivity"
+            android:name="io.github.phunguy65.zms.presentation.calendar.CalendarActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.calendar.CalendarActivity"
+            android:name="io.github.phunguy65.zms.presentation.profile.ProfileActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.profile.ProfileActivity"
+            android:name="io.github.phunguy65.zms.presentation.schedule.ScheduleActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.schedule.ScheduleActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.room.MeetingRoomActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.meetingroom.MeetingRoomActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.participant.ParticipantsActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.meetingroom.participant.ParticipantsActivity"
-            android:exported="false" />
-        <activity
-            android:name="com.example.zeromeeting.view.meetingroom.chat.MeetingChatActivity"
+            android:name="io.github.phunguy65.zms.presentation.meeting.chat.MeetingChatActivity"
             android:exported="false" />
     </application>
 

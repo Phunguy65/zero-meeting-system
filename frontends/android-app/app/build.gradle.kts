@@ -4,8 +4,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
     alias(libs.plugins.openapiGenerator)
+    alias(libs.plugins.navigation.safe.args)
 }
 
 kotlin {
@@ -38,9 +39,9 @@ openApiGenerate {
     inputSpec.set(unifiedSpec)
     outputDir.set(generatedDir)
     ignoreFileOverride.set(rootProject.file("app/.openapi-generator-ignore").absolutePath)
-    apiPackage.set("io.github.phunguy65.zms.sdk.api")
-    modelPackage.set("io.github.phunguy65.zms.sdk.model")
-    invokerPackage.set("io.github.phunguy65.zms.sdk.invoker")
+    apiPackage.set("io.github.phunguy65.zms.data.remote.api")
+    modelPackage.set("io.github.phunguy65.zms.data.remote.dto")
+    invokerPackage.set("io.github.phunguy65.zms.data.remote.client")
     configOptions.set(
         mapOf(
             "dateLibrary" to "java8",
@@ -78,16 +79,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
+        debug {
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            buildConfigField("String", "API_BASE_URL", "\"https://api.example.com\"")
         }
     }
 
     sourceSets {
         named("main") {
-            java.srcDir("$generatedDir/src/main/java")
+            java.directories.add(("$generatedDir/src/main/java"))
         }
     }
 }
@@ -110,8 +119,21 @@ dependencies {
     implementation(libs.retrofit.converter.scalars)
     implementation(libs.javax.annotation.api)
     implementation(libs.jackson.databind.nullable)
-    ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.id)
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.glide)
+    implementation(libs.lottie)
+    annotationProcessor(libs.hilt.android.compiler)
     testImplementation(libs.junit4)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.inline)
+    testImplementation(libs.androidx.arch.core.testing)
     androidTestImplementation(libs.androidx.testExt.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
@@ -121,6 +143,9 @@ tasks.named("preBuild") {
 }
 
 tasks.named("openApiGenerate") {
+    notCompatibleWithConfigurationCache(
+        "openapi-generator-gradle-plugin does not support configuration cache",
+    )
     doFirst {
         delete(generatedDir)
     }
