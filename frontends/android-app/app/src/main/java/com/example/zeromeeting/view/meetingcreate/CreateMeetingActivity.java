@@ -8,8 +8,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.zeromeeting.view.calendar.CalendarActivity;
-import com.example.zeromeeting.view.dashboard.DashboardActivity;
+import com.example.zeromeeting.view.dashboard.DashboardFragment;
 import com.example.zeromeeting.view.meetingroom.MeetingRoomActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
@@ -48,7 +47,7 @@ public class CreateMeetingActivity extends AppCompatActivity {
     private void setupListeners() {
         btnBack.setOnClickListener(v -> {
             Toast.makeText(this, "Chuyển sang tab Lịch", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(CreateMeetingActivity.this, DashboardActivity.class));
+            startActivity(new Intent(CreateMeetingActivity.this, DashboardFragment.class));
             finish();
         });
 

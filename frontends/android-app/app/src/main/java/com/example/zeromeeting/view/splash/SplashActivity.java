@@ -10,8 +10,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 // Import thêm đường dẫn tới WelcomeActivity của bạn
-import com.example.zeromeeting.view.auth.login.LoginActivity;
-import com.example.zeromeeting.view.dashboard.DashboardActivity;
 import com.example.zeromeeting.view.welcome.WelcomeActivity;
 
 @AndroidEntryPoint

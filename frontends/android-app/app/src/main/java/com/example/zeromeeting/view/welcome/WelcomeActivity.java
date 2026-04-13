@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.zeromeeting.view.auth.login.LoginActivity;
 import com.example.zeromeeting.view.auth.register.RegisterActivity;
-import com.example.zeromeeting.view.dashboard.DashboardActivity;
 import com.example.zeromeeting.view.guest.JoinGuestActivity;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;

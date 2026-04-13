@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.zeromeeting.view.auth.register.RegisterActivity;
-import com.example.zeromeeting.view.dashboard.DashboardActivity;
+import com.example.zeromeeting.view.main.MainActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // Xử lý nút Đăng nhập chính
         btnLoginSubmit.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
             finish();
 //            String email = edtEmail.getText().toString().trim();
 //            String password = edtPassword.getText().toString().trim();

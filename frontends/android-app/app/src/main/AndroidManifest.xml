@@ -33,19 +33,13 @@
             android:name="com.example.zeromeeting.view.guest.JoinGuestActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.dashboard.DashboardActivity"
-            android:exported="false" />
-        <activity
             android:name="com.example.zeromeeting.view.meetingcreate.CreateMeetingActivity"
             android:exported="false" />
         <activity
             android:name="com.example.zeromeeting.view.meetingroom.joinmeeting.JoinMeetingActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.zeromeeting.view.calendar.CalendarActivity"
-            android:exported="false" />
-        <activity
-            android:name="com.example.zeromeeting.view.profile.ProfileActivity"
+            android:name="com.example.zeromeeting.view.main.MainActivity"
             android:exported="false" />
         <activity
             android:name="com.example.zeromeeting.view.schedule.ScheduleActivity"
