@@ -9,41 +9,45 @@ pre-commit:
                 found, skipping (install via:
                 https://github.com/gitleaks/gitleaks)"
 
-        # ── Java, Kotlin Gradle ──────────────────────────────────
-        java-lint:
-            glob: '**/*.{java}'
+        # ── Java, Kotlin, XML (all services via root) ─────────────────
+        services-format:
+            glob: 'services/**/*.{java,kts,xml}'
             exclude:
-                - 'third_party/**'
-            run: ./gradlew spotlessCheck
-            stage_fixed: false
-
-        java-format:
-            glob: '**/*.{java}'
-            exclude:
-                - 'third_party/**'
+                - 'services/**/.idea/**'
+                - 'services/**/.gradle/**'
             run: ./gradlew spotlessApply
             stage_fixed: true
 
-        proto-lint:
-            root: services/proto
-            glob: '**/*.proto'
-            exclude:
-                - 'third_party/**'
-            run: ./gradlew bufLint
-            stage_fixed: false
-
+        # ── Proto ──────────────────────────────────────────────────────
         proto-format:
             root: services/proto
             glob: '**/*.proto'
-            exclude:
-                - 'third_party/**'
             run: ./gradlew bufFormatApply
             stage_fixed: true
-        
-        general-format:
-            glob: '**/*.{md, json, toml, yaml, yml, sh}'
+
+        # ── XML (Android app) ──────────────────────────────────────────
+        xml-format-android:
+            root: frontends/android-app
+            glob: '**/*.xml'
             exclude:
-                - 'third_party/**'
+                - '**/.idea/**'
+                - '**/.gradle/**'
+            run: ./gradlew spotlessApply
+            stage_fixed: true
+
+        # ── Web (biome lint + format auto-fix) ─────────────────────────
+        web-fix:
+            root: frontends/web
+            glob: '**/*.{ts,tsx,js,jsx,json,css}'
+            run: pnpm biome check --fix
+            stage_fixed: true
+
+        # ── General (md, json, yaml, toml, sh) ─────────────────────────
+        general-format:
+            glob: '**/*.{md,json,toml,yaml,yml,sh}'
+            exclude:
+                - 'frontends/web/**'
+                - '**/node_modules/**'
             run: bun run format
             stage_fixed: true
 

@@ -3,7 +3,8 @@
 
     <!-- ═══ Màn hình chào mừng ═══ -->
     <string name="welcome_title">Chào mừng đến AI Meet</string>
-    <string name="welcome_subtitle">Trải nghiệm cuộc gọi rõ ràng với công nghệ AI khử tiếng ồn và làm mờ nền.</string>
+    <string name="welcome_subtitle">Trải nghiệm cuộc gọi rõ ràng với công nghệ AI khử
+        tiếng ồn và làm mờ nền.</string>
     <string name="welcome_sign_in">Đăng nhập</string>
     <string name="welcome_create_account">Tạo tài khoản</string>
     <string name="welcome_join_guest">Tham gia với tư cách khách</string>
@@ -24,7 +25,8 @@
 
     <!-- ═══ Màn hình quên mật khẩu ═══ -->
     <string name="forgot_password_title">Quên mật khẩu</string>
-    <string name="forgot_password_subtitle">Nhập địa chỉ email của bạn và chúng tôi sẽ gửi mã xác nhận</string>
+    <string name="forgot_password_subtitle">Nhập địa chỉ email của bạn và chúng tôi sẽ gửi mã
+        xác nhận</string>
     <string name="forgot_password_hint_email">ten@congty.com</string>
     <string name="forgot_password_btn_send">Gửi mã xác nhận</string>
     <string name="forgot_password_back_to_login">Quay lại đăng nhập</string>
@@ -96,7 +98,8 @@
 
     <!-- ═══ Lỗi chung ═══ -->
     <string name="error_server">Đã xảy ra lỗi. Vui lòng thử lại sau.</string>
-    <string name="error_network">Không có kết nối mạng. Vui lòng kiểm tra mạng và thử lại.</string>
+    <string name="error_network">Không có kết nối mạng. Vui lòng kiểm tra mạng và
+        thử lại.</string>
     <string name="error_unknown">Đã xảy ra lỗi không mong muốn.</string>
     <string name="error_google_signin_failed">Đăng nhập Google thất bại. Vui lòng thử lại.</string>
     <string name="error_validation">Xác thực thất bại</string>
@@ -109,9 +112,13 @@
     <string name="error_invalid_firebase_token">Đăng nhập Google thất bại. Vui lòng thử lại.</string>
     <string name="error_firebase_auth">Dịch vụ không khả dụng. Vui lòng thử lại sau.</string>
     <string name="error_otp_expired">Mã xác nhận đã hết hạn. Vui lòng yêu cầu mã mới.</string>
-    <string name="error_otp_invalid">Mã xác nhận không đúng. Vui lòng kiểm tra và thử lại.</string>
-    <string name="error_otp_already_used">Mã xác nhận đã được sử dụng. Vui lòng yêu cầu mã mới.</string>
+    <string name="error_otp_invalid">Mã xác nhận không đúng. Vui lòng kiểm tra và thử
+        lại.</string>
+    <string name="error_otp_already_used">Mã xác nhận đã được sử dụng. Vui lòng yêu cầu mã
+        mới.</string>
     <string name="error_otp_locked">Quá nhiều lần thử sai. Vui lòng yêu cầu mã mới.</string>
-    <string name="error_rate_limit_exceeded">Quá nhiều yêu cầu. Vui lòng đợi vài phút và thử lại.</string>
-    <string name="error_google_only_account">Tài khoản này sử dụng đăng nhập Google. Vui lòng đăng nhập bằng Google.</string>
+    <string name="error_rate_limit_exceeded">Quá nhiều yêu cầu. Vui lòng đợi vài phút và thử
+        lại.</string>
+    <string name="error_google_only_account">Tài khoản này sử dụng đăng nhập Google. Vui lòng
+        đăng nhập bằng Google.</string>
 </resources>

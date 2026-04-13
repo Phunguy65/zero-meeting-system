@@ -7,37 +7,30 @@
     android:background="@android:color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/headerLayout"
-        android:layout_width="match_parent"
+        android:id="@+id/headerLayout" android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/btnBack"
+        <ImageView android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:src="@android:drawable/ic_menu_revert"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#1877F2" /> <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Join Meeting"
-        android:textColor="@android:color/black"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent" app:tint="#1877F2" />
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="Join Meeting"
+            android:textColor="@android:color/black" android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#F0F0F0"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+        <View android:layout_width="match_parent"
+            android:layout_height="1dp" android:background="#F0F0F0"
+            app:layout_constraintBottom_toBottomOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -45,131 +38,90 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginHorizontal="24dp" android:layout_marginTop="32dp"
         app:boxCornerRadiusBottomEnd="12dp"
-        app:boxCornerRadiusBottomStart="12dp"
-        app:boxCornerRadiusTopEnd="12dp"
-        app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="#E0E0E0"
+        app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp" app:boxStrokeColor="#E0E0E0"
         app:hintEnabled="false"
         app:layout_constraintTop_toBottomOf="@id/headerLayout">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edtMeetingId"
-            android:layout_width="match_parent"
+            android:id="@+id/edtMeetingId" android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Enter Meeting ID or Personal Link Name"
-            android:inputType="text"
-            android:paddingVertical="16dp"
+            android:inputType="text" android:paddingVertical="16dp"
             android:textSize="15sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnJoin"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="24dp"
-        android:text="Join"
-        android:textAllCaps="false"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:backgroundTint="#81B4F8"
+        android:id="@+id/btnJoin" android:layout_width="match_parent"
+        android:layout_height="60dp" android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp" android:text="Join"
+        android:textAllCaps="false" android:textSize="18sp"
+        android:textStyle="bold" app:backgroundTint="#81B4F8"
         app:cornerRadius="12dp"
         app:layout_constraintTop_toBottomOf="@id/tilMeetingId" />
 
-    <TextView
-        android:id="@+id/tvHint"
+    <TextView android:id="@+id/tvHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="40dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="40dp" android:layout_marginTop="16dp"
         android:text="If you received an invitation link, tap on the link again to join the meeting."
-        android:textAlignment="center"
-        android:textColor="#888888"
+        android:textAlignment="center" android:textColor="#888888"
         android:textSize="13sp"
         app:layout_constraintTop_toBottomOf="@id/btnJoin" />
 
-    <TextView
-        android:id="@+id/lblJoinOptions"
+    <TextView android:id="@+id/lblJoinOptions"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="40dp"
-        android:text="JOIN OPTIONS"
-        android:textColor="#666666"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="wrap_content" android:layout_marginStart="24dp"
+        android:layout_marginTop="40dp" android:text="JOIN OPTIONS"
+        android:textColor="#666666" android:textSize="12sp"
+        android:textStyle="bold" app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvHint" />
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="24dp" android:layout_marginTop="12dp"
         app:cardBackgroundColor="@android:color/white"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeColor="#E0E0E0"
-        app:strokeWidth="1dp"
+        app:cardCornerRadius="12dp" app:cardElevation="0dp"
+        app:strokeColor="#E0E0E0" app:strokeWidth="1dp"
         app:layout_constraintTop_toBottomOf="@id/lblJoinOptions">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <LinearLayout android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="12dp">
+                android:gravity="center_vertical" android:orientation="horizontal"
+                android:paddingHorizontal="16dp" android:paddingVertical="12dp">
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                <TextView android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
                     android:text="Join with Audio"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp" />
+                    android:textColor="@android:color/black" android:textSize="16sp" />
 
                 <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchAudio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true" />
+                    android:id="@+id/switchAudio" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:checked="true" />
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#E0E0E0" />
+            <View android:layout_width="match_parent"
+                android:layout_height="1dp" android:background="#E0E0E0" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <LinearLayout android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="12dp">
+                android:gravity="center_vertical" android:orientation="horizontal"
+                android:paddingHorizontal="16dp" android:paddingVertical="12dp">
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                <TextView android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
                     android:text="Join with Video"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp" />
+                    android:textColor="@android:color/black" android:textSize="16sp" />
 
                 <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchVideo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true" />
+                    android:id="@+id/switchVideo" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:checked="true" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

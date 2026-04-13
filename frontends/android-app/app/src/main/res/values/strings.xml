@@ -3,7 +3,8 @@
 
     <!-- ═══ Welcome screen ═══ -->
     <string name="welcome_title">Welcome to AI Meet</string>
-    <string name="welcome_subtitle">Experience crystal clear calls with AI-powered noise cancellation and background blur.</string>
+    <string name="welcome_subtitle">Experience crystal clear calls with AI-powered
+        noise cancellation and background blur.</string>
     <string name="welcome_sign_in">Sign In</string>
     <string name="welcome_create_account">Create Account</string>
     <string name="welcome_join_guest">Join as Guest</string>
@@ -24,7 +25,8 @@
 
     <!-- ═══ Forgot Password screen ═══ -->
     <string name="forgot_password_title">Forgot Password</string>
-    <string name="forgot_password_subtitle">Enter your email address and we\'ll send you a reset code</string>
+    <string name="forgot_password_subtitle">Enter your email address and we\'ll send you a
+        reset code</string>
     <string name="forgot_password_hint_email">name@company.com</string>
     <string name="forgot_password_btn_send">Send Reset Code</string>
     <string name="forgot_password_back_to_login">Back to Sign In</string>
@@ -96,7 +98,8 @@
 
     <!-- ═══ General errors ═══ -->
     <string name="error_server">Something went wrong. Please try again later.</string>
-    <string name="error_network">No internet connection. Please check your network and try again.</string>
+    <string name="error_network">No internet connection. Please check your network
+        and try again.</string>
     <string name="error_unknown">An unexpected error occurred.</string>
     <string name="error_google_signin_failed">Google sign-in failed. Please try again.</string>
     <string name="error_validation">Validation failed</string>
@@ -108,10 +111,16 @@
     <string name="error_user_deleted">This account has been deleted</string>
     <string name="error_invalid_firebase_token">Google sign-in failed. Please try again.</string>
     <string name="error_firebase_auth">Service unavailable. Please try again later.</string>
-    <string name="error_otp_expired">Password reset code has expired. Please request a new one.</string>
-    <string name="error_otp_invalid">Invalid password reset code. Please check and try again.</string>
-    <string name="error_otp_already_used">This reset code has already been used. Please request a new one.</string>
-    <string name="error_otp_locked">Too many failed attempts. Please request a new code.</string>
-    <string name="error_rate_limit_exceeded">Too many requests. Please wait a few minutes and try again.</string>
-    <string name="error_google_only_account">This account uses Google Sign-In. Please sign in with Google.</string>
+    <string name="error_otp_expired">Password reset code has expired. Please request a
+        new one.</string>
+    <string name="error_otp_invalid">Invalid password reset code. Please check and try
+        again.</string>
+    <string name="error_otp_already_used">This reset code has already been used. Please
+        request a new one.</string>
+    <string name="error_otp_locked">Too many failed attempts. Please request a new
+        code.</string>
+    <string name="error_rate_limit_exceeded">Too many requests. Please wait a few minutes and
+        try again.</string>
+    <string name="error_google_only_account">This account uses Google Sign-In. Please sign in
+        with Google.</string>
 </resources>
