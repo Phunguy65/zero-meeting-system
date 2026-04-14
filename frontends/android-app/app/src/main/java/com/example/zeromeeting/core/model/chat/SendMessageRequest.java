@@ -17,4 +17,28 @@ public class SendMessageRequest {
     }
 
     // TODO: Alt + Insert tạo Getters/Setters
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Long getReplyToSeqNum() {
+        return replyToSeqNum;
+    }
+
+    public void setReplyToSeqNum(Long replyToSeqNum) {
+        this.replyToSeqNum = replyToSeqNum;
+    }
 }

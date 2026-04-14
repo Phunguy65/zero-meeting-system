@@ -14,4 +14,28 @@ public class OffsetScrollResponse<T> {
     private int nextOffset;
 
     // TODO: Alt + Insert tạo Getters/Setters
+
+    public List<T> getContent() {
+        return content;
+    }
+
+    public void setContent(List<T> content) {
+        this.content = content;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public int getNextOffset() {
+        return nextOffset;
+    }
+
+    public void setNextOffset(int nextOffset) {
+        this.nextOffset = nextOffset;
+    }
 }

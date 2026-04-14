@@ -1,7 +1,6 @@
 package com.example.zeromeeting.core.utils;
 
 public class Resource<T> {
-
     public enum Status { SUCCESS, ERROR, LOADING }
 
     public final Status status;
@@ -18,8 +17,8 @@ public class Resource<T> {
         return new Resource<>(Status.SUCCESS, data, null);
     }
 
-    public static <T> Resource<T> error(String msg, T data) {
-        return new Resource<>(Status.ERROR, data, msg);
+    public static <T> Resource<T> error(String message, T data) {
+        return new Resource<>(Status.ERROR, data, message);
     }
 
     public static <T> Resource<T> loading(T data) {

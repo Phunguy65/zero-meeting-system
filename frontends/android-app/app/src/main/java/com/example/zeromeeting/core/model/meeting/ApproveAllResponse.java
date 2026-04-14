@@ -6,4 +6,12 @@ public class ApproveAllResponse {
     private int approvedCount;
 
     // TODO: Alt + Insert tạo Getters/Setters
+
+    public int getApprovedCount() {
+        return approvedCount;
+    }
+
+    public void setApprovedCount(int approvedCount) {
+        this.approvedCount = approvedCount;
+    }
 }

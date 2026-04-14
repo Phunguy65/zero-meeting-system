@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.zeromeeting.core.model.meeting.MeetingSettings;
+import com.example.zeromeeting.core.model.meeting.ScheduleMeetingRequest;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.textfield.TextInputEditText;
@@ -80,13 +82,60 @@ public class ScheduleActivity extends AppCompatActivity {
             boolean isHostVideoOn = switchHostVideo.isChecked();
 
             if (topic.isEmpty()) {
-                Toast.makeText(this, "Please enter meeting topic", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Vui lòng nhập chủ đề cuộc họp", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            viewModel.scheduleMeeting(topic, date, time, duration, isWaitingRoom, isHostVideoOn);
-            Toast.makeText(this, "Meeting Scheduled!", Toast.LENGTH_SHORT).show();
-            finish(); // Đóng màn hình sau khi tạo xong
+            // --- BƯỚC 1: GOM DỮ LIỆU TỪ UI THÀNH ĐỐI TƯỢNG REQUEST ---
+
+            // 1.1 Cấu hình Settings cho cuộc họp
+            MeetingSettings settings = new MeetingSettings();
+            // API yêu cầu admissionPolicy là ALLOW_ALL hoặc MANUAL_APPROVAL
+            settings.setAdmissionPolicy(isWaitingRoom ? "MANUAL_APPROVAL" : "ALLOW_ALL");
+            settings.setMuteOnEntry(true); // Ví dụ mặc định
+            settings.setChatEnabled(true);
+            // (Lưu ý: API của bạn không có trường isHostVideoOn trong MeetingSettings,
+            // nên ta tạm bỏ qua hoặc bạn có thể báo Backend bổ sung sau)
+
+            // 1.2 Tạo Request chính
+            ScheduleMeetingRequest request = new ScheduleMeetingRequest();
+            request.setTitle(topic);
+
+            // Lưu ý: Backend yêu cầu thời gian chuẩn ISO-8601 (VD: 2026-04-14T08:51:54Z)
+            // Để đơn giản lúc này, mình ghép chuỗi tạm thời.
+            // (Trong thực tế bạn nên dùng SimpleDateFormat để parse date/time chuẩn nhé)
+            String startTimeISO = date + "T" + time + ":00Z";
+            request.setStartTime(startTimeISO);
+
+            // Tạm thời gán endTime giống startTime (bạn có thể cộng thêm duration sau)
+            request.setEndTime(startTimeISO);
+            request.setSettings(settings);
+
+            // --- BƯỚC 2: GỌI VIEWMODEL VÀ LẮNG NGHE KẾT QUẢ (OBSERVE) ---
+
+            // Gọi đúng tên hàm scheduleNewMeeting mà chúng ta đã viết
+            viewModel.scheduleNewMeeting(request).observe(this, resource -> {
+                switch (resource.status) {
+                    case LOADING:
+                        // Hiện thanh quay quay (ProgressBar) ở đây, khóa nút bấm lại để user không bấm 2 lần
+                        btnScheduleMeeting.setEnabled(false);
+                        btnScheduleMeeting.setText("Đang tạo...");
+                        break;
+
+                    case SUCCESS:
+                        // Thành công thật sự từ Server trả về!
+                        Toast.makeText(this, "Tạo lịch họp thành công!", Toast.LENGTH_SHORT).show();
+                        finish(); // LÚC NÀY mới được đóng màn hình
+                        break;
+
+                    case ERROR:
+                        // Lỗi mạng, hoặc lỗi từ Backend
+                        btnScheduleMeeting.setEnabled(true);
+                        btnScheduleMeeting.setText("Schedule Meeting");
+                        Toast.makeText(this, "Lỗi: " + resource.message, Toast.LENGTH_LONG).show();
+                        break;
+                }
+            });
         });
     }
 
