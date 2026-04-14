@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface" android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_lg">
+
+        <!-- Back button -->
+        <FrameLayout android:id="@+id/btnBackContainer"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:clickable="true" android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView android:id="@+id/btnBack"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:layout_gravity="center"
+                android:contentDescription="@string/cd_back"
+                android:src="@drawable/ic_chevron_left"
+                app:tint="?attr/colorOnSurface" />
+        </FrameLayout>
+
+        <!-- Header title -->
+        <TextView android:id="@+id/tvHeaderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/prejoin_title"
+            android:textColor="?attr/colorOnSurface" android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/btnBackContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/btnBackContainer" />
+
+        <!-- Main title -->
+        <TextView android:id="@+id/tvMainTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:text="@string/prejoin_title"
+            android:textColor="?attr/colorOnSurface" android:textSize="32sp"
+            android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnBackContainer" />
+
+        <!-- Meeting code label -->
+        <TextView android:id="@+id/lblMeetingCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:text="@string/prejoin_meeting_code"
+            android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvMainTitle" />
+
+        <!-- Meeting code input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilMeetingCode"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            app:boxCornerRadiusBottomEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusBottomStart="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopStart="@dimen/corner_radius_md"
+            app:layout_constraintTop_toBottomOf="@id/lblMeetingCode">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtMeetingCode" android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prejoin_meeting_code_hint"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Display name label (guest only) -->
+        <TextView android:id="@+id/lblDisplayName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/prejoin_display_name"
+            android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilMeetingCode" />
+
+        <!-- Display name input (guest only) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDisplayName"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:visibility="gone"
+            app:boxCornerRadiusBottomEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusBottomStart="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopStart="@dimen/corner_radius_md"
+            app:layout_constraintTop_toBottomOf="@id/lblDisplayName">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtDisplayName" android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prejoin_display_name_hint"
+                android:inputType="textPersonName" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Join options label -->
+        <TextView android:id="@+id/lblJoinOptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:text="@string/prejoin_join_options"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="12sp" android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilDisplayName" />
+
+        <!-- Audio option -->
+        <LinearLayout android:id="@+id/llAudioOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:background="@drawable/bg_rounded_gray"
+            android:gravity="center_vertical" android:orientation="horizontal"
+            android:padding="@dimen/spacing_md"
+            app:layout_constraintTop_toBottomOf="@id/lblJoinOptions">
+
+            <ImageView android:id="@+id/ivAudioIcon"
+                android:layout_width="@dimen/icon_container_md"
+                android:layout_height="@dimen/icon_container_md"
+                android:background="@drawable/bg_image_placeholder"
+                android:backgroundTint="?attr/colorPrimaryContainer"
+                android:importantForAccessibility="no"
+                android:padding="@dimen/spacing_sm" android:src="@drawable/ic_mic"
+                app:tint="?attr/colorPrimary" />
+
+            <LinearLayout android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_md"
+                android:layout_weight="1" android:orientation="vertical">
+
+                <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prejoin_connect_audio"
+                    android:textColor="?attr/colorOnSurface" android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView android:id="@+id/tvAudioStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prejoin_audio_on"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchAudio" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:checked="true" />
+        </LinearLayout>
+
+        <!-- Video option -->
+        <LinearLayout android:id="@+id/llVideoOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:background="@drawable/bg_rounded_gray"
+            android:gravity="center_vertical" android:orientation="horizontal"
+            android:padding="@dimen/spacing_md"
+            app:layout_constraintTop_toBottomOf="@id/llAudioOption">
+
+            <ImageView android:id="@+id/ivVideoIcon"
+                android:layout_width="@dimen/icon_container_md"
+                android:layout_height="@dimen/icon_container_md"
+                android:background="@drawable/bg_image_placeholder"
+                android:backgroundTint="?attr/colorSurfaceVariant"
+                android:importantForAccessibility="no"
+                android:padding="@dimen/spacing_sm"
+                android:src="@drawable/ic_videocam"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+            <LinearLayout android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_md"
+                android:layout_weight="1" android:orientation="vertical">
+
+                <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prejoin_turn_on_video"
+                    android:textColor="?attr/colorOnSurface" android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView android:id="@+id/tvVideoStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prejoin_video_off"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchVideo" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:checked="false" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View android:id="@+id/divider"
+            android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:background="?attr/colorOutline"
+            app:layout_constraintTop_toBottomOf="@id/llVideoOption" />
+
+        <!-- Join button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnJoinMeeting" android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_lg"
+            android:layout_marginTop="@dimen/spacing_lg"
+            android:text="@string/prejoin_join_button"
+            android:textAllCaps="false" android:textSize="18sp"
+            android:textStyle="bold" app:backgroundTint="?attr/colorPrimary"
+            app:cornerRadius="@dimen/corner_radius_md"
+            app:layout_constraintTop_toBottomOf="@id/divider" />
+
+        <!-- Terms text -->
+        <TextView android:id="@+id/tvTerms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/prejoin_terms" android:textAlignment="center"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="12sp"
+            app:layout_constraintTop_toBottomOf="@id/btnJoinMeeting" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

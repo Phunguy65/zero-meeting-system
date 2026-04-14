@@ -11,7 +11,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.auth.AuthActivity;
 import io.github.phunguy65.zms.presentation.common.LanguagePickerSheet;
-import io.github.phunguy65.zms.presentation.guest.JoinGuestActivity;
+import io.github.phunguy65.zms.presentation.videocall.VideoCallActivity;
 
 @AndroidEntryPoint
 public class WelcomeActivity extends AppCompatActivity {
@@ -53,8 +53,12 @@ public class WelcomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        tvJoinGuest.setOnClickListener(
-                v -> startActivity(new Intent(WelcomeActivity.this, JoinGuestActivity.class)));
+        tvJoinGuest.setOnClickListener(v -> {
+            Intent intent = new Intent(WelcomeActivity.this, VideoCallActivity.class);
+            intent.putExtra(VideoCallActivity.EXTRA_IS_GUEST, true);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        });
     }
 
     /**

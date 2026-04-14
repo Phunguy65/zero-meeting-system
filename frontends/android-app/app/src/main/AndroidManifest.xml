@@ -5,6 +5,18 @@
 
     <uses-permission
         android:name="android.permission.INTERNET" />
+    <uses-permission
+        android:name="android.permission.CAMERA" />
+    <uses-permission
+        android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission
+        android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <uses-feature android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
 
     <application
         android:name="io.github.phunguy65.zms.ZeroMeetingApp"
@@ -30,35 +42,15 @@
             android:name="io.github.phunguy65.zms.presentation.auth.AuthActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.presentation.guest.JoinGuestActivity"
+            android:name="io.github.phunguy65.zms.presentation.main.MainActivity"
             android:exported="false" />
         <activity
-            android:name="io.github.phunguy65.zms.presentation.dashboard.DashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.meeting.create.CreateMeetingActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.meeting.join.JoinMeetingActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.calendar.CalendarActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.profile.ProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.schedule.ScheduleActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.meeting.room.MeetingRoomActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.meeting.participant.ParticipantsActivity"
-            android:exported="false" />
-        <activity
-            android:name="io.github.phunguy65.zms.presentation.meeting.chat.MeetingChatActivity"
-            android:exported="false" />
+            android:name="io.github.phunguy65.zms.presentation.videocall.VideoCallActivity"
+            android:exported="false"
+            android:taskAffinity="io.github.phunguy65.zms.videocall"
+            android:launchMode="singleInstance"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden"
+            android:supportsPictureInPicture="true" />
     </application>
 
 </manifest>

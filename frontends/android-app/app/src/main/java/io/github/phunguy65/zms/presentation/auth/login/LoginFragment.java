@@ -40,7 +40,7 @@ import io.github.phunguy65.zms.presentation.common.LanguagePickerSheet;
 import io.github.phunguy65.zms.presentation.common.state.FieldError;
 import io.github.phunguy65.zms.presentation.common.state.UiError;
 import io.github.phunguy65.zms.presentation.common.state.UiState;
-import io.github.phunguy65.zms.presentation.dashboard.DashboardActivity;
+import io.github.phunguy65.zms.presentation.main.MainActivity;
 import java.util.concurrent.Executors;
 
 /**
@@ -211,13 +211,13 @@ public class LoginFragment extends Fragment {
         btnLoginSubmit.setEnabled(false);
         btnLoginSubmit.setText("\u2713");
         btnLoginSubmit.setBackgroundTintList(
-                ColorStateList.valueOf(getResources().getColor(R.color.md_theme_success, null)));
+                ColorStateList.valueOf(getResources().getColor(R.color.md_theme_light_success, null)));
         pendingNavigation = this::navigateToDashboard;
         mainHandler.postDelayed(pendingNavigation, 400);
     }
 
     private void navigateToDashboard() {
-        Intent intent = new Intent(requireContext(), DashboardActivity.class);
+        Intent intent = new Intent(requireContext(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }

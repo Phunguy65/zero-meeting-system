@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_main"
+    app:startDestination="@id/dashboardFragment">
+
+    <!-- Tab destinations (BottomNav visible) -->
+    <fragment android:id="@+id/dashboardFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.dashboard.DashboardFragment"
+        android:label="@string/nav_home"
+        tools:layout="@layout/fragment_dashboard">
+
+        <action android:id="@+id/action_dashboard_to_schedule"
+            app:destination="@id/scheduleFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+
+        <action android:id="@+id/action_dashboard_to_createMeeting"
+            app:destination="@id/createMeetingFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+
+        <action android:id="@+id/action_dashboard_to_joinMeeting"
+            app:destination="@id/joinMeetingFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+
+        <action android:id="@+id/action_dashboard_to_settings"
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+
+    <fragment android:id="@+id/calendarFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.calendar.CalendarFragment"
+        android:label="@string/nav_calendar"
+        tools:layout="@layout/fragment_calendar" />
+
+    <fragment android:id="@+id/profileFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.profile.ProfileFragment"
+        android:label="@string/nav_profile"
+        tools:layout="@layout/fragment_profile">
+
+        <action android:id="@+id/action_profile_to_settings"
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+
+    <!-- Full-screen destinations (BottomNav hidden) -->
+    <fragment android:id="@+id/scheduleFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.schedule.ScheduleFragment"
+        android:label="@string/action_schedule"
+        tools:layout="@layout/fragment_schedule" />
+
+    <fragment android:id="@+id/createMeetingFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.meeting.CreateMeetingFragment"
+        android:label="@string/action_new_meeting"
+        tools:layout="@layout/fragment_create_meeting" />
+
+    <fragment android:id="@+id/joinMeetingFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.meeting.JoinMeetingFragment"
+        android:label="@string/action_join_meeting"
+        tools:layout="@layout/fragment_join_meeting" />
+
+    <fragment android:id="@+id/settingsFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.settings.SettingsFragment"
+        android:label="@string/settings_title"
+        tools:layout="@layout/fragment_settings" />
+
+</navigation>

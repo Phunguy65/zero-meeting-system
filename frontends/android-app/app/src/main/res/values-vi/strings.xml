@@ -121,4 +121,158 @@
         lại.</string>
     <string name="error_google_only_account">Tài khoản này sử dụng đăng nhập Google. Vui lòng
         đăng nhập bằng Google.</string>
+
+    <!-- ═══ Điều hướng ═══ -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_calendar">Lịch</string>
+    <string name="nav_profile">Cá nhân</string>
+
+    <!-- ═══ Màn hình Dashboard ═══ -->
+    <string name="dashboard_title">Bảng điều khiển</string>
+    <string name="action_new_meeting">Cuộc họp mới</string>
+    <string name="action_new_meeting_subtitle">Bắt đầu ngay</string>
+    <string name="action_join_meeting">Tham gia họp</string>
+    <string name="action_join_meeting_subtitle">Với mã phòng</string>
+    <string name="action_schedule">Lên lịch</string>
+    <string name="action_schedule_subtitle">Lên kế hoạch</string>
+    <string name="section_upcoming_meetings">Cuộc họp sắp tới</string>
+    <string name="action_see_all">Xem tất cả</string>
+    <string name="action_join">Tham gia</string>
+    <string name="action_wait">Chờ</string>
+
+    <!-- ═══ Màn hình Lịch ═══ -->
+    <string name="calendar_title">Lịch họp</string>
+    <string name="meeting_status_in_progress">Đang diễn ra</string>
+    <string name="meeting_duration_hour">1 giờ</string>
+    <string name="meeting_recurrence_weekly">Hàng tuần</string>
+    <string-array name="weekday_abbreviations">
+        <item>T2</item>
+        <item>T3</item>
+        <item>T4</item>
+        <item>T5</item>
+        <item>T6</item>
+        <item>T7</item>
+        <item>CN</item>
+    </string-array>
+
+    <!-- ═══ Màn hình Cá nhân ═══ -->
+    <string name="profile_title">Cá nhân</string>
+    <string name="profile_account_settings">Cài đặt tài khoản</string>
+    <string name="profile_meeting_history">Lịch sử họp</string>
+    <string name="profile_help_support">Trợ giúp &amp; Hỗ trợ</string>
+    <string name="profile_log_out">Đăng xuất</string>
+    <string name="profile_logged_out">Đã đăng xuất</string>
+
+    <!-- ═══ Màn hình Cài đặt ═══ -->
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_about">Giới thiệu</string>
+
+    <!-- ═══ Màn hình cuộc gọi video ═══ -->
+    <string name="prejoin_title">Tham gia cuộc họp</string>
+    <string name="prejoin_meeting_code">Mã phòng họp</string>
+    <string name="prejoin_meeting_code_hint">Nhập mã phòng họp</string>
+    <string name="prejoin_display_name">Tên hiển thị</string>
+    <string name="prejoin_display_name_hint">Nhập tên của bạn</string>
+    <string name="prejoin_connect_audio">Kết nối âm thanh</string>
+    <string name="prejoin_audio_on">Âm thanh bật</string>
+    <string name="prejoin_audio_off">Âm thanh tắt</string>
+    <string name="prejoin_turn_on_video">Bật video</string>
+    <string name="prejoin_video_on">Video bật</string>
+    <string name="prejoin_video_off">Video tắt</string>
+    <string name="prejoin_join_options">TÙY CHỌN THAM GIA</string>
+    <string name="prejoin_join_button">Tham gia</string>
+    <string name="prejoin_terms">Bằng việc tham gia, bạn đồng ý với điều khoản dịch
+        vụ</string>
+    <string name="prejoin_error_meeting_code">Vui lòng nhập mã phòng họp</string>
+    <string name="prejoin_error_display_name">Vui lòng nhập tên hiển thị</string>
+    <string name="call_leave">Rời đi</string>
+    <string name="call_leave_title">Rời khỏi cuộc họp?</string>
+    <string name="call_leave_message">Bạn có chắc muốn rời khỏi cuộc họp này không?</string>
+    <string name="call_leave_confirm">Rời đi</string>
+    <string name="call_end">Kết thúc</string>
+    <string name="call_participants">Thành viên</string>
+    <string name="call_participants_count">%1$d thành viên</string>
+    <string name="call_chat">Trò chuyện</string>
+    <string name="call_mute_all">Tắt tiếng tất cả</string>
+    <string name="call_search_participants">Tìm thành viên</string>
+    <string name="call_type_message">Nhập tin nhắn…</string>
+    <string name="call_meeting_chat">Trò chuyện cuộc họp</string>
+
+    <!-- ═══ Trạng thái trống ═══ -->
+    <string name="empty_no_upcoming_meetings">Không có cuộc họp sắp tới</string>
+    <string name="empty_schedule_meeting">Lên lịch cuộc họp</string>
+    <string name="empty_no_meetings_today">Không có cuộc họp hôm nay</string>
+
+    <!-- ═══ Màn hình Lên lịch ═══ -->
+    <string name="schedule_title">Lên lịch</string>
+    <string name="schedule_meeting_topic">Chủ đề cuộc họp</string>
+    <string name="schedule_date">Ngày</string>
+    <string name="schedule_start_time">Giờ bắt đầu</string>
+    <string name="schedule_duration">Thời lượng</string>
+    <string name="schedule_meeting_settings">Cài đặt cuộc họp</string>
+    <string name="schedule_waiting_room">Phòng chờ</string>
+    <string name="schedule_waiting_room_desc">Duyệt khách thủ công trước khi vào họp</string>
+    <string name="schedule_host_video">Bật video chủ phòng</string>
+    <string name="schedule_host_video_desc">Bắt đầu họp với video của bạn</string>
+    <string name="schedule_button">Lên lịch</string>
+    <string name="schedule_error_empty_topic">Vui lòng nhập chủ đề cuộc họp</string>
+    <string name="schedule_success">Đã lên lịch cuộc họp!</string>
+    <string-array name="schedule_durations">
+        <item>30 phút</item>
+        <item>45 phút</item>
+        <item>1 giờ</item>
+        <item>1,5 giờ</item>
+        <item>2 giờ</item>
+    </string-array>
+
+    <!-- ═══ Màn hình Tạo cuộc họp ═══ -->
+    <string name="create_meeting_title">Cuộc họp mới</string>
+    <string name="create_meeting_video">Video</string>
+    <string name="create_meeting_audio">Âm thanh</string>
+    <string name="create_meeting_you">Bạn</string>
+    <string name="create_meeting_start">Bắt đầu họp</string>
+    <string name="create_meeting_copy_link">Sao chép liên kết</string>
+    <string name="create_meeting_link_copied">Đã sao chép liên kết vào clipboard</string>
+    <string name="create_meeting_starting">Đang bắt đầu cuộc họp…</string>
+
+    <!-- ═══ Màn hình Tham gia họp ═══ -->
+    <string name="join_meeting_title">Tham gia họp</string>
+    <string name="join_meeting_hint">Nhập mã cuộc họp hoặc liên kết</string>
+    <string name="join_meeting_button">Tham gia</string>
+    <string name="join_meeting_invitation_hint">Nếu bạn nhận được liên kết mời, hãy nhấn vào liên
+        kết đó để tham gia.</string>
+    <string name="join_meeting_options">TÙY CHỌN THAM GIA</string>
+    <string name="join_meeting_with_audio">Tham gia với âm thanh</string>
+    <string name="join_meeting_with_video">Tham gia với video</string>
+    <string name="join_meeting_error_empty_id">Vui lòng nhập mã cuộc họp hợp lệ</string>
+    <string name="join_meeting_joining">Đang tham gia cuộc họp %1$s…</string>
+
+    <!-- ═══ Mô tả trợ năng ═══ -->
+    <string name="cd_avatar">Ảnh đại diện</string>
+    <string name="cd_back">Quay lại</string>
+    <string name="cd_settings">Cài đặt</string>
+    <string name="cd_search">Tìm kiếm</string>
+    <string name="cd_previous_month">Tháng trước</string>
+    <string name="cd_next_month">Tháng sau</string>
+    <string name="cd_new_meeting">Bắt đầu cuộc họp mới</string>
+    <string name="cd_join_meeting">Tham gia cuộc họp</string>
+    <string name="cd_schedule_meeting">Lên lịch cuộc họp</string>
+    <string name="cd_mute_mic">Tắt tiếng mic</string>
+    <string name="cd_unmute_mic">Bật tiếng mic</string>
+    <string name="cd_enable_camera">Bật camera</string>
+    <string name="cd_disable_camera">Tắt camera</string>
+    <string name="cd_end_call">Kết thúc cuộc gọi</string>
+    <string name="cd_speaker">Loa</string>
+    <string name="cd_send_message">Gửi tin nhắn</string>
+    <string name="cd_attach_file">Đính kèm tệp</string>
+    <string name="cd_close">Đóng</string>
+    <string name="cd_more_options">Tùy chọn khác</string>
+    <string name="cd_open_chat">Mở trò chuyện</string>
+
+    <!-- ═══ Thông báo cuộc gọi video ═══ -->
+    <string name="permission_camera_mic_required">Cần quyền truy cập camera và mic cho cuộc gọi video</string>
+    <string name="call_muted_all">Đã tắt tiếng tất cả</string>
+    <string name="call_attachment_coming_soon">Tính năng đính kèm tệp sắp ra mắt</string>
+    <string name="call_message_sent">Đã gửi tin nhắn</string>
 </resources>

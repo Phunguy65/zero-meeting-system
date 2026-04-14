@@ -1,6 +1,5 @@
 package io.github.phunguy65.zms.presentation.meeting.participant;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.color.MaterialColors;
 import io.github.phunguy65.zms.domain.model.Participant;
 import io.github.phunguy65.zms.frontends.R;
 import java.util.List;
@@ -32,16 +32,16 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         Participant p = participantList.get(position);
         holder.tvName.setText(p.getName());
 
-        // Xử lý Trạng thái Role (Host, Me)
+        // Role status (Host, Me)
         if (p.getRoleStatus() != null && !p.getRoleStatus().isEmpty()) {
             holder.tvStatus.setVisibility(View.VISIBLE);
             holder.tvStatus.setText(p.getRoleStatus());
-            holder.tvName.setPadding(0, 0, 0, 0); // Reset padding
+            holder.tvName.setPadding(0, 0, 0, 0);
         } else {
             holder.tvStatus.setVisibility(View.GONE);
         }
 
-        // Xử lý Trạng thái Connection (Connecting...)
+        // Connection status (Connecting...)
         if (p.getConnectionStatus() != null && !p.getConnectionStatus().isEmpty()) {
             holder.tvSubStatus.setVisibility(View.VISIBLE);
             holder.tvSubStatus.setText(p.getConnectionStatus());
@@ -49,34 +49,51 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             holder.tvSubStatus.setVisibility(View.GONE);
         }
 
-        // Dấu chấm đỏ cảnh báo
+        // Red alert indicator
         holder.indicatorRed.setVisibility(p.isHasAlert() ? View.VISIBLE : View.GONE);
 
-        // Xử lý Màu sắc Mic
+        // Mic icon color using theme colors
         if (p.isMicOn()) {
-            holder.btnMic.setColorFilter(Color.parseColor("#333333")); // Xám đậm
-            holder.btnMic.setBackgroundTintList(null); // Nền xám nhạt mặc định
+            int colorOnSurface = MaterialColors.getColor(holder.itemView, 
+                    com.google.android.material.R.attr.colorOnSurface);
+            holder.btnMic.setColorFilter(colorOnSurface);
+            holder.btnMic.setBackgroundTintList(null);
         } else {
-            holder.btnMic.setColorFilter(Color.parseColor("#E53E3E")); // Màu đỏ
-            holder.btnMic.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
-                    Color.parseColor("#FFF0F0"))); // Nền hồng nhạt
+            int colorError = MaterialColors.getColor(holder.itemView, 
+                    androidx.appcompat.R.attr.colorError);
+            int colorErrorContainer = MaterialColors.getColor(holder.itemView, 
+                    com.google.android.material.R.attr.colorErrorContainer);
+            holder.btnMic.setColorFilter(colorError);
+            holder.btnMic.setBackgroundTintList(
+                    android.content.res.ColorStateList.valueOf(colorErrorContainer));
         }
 
-        // Xử lý Màu sắc Video
+        // Camera icon color using theme colors
         if (p.isVideoOn()) {
-            holder.btnCamera.setColorFilter(Color.parseColor("#333333"));
+            int colorOnSurface = MaterialColors.getColor(holder.itemView, 
+                    com.google.android.material.R.attr.colorOnSurface);
+            holder.btnCamera.setColorFilter(colorOnSurface);
             holder.btnCamera.setBackgroundTintList(null);
         } else {
-            // Giả lập màu xám cho video tắt (giống trong thiết kế)
-            holder.btnCamera.setColorFilter(Color.parseColor("#999999"));
+            int colorOnSurfaceVariant = MaterialColors.getColor(holder.itemView, 
+                    com.google.android.material.R.attr.colorOnSurfaceVariant);
+            int colorSurfaceVariant = MaterialColors.getColor(holder.itemView, 
+                    com.google.android.material.R.attr.colorSurfaceVariant);
+            holder.btnCamera.setColorFilter(colorOnSurfaceVariant);
             holder.btnCamera.setBackgroundTintList(
-                    android.content.res.ColorStateList.valueOf(Color.parseColor("#F5F5F5")));
+                    android.content.res.ColorStateList.valueOf(colorSurfaceVariant));
         }
     }
 
     @Override
     public int getItemCount() {
         return participantList.size();
+    }
+
+    public void updateList(List<Participant> newList) {
+        participantList.clear();
+        participantList.addAll(newList);
+        notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

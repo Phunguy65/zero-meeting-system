@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <!-- Header -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerLayout" android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Close button -->
+        <FrameLayout android:id="@+id/btnCloseContainer"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:clickable="true" android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView android:id="@+id/btnClose"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:layout_gravity="center"
+                android:contentDescription="@string/cd_close"
+                android:src="@drawable/ic_close" app:tint="?attr/colorOnSurface" />
+        </FrameLayout>
+
+        <!-- Title -->
+        <TextView android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/call_meeting_chat"
+            android:textColor="?attr/colorOnSurface" android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- More options button -->
+        <FrameLayout android:id="@+id/btnMoreContainer"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_marginEnd="@dimen/spacing_sm" android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView android:id="@+id/btnMore"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:layout_gravity="center"
+                android:contentDescription="@string/cd_more_options"
+                android:src="@drawable/ic_settings" app:tint="?attr/colorOnSurface" />
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Chat messages list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvChat" android:layout_width="match_parent"
+        android:layout_height="0dp" android:paddingTop="@dimen/spacing_md"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toTopOf="@id/layoutInput"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+
+    <!-- Message input -->
+    <LinearLayout android:id="@+id/layoutInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface" android:elevation="8dp"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:paddingVertical="@dimen/spacing_sm"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_chat_input"
+            android:gravity="center_vertical" android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_sm">
+
+            <!-- Attach button -->
+            <FrameLayout android:id="@+id/btnAttachContainer"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView android:id="@+id/btnAttach"
+                    android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/cd_attach_file"
+                    android:src="@drawable/ic_add"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </FrameLayout>
+
+            <!-- Message input -->
+            <EditText android:id="@+id/edtMessage"
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1" android:background="@null"
+                android:hint="@string/call_type_message"
+                android:importantForAutofill="no" android:inputType="textMultiLine"
+                android:textColorHint="?attr/colorOnSurfaceVariant"
+                android:textSize="15sp" />
+
+            <!-- Send button -->
+            <FrameLayout android:id="@+id/btnSendContainer"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView android:id="@+id/btnSend"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_circle_blue"
+                    android:contentDescription="@string/cd_send_message"
+                    android:padding="@dimen/spacing_sm" android:src="@drawable/ic_send"
+                    app:tint="?attr/colorOnPrimary" />
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
