@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function GoogleIcon() {
   return (
@@ -72,6 +73,7 @@ export function AuthScreen({ variant }: AuthScreenProps) {
   const t = useTranslations(`auth.${variant}`);
   const common = useTranslations("auth.common");
   const [passwordHidden, setPasswordHidden] = useState(true);
+  const router = useRouter();
 
   return (
     <main className="min-h-screen bg-[linear-gradient(135deg,_#f7faff_0%,_#f4f8fe_48%,_#eef5ff_100%)] text-[#101828]">
@@ -196,7 +198,10 @@ export function AuthScreen({ variant }: AuthScreenProps) {
 
                 <form
                   className="mt-10 flex flex-col gap-7"
-                  onSubmit={(event) => event.preventDefault()}
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    router.push(`/${locale}/workspace`);
+                  }}
                 >
                   {variant === "register" ? (
                     <label className="flex flex-col gap-3">

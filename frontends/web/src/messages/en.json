@@ -188,5 +188,21 @@
     "joinNow": "Join Now",
     "otherJoinOptions": "Other join options:",
     "phoneAudio": "Phone audio"
+  },
+  "meetingRoom": {
+    "meetingName": "Weekly Sync: Design Review",
+    "meetingDetails": "Meeting Details",
+    "activeSession": "Active Session",
+    "participants": "Participants",
+    "tabChat": "Chat",
+    "tabPeople": "People",
+    "host": "Host",
+    "you": "You",
+    "controlMic": "Mic",
+    "controlVideo": "Video",
+    "controlShare": "Share",
+    "controlChat": "Chat",
+    "leave": "Leave",
+    "messagePlaceholder": "Send a message..."
   }
 }

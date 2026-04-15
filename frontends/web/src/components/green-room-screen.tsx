@@ -249,13 +249,13 @@ export function GreenRoomScreen() {
               ))}
             </div>
 
-            <button
+            <Link
               className="mt-10 flex h-16 w-full items-center justify-center gap-3 rounded-[1.1rem] bg-[#1a73e8] px-8 text-[1.55rem] font-semibold text-white shadow-[0_24px_50px_-26px_rgba(26,115,232,0.95)] transition-all hover:-translate-y-0.5 hover:bg-[#1765cc]"
-              type="button"
+              href={`/${locale}/workspace/meeting-room`}
             >
               {t("joinNow")}
               <ArrowRightIcon />
-            </button>
+            </Link>
 
             <p className="mt-5 text-center text-base text-[#475467]">
               {t("otherJoinOptions")}{" "}
