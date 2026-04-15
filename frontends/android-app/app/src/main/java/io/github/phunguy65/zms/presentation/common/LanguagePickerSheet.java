@@ -14,8 +14,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.os.LocaleListCompat;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +30,10 @@ import org.xmlpull.v1.XmlPullParser;
  * Parses available languages from locales_config.xml at runtime.
  * Provides smooth selection animation before applying locale change.
  * Reusable across Welcome, Login, Register, and Settings screens.
+ * <p>
+ * Persists the selected language via {@link LanguagePickerViewModel} for future server sync.
  */
+@AndroidEntryPoint
 public class LanguagePickerSheet extends BottomSheetDialogFragment {
 
     private static final String TAG = "LanguagePickerSheet";
@@ -36,6 +41,7 @@ public class LanguagePickerSheet extends BottomSheetDialogFragment {
     private static final long SELECTION_DELAY_MS = 200;
     private static final long CHECKMARK_ANIM_MS = 150;
 
+    private LanguagePickerViewModel viewModel;
     private RecyclerView rvLanguages;
     private LanguageAdapter adapter;
     private List<LanguageItem> languages;
@@ -57,6 +63,7 @@ public class LanguagePickerSheet extends BottomSheetDialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(LanguagePickerViewModel.class);
         languages = parseLocalesConfig();
         currentLanguageCode = getCurrentLanguageCode();
     }
@@ -188,6 +195,9 @@ public class LanguagePickerSheet extends BottomSheetDialogFragment {
         }
 
         pendingLocaleChange = () -> {
+            // Persist language preference via ViewModel for future server sync
+            viewModel.saveLanguage(item.getCode());
+            // Apply locale change via AppCompatDelegate
             LocaleListCompat locales = LocaleListCompat.forLanguageTags(item.getCode());
             AppCompatDelegate.setApplicationLocales(locales);
             dismiss();

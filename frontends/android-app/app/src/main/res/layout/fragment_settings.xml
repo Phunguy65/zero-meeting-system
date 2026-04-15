@@ -97,6 +97,47 @@
             android:layout_marginStart="@dimen/list_item_icon_offset"
             android:background="?attr/colorOutlineVariant" />
 
+        <!-- Theme Row -->
+        <LinearLayout android:id="@+id/rowTheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true" android:focusable="true"
+            android:gravity="center_vertical" android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_lg"
+            android:paddingVertical="@dimen/spacing_md">
+
+            <ImageView android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:src="@drawable/ic_settings"
+                app:tint="?attr/colorOnSurfaceVariant"
+                android:importantForAccessibility="no" />
+
+            <TextView android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_md"
+                android:layout_weight="1" android:text="@string/settings_theme"
+                android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+
+            <TextView android:id="@+id/tvCurrentTheme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" tools:text="System" />
+
+            <ImageView android:layout_width="@dimen/icon_size_sm"
+                android:layout_height="@dimen/icon_size_sm"
+                android:layout_marginStart="@dimen/spacing_xs"
+                android:src="@drawable/ic_chevron_right"
+                app:tint="?attr/colorOnSurfaceVariant"
+                android:importantForAccessibility="no" />
+        </LinearLayout>
+
+        <View android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginStart="@dimen/list_item_icon_offset"
+            android:background="?attr/colorOutlineVariant" />
+
         <!-- About Row -->
         <LinearLayout android:id="@+id/rowAbout"
             android:layout_width="match_parent"

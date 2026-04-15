@@ -18,6 +18,7 @@ import io.github.phunguy65.zms.data.remote.api.UserMeetingsApi;
 import io.github.phunguy65.zms.data.remote.api.UsersApi;
 import io.github.phunguy65.zms.data.remote.client.JSON;
 import io.github.phunguy65.zms.data.remote.interceptor.AndroidErrorTranslator;
+import io.github.phunguy65.zms.data.remote.interceptor.AuthInterceptor;
 import io.github.phunguy65.zms.data.remote.interceptor.ErrorTranslator;
 import io.github.phunguy65.zms.data.remote.interceptor.JsendUnwrapInterceptor;
 import io.github.phunguy65.zms.frontends.BuildConfig;
@@ -34,14 +35,14 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
  *
  * <p>The OkHttp client is configured with:
  * <ul>
+ *   <li>{@link AuthInterceptor} — injects Bearer token for authenticated requests</li>
  *   <li>{@link JsendUnwrapInterceptor} — strips JSend envelopes before Retrofit deserialisation</li>
  *   <li>{@link HttpLoggingInterceptor} — logs HTTP traffic in debug builds</li>
  * </ul>
  *
- * <p>Interceptor ordering: JsendUnwrap is added first so it processes the response body before
- * the logging interceptor. The logging interceptor therefore logs the <em>unwrapped</em> payload,
- * which keeps log output concise. To see the raw JSend envelope on the wire, use
- * {@code addNetworkInterceptor} for logging instead.
+ * <p>Interceptor ordering: AuthInterceptor is added first to inject the token, then JsendUnwrap
+ * processes the response body before the logging interceptor. The logging interceptor therefore
+ * logs the <em>unwrapped</em> payload, which keeps log output concise.
  */
 @Module
 @InstallIn(SingletonComponent.class)
@@ -75,8 +76,11 @@ public final class NetworkModule {
     @Provides
     @Singleton
     OkHttpClient provideOkHttpClient(
-            JsendUnwrapInterceptor jsendInterceptor, HttpLoggingInterceptor loggingInterceptor) {
+            AuthInterceptor authInterceptor,
+            JsendUnwrapInterceptor jsendInterceptor,
+            HttpLoggingInterceptor loggingInterceptor) {
         return new OkHttpClient.Builder()
+                .addInterceptor(authInterceptor)
                 .addInterceptor(jsendInterceptor)
                 .addInterceptor(loggingInterceptor)
                 .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)

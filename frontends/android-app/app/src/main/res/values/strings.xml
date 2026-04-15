@@ -21,6 +21,7 @@
     <string name="login_or_continue_with">OR CONTINUE WITH</string>
     <string name="login_btn_google">Sign in with Google</string>
     <string name="login_need_account">Don\'t have an account? Sign up</string>
+    <string name="login_remember_me">Remember me</string>
     <string name="login_forgot_password_coming_soon">Password recovery coming soon</string>
 
     <!-- ═══ Forgot Password screen ═══ -->
@@ -168,7 +169,14 @@
     <!-- ═══ Settings screen ═══ -->
     <string name="settings_title">Settings</string>
     <string name="settings_language">Language</string>
+    <string name="settings_theme">Theme</string>
     <string name="settings_about">About</string>
+
+    <!-- Theme options -->
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_system">System (follow device)</string>
+    <string name="theme_dialog_title">Choose Theme</string>
 
     <!-- ═══ Video call screens ═══ -->
     <string name="prejoin_title">Join Meeting</string>
@@ -271,6 +279,7 @@
     <string name="cd_close">Close</string>
     <string name="cd_more_options">More options</string>
     <string name="cd_open_chat">Open chat</string>
+    <string name="cd_activate_to_change">Double-tap to change</string>
 
     <!-- ═══ Video call feedback messages ═══ -->
     <string name="permission_camera_mic_required">Camera and microphone permissions are required for
@@ -278,4 +287,9 @@
     <string name="call_muted_all">Muted all participants</string>
     <string name="call_attachment_coming_soon">File attachment coming soon</string>
     <string name="call_message_sent">Message sent</string>
+
+    <!-- ═══ Session expired ═══ -->
+    <string name="session_expired_title">Session Expired</string>
+    <string name="session_expired_message">Please sign in again to continue</string>
+    <string name="session_expired_snackbar">Session expired. Please sign in.</string>
 </resources>

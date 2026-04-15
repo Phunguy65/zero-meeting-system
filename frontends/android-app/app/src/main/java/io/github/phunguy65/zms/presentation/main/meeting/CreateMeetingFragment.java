@@ -20,6 +20,8 @@ import io.github.phunguy65.zms.presentation.meeting.create.CreateMeetingViewMode
 /**
  * Fragment for creating a new meeting.
  * Converted from CreateMeetingActivity to support single-activity navigation.
+ *
+ * <p>Initializes mic/camera toggle states from persisted preferences.
  */
 @AndroidEntryPoint
 public class CreateMeetingFragment extends Fragment {
@@ -46,6 +48,7 @@ public class CreateMeetingFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(CreateMeetingViewModel.class);
 
         initViews(view);
+        initFromSavedState();
         setupListeners();
     }
 
@@ -55,6 +58,17 @@ public class CreateMeetingFragment extends Fragment {
         switchAudio = view.findViewById(R.id.switchAudio);
         btnStartMeeting = view.findViewById(R.id.btnStartMeeting);
         btnCopyLink = view.findViewById(R.id.btnCopyLink);
+    }
+
+    /**
+     * Initializes mic/camera switches from saved preferences via ViewModel.
+     */
+    private void initFromSavedState() {
+        boolean savedMicEnabled = viewModel.getLastMicEnabled();
+        boolean savedCameraEnabled = viewModel.getLastCameraEnabled();
+
+        switchAudio.setChecked(savedMicEnabled);
+        switchVideo.setChecked(savedCameraEnabled);
     }
 
     private void setupListeners() {

@@ -107,16 +107,30 @@
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Forgot password -->
-            <TextView android:id="@+id/tvForgotPassword"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:layout_gravity="end"
+            <!-- Remember Me + Forgot Password row -->
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
-                android:clickable="true" android:focusable="true"
-                android:minHeight="@dimen/touch_target_min"
-                android:gravity="center_vertical"
-                android:text="@string/login_forgot_password"
-                android:textColor="?attr/colorPrimary" />
+                android:gravity="center_vertical" android:orientation="horizontal">
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbRememberMe" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_remember_me" />
+
+                <View android:layout_width="0dp" android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView android:id="@+id/tvForgotPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:clickable="true"
+                    android:focusable="true"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:gravity="center_vertical"
+                    android:text="@string/login_forgot_password"
+                    android:textColor="?attr/colorPrimary" />
+
+            </LinearLayout>
 
             <!-- Sign In button + overlapping ProgressBar -->
             <FrameLayout android:layout_width="match_parent"

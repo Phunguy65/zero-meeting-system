@@ -21,6 +21,7 @@
     <string name="login_or_continue_with">HOẶC TIẾP TỤC VỚI</string>
     <string name="login_btn_google">Đăng nhập với Google</string>
     <string name="login_need_account">Chưa có tài khoản? Đăng ký</string>
+    <string name="login_remember_me">Ghi nhớ đăng nhập</string>
     <string name="login_forgot_password_coming_soon">Tính năng khôi phục mật khẩu sắp ra mắt</string>
 
     <!-- ═══ Màn hình quên mật khẩu ═══ -->
@@ -166,7 +167,14 @@
     <!-- ═══ Màn hình Cài đặt ═══ -->
     <string name="settings_title">Cài đặt</string>
     <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_theme">Giao diện</string>
     <string name="settings_about">Giới thiệu</string>
+
+    <!-- Tùy chọn giao diện -->
+    <string name="theme_dark">Tối</string>
+    <string name="theme_light">Sáng</string>
+    <string name="theme_system">Hệ thống (theo thiết bị)</string>
+    <string name="theme_dialog_title">Chọn giao diện</string>
 
     <!-- ═══ Màn hình cuộc gọi video ═══ -->
     <string name="prejoin_title">Tham gia cuộc họp</string>
@@ -269,10 +277,16 @@
     <string name="cd_close">Đóng</string>
     <string name="cd_more_options">Tùy chọn khác</string>
     <string name="cd_open_chat">Mở trò chuyện</string>
+    <string name="cd_activate_to_change">Nhấn đúp để thay đổi</string>
 
     <!-- ═══ Thông báo cuộc gọi video ═══ -->
     <string name="permission_camera_mic_required">Cần quyền truy cập camera và mic cho cuộc gọi video</string>
     <string name="call_muted_all">Đã tắt tiếng tất cả</string>
     <string name="call_attachment_coming_soon">Tính năng đính kèm tệp sắp ra mắt</string>
     <string name="call_message_sent">Đã gửi tin nhắn</string>
+
+    <!-- ═══ Phiên hết hạn ═══ -->
+    <string name="session_expired_title">Phiên đã hết hạn</string>
+    <string name="session_expired_message">Vui lòng đăng nhập lại để tiếp tục</string>
+    <string name="session_expired_snackbar">Phiên đã hết hạn. Vui lòng đăng nhập.</string>
 </resources>

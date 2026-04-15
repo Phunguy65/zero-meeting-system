@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -30,11 +28,15 @@ import io.github.phunguy65.zms.frontends.R;
  * Pre-join screen for video calls.
  * Handles both guest and authenticated user flows.
  * Includes meeting code input, display name (guest only), and audio/video toggles.
+ *
+ * <p>Initializes mic/camera toggle states from persisted preferences and saves
+ * the final states when user proceeds to join the call.
  */
 @AndroidEntryPoint
 public class PreJoinFragment extends Fragment {
 
-    private CallViewModel viewModel;
+    private CallViewModel callViewModel;
+    private PreJoinViewModel preJoinViewModel;
     private NavController navController;
 
     // Views
@@ -65,8 +67,7 @@ public class PreJoinFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Get ViewModel scoped to VideoCallActivity
-        viewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
+        callViewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
     @Nullable
@@ -81,7 +82,10 @@ public class PreJoinFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         navController = NavHostFragment.findNavController(this);
 
+        preJoinViewModel = new ViewModelProvider(this).get(PreJoinViewModel.class);
+
         initViews(view);
+        initFromSavedState();
         setupGuestMode();
         setupListeners();
         setupObservers();
@@ -102,13 +106,28 @@ public class PreJoinFragment extends Fragment {
         btnJoinMeeting = view.findViewById(R.id.btnJoinMeeting);
     }
 
+    /**
+     * Initializes mic/camera switches from saved preferences via ViewModel.
+     */
+    private void initFromSavedState() {
+        boolean savedMicEnabled = preJoinViewModel.getLastMicEnabled();
+        boolean savedCameraEnabled = preJoinViewModel.getLastCameraEnabled();
+
+        callViewModel.setMicEnabled(savedMicEnabled);
+        callViewModel.setCameraEnabled(savedCameraEnabled);
+
+        switchAudio.setChecked(savedMicEnabled);
+        switchVideo.setChecked(savedCameraEnabled);
+        tvAudioStatus.setText(savedMicEnabled ? R.string.prejoin_audio_on : R.string.prejoin_audio_off);
+        tvVideoStatus.setText(savedCameraEnabled ? R.string.prejoin_video_on : R.string.prejoin_video_off);
+    }
+
     private void setupGuestMode() {
-        // Read isGuest from ViewModel (set by VideoCallActivity from intent extras)
-        // This avoids tight coupling to the Activity class
-        Boolean isGuest = viewModel.isGuest().getValue();
+
+        Boolean isGuest = callViewModel.isGuest().getValue();
         boolean guestMode = Boolean.TRUE.equals(isGuest);
 
-        // Show display name field for guests only
+
         int visibility = guestMode ? View.VISIBLE : View.GONE;
         lblDisplayName.setVisibility(visibility);
         tilDisplayName.setVisibility(visibility);
@@ -118,15 +137,13 @@ public class PreJoinFragment extends Fragment {
         // Back button
         btnBackContainer.setOnClickListener(v -> requireActivity().finish());
 
-        // Audio switch
         switchAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            viewModel.setMicEnabled(isChecked);
+            callViewModel.setMicEnabled(isChecked);
             tvAudioStatus.setText(isChecked ? R.string.prejoin_audio_on : R.string.prejoin_audio_off);
         });
 
-        // Video switch
         switchVideo.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            viewModel.setCameraEnabled(isChecked);
+            callViewModel.setCameraEnabled(isChecked);
             tvVideoStatus.setText(isChecked ? R.string.prejoin_video_on : R.string.prejoin_video_off);
         });
 
@@ -135,14 +152,13 @@ public class PreJoinFragment extends Fragment {
     }
 
     private void setupObservers() {
-        // Sync switch states with ViewModel
-        viewModel.isMicEnabled().observe(getViewLifecycleOwner(), enabled -> {
+        callViewModel.isMicEnabled().observe(getViewLifecycleOwner(), enabled -> {
             if (switchAudio.isChecked() != enabled) {
                 switchAudio.setChecked(enabled);
             }
         });
 
-        viewModel.isCameraEnabled().observe(getViewLifecycleOwner(), enabled -> {
+        callViewModel.isCameraEnabled().observe(getViewLifecycleOwner(), enabled -> {
             if (switchVideo.isChecked() != enabled) {
                 switchVideo.setChecked(enabled);
             }
@@ -150,9 +166,8 @@ public class PreJoinFragment extends Fragment {
     }
 
     private void prefillFromIntent() {
-        // Read meeting code from ViewModel (set by VideoCallActivity from intent extras)
-        // This avoids tight coupling to the Activity class
-        String meetingCode = viewModel.getMeetingCode().getValue();
+
+        String meetingCode = callViewModel.getMeetingCode().getValue();
         if (meetingCode != null && !meetingCode.isEmpty()) {
             edtMeetingCode.setText(meetingCode);
         }
@@ -171,11 +186,9 @@ public class PreJoinFragment extends Fragment {
                 ? edtDisplayName.getText().toString().trim()
                 : "";
 
-        // Update ViewModel
-        viewModel.setMeetingCode(meetingCode);
-        viewModel.setDisplayName(displayName);
+        callViewModel.setMeetingCode(meetingCode);
+        callViewModel.setDisplayName(displayName);
 
-        // Validate
         boolean hasError = false;
 
         if (meetingCode.isEmpty()) {
@@ -183,7 +196,7 @@ public class PreJoinFragment extends Fragment {
             hasError = true;
         }
 
-        Boolean isGuest = viewModel.isGuest().getValue();
+        Boolean isGuest = callViewModel.isGuest().getValue();
         if (Boolean.TRUE.equals(isGuest) && displayName.isEmpty()) {
             tilDisplayName.setError(getString(R.string.prejoin_error_display_name));
             hasError = true;
@@ -214,6 +227,19 @@ public class PreJoinFragment extends Fragment {
     }
 
     private void proceedToCall() {
+        saveMicCameraState();
+
         navController.navigate(R.id.action_prejoin_to_activeCall);
+    }
+
+    /**
+     * Saves the current mic/camera toggle states to preferences via ViewModel.
+     */
+    private void saveMicCameraState() {
+        boolean micEnabled = switchAudio.isChecked();
+        boolean cameraEnabled = switchVideo.isChecked();
+
+        preJoinViewModel.setLastMicEnabled(micEnabled);
+        preJoinViewModel.setLastCameraEnabled(cameraEnabled);
     }
 }

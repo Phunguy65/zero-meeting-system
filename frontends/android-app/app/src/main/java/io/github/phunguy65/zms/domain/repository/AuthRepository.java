@@ -58,4 +58,12 @@ public interface AuthRepository {
      * @return a future that completes on success
      */
     CompletableFuture<Void> resetPassword(String email, String otp, String newPassword);
+
+    /**
+     * Refreshes the access token using a refresh token.
+     *
+     * @param refreshToken the current refresh token
+     * @return a future that completes with new login result containing fresh tokens
+     */
+    CompletableFuture<LoginResult> refreshToken(String refreshToken);
 }

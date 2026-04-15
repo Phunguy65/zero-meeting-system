@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
@@ -65,6 +67,7 @@ public class LoginFragment extends Fragment {
     private MaterialButton btnLanguage;
     private TextInputLayout tilEmail, tilPassword;
     private TextInputEditText edtEmail, edtPassword;
+    private MaterialCheckBox cbRememberMe;
     private MaterialButton btnLoginSubmit, btnGoogle;
     private ProgressBar progressLogin;
     private TextView tvNeedAccount, tvForgotPassword;
@@ -98,6 +101,7 @@ public class LoginFragment extends Fragment {
         tilPassword = view.findViewById(R.id.tilPassword);
         edtEmail = view.findViewById(R.id.edtEmail);
         edtPassword = view.findViewById(R.id.edtPassword);
+        cbRememberMe = view.findViewById(R.id.cbRememberMe);
         btnLoginSubmit = view.findViewById(R.id.btnLoginSubmit);
         btnGoogle = view.findViewById(R.id.btnGoogle);
         progressLogin = view.findViewById(R.id.progressLogin);
@@ -142,7 +146,8 @@ public class LoginFragment extends Fragment {
             String password = edtPassword.getText() != null
                     ? edtPassword.getText().toString().trim()
                     : "";
-            viewModel.loginWithEmail(email, password);
+            boolean rememberMe = cbRememberMe.isChecked();
+            viewModel.loginWithEmail(email, password, rememberMe);
         });
 
         btnGoogle.setOnClickListener(v -> startGoogleSignIn());
@@ -210,8 +215,10 @@ public class LoginFragment extends Fragment {
         progressLogin.setVisibility(View.GONE);
         btnLoginSubmit.setEnabled(false);
         btnLoginSubmit.setText("\u2713");
-        btnLoginSubmit.setBackgroundTintList(
-                ColorStateList.valueOf(getResources().getColor(R.color.md_theme_light_success, null)));
+        // Use theme-aware success color for dark mode compatibility
+        TypedValue typedValue = new TypedValue();
+        requireContext().getTheme().resolveAttribute(R.attr.colorSuccess, typedValue, true);
+        btnLoginSubmit.setBackgroundTintList(ColorStateList.valueOf(typedValue.data));
         pendingNavigation = this::navigateToDashboard;
         mainHandler.postDelayed(pendingNavigation, 400);
     }
@@ -339,7 +346,8 @@ public class LoginFragment extends Fragment {
                                                                     .error_google_signin_failed)));
                                             return;
                                         }
-                                        viewModel.loginWithGoogle(firebaseIdToken);
+                                        boolean rememberMe = cbRememberMe.isChecked();
+                                        viewModel.loginWithGoogle(firebaseIdToken, rememberMe);
                                     })
                                     .addOnFailureListener(e -> {
                                         Log.e(TAG, "Failed to get Firebase ID token", e);
