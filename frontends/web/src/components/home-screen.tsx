@@ -260,9 +260,9 @@ export function HomeScreen() {
             </p>
 
             <div className="mt-10 flex flex-col gap-4 xl:flex-row xl:items-center">
-              <button
+              <Link
                 className="group inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-[linear-gradient(135deg,_#1a73e8_0%,_#0f5ed7_100%)] px-6 text-[1.12rem] font-medium text-white shadow-[0_22px_46px_-24px_rgba(26,115,232,0.95)] ring-1 ring-[#1a73e8]/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_28px_52px_-24px_rgba(26,115,232,0.95)]"
-                type="button"
+                href={`/${locale}/workspace/green-room`}
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/18 transition-colors group-hover:bg-white/24">
                   <svg
@@ -275,7 +275,7 @@ export function HomeScreen() {
                   </svg>
                 </span>
                 {t("newMeeting")}
-              </button>
+              </Link>
 
               <div className="flex h-16 w-full max-w-[520px] items-center gap-3 rounded-2xl border border-[#d2d7e1] bg-white px-5 text-[#5f6368] shadow-[0_18px_40px_-35px_rgba(15,23,42,0.45)]">
                 <svg
@@ -295,17 +295,17 @@ export function HomeScreen() {
                 />
               </div>
 
-              <button
+              <Link
+                aria-disabled={!hasJoinValue}
                 className={`inline-flex h-16 items-center justify-center rounded-2xl px-5 text-[1.12rem] font-medium transition-all ${
                   hasJoinValue
                     ? "cursor-pointer bg-[#e8f0fe] text-[#1a73e8] shadow-[0_16px_30px_-24px_rgba(26,115,232,0.85)] hover:bg-[#1a73e8] hover:text-white"
-                    : "cursor-not-allowed text-[#9aa0a6]"
+                    : "pointer-events-none text-[#9aa0a6]"
                 }`}
-                disabled={!hasJoinValue}
-                type="button"
+                href={`/${locale}/workspace/green-room`}
               >
                 {t("join")}
-              </button>
+              </Link>
             </div>
 
             <div className="mt-10 h-px w-full max-w-[760px] bg-[#e0e3eb]" />
