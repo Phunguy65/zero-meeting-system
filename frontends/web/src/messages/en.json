@@ -1,5 +1,192 @@
 {
   "hello": "Hello",
   "welcome": "Welcome to Zero Meeting System",
-  "description": "A modern meeting management platform"
+  "description": "A modern meeting management platform",
+  "splash": {
+    "title": "Welcome to ZeroMeeting",
+    "subtitle": "A streamlined workspace for scheduling, hosting, and following up on every conversation that matters.",
+    "loading": "Preparing your workspace..."
+  },
+  "home": {
+    "brand": "Zero Meet",
+    "headline": "Premium video calls and meetings for everyone",
+    "description": "Zero Meet is a secure, high-quality video conferencing solution with online screen sharing, completely free to use.",
+    "newMeeting": "New meeting",
+    "joinPlaceholder": "Enter a code or link",
+    "join": "Join",
+    "learnMore": "Learn more about Zero Meet",
+    "previewCaption": "Connect, collaborate and celebrate from anywhere",
+    "login": "Sign in",
+    "register": "Register",
+    "featureSecurityTitle": "Security by default",
+    "featureSecurityBody": "Your meetings are protected by multiple layers of security, including anti-abuse protections.",
+    "featureDeviceTitle": "Works on every device",
+    "featureDeviceBody": "Join from your browser or the app. It works beautifully on phone, tablet, and desktop.",
+    "featureScaleTitle": "Large-scale meetings",
+    "featureScaleBody": "Host meetings with up to 100 participants for free. No credit card needed to get started.",
+    "footerAbout": "Learn more",
+    "footerPrivacy": "Privacy",
+    "footerTerms": "Terms",
+    "footerHelp": "Help",
+    "footerSecurity": "Security",
+    "copyright": "© 2024 Zero Meet. Part of the EtherealMeet ecosystem."
+  },
+  "auth": {
+    "common": {
+      "copyright": "© 2024 Zero Meet Inc. All rights reserved.",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "security": "Security",
+      "contact": "Contact Us"
+    },
+    "login": {
+      "eyebrow": "The Ethereal Office",
+      "brand": "Zero Meet",
+      "heroDescription": "Step into a professional workspace where clarity and performance meet.",
+      "title": "Welcome back",
+      "subtitle": "Please enter your details to access the workspace.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "divider": "Or continue with",
+      "google": "Google",
+      "switchPrefix": "Don't have an account?",
+      "switchAction": "Create one for free"
+    },
+    "register": {
+      "heroLineOne": "Build your",
+      "heroLineTwo": "digital workspace",
+      "heroLineThree": "with confidence.",
+      "heroDescription": "Experience a refined online meeting environment where clarity and productivity come first.",
+      "securityCardTitle": "Advanced security",
+      "securityCardDescription": "End-to-end encryption for every conversation.",
+      "title": "Start your journey",
+      "subtitle": "Enter your details to create a new account.",
+      "nameLabel": "Full name",
+      "namePlaceholder": "Nguyen Van A",
+      "emailLabel": "Email",
+      "emailPlaceholder": "email@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "agreementPrefix": "I agree to the",
+      "agreementTerms": "Terms of Service",
+      "agreementMiddle": "and",
+      "agreementPrivacy": "Privacy Policy",
+      "agreementSuffix": "of Zero Meet.",
+      "submit": "Create account",
+      "divider": "Or",
+      "google": "Continue with Google",
+      "switchPrefix": "Already have an account?",
+      "switchAction": "Sign in now"
+    }
+  },
+  "workspace": {
+    "common": {
+      "brand": "Zero Meeting",
+      "navHome": "Home",
+      "navSchedule": "Schedule",
+      "navProfile": "Profile",
+      "searchPlaceholder": "Search...",
+      "join": "Join"
+    },
+    "home": {
+      "headline": "The Fluid Workspace",
+      "description": "Collaborate without barriers. Your seamless hub for virtual meetings and high-focus communication.",
+      "cards": {
+        "newMeeting": {
+          "title": "New Meeting",
+          "description": "Start an instant session with your team."
+        },
+        "joinMeeting": {
+          "title": "Join Meeting",
+          "description": "Enter a code or link to participate.",
+          "placeholder": "Meeting code"
+        },
+        "schedule": {
+          "title": "Schedule",
+          "description": "Plan a future meeting and invite participants."
+        }
+      },
+      "upcomingTitle": "Upcoming Meetings",
+      "viewCalendar": "View Calendar",
+      "upcomingMeetings": [
+        {
+          "day": "12",
+          "month": "OCT",
+          "title": "Weekly Design Sync",
+          "time": "10:00 AM — 11:30 AM",
+          "team": "Project Phoenix"
+        },
+        {
+          "day": "12",
+          "month": "OCT",
+          "title": "Q4 Roadmap Review",
+          "time": "02:00 PM — 03:00 PM",
+          "team": "Executive Board"
+        },
+        {
+          "day": "13",
+          "month": "OCT",
+          "title": "Marketing Sprint Prep",
+          "time": "09:15 AM — 10:00 AM",
+          "team": "Marketing"
+        }
+      ]
+    },
+    "schedule": {
+      "headline": "Schedule a Session",
+      "description": "Focus on the conversation. We handle the orchestration of your ethereal workspace.",
+      "topicLabel": "Meeting Topic",
+      "topicPlaceholder": "e.g. Weekly Design Sync",
+      "dateLabel": "Date",
+      "datePlaceholder": "mm/dd/yyyy",
+      "timeLabel": "Start Time",
+      "timePlaceholder": "--:-- --",
+      "durationLabel": "Duration",
+      "durationValue": "30 Minutes",
+      "inviteesLabel": "Invitees",
+      "inviteesPlaceholder": "Add emails separated by commas",
+      "submit": "Schedule Meeting",
+      "visualCaption": "Create room for focus and collaboration.",
+      "settingsTitle": "Meeting Settings",
+      "waitingRoomTitle": "Waiting Room",
+      "waitingRoomDescription": "Approve guests manually",
+      "hostVideoTitle": "Host Video On",
+      "hostVideoDescription": "Start with camera enabled",
+      "note": "Invitations will be sent to participants once you confirm the schedule. You can edit these details later in your dashboard.",
+      "footer": "© 2024 Zero Meeting. All Rights Reserved."
+    },
+    "profile": {
+      "headline": "Profile",
+      "description": "Manage your personal details, meeting history, and support preferences from one seamless workspace.",
+      "name": "An Nguyen",
+      "email": "an.nguyen@zeromeeting.app",
+      "statusLabel": "Workspace Status",
+      "statusTitle": "Pro Member",
+      "statusDescription": "Your account is ready for high-quality meetings, advanced scheduling, and seamless collaboration.",
+      "accountSettingsTitle": "Account Settings",
+      "accountSettingsDescription": "Update profile information, account security, and personal notification preferences.",
+      "meetingHistoryTitle": "Meeting History",
+      "meetingHistoryDescription": "Review recent sessions, meeting durations, and previous collaboration activity.",
+      "helpSupportTitle": "Help and Support",
+      "helpSupportDescription": "Browse guidance, submit a support request, or contact the Zero Meeting team.",
+      "logoutTitle": "Log Out",
+      "logoutDescription": "Sign out of your current workspace and return to the access screen."
+    }
+  },
+  "greenRoom": {
+    "preview": "Preview",
+    "mic": "Mic",
+    "video": "Video",
+    "check": "Check",
+    "ready": "Ready to join?",
+    "meetingTitle": "Weekly Design Sync",
+    "alreadyInMeeting": "Already in the meeting ({count})",
+    "joinNow": "Join Now",
+    "otherJoinOptions": "Other join options:",
+    "phoneAudio": "Phone audio"
+  }
 }

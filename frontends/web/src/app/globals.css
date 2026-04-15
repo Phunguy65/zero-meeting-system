@@ -28,3 +28,34 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+@keyframes splash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes splash-orbit {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-8px) scale(1.04);
+  }
+}
+
+.animate-splash-rise {
+  animation: splash-rise 700ms ease-out both;
+}
+
+.animate-splash-orbit {
+  animation: splash-orbit 2.4s ease-in-out infinite;
+}
