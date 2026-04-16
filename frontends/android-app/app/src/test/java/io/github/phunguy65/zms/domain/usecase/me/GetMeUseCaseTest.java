@@ -41,7 +41,8 @@ public class GetMeUseCaseTest {
 
     @Test
     public void execute_success_returnsUser() throws Exception {
-        User expectedUser = new User("user123", "test@example.com", "Test User", "testuser", "https://avatar.url");
+        User expectedUser = new User(
+                "user123", "test@example.com", "Test User", "testuser", "https://avatar.url");
         when(meRepository.getMe()).thenReturn(CompletableFuture.completedFuture(expectedUser));
 
         CompletableFuture<User> future = useCase.execute();

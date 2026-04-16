@@ -92,10 +92,7 @@ public class SplashActivity extends AppCompatActivity {
         if (sessionExpiredContainer != null) {
             sessionExpiredContainer.setVisibility(View.VISIBLE);
             sessionExpiredContainer.setAlpha(0f);
-            sessionExpiredContainer.animate()
-                    .alpha(1f)
-                    .setDuration(300)
-                    .start();
+            sessionExpiredContainer.animate().alpha(1f).setDuration(300).start();
         }
     }
 
@@ -123,8 +120,7 @@ public class SplashActivity extends AppCompatActivity {
      */
     private void applyTransitionIfEnabled() {
         float scale = Settings.Global.getFloat(
-                getContentResolver(),
-                Settings.Global.TRANSITION_ANIMATION_SCALE, 1f);
+                getContentResolver(), Settings.Global.TRANSITION_ANIMATION_SCALE, 1f);
         if (scale > 0) {
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         }

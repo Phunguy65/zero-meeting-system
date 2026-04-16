@@ -29,7 +29,10 @@ public class ActiveCallFragment extends Fragment {
     // Views
     private TextView btnLeave, tvTimer;
     private ImageView btnFloatVideo, btnFloatMic, btnFloatChat;
-    private View btnNAVParticipant, btnFloatVideoContainer, btnFloatMicContainer, btnFloatChatContainer;
+    private View btnNAVParticipant,
+            btnFloatVideoContainer,
+            btnFloatMicContainer,
+            btnFloatChatContainer;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,9 +40,10 @@ public class ActiveCallFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    @Nullable @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_active_call, container, false);
     }
@@ -50,7 +54,7 @@ public class ActiveCallFragment extends Fragment {
         initViews(view);
         setupListeners();
         setupObservers();
-        
+
         // Start timer via ViewModel (survives config changes)
         viewModel.startCallTimer();
     }
@@ -103,16 +107,14 @@ public class ActiveCallFragment extends Fragment {
             if (enabled) {
                 btnFloatMic.setBackgroundResource(R.drawable.bg_circle_blue);
                 btnFloatMic.setImageTintList(
-                        android.content.res.ColorStateList.valueOf(
-                                MaterialColors.getColor(requireView(), 
-                                        com.google.android.material.R.attr.colorOnPrimary)));
+                        android.content.res.ColorStateList.valueOf(MaterialColors.getColor(
+                                requireView(), com.google.android.material.R.attr.colorOnPrimary)));
                 btnFloatMic.setContentDescription(getString(R.string.cd_mute_mic));
             } else {
                 btnFloatMic.setBackgroundResource(R.drawable.bg_circle_white);
                 btnFloatMic.setImageTintList(
-                        android.content.res.ColorStateList.valueOf(
-                                MaterialColors.getColor(requireView(), 
-                                        com.google.android.material.R.attr.colorOnSurface)));
+                        android.content.res.ColorStateList.valueOf(MaterialColors.getColor(
+                                requireView(), com.google.android.material.R.attr.colorOnSurface)));
                 btnFloatMic.setContentDescription(getString(R.string.cd_unmute_mic));
             }
         });
@@ -122,16 +124,14 @@ public class ActiveCallFragment extends Fragment {
             if (enabled) {
                 btnFloatVideo.setBackgroundResource(R.drawable.bg_circle_blue);
                 btnFloatVideo.setImageTintList(
-                        android.content.res.ColorStateList.valueOf(
-                                MaterialColors.getColor(requireView(), 
-                                        com.google.android.material.R.attr.colorOnPrimary)));
+                        android.content.res.ColorStateList.valueOf(MaterialColors.getColor(
+                                requireView(), com.google.android.material.R.attr.colorOnPrimary)));
                 btnFloatVideo.setContentDescription(getString(R.string.cd_disable_camera));
             } else {
                 btnFloatVideo.setBackgroundResource(R.drawable.bg_circle_white);
                 btnFloatVideo.setImageTintList(
-                        android.content.res.ColorStateList.valueOf(
-                                MaterialColors.getColor(requireView(), 
-                                        com.google.android.material.R.attr.colorOnSurface)));
+                        android.content.res.ColorStateList.valueOf(MaterialColors.getColor(
+                                requireView(), com.google.android.material.R.attr.colorOnSurface)));
                 btnFloatVideo.setContentDescription(getString(R.string.cd_enable_camera));
             }
         });

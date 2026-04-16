@@ -217,6 +217,131 @@ class UserProfileIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    // ─── 11.4.1 PUT /users/me ─────────────────────────────────────────────────
+
+    @Test
+    void putMe_fullUpdate_returns200() throws Exception {
+        String username = "put_user_" + System.nanoTime() % 10000;
+        String token = registerAndLogin(
+                "put-" + System.nanoTime() + "@example.com", "password123", "Put User", username);
+
+        String newUsername = "put_new_" + System.nanoTime() % 10000;
+        mockMvc.perform(put("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\":\"Updated Name\",\"username\":\"" + newUsername
+                                + "\",\"avatarUrl\":\"https://example.com/avatar.png\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.data.fullName").value("Updated Name"))
+                .andExpect(jsonPath("$.data.username").value(newUsername))
+                .andExpect(jsonPath("$.data.avatarUrl").value("https://example.com/avatar.png"));
+    }
+
+    @Test
+    void putMe_nullAvatarUrl_clearsAvatar() throws Exception {
+        String username = "put_clear_" + System.nanoTime() % 10000;
+        String token = registerAndLogin(
+                "put-clear-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Put Clear Avatar",
+                username);
+
+        mockMvc.perform(put("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\":\"Clear Avatar\",\"username\":\"" + username
+                                + "\",\"avatarUrl\":null}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.avatarUrl").doesNotExist());
+    }
+
+    @Test
+    void putMe_missingFullName_returns400() throws Exception {
+        String username = "put_miss_" + System.nanoTime() % 10000;
+        String token = registerAndLogin(
+                "put-miss-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Put Missing",
+                username);
+
+        mockMvc.perform(put("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + username + "\",\"avatarUrl\":null}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void putMe_missingUsername_returns400() throws Exception {
+        String token = registerAndLogin(
+                "put-miss-un-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Put Missing Username",
+                "put_miss_un_" + System.nanoTime() % 10000);
+
+        mockMvc.perform(put("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\":\"Has Name\",\"avatarUrl\":null}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void putMe_blankFullName_returns400() throws Exception {
+        String username = "put_blank_" + System.nanoTime() % 10000;
+        String token = registerAndLogin(
+                "put-blank-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Put Blank",
+                username);
+
+        mockMvc.perform(put("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\":\"\",\"username\":\"" + username
+                                + "\",\"avatarUrl\":null}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void putMe_duplicateUsername_returns409() throws Exception {
+        String takenUsername = "put_taken_" + System.nanoTime() % 10000;
+        // Register first user with the username
+        registerAndLogin(
+                "put-taken-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Taken User",
+                takenUsername);
+
+        // Register second user and try to take the username via PUT
+        String secondUsername = "put_second_" + System.nanoTime() % 10000;
+        String token = registerAndLogin(
+                "put-second-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Second User",
+                secondUsername);
+
+        mockMvc.perform(put("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\":\"Second User\",\"username\":\"" + takenUsername
+                                + "\",\"avatarUrl\":null}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.data.code").value("USERNAME_ALREADY_EXISTS"));
+    }
+
+    @Test
+    void putMe_unauthenticated_returns401() throws Exception {
+        mockMvc.perform(put("/api/v1/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\":\"X\",\"username\":\"x\",\"avatarUrl\":null}"))
+                .andExpect(status().isUnauthorized());
+    }
+
     // ─── 11.5 PATCH /users/me/preferences ────────────────────────────────────
 
     @Test

@@ -32,8 +32,7 @@ public class CreateMeetingFragment extends Fragment {
     private MaterialSwitch switchVideo, switchAudio;
     private MaterialButton btnStartMeeting, btnCopyLink;
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
@@ -72,13 +71,13 @@ public class CreateMeetingFragment extends Fragment {
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v ->
-                Navigation.findNavController(v).popBackStack());
+        btnBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
         btnCopyLink.setOnClickListener(v -> {
             // TODO: Get actual meeting link from ViewModel when meeting creation API is integrated
             // For now, show a message that the feature is not yet available
-            Snackbar.make(v, R.string.create_meeting_link_copied, Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(v, R.string.create_meeting_link_copied, Snackbar.LENGTH_SHORT)
+                    .show();
         });
 
         btnStartMeeting.setOnClickListener(v -> {
@@ -86,8 +85,9 @@ public class CreateMeetingFragment extends Fragment {
             boolean isAudioOn = switchAudio.isChecked();
 
             viewModel.startNewMeeting(isVideoOn, isAudioOn);
-            Snackbar.make(v, R.string.create_meeting_starting, Snackbar.LENGTH_SHORT).show();
-            
+            Snackbar.make(v, R.string.create_meeting_starting, Snackbar.LENGTH_SHORT)
+                    .show();
+
             // TODO: Navigate to VideoCallActivity when it's implemented
             // For now, just go back to dashboard
             Navigation.findNavController(v).popBackStack();

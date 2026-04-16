@@ -12,7 +12,7 @@ import io.github.phunguy65.zms.frontends.R;
 /**
  * Separate Activity for video call flow.
  * Runs as a separate Android task for call isolation and PiP support.
- * 
+ *
  * Entry points:
  * - MainActivity → "Join Meeting" → VideoCallActivity with isGuest=false
  * - WelcomeActivity → "Join as Guest" → VideoCallActivity with isGuest=true
@@ -41,7 +41,7 @@ public class VideoCallActivity extends AppCompatActivity {
     private void initializeViewModelFromIntent() {
         CallViewModel viewModel = new ViewModelProvider(this).get(CallViewModel.class);
         viewModel.setIsGuest(getIntent().getBooleanExtra(EXTRA_IS_GUEST, false));
-        
+
         String meetingCode = getIntent().getStringExtra(EXTRA_MEETING_CODE);
         if (meetingCode != null && !meetingCode.isEmpty()) {
             viewModel.setMeetingCode(meetingCode);
@@ -49,9 +49,9 @@ public class VideoCallActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.nav_host_video_call);
-        
+        NavHostFragment navHostFragment = (NavHostFragment)
+                getSupportFragmentManager().findFragmentById(R.id.nav_host_video_call);
+
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
         }
@@ -67,8 +67,7 @@ public class VideoCallActivity extends AppCompatActivity {
     /**
      * Returns the pre-filled meeting code if provided via intent.
      */
-    @Nullable
-    public String getMeetingCode() {
+    @Nullable public String getMeetingCode() {
         return getIntent().getStringExtra(EXTRA_MEETING_CODE);
     }
 

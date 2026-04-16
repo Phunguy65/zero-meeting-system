@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" android:orientation="vertical"
+    android:background="?attr/colorSurface"
+    android:paddingTop="@dimen/spacing_md"
+    android:paddingBottom="@dimen/spacing_lg">
+
+    <!-- Title -->
+    <TextView android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingBottom="@dimen/spacing_md"
+        android:text="@string/avatar_picker_title" android:textSize="18sp"
+        android:textStyle="bold" android:textColor="?attr/colorOnSurface" />
+
+    <!-- Take Photo -->
+    <LinearLayout android:id="@+id/btnTakePhoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true" android:focusable="true"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/touch_target_min"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingVertical="@dimen/spacing_md">
+
+        <ImageView android:layout_width="@dimen/icon_size_md"
+            android:layout_height="@dimen/icon_size_md"
+            android:src="@drawable/ic_camera"
+            app:tint="?attr/colorOnSurfaceVariant"
+            android:importantForAccessibility="no" />
+
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:text="@string/avatar_picker_take_photo"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Choose from Gallery -->
+    <LinearLayout android:id="@+id/btnChooseGallery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true" android:focusable="true"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/touch_target_min"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingVertical="@dimen/spacing_md">
+
+        <ImageView android:layout_width="@dimen/icon_size_md"
+            android:layout_height="@dimen/icon_size_md"
+            android:src="@drawable/ic_photo_library"
+            app:tint="?attr/colorOnSurfaceVariant"
+            android:importantForAccessibility="no" />
+
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:text="@string/avatar_picker_choose_gallery"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Remove Photo (visible only if user has custom avatar) -->
+    <LinearLayout android:id="@+id/btnRemovePhoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true" android:focusable="true"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/touch_target_min"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingVertical="@dimen/spacing_md" android:visibility="gone">
+
+        <ImageView android:layout_width="@dimen/icon_size_md"
+            android:layout_height="@dimen/icon_size_md"
+            android:src="@drawable/ic_delete" app:tint="?attr/colorError"
+            android:importantForAccessibility="no" />
+
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:text="@string/avatar_picker_remove_photo"
+            android:textColor="?attr/colorError" android:textSize="16sp" />
+    </LinearLayout>
+</LinearLayout>

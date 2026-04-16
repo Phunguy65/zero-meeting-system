@@ -34,9 +34,8 @@ public class AuthInterceptorTest {
     @Before
     public void setup() {
         interceptor = new AuthInterceptor(tokenManager);
-        originalRequest = new Request.Builder()
-                .url("https://api.example.com/test")
-                .build();
+        originalRequest =
+                new Request.Builder().url("https://api.example.com/test").build();
         when(chain.request()).thenReturn(originalRequest);
     }
 

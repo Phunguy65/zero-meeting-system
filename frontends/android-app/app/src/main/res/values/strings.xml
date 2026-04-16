@@ -165,6 +165,38 @@
     <string name="profile_help_support">Help &amp; Support</string>
     <string name="profile_log_out">Log Out</string>
     <string name="profile_logged_out">Logged out</string>
+    <string name="profile_loading">Loading…</string>
+    <string name="profile_error">Failed to load profile</string>
+    <string name="retry">Retry</string>
+
+    <!-- ═══ Account Settings screen ═══ -->
+    <string name="account_settings_change_photo">Change photo</string>
+    <string name="account_settings_full_name">Full Name</string>
+    <string name="account_settings_username">Username</string>
+    <string name="account_settings_username_helper">3–30 chars: letters, digits, _ or - only</string>
+    <string name="account_settings_email">Email</string>
+    <string name="account_settings_email_readonly">Email cannot be changed</string>
+    <string name="account_settings_save">Save Changes</string>
+    <string name="account_settings_saving">Saving…</string>
+    <string name="account_settings_saved">Profile updated</string>
+    <string name="account_settings_error_fullname_required">Full name is required</string>
+    <string name="account_settings_error_fullname_too_long">Full name is too long (max 255 characters)</string>
+    <string name="account_settings_error_username_short">Username must be at least 3 characters</string>
+    <string name="account_settings_error_username_long">Username must be at most 30 characters</string>
+    <string name="account_settings_error_username_format">Username can only contain letters, numbers, _ and -</string>
+    <string name="account_settings_error_username_taken">Username is already taken</string>
+    <string name="account_settings_error_upload">Failed to upload photo</string>
+    <string name="account_settings_discard_title">Discard changes?</string>
+    <string name="account_settings_discard_message">You have unsaved changes. Do you want to discard
+        them?</string>
+    <string name="account_settings_discard_confirm">Discard</string>
+    <string name="account_settings_discard_cancel">Keep Editing</string>
+
+    <!-- ═══ Avatar Picker ═══ -->
+    <string name="avatar_picker_title">Change photo</string>
+    <string name="avatar_picker_take_photo">Take Photo</string>
+    <string name="avatar_picker_choose_gallery">Choose from Gallery</string>
+    <string name="avatar_picker_remove_photo">Remove Photo</string>
 
     <!-- ═══ Settings screen ═══ -->
     <string name="settings_title">Settings</string>
@@ -260,6 +292,8 @@
 
     <!-- ═══ Accessibility - Content descriptions ═══ -->
     <string name="cd_avatar">Profile picture</string>
+    <string name="cd_avatar_tap_to_edit">Profile photo. Double tap to change</string>
+    <string name="cd_avatar_tap_to_change">Profile photo. Double tap to change</string>
     <string name="cd_back">Go back</string>
     <string name="cd_settings">Settings</string>
     <string name="cd_search">Search</string>
@@ -284,6 +318,8 @@
     <!-- ═══ Video call feedback messages ═══ -->
     <string name="permission_camera_mic_required">Camera and microphone permissions are required for
         video calls</string>
+    <string name="permission_camera_required">Camera permission is required to take photos</string>
+    <string name="error_camera_file">Could not create image file</string>
     <string name="call_muted_all">Muted all participants</string>
     <string name="call_attachment_coming_soon">File attachment coming soon</string>
     <string name="call_message_sent">Message sent</string>

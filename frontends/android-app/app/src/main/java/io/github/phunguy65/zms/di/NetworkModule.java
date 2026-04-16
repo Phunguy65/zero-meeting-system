@@ -1,7 +1,10 @@
 package io.github.phunguy65.zms.di;
 
 import android.content.Context;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
@@ -16,7 +19,6 @@ import io.github.phunguy65.zms.data.remote.api.ParticipantsApi;
 import io.github.phunguy65.zms.data.remote.api.RecordingsApi;
 import io.github.phunguy65.zms.data.remote.api.UserMeetingsApi;
 import io.github.phunguy65.zms.data.remote.api.UsersApi;
-import io.github.phunguy65.zms.data.remote.client.JSON;
 import io.github.phunguy65.zms.data.remote.interceptor.AndroidErrorTranslator;
 import io.github.phunguy65.zms.data.remote.interceptor.AuthInterceptor;
 import io.github.phunguy65.zms.data.remote.interceptor.ErrorTranslator;
@@ -26,8 +28,9 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.openapitools.jackson.nullable.JsonNullableModule;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /**
@@ -91,18 +94,22 @@ public final class NetworkModule {
 
     @Provides
     @Singleton
-    Gson provideGson() {
-        return new JSON().getGson();
+    ObjectMapper provideObjectMapper() {
+        return new ObjectMapper()
+                .registerModule(new JsonNullableModule())
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     @Provides
     @Singleton
-    Retrofit provideRetrofit(OkHttpClient client, Gson gson) {
+    Retrofit provideRetrofit(OkHttpClient client, ObjectMapper objectMapper) {
         return new Retrofit.Builder()
                 .baseUrl(BuildConfig.API_BASE_URL)
                 .client(client)
                 .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(JacksonConverterFactory.create(objectMapper))
                 .build();
     }
 

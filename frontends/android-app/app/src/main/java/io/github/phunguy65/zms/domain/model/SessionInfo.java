@@ -13,11 +13,7 @@ package io.github.phunguy65.zms.domain.model;
  * @param avatarUrl the URL to the user's avatar image (may be null)
  */
 public record SessionInfo(
-        String userId,
-        String email,
-        String fullName,
-        String username,
-        String avatarUrl) {
+        String userId, String email, String fullName, String username, String avatarUrl) {
 
     /**
      * Creates a SessionInfo from a User domain model.
@@ -27,10 +23,6 @@ public record SessionInfo(
      */
     public static SessionInfo fromUser(User user) {
         return new SessionInfo(
-                user.id(),
-                user.email(),
-                user.fullName(),
-                user.username(),
-                user.avatarUrl());
+                user.id(), user.email(), user.fullName(), user.username(), user.avatarUrl());
     }
 }

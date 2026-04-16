@@ -57,6 +57,13 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+
+        <action android:id="@+id/action_profile_to_accountSettings"
+            app:destination="@id/accountSettingsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
 
     <!-- Full-screen destinations (BottomNav hidden) -->
@@ -79,5 +86,10 @@
         android:name="io.github.phunguy65.zms.presentation.main.settings.SettingsFragment"
         android:label="@string/settings_title"
         tools:layout="@layout/fragment_settings" />
+
+    <fragment android:id="@+id/accountSettingsFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.accountsettings.AccountSettingsFragment"
+        android:label="@string/profile_account_settings"
+        tools:layout="@layout/fragment_account_settings" />
 
 </navigation>

@@ -25,9 +25,7 @@ public class SessionRepositoryImpl implements SessionRepository {
     private final UserPreferencesManager prefsManager;
 
     @Inject
-    public SessionRepositoryImpl(
-            TokenManager tokenManager,
-            UserPreferencesManager prefsManager) {
+    public SessionRepositoryImpl(TokenManager tokenManager, UserPreferencesManager prefsManager) {
         this.tokenManager = tokenManager;
         this.prefsManager = prefsManager;
     }
@@ -56,7 +54,6 @@ public class SessionRepositoryImpl implements SessionRepository {
     public boolean hasTokens() {
         return tokenManager.hasTokens();
     }
-
 
     @Override
     public void saveSession(SessionInfo sessionInfo) {
@@ -101,11 +98,12 @@ public class SessionRepositoryImpl implements SessionRepository {
 
     @Override
     public void setTheme(Theme theme) {
-        ThemeMode mode = switch (theme) {
-            case DARK -> ThemeMode.DARK;
-            case LIGHT -> ThemeMode.LIGHT;
-            case SYSTEM -> ThemeMode.SYSTEM;
-        };
+        ThemeMode mode =
+                switch (theme) {
+                    case DARK -> ThemeMode.DARK;
+                    case LIGHT -> ThemeMode.LIGHT;
+                    case SYSTEM -> ThemeMode.SYSTEM;
+                };
         prefsManager.setThemeMode(mode);
     }
 
@@ -147,5 +145,20 @@ public class SessionRepositoryImpl implements SessionRepository {
     @Override
     public boolean getLastCameraEnabled() {
         return prefsManager.getLastCameraEnabled();
+    }
+
+    @Override
+    public void updateUserProfile(String fullName, String username, String avatarUrl) {
+        UserSession currentSession = prefsManager.getUserSession();
+        if (currentSession != null) {
+            UserSession updatedSession = new UserSession(
+                    currentSession.userId(),
+                    currentSession.email(),
+                    fullName != null ? fullName : currentSession.fullName(),
+                    username != null ? username : currentSession.username(),
+                    avatarUrl,
+                    currentSession.rememberMe());
+            prefsManager.saveUserSession(updatedSession);
+        }
     }
 }

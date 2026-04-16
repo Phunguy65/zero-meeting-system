@@ -26,6 +26,7 @@
     <dimen name="avatar_size_sm">40dp</dimen>
     <dimen name="avatar_size_md">48dp</dimen>
     <dimen name="avatar_size_lg">100dp</dimen>
+    <dimen name="avatar_size_xl">120dp</dimen>
 
     <!-- Quick action card size -->
     <dimen name="quick_action_size">80dp</dimen>

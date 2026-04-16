@@ -135,6 +135,15 @@ public interface SessionRepository {
     boolean getLastCameraEnabled();
 
     /**
+     * Updates the user profile in the stored session.
+     *
+     * @param fullName the updated full name
+     * @param username the updated username
+     * @param avatarUrl the updated avatar URL (may be null)
+     */
+    void updateUserProfile(String fullName, String username, String avatarUrl);
+
+    /**
      * Clears all session data (tokens, session info, remember-me flag).
      * Used during logout.
      */

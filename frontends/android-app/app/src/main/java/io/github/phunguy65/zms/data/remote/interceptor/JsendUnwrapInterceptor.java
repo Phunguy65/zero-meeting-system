@@ -1,9 +1,7 @@
 package io.github.phunguy65.zms.data.remote.interceptor;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,7 @@ public final class JsendUnwrapInterceptor implements Interceptor {
     private static final MediaType JSON_MEDIA_TYPE =
             MediaType.parse("application/json; charset=utf-8");
 
-    private final Gson gson;
+    private final ObjectMapper objectMapper;
     private final ErrorTranslator translator;
 
     /**
@@ -39,7 +37,7 @@ public final class JsendUnwrapInterceptor implements Interceptor {
      * @param translator translates machine-readable error codes to locale-specific messages
      */
     public JsendUnwrapInterceptor(ErrorTranslator translator) {
-        this.gson = new Gson();
+        this.objectMapper = new ObjectMapper();
         this.translator = translator != null ? translator : ErrorTranslator.DEFAULT;
     }
 
@@ -66,7 +64,7 @@ public final class JsendUnwrapInterceptor implements Interceptor {
 
         JsendEnvelope envelope;
         try {
-            envelope = gson.fromJson(rawJson, JsendEnvelope.class);
+            envelope = objectMapper.readValue(rawJson, JsendEnvelope.class);
         } catch (Exception e) {
             return response.newBuilder()
                     .body(ResponseBody.create(rawJson, contentType))
@@ -96,38 +94,36 @@ public final class JsendUnwrapInterceptor implements Interceptor {
         }
     }
 
-    private Response handleSuccess(
-            Response response, MediaType contentType, JsendEnvelope envelope) {
-        JsonElement data = envelope.getData();
-        String dataJson = (data != null && !data.isJsonNull()) ? gson.toJson(data) : "null";
+    private Response handleSuccess(Response response, MediaType contentType, JsendEnvelope envelope)
+            throws IOException {
+        JsonNode data = envelope.getData();
+        String dataJson =
+                (data != null && !data.isNull()) ? objectMapper.writeValueAsString(data) : "null";
         return response.newBuilder()
                 .body(ResponseBody.create(dataJson, JSON_MEDIA_TYPE))
                 .build();
     }
 
     private ApiFailException handleFail(JsendEnvelope envelope) {
-        JsonElement data = envelope.getData();
+        JsonNode data = envelope.getData();
         String code = "";
         String message = "Request failed";
         List<ApiFailException.Violation> violations = new ArrayList<>();
 
-        if (data != null && data.isJsonObject()) {
-            JsonObject obj = data.getAsJsonObject();
-
-            if (obj.has("code") && !obj.get("code").isJsonNull()) {
-                code = obj.get("code").getAsString();
+        if (data != null && data.isObject()) {
+            if (data.has("code") && !data.get("code").isNull()) {
+                code = data.get("code").asText();
             }
-            if (obj.has("message") && !obj.get("message").isJsonNull()) {
-                message = obj.get("message").getAsString();
+            if (data.has("message") && !data.get("message").isNull()) {
+                message = data.get("message").asText();
             }
-            if (obj.has("errors") && obj.get("errors").isJsonArray()) {
-                JsonArray errors = obj.getAsJsonArray("errors");
-                for (JsonElement elem : errors) {
-                    if (elem.isJsonObject()) {
-                        JsonObject v = elem.getAsJsonObject();
-                        String field = v.has("field") ? v.get("field").getAsString() : "";
-                        String msg = v.has("message") ? v.get("message").getAsString() : "";
-                        String vCode = v.has("code") ? v.get("code").getAsString() : "";
+            if (data.has("errors") && data.get("errors").isArray()) {
+                JsonNode errors = data.get("errors");
+                for (JsonNode elem : errors) {
+                    if (elem.isObject()) {
+                        String field = elem.has("field") ? elem.get("field").asText() : "";
+                        String msg = elem.has("message") ? elem.get("message").asText() : "";
+                        String vCode = elem.has("code") ? elem.get("code").asText() : "";
                         String translatedViolationMsg = translator.translate(vCode, msg);
                         violations.add(new ApiFailException.Violation(
                                 field, translatedViolationMsg, vCode));

@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.data.repository;
 
 import io.github.phunguy65.zms.data.remote.api.MeApi;
+import io.github.phunguy65.zms.data.remote.dto.UserManagementPutUserRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementUserResponse;
 import io.github.phunguy65.zms.di.IoExecutor;
 import io.github.phunguy65.zms.domain.model.User;
@@ -41,17 +42,45 @@ public class MeRepositoryImpl implements MeRepository {
                             throw new IOException("Get me failed: HTTP " + response.code());
                         }
 
-                        UserManagementUserResponse body = response.body();
-                        return new User(
-                                body.getId() != null ? body.getId().toString() : null,
-                                body.getEmail(),
-                                body.getFullName(),
-                                body.getUsername(),
-                                body.getAvatarUrl());
+                        return mapToUser(response.body());
                     } catch (Exception e) {
                         throw new CompletionException(e);
                     }
                 },
                 ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<User> updateMe(String fullName, String username, String avatarUrl) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UserManagementPutUserRequest request = new UserManagementPutUserRequest();
+                        request.setFullName(fullName);
+                        request.setUsername(username);
+                        request.setAvatarUrl(avatarUrl);
+
+                        Response<UserManagementUserResponse> response =
+                                meApi.putMe(request).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException("Update me failed: HTTP " + response.code());
+                        }
+
+                        return mapToUser(response.body());
+                    } catch (Exception e) {
+                        throw new CompletionException(e);
+                    }
+                },
+                ioExecutor);
+    }
+
+    private User mapToUser(UserManagementUserResponse body) {
+        return new User(
+                body.getId() != null ? body.getId().toString() : null,
+                body.getEmail(),
+                body.getFullName(),
+                body.getUsername(),
+                body.getAvatarUrl());
     }
 }

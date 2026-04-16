@@ -1,1 +1,7 @@
 **/auth/OAuthOkHttpClient.java
+**/client/JSON.java
+**/client/RFC3339InstantDeserializer.java
+**/client/RFC3339JavaTimeModule.java
+**/client/ApiClient.java
+**/client/ServerConfiguration.java
+**/client/ServerVariable.java

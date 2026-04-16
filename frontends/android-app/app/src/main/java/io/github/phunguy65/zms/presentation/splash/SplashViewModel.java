@@ -38,7 +38,8 @@ public class SplashViewModel extends ViewModel {
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final Executor mainExecutor;
 
-    private final MutableLiveData<SplashState> state = new MutableLiveData<>(new SplashState.Loading());
+    private final MutableLiveData<SplashState> state =
+            new MutableLiveData<>(new SplashState.Loading());
     private CompletableFuture<?> activeFuture;
 
     @Inject
@@ -85,7 +86,8 @@ public class SplashViewModel extends ViewModel {
                 .orTimeout(REFRESH_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .thenAcceptAsync(
                         result -> {
-                            sessionRepository.saveTokens(result.accessToken(), result.refreshToken());
+                            sessionRepository.saveTokens(
+                                    result.accessToken(), result.refreshToken());
                             state.setValue(new SplashState.NavigateToMain());
                         },
                         mainExecutor)

@@ -41,8 +41,7 @@ public class UserPreferencesManagerTest {
     @Test
     public void saveUserSession_persistsAllFields() {
         UserSession session = new UserSession(
-                "user123", "test@example.com", "Test User",
-                "testuser", "https://avatar.url", true);
+                "user123", "test@example.com", "Test User", "testuser", "https://avatar.url", true);
 
         manager.saveUserSession(session);
 
@@ -57,9 +56,8 @@ public class UserPreferencesManagerTest {
 
     @Test
     public void saveUserSession_withNullAvatarUrl_removesKey() {
-        UserSession session = new UserSession(
-                "user123", "test@example.com", "Test User",
-                "testuser", null, true);
+        UserSession session =
+                new UserSession("user123", "test@example.com", "Test User", "testuser", null, true);
 
         manager.saveUserSession(session);
 

@@ -11,9 +11,11 @@ import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserPrefere
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.PatchUpdatePreferencesUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.PatchUpdateUserUseCase;
+import io.github.phunguy65.zms.usermanagement.application.usecase.UpdateUserUseCase;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.presentation.request.PatchPreferencesRequest;
 import io.github.phunguy65.zms.usermanagement.presentation.request.PatchUserRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.PutUserRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,6 +32,7 @@ public class MeController extends BaseController {
 
     private final GetUserUseCase getUserUseCase;
     private final PatchUpdateUserUseCase patchUpdateUserUseCase;
+    private final UpdateUserUseCase updateUserUseCase;
     private final GetUserPreferencesUseCase getPreferencesUseCase;
     private final PatchUpdatePreferencesUseCase patchUpdatePreferencesUseCase;
     private final DeleteAccountUseCase deleteAccountUseCase;
@@ -37,11 +40,13 @@ public class MeController extends BaseController {
     public MeController(
             GetUserUseCase getUserUseCase,
             PatchUpdateUserUseCase patchUpdateUserUseCase,
+            UpdateUserUseCase updateUserUseCase,
             GetUserPreferencesUseCase getPreferencesUseCase,
             PatchUpdatePreferencesUseCase patchUpdatePreferencesUseCase,
             DeleteAccountUseCase deleteAccountUseCase) {
         this.getUserUseCase = getUserUseCase;
         this.patchUpdateUserUseCase = patchUpdateUserUseCase;
+        this.updateUserUseCase = updateUserUseCase;
         this.getPreferencesUseCase = getPreferencesUseCase;
         this.patchUpdatePreferencesUseCase = patchUpdatePreferencesUseCase;
         this.deleteAccountUseCase = deleteAccountUseCase;
@@ -61,7 +66,8 @@ public class MeController extends BaseController {
         };
     }
 
-    @Operation(summary = "Update current user profile")
+    @Deprecated
+    @Operation(summary = "Update current user profile (deprecated, use PUT instead)")
     @PatchMapping(value = "/{version}/me", version = "1.0")
     public ResponseEntity<JsendResponse<UserResponse>> patchMe(
             @Valid @RequestBody PatchUserRequest dto, Authentication auth) {
@@ -70,6 +76,21 @@ public class MeController extends BaseController {
             return errorResponse(new AuthError.InvalidCredentials());
         }
         return switch (patchUpdateUserUseCase.execute(userId, dto.toCommand())) {
+            case Result.Success<UserResponse, AuthError> s ->
+                ResponseEntity.ok(JsendResponse.success(s.value()));
+            case Result.Failure<UserResponse, AuthError> f -> errorResponse(f.error());
+        };
+    }
+
+    @Operation(summary = "Replace current user profile")
+    @PutMapping(value = "/{version}/me", version = "1.0")
+    public ResponseEntity<JsendResponse<UserResponse>> putMe(
+            @Valid @RequestBody PutUserRequest dto, Authentication auth) {
+        UserId userId = extractUserId(auth);
+        if (userId == null) {
+            return errorResponse(new AuthError.InvalidCredentials());
+        }
+        return switch (updateUserUseCase.execute(userId, dto.toCommand())) {
             case Result.Success<UserResponse, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<UserResponse, AuthError> f -> errorResponse(f.error());

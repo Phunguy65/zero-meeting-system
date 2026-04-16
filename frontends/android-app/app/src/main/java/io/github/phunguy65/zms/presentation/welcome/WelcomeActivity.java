@@ -71,10 +71,11 @@ public class WelcomeActivity extends AppCompatActivity {
      * Checks if we navigated here after a session expiration and shows a Snackbar if so.
      */
     private void checkSessionExpired() {
-        boolean sessionExpired = getIntent().getBooleanExtra(
-                SplashActivity.EXTRA_SESSION_EXPIRED, false);
+        boolean sessionExpired =
+                getIntent().getBooleanExtra(SplashActivity.EXTRA_SESSION_EXPIRED, false);
         if (sessionExpired) {
-            Snackbar.make(rootView, R.string.session_expired_snackbar, Snackbar.LENGTH_LONG).show();
+            Snackbar.make(rootView, R.string.session_expired_snackbar, Snackbar.LENGTH_LONG)
+                    .show();
         }
     }
 

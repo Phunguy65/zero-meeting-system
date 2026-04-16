@@ -1,6 +1,5 @@
 package io.github.phunguy65.zms.data.local;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import io.github.phunguy65.zms.data.local.model.AppSettings;
 import io.github.phunguy65.zms.data.local.model.ThemeMode;
@@ -204,9 +203,6 @@ public class UserPreferencesManager {
      */
     public AppSettings getAppSettings() {
         return new AppSettings(
-                getThemeMode(),
-                getLanguage(),
-                getLastMicEnabled(),
-                getLastCameraEnabled());
+                getThemeMode(), getLanguage(), getLastMicEnabled(), getLastCameraEnabled());
     }
 }

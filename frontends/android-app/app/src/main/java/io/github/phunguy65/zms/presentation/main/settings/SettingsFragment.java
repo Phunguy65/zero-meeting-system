@@ -34,8 +34,7 @@ public class SettingsFragment extends Fragment {
     private TextView tvCurrentLanguage;
     private TextView tvCurrentTheme;
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
@@ -72,8 +71,8 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setupListeners() {
-        btnBackWrapper.setOnClickListener(v ->
-                Navigation.findNavController(requireView()).popBackStack());
+        btnBackWrapper.setOnClickListener(
+                v -> Navigation.findNavController(requireView()).popBackStack());
 
         rowLanguage.setOnClickListener(v -> {
             LanguagePickerSheet.show(getChildFragmentManager());
@@ -98,18 +97,16 @@ public class SettingsFragment extends Fragment {
 
         tvCurrentLanguage.setText(displayName);
         // Update accessibility content description
-        rowLanguage.setContentDescription(
-                getString(R.string.settings_language) + ", " + displayName + ", " +
-                getString(R.string.cd_activate_to_change));
+        rowLanguage.setContentDescription(getString(R.string.settings_language) + ", " + displayName
+                + ", " + getString(R.string.cd_activate_to_change));
     }
 
     private void updateThemeDisplay() {
         Theme currentTheme = viewModel.getTheme();
         String displayName = getThemeDisplayName(currentTheme);
         tvCurrentTheme.setText(displayName);
-        rowTheme.setContentDescription(
-                getString(R.string.settings_theme) + ", " + displayName + ", " +
-                getString(R.string.cd_activate_to_change));
+        rowTheme.setContentDescription(getString(R.string.settings_theme) + ", " + displayName
+                + ", " + getString(R.string.cd_activate_to_change));
     }
 
     private String getThemeDisplayName(Theme theme) {
@@ -124,18 +121,19 @@ public class SettingsFragment extends Fragment {
         Theme currentTheme = viewModel.getTheme();
 
         String[] themeOptions = {
-                getString(R.string.theme_light),
-                getString(R.string.theme_dark),
-                getString(R.string.theme_system)
+            getString(R.string.theme_light),
+            getString(R.string.theme_dark),
+            getString(R.string.theme_system)
         };
 
         Theme[] themes = {Theme.LIGHT, Theme.DARK, Theme.SYSTEM};
 
-        int checkedItem = switch (currentTheme) {
-            case LIGHT -> 0;
-            case DARK -> 1;
-            case SYSTEM -> 2;
-        };
+        int checkedItem =
+                switch (currentTheme) {
+                    case LIGHT -> 0;
+                    case DARK -> 1;
+                    case SYSTEM -> 2;
+                };
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.theme_dialog_title)
@@ -151,11 +149,12 @@ public class SettingsFragment extends Fragment {
     private void applyTheme(Theme theme) {
         viewModel.setTheme(theme);
 
-        int nightMode = switch (theme) {
-            case DARK -> AppCompatDelegate.MODE_NIGHT_YES;
-            case LIGHT -> AppCompatDelegate.MODE_NIGHT_NO;
-            case SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-        };
+        int nightMode =
+                switch (theme) {
+                    case DARK -> AppCompatDelegate.MODE_NIGHT_YES;
+                    case LIGHT -> AppCompatDelegate.MODE_NIGHT_NO;
+                    case SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+                };
         AppCompatDelegate.setDefaultNightMode(nightMode);
 
         requireActivity().recreate();

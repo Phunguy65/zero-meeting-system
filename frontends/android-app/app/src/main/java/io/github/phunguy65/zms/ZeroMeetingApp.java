@@ -30,11 +30,12 @@ public class ZeroMeetingApp extends Application {
      */
     private void applyTheme() {
         Theme theme = sessionRepository.getTheme();
-        int nightMode = switch (theme) {
-            case DARK -> AppCompatDelegate.MODE_NIGHT_YES;
-            case LIGHT -> AppCompatDelegate.MODE_NIGHT_NO;
-            case SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-        };
+        int nightMode =
+                switch (theme) {
+                    case DARK -> AppCompatDelegate.MODE_NIGHT_YES;
+                    case LIGHT -> AppCompatDelegate.MODE_NIGHT_NO;
+                    case SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+                };
         AppCompatDelegate.setDefaultNightMode(nightMode);
     }
 }

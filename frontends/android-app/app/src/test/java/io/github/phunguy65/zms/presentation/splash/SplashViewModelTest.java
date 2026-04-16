@@ -76,7 +76,7 @@ public class SplashViewModelTest {
         when(sessionRepository.hasTokens()).thenReturn(true);
         when(sessionRepository.isRememberMe()).thenReturn(true);
         when(sessionRepository.getRefreshToken()).thenReturn("refresh_token");
-        
+
         // Return a future that never completes to capture the intermediate state
         CompletableFuture<LoginResult> pendingFuture = new CompletableFuture<>();
         when(refreshTokenUseCase.execute("refresh_token")).thenReturn(pendingFuture);

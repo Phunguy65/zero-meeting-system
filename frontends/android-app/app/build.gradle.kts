@@ -45,7 +45,8 @@ openApiGenerate {
     configOptions.set(
         mapOf(
             "dateLibrary" to "java8",
-            "serializationLibrary" to "gson",
+            "serializationLibrary" to "jackson",
+            "openApiNullable" to "true",
         ),
     )
     generateApiTests.set(false)
@@ -111,11 +112,11 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
+    implementation(libs.retrofit.converter.jackson)
     implementation(libs.swagger.annotations)
     implementation(libs.jsr305)
-    implementation(libs.gson)
-    implementation(libs.gson.fire)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.retrofit.converter.scalars)
     implementation(libs.javax.annotation.api)
     implementation(libs.jackson.databind.nullable)
@@ -123,6 +124,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.google.id)

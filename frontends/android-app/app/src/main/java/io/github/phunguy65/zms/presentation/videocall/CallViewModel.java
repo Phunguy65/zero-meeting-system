@@ -101,7 +101,7 @@ public class CallViewModel extends ViewModel {
         if (isTimerRunning) {
             return; // Already running, don't restart
         }
-        
+
         callStartTime = System.currentTimeMillis();
         isTimerRunning = true;
         timerHandler = new Handler(Looper.getMainLooper());

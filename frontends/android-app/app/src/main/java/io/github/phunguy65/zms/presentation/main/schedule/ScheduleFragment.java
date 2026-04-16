@@ -20,9 +20,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
-// TODO: ScheduleViewModel is in presentation/schedule/ (legacy Activity package).
-// Intentionally reusing legacy VM for back-compat during migration.
-// Move to presentation/main/schedule/ when ScheduleActivity is deleted.
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel;
 import java.util.Calendar;
 import java.util.Locale;
@@ -42,8 +39,7 @@ public class ScheduleFragment extends Fragment {
     private MaterialSwitch switchWaitingRoom, switchHostVideo;
     private MaterialButton btnScheduleMeeting;
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
@@ -76,15 +72,12 @@ public class ScheduleFragment extends Fragment {
     private void setupDropdown() {
         String[] durations = getResources().getStringArray(R.array.schedule_durations);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_dropdown_item_1line,
-                durations);
+                requireContext(), android.R.layout.simple_dropdown_item_1line, durations);
         tvDuration.setAdapter(adapter);
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v ->
-                Navigation.findNavController(v).popBackStack());
+        btnBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
         edtDate.setOnClickListener(v -> showDatePicker());
         edtTime.setOnClickListener(v -> showTimePicker());
@@ -93,12 +86,10 @@ public class ScheduleFragment extends Fragment {
             String topic = edtMeetingTopic.getText() != null
                     ? edtMeetingTopic.getText().toString().trim()
                     : "";
-            String date = edtDate.getText() != null
-                    ? edtDate.getText().toString().trim()
-                    : "";
-            String time = edtTime.getText() != null
-                    ? edtTime.getText().toString().trim()
-                    : "";
+            String date =
+                    edtDate.getText() != null ? edtDate.getText().toString().trim() : "";
+            String time =
+                    edtTime.getText() != null ? edtTime.getText().toString().trim() : "";
             String duration = tvDuration.getText() != null
                     ? tvDuration.getText().toString().trim()
                     : "";
@@ -106,7 +97,8 @@ public class ScheduleFragment extends Fragment {
             boolean isHostVideoOn = switchHostVideo.isChecked();
 
             if (topic.isEmpty()) {
-                Snackbar.make(v, R.string.schedule_error_empty_topic, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(v, R.string.schedule_error_empty_topic, Snackbar.LENGTH_SHORT)
+                        .show();
                 return;
             }
 
@@ -151,11 +143,7 @@ public class ScheduleFragment extends Fragment {
                     int hour12 = selectedHour % 12;
                     if (hour12 == 0) hour12 = 12;
                     String formattedTime = String.format(
-                            Locale.ROOT,
-                            "%02d:%02d %s",
-                            hour12,
-                            selectedMinute,
-                            amPm);
+                            Locale.ROOT, "%02d:%02d %s", hour12, selectedMinute, amPm);
                     edtTime.setText(formattedTime);
                 },
                 hour,

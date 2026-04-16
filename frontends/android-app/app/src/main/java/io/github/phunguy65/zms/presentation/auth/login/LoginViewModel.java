@@ -108,12 +108,9 @@ public class LoginViewModel extends ViewModel {
 
         CompletableFuture<?> future = loginUseCase
                 .execute(email, password)
-                .thenComposeAsync(
-                        result -> handleLoginSuccess(result, rememberMe),
-                        ioExecutor)
+                .thenComposeAsync(result -> handleLoginSuccess(result, rememberMe), ioExecutor)
                 .thenAcceptAsync(
-                        result -> loginState.setValue(new UiState.Success<>(result)),
-                        mainExecutor)
+                        result -> loginState.setValue(new UiState.Success<>(result)), mainExecutor)
                 .exceptionally(ex -> {
                     handleError(ex);
                     return null;
@@ -133,12 +130,9 @@ public class LoginViewModel extends ViewModel {
 
         CompletableFuture<?> future = googleLoginUseCase
                 .execute(firebaseIdToken)
-                .thenComposeAsync(
-                        result -> handleLoginSuccess(result, rememberMe),
-                        ioExecutor)
+                .thenComposeAsync(result -> handleLoginSuccess(result, rememberMe), ioExecutor)
                 .thenAcceptAsync(
-                        result -> loginState.setValue(new UiState.Success<>(result)),
-                        mainExecutor)
+                        result -> loginState.setValue(new UiState.Success<>(result)), mainExecutor)
                 .exceptionally(ex -> {
                     handleError(ex);
                     return null;
@@ -154,17 +148,22 @@ public class LoginViewModel extends ViewModel {
      * @param rememberMe whether to persist session
      * @return a future that completes with the login result
      */
-    private CompletableFuture<LoginResult> handleLoginSuccess(LoginResult result, boolean rememberMe) {
+    private CompletableFuture<LoginResult> handleLoginSuccess(
+            LoginResult result, boolean rememberMe) {
         sessionRepository.saveTokens(result.accessToken(), result.refreshToken());
 
         if (rememberMe) {
-            return getMeUseCase.execute()
+            return getMeUseCase
+                    .execute()
                     .thenApply(user -> {
                         saveUserSession(user);
                         return result;
                     })
                     .exceptionally(ex -> {
-                        Log.w(TAG, "Profile fetch failed after login, rememberMe set without profile", ex);
+                        Log.w(
+                                TAG,
+                                "Profile fetch failed after login, rememberMe set without profile",
+                                ex);
                         sessionRepository.setRememberMe(true);
                         return result;
                     });

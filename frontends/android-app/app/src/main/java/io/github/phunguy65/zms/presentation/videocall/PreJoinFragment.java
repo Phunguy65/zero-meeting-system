@@ -47,9 +47,8 @@ public class PreJoinFragment extends Fragment {
     private MaterialSwitch switchAudio, switchVideo;
     private MaterialButton btnJoinMeeting;
 
-    // Permission launcher
-    private final ActivityResultLauncher<String[]> permissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+    private final ActivityResultLauncher<String[]> permissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                 Boolean cameraGranted = result.getOrDefault(Manifest.permission.CAMERA, false);
                 Boolean audioGranted = result.getOrDefault(Manifest.permission.RECORD_AUDIO, false);
 
@@ -57,10 +56,11 @@ public class PreJoinFragment extends Fragment {
                     // Permissions granted, proceed
                     proceedToCall();
                 } else {
-                    // Show rationale
-                    Snackbar.make(requireView(),
-                            R.string.permission_camera_mic_required,
-                            Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(
+                                    requireView(),
+                                    R.string.permission_camera_mic_required,
+                                    Snackbar.LENGTH_LONG)
+                            .show();
                 }
             });
 
@@ -70,9 +70,10 @@ public class PreJoinFragment extends Fragment {
         callViewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    @Nullable @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_prejoin, container, false);
     }
@@ -118,15 +119,16 @@ public class PreJoinFragment extends Fragment {
 
         switchAudio.setChecked(savedMicEnabled);
         switchVideo.setChecked(savedCameraEnabled);
-        tvAudioStatus.setText(savedMicEnabled ? R.string.prejoin_audio_on : R.string.prejoin_audio_off);
-        tvVideoStatus.setText(savedCameraEnabled ? R.string.prejoin_video_on : R.string.prejoin_video_off);
+        tvAudioStatus.setText(
+                savedMicEnabled ? R.string.prejoin_audio_on : R.string.prejoin_audio_off);
+        tvVideoStatus.setText(
+                savedCameraEnabled ? R.string.prejoin_video_on : R.string.prejoin_video_off);
     }
 
     private void setupGuestMode() {
 
         Boolean isGuest = callViewModel.isGuest().getValue();
         boolean guestMode = Boolean.TRUE.equals(isGuest);
-
 
         int visibility = guestMode ? View.VISIBLE : View.GONE;
         lblDisplayName.setVisibility(visibility);
@@ -139,15 +141,17 @@ public class PreJoinFragment extends Fragment {
 
         switchAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
             callViewModel.setMicEnabled(isChecked);
-            tvAudioStatus.setText(isChecked ? R.string.prejoin_audio_on : R.string.prejoin_audio_off);
+            tvAudioStatus.setText(
+                    isChecked ? R.string.prejoin_audio_on : R.string.prejoin_audio_off);
         });
 
         switchVideo.setOnCheckedChangeListener((buttonView, isChecked) -> {
             callViewModel.setCameraEnabled(isChecked);
-            tvVideoStatus.setText(isChecked ? R.string.prejoin_video_on : R.string.prejoin_video_off);
+            tvVideoStatus.setText(
+                    isChecked ? R.string.prejoin_video_on : R.string.prejoin_video_off);
         });
 
-        // Join button
+
         btnJoinMeeting.setOnClickListener(v -> onJoinClicked());
     }
 
@@ -211,18 +215,18 @@ public class PreJoinFragment extends Fragment {
     }
 
     private void requestPermissionsAndJoin() {
-        boolean hasCameraPermission = ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
-        boolean hasAudioPermission = ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+        boolean hasCameraPermission =
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_GRANTED;
+        boolean hasAudioPermission = ContextCompat.checkSelfPermission(
+                        requireContext(), Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED;
 
         if (hasCameraPermission && hasAudioPermission) {
             proceedToCall();
         } else {
-            permissionLauncher.launch(new String[]{
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO
-            });
+            permissionLauncher.launch(
+                    new String[] {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO});
         }
     }
 

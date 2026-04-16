@@ -43,11 +43,10 @@ public class MeetingChatBottomSheet extends BottomSheetDialogFragment {
         viewModel = new ViewModelProvider(this).get(MeetingChatViewModel.class);
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
-        
+
         dialog.setOnShowListener(dialogInterface -> {
             BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) dialogInterface;
             FrameLayout bottomSheet = bottomSheetDialog.findViewById(
@@ -61,13 +60,14 @@ public class MeetingChatBottomSheet extends BottomSheetDialogFragment {
                 behavior.setPeekHeight((int) (screenHeight * 0.7));
             }
         });
-        
+
         return dialog;
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    @Nullable @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.layout_meeting_chat_sheet, container, false);
     }
@@ -99,7 +99,11 @@ public class MeetingChatBottomSheet extends BottomSheetDialogFragment {
         btnCloseContainer.setOnClickListener(v -> dismiss());
 
         btnAttachContainer.setOnClickListener(v -> {
-            Snackbar.make(requireView(), R.string.call_attachment_coming_soon, Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(
+                            requireView(),
+                            R.string.call_attachment_coming_soon,
+                            Snackbar.LENGTH_SHORT)
+                    .show();
         });
 
         btnSendContainer.setOnClickListener(v -> {
@@ -107,7 +111,8 @@ public class MeetingChatBottomSheet extends BottomSheetDialogFragment {
             if (!message.isEmpty()) {
                 viewModel.sendMessage(message);
                 edtMessage.setText("");
-                Snackbar.make(requireView(), R.string.call_message_sent, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(requireView(), R.string.call_message_sent, Snackbar.LENGTH_SHORT)
+                        .show();
             }
         });
     }

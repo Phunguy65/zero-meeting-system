@@ -32,8 +32,7 @@ public class JoinMeetingFragment extends Fragment {
     private MaterialButton btnJoin;
     private MaterialSwitch switchAudio, switchVideo;
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
@@ -60,8 +59,7 @@ public class JoinMeetingFragment extends Fragment {
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v ->
-                Navigation.findNavController(v).popBackStack());
+        btnBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
         btnJoin.setOnClickListener(v -> {
             String meetingId = edtMeetingId.getText() != null
@@ -71,13 +69,18 @@ public class JoinMeetingFragment extends Fragment {
             boolean isVideoOn = switchVideo.isChecked();
 
             if (meetingId.isEmpty()) {
-                Snackbar.make(v, R.string.join_meeting_error_empty_id, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(v, R.string.join_meeting_error_empty_id, Snackbar.LENGTH_SHORT)
+                        .show();
                 return;
             }
 
             viewModel.joinMeeting(meetingId, isAudioOn, isVideoOn);
-            Snackbar.make(v, getString(R.string.join_meeting_joining, meetingId), Snackbar.LENGTH_SHORT).show();
-            
+            Snackbar.make(
+                            v,
+                            getString(R.string.join_meeting_joining, meetingId),
+                            Snackbar.LENGTH_SHORT)
+                    .show();
+
             // TODO: Navigate to VideoCallActivity when it's implemented
             // For now, just go back to dashboard after a successful join request
         });

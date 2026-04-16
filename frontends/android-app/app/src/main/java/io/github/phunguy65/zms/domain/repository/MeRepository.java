@@ -16,4 +16,16 @@ public interface MeRepository {
      * @return a future that completes with the user profile
      */
     CompletableFuture<User> getMe();
+
+    /**
+     * Replaces the current authenticated user's profile (PUT semantics).
+     *
+     * <p>All fields are required. Use {@code null} for {@code avatarUrl} to clear the avatar.
+     *
+     * @param fullName the full name (required, non-null)
+     * @param username the username (required, non-null)
+     * @param avatarUrl the avatar URL, or null to clear the avatar
+     * @return a future that completes with the updated user profile
+     */
+    CompletableFuture<User> updateMe(String fullName, String username, String avatarUrl);
 }

@@ -24,27 +24,38 @@
             android:paddingTop="@dimen/spacing_xl"
             android:paddingBottom="@dimen/spacing_lg">
 
-            <ImageView android:id="@+id/imgAvatar"
-                android:layout_width="@dimen/avatar_size_lg"
-                android:layout_height="@dimen/avatar_size_lg"
-                android:background="@drawable/bg_image_placeholder"
-                android:scaleType="centerCrop"
-                android:contentDescription="@string/cd_avatar" />
+            <FrameLayout android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView android:id="@+id/imgAvatar"
+                    android:layout_width="@dimen/avatar_size_lg"
+                    android:layout_height="@dimen/avatar_size_lg"
+                    android:background="@drawable/bg_image_placeholder"
+                    android:scaleType="centerCrop" android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/cd_avatar_tap_to_edit" />
+
+                <ProgressBar android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" android:visibility="gone" />
+            </FrameLayout>
 
             <TextView android:id="@+id/tvName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_md" android:text="Jane Doe"
+                android:layout_marginTop="@dimen/spacing_md"
                 android:textColor="?attr/colorOnSurface" android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold" tools:text="Jane Doe"
+                xmlns:tools="http://schemas.android.com/tools" />
 
             <TextView android:id="@+id/tvEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xs"
-                android:text="jane.doe@example.com"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="14sp" />
+                android:textSize="14sp" tools:text="jane.doe@example.com"
+                xmlns:tools="http://schemas.android.com/tools" />
         </LinearLayout>
 
         <!-- Settings Menu Card -->

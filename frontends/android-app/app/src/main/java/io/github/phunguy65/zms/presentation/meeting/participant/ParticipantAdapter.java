@@ -54,15 +54,15 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
 
         // Mic icon color using theme colors
         if (p.isMicOn()) {
-            int colorOnSurface = MaterialColors.getColor(holder.itemView, 
-                    com.google.android.material.R.attr.colorOnSurface);
+            int colorOnSurface = MaterialColors.getColor(
+                    holder.itemView, com.google.android.material.R.attr.colorOnSurface);
             holder.btnMic.setColorFilter(colorOnSurface);
             holder.btnMic.setBackgroundTintList(null);
         } else {
-            int colorError = MaterialColors.getColor(holder.itemView, 
-                    androidx.appcompat.R.attr.colorError);
-            int colorErrorContainer = MaterialColors.getColor(holder.itemView, 
-                    com.google.android.material.R.attr.colorErrorContainer);
+            int colorError =
+                    MaterialColors.getColor(holder.itemView, androidx.appcompat.R.attr.colorError);
+            int colorErrorContainer = MaterialColors.getColor(
+                    holder.itemView, com.google.android.material.R.attr.colorErrorContainer);
             holder.btnMic.setColorFilter(colorError);
             holder.btnMic.setBackgroundTintList(
                     android.content.res.ColorStateList.valueOf(colorErrorContainer));
@@ -70,15 +70,15 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
 
         // Camera icon color using theme colors
         if (p.isVideoOn()) {
-            int colorOnSurface = MaterialColors.getColor(holder.itemView, 
-                    com.google.android.material.R.attr.colorOnSurface);
+            int colorOnSurface = MaterialColors.getColor(
+                    holder.itemView, com.google.android.material.R.attr.colorOnSurface);
             holder.btnCamera.setColorFilter(colorOnSurface);
             holder.btnCamera.setBackgroundTintList(null);
         } else {
-            int colorOnSurfaceVariant = MaterialColors.getColor(holder.itemView, 
-                    com.google.android.material.R.attr.colorOnSurfaceVariant);
-            int colorSurfaceVariant = MaterialColors.getColor(holder.itemView, 
-                    com.google.android.material.R.attr.colorSurfaceVariant);
+            int colorOnSurfaceVariant = MaterialColors.getColor(
+                    holder.itemView, com.google.android.material.R.attr.colorOnSurfaceVariant);
+            int colorSurfaceVariant = MaterialColors.getColor(
+                    holder.itemView, com.google.android.material.R.attr.colorSurfaceVariant);
             holder.btnCamera.setColorFilter(colorOnSurfaceVariant);
             holder.btnCamera.setBackgroundTintList(
                     android.content.res.ColorStateList.valueOf(colorSurfaceVariant));

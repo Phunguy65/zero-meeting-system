@@ -163,6 +163,38 @@
     <string name="profile_help_support">Trợ giúp &amp; Hỗ trợ</string>
     <string name="profile_log_out">Đăng xuất</string>
     <string name="profile_logged_out">Đã đăng xuất</string>
+    <string name="profile_loading">Đang tải…</string>
+    <string name="profile_error">Không thể tải hồ sơ</string>
+    <string name="retry">Thử lại</string>
+
+    <!-- ═══ Màn hình Cài đặt tài khoản ═══ -->
+    <string name="account_settings_change_photo">Đổi ảnh</string>
+    <string name="account_settings_full_name">Họ và tên</string>
+    <string name="account_settings_username">Tên người dùng</string>
+    <string name="account_settings_username_helper">3–30 ký tự: chữ cái, số, _ hoặc -</string>
+    <string name="account_settings_email">Email</string>
+    <string name="account_settings_email_readonly">Không thể thay đổi email</string>
+    <string name="account_settings_save">Lưu thay đổi</string>
+    <string name="account_settings_saving">Đang lưu…</string>
+    <string name="account_settings_saved">Đã cập nhật hồ sơ</string>
+    <string name="account_settings_error_fullname_required">Họ và tên là bắt buộc</string>
+    <string name="account_settings_error_fullname_too_long">Họ và tên quá dài (tối đa 255 ký tự)</string>
+    <string name="account_settings_error_username_short">Tên người dùng phải có ít nhất 3 ký tự</string>
+    <string name="account_settings_error_username_long">Tên người dùng tối đa 30 ký tự</string>
+    <string name="account_settings_error_username_format">Tên người dùng chỉ được chứa chữ cái, số, _ và -</string>
+    <string name="account_settings_error_username_taken">Tên người dùng đã được sử dụng</string>
+    <string name="account_settings_error_upload">Không thể tải ảnh lên</string>
+    <string name="account_settings_discard_title">Bỏ thay đổi?</string>
+    <string name="account_settings_discard_message">Bạn có thay đổi chưa lưu. Bạn có muốn bỏ chúng
+        không?</string>
+    <string name="account_settings_discard_confirm">Bỏ</string>
+    <string name="account_settings_discard_cancel">Tiếp tục chỉnh sửa</string>
+
+    <!-- ═══ Chọn ảnh đại diện ═══ -->
+    <string name="avatar_picker_title">Đổi ảnh</string>
+    <string name="avatar_picker_take_photo">Chụp ảnh</string>
+    <string name="avatar_picker_choose_gallery">Chọn từ thư viện</string>
+    <string name="avatar_picker_remove_photo">Xóa ảnh</string>
 
     <!-- ═══ Màn hình Cài đặt ═══ -->
     <string name="settings_title">Cài đặt</string>
@@ -258,6 +290,8 @@
 
     <!-- ═══ Mô tả trợ năng ═══ -->
     <string name="cd_avatar">Ảnh đại diện</string>
+    <string name="cd_avatar_tap_to_edit">Ảnh đại diện. Nhấn đúp để thay đổi</string>
+    <string name="cd_avatar_tap_to_change">Ảnh đại diện. Nhấn đúp để thay đổi</string>
     <string name="cd_back">Quay lại</string>
     <string name="cd_settings">Cài đặt</string>
     <string name="cd_search">Tìm kiếm</string>
@@ -281,6 +315,8 @@
 
     <!-- ═══ Thông báo cuộc gọi video ═══ -->
     <string name="permission_camera_mic_required">Cần quyền truy cập camera và mic cho cuộc gọi video</string>
+    <string name="permission_camera_required">Cần quyền truy cập camera để chụp ảnh</string>
+    <string name="error_camera_file">Không thể tạo tệp ảnh</string>
     <string name="call_muted_all">Đã tắt tiếng tất cả</string>
     <string name="call_attachment_coming_soon">Tính năng đính kèm tệp sắp ra mắt</string>
     <string name="call_message_sent">Đã gửi tin nhắn</string>

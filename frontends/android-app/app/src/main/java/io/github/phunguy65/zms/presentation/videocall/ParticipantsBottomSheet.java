@@ -48,11 +48,10 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
         callViewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
-        
+
         dialog.setOnShowListener(dialogInterface -> {
             BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) dialogInterface;
             FrameLayout bottomSheet = bottomSheetDialog.findViewById(
@@ -66,13 +65,14 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
                 behavior.setPeekHeight((int) (screenHeight * 0.8));
             }
         });
-        
+
         return dialog;
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    @Nullable @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.layout_participants_sheet, container, false);
     }
@@ -105,16 +105,15 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
 
         btnMuteAll.setOnClickListener(v -> {
             callViewModel.muteAllParticipants();
-            Snackbar.make(requireView(), R.string.call_muted_all, Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(requireView(), R.string.call_muted_all, Snackbar.LENGTH_SHORT)
+                    .show();
         });
     }
 
     private void setupObservers() {
         viewModel.getParticipants().observe(getViewLifecycleOwner(), participants -> {
-            // Update existing adapter instead of creating a new one
             adapter.updateList(participants);
-            
-            // Update title with count
+
             String title = getString(R.string.call_participants_count, participants.size());
             tvTitle.setText(title);
         });
