@@ -9,10 +9,10 @@ import jakarta.validation.constraints.Size;
 /**
  * PUT request DTO for replacing a user's profile. All fields are required in the request body.
  *
- * <p>Unlike {@link PatchUserRequest}, this DTO requires all fields to be present.
- * Use {@code null} for {@code avatarUrl} to clear the avatar.
+ * <p>All fields must be present in the request body. Use {@code null} for {@code avatarUrl}
+ * to clear the avatar.
  *
- * <p>Preferences are not included — use {@code PATCH /users/me/preferences} for preference updates.
+ * <p>Preferences are not included; use {@code PUT /api/v1/me/preferences} for preference updates.
  */
 public record PutUserRequest(
         @NotNull @NotBlank @Size(max = 255) String fullName,

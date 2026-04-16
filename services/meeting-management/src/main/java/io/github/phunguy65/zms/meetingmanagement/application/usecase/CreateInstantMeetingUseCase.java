@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.meetingmanagement.application.usecase;
 
 import io.github.phunguy65.zms.meetingmanagement.application.command.CreateInstantMeetingCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.helper.MeetingSettingsPasswordResolver;
 import io.github.phunguy65.zms.meetingmanagement.application.helper.ShortCodeGenerator;
 import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingSettingsResponse;
@@ -46,19 +47,11 @@ public class CreateInstantMeetingUseCase {
         var shortCode = ((Result.Success<ShortCode, MeetingError>) shortCodeResult).value();
 
         MeetingSettings settings = command.settings();
-        String rawPassword = command.rawPassword();
-        if (rawPassword != null && !rawPassword.isBlank()) {
-            String hash = passwordHasher.hash(rawPassword);
-            settings = new MeetingSettings(
-                    settings.admissionPolicy(),
-                    settings.joinRequestTimeout(),
-                    settings.allowGuest(),
-                    settings.muteOnEntry(),
-                    settings.maxParticipants(),
-                    settings.recordingEnabled(),
-                    settings.screenShareMode(),
-                    settings.chatEnabled(),
-                    hash);
+        String rawPassword =
+                MeetingSettingsPasswordResolver.normalizeRawPassword(command.rawPassword());
+        if (rawPassword != null) {
+            settings = MeetingSettingsPasswordResolver.withRawPassword(
+                    settings, rawPassword, passwordHasher);
         }
 
         Meeting meeting = Meeting.instant(

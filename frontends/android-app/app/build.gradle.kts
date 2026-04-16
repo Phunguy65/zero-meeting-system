@@ -46,7 +46,7 @@ openApiGenerate {
         mapOf(
             "dateLibrary" to "java8",
             "serializationLibrary" to "jackson",
-            "openApiNullable" to "true",
+            "openApiNullable" to "false",
         ),
     )
     generateApiTests.set(false)
@@ -119,7 +119,6 @@ dependencies {
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.retrofit.converter.scalars)
     implementation(libs.javax.annotation.api)
-    implementation(libs.jackson.databind.nullable)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.navigation.ui)
     implementation(platform(libs.firebase.bom))

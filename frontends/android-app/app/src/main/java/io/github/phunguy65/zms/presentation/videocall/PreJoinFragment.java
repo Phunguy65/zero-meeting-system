@@ -151,7 +151,6 @@ public class PreJoinFragment extends Fragment {
                     isChecked ? R.string.prejoin_video_on : R.string.prejoin_video_off);
         });
 
-
         btnJoinMeeting.setOnClickListener(v -> onJoinClicked());
     }
 

@@ -1,15 +1,17 @@
 package io.github.phunguy65.zms.meetingmanagement.presentation.request;
 
+import io.github.phunguy65.zms.meetingmanagement.application.command.PutMeetingSettingsCommand;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import jakarta.validation.constraints.*;
 import java.time.Duration;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
  * API request DTO for meeting settings.
  *
- * <p>Carries client-supplied settings for creating or scheduling a meeting,
+ * <p>Carries client-supplied settings for creating, scheduling, or replacing a meeting,
  * including an optional plain-text password. Validation is enforced here at
  * the presentation boundary; business-rule validation (e.g. system ceiling on
  * participants) remains in the use-case layer.
@@ -22,10 +24,10 @@ public record MeetingSettingsRequest(
 
         @Nullable @Min(30) @Max(600) Integer joinRequestTimeoutSeconds,
 
-        boolean allowGuest,
-        boolean muteOnEntry,
-        @Min(1) @Max(1000) int maxParticipants,
-        boolean recordingEnabled,
+        @NotNull Boolean allowGuest,
+        @NotNull Boolean muteOnEntry,
+        @NotNull @Min(1) @Max(1000) Integer maxParticipants,
+        @NotNull Boolean recordingEnabled,
 
         @NotBlank @Pattern(
                 regexp = MeetingSettings.SCREEN_SHARE_ALL
@@ -36,8 +38,9 @@ public record MeetingSettingsRequest(
                 message = "screenShareMode must be one of: ALL, HOST_ONLY, DISABLED")
         String screenShareMode,
 
-        boolean chatEnabled,
-        @Nullable @Size(max = 128) String password) {
+        @NotNull Boolean chatEnabled,
+
+        @Nullable @Size(max = 128) @Pattern(regexp = ".*\\S.*", message = "password must not be blank") String password) {
 
     /**
      * Maps this request to a domain {@link MeetingSettings} with no password hash.
@@ -56,5 +59,9 @@ public record MeetingSettingsRequest(
                 screenShareMode,
                 chatEnabled,
                 null);
+    }
+
+    public PutMeetingSettingsCommand toCommand(UUID meetingId, UUID requesterId) {
+        return new PutMeetingSettingsCommand(meetingId, requesterId, toDomain(), password);
     }
 }

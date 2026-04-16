@@ -167,57 +167,7 @@ class UserProfileIntegrationTest {
         mockMvc.perform(get("/api/v1/users:search")).andExpect(status().isUnauthorized());
     }
 
-    // ─── 11.4 PATCH /users/me ─────────────────────────────────────────────────
-
-    @Test
-    void patchMe_partialUpdate_appliesChange() throws Exception {
-        String token = registerAndLogin(
-                "patch-" + System.nanoTime() + "@example.com", "password123", "Patch User");
-
-        mockMvc.perform(patch("/api/v1/me")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"fullName\":\"Updated Name\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.data.fullName").value("Updated Name"));
-    }
-
-    @Test
-    void patchMe_emptyBody_isNoOp() throws Exception {
-        String token = registerAndLogin(
-                "patch-noop-" + System.nanoTime() + "@example.com", "password123", "NoOp User");
-
-        mockMvc.perform(patch("/api/v1/me")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.fullName").value("NoOp User"));
-    }
-
-    @Test
-    void patchMe_blankFullName_returns400() throws Exception {
-        String token = registerAndLogin(
-                "patch-blank-" + System.nanoTime() + "@example.com", "password123", "Blank Test");
-
-        mockMvc.perform(patch("/api/v1/me")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"fullName\":\"\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
-    }
-
-    @Test
-    void patchMe_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(patch("/api/v1/me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"fullName\":\"X\"}"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // ─── 11.4.1 PUT /users/me ─────────────────────────────────────────────────
+    // ─── 11.4 PUT /users/me ───────────────────────────────────────────────────
 
     @Test
     void putMe_fullUpdate_returns200() throws Exception {
@@ -342,45 +292,107 @@ class UserProfileIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    // ─── 11.5 PATCH /users/me/preferences ────────────────────────────────────
+    @Test
+    void patchMe_removed_returns405() throws Exception {
+        String username = "put_removed_" + System.nanoTime() % 10000;
+        String token = registerAndLogin(
+                "patch-removed-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Patch Removed",
+                username);
+
+        mockMvc.perform(patch("/api/v1/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\":\"Updated\"}"))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    // ─── 11.5 PUT /users/me/preferences ──────────────────────────────────────
 
     @Test
-    void patchPreferences_partialUpdate_mergesFields() throws Exception {
+    void putPreferences_replacesAllFields() throws Exception {
         String token = registerAndLogin(
-                "patchprefs-" + System.nanoTime() + "@example.com", "password123", "Prefs User");
+                "putprefs-" + System.nanoTime() + "@example.com", "password123", "Prefs User");
 
-        mockMvc.perform(patch("/api/v1/me/preferences")
+        mockMvc.perform(put("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theme\":\"dark\",\"fontSize\":14}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.settings.theme").value("dark"))
                 .andExpect(jsonPath("$.data.settings.fontSize").value(14));
+
+        mockMvc.perform(put("/api/v1/me/preferences")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"lang\":\"vi\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.settings.lang").value("vi"))
+                .andExpect(jsonPath("$.data.settings.theme").doesNotExist())
+                .andExpect(jsonPath("$.data.settings.fontSize").doesNotExist());
     }
 
     @Test
-    void patchPreferences_anyKeyAccepted() throws Exception {
+    void putPreferences_emptyObject_clearsPreferences() throws Exception {
         String token = registerAndLogin(
-                "patchprefs-any-" + System.nanoTime() + "@example.com",
+                "putprefs-clear-" + System.nanoTime() + "@example.com",
                 "password123",
-                "Any Key User");
+                "Clear Prefs User");
 
-        // Any key/value should be accepted — no validation errors
-        mockMvc.perform(patch("/api/v1/me/preferences")
+        mockMvc.perform(put("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theme\":\"blue\",\"customKey\":\"anything\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/api/v1/me/preferences")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.settings.theme").value("blue"))
-                .andExpect(jsonPath("$.data.settings.customKey").value("anything"));
+                .andExpect(jsonPath("$.data.settings").isMap())
+                .andExpect(jsonPath("$.data.settings").isEmpty());
     }
 
     @Test
-    void patchPreferences_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(patch("/api/v1/me/preferences")
+    void putPreferences_nullBody_returns400() throws Exception {
+        String token = registerAndLogin(
+                "putprefs-null-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Null Prefs User");
+
+        mockMvc.perform(put("/api/v1/me/preferences")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("null"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.data.message").value("Validation failed"))
+                .andExpect(jsonPath("$.data.errors[0].field").value("body"));
+    }
+
+    @Test
+    void putPreferences_unauthenticated_returns401() throws Exception {
+        mockMvc.perform(put("/api/v1/me/preferences")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theme\":\"dark\"}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void patchPreferences_removed_returns405() throws Exception {
+        String token = registerAndLogin(
+                "patchprefs-removed-" + System.nanoTime() + "@example.com",
+                "password123",
+                "Patch Prefs Removed");
+
+        mockMvc.perform(patch("/api/v1/me/preferences")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"theme\":\"dark\"}"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.data.code").value("METHOD_NOT_ALLOWED"));
     }
 
     // ─── Username tests ───────────────────────────────────────────────────────
@@ -410,25 +422,26 @@ class UserProfileIntegrationTest {
     }
 
     @Test
-    void patchMe_updateUsername_success() throws Exception {
+    void putMe_updateUsername_success() throws Exception {
         String originalUsername = "orig_user_" + System.nanoTime() % 10000;
         String newUsername = "new_user_" + System.nanoTime() % 10000;
         String token = registerAndLogin(
-                "patch-un-" + System.nanoTime() + "@example.com",
+                "put-un-" + System.nanoTime() + "@example.com",
                 "password123",
-                "Patch Username",
+                "Put Username",
                 originalUsername);
 
-        mockMvc.perform(patch("/api/v1/me")
+        mockMvc.perform(put("/api/v1/me")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"" + newUsername + "\"}"))
+                        .content("{\"fullName\":\"Put Username\",\"username\":\"" + newUsername
+                                + "\",\"avatarUrl\":null}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.username").value(newUsername));
     }
 
     @Test
-    void patchMe_duplicateUsername_returns409() throws Exception {
+    void putMe_duplicateUsername_fromExistingUser_returns409() throws Exception {
         String takenUsername = "taken_un_" + System.nanoTime() % 10000;
         // Register first user with the username
         registerAndLogin(
@@ -444,10 +457,11 @@ class UserProfileIntegrationTest {
                 "Second User",
                 "second_un_" + System.nanoTime() % 10000);
 
-        mockMvc.perform(patch("/api/v1/me")
+        mockMvc.perform(put("/api/v1/me")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"" + takenUsername + "\"}"))
+                        .content("{\"fullName\":\"Second User\",\"username\":\"" + takenUsername
+                                + "\",\"avatarUrl\":null}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.data.code").value("USERNAME_ALREADY_EXISTS"));
     }

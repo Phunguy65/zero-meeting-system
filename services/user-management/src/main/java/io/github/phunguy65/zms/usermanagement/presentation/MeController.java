@@ -3,25 +3,22 @@ package io.github.phunguy65.zms.usermanagement.presentation;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.PutPreferencesCommand;
 import io.github.phunguy65.zms.usermanagement.application.response.DeleteAccountResponse;
 import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.usecase.DeleteAccountUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserPreferencesUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserUseCase;
-import io.github.phunguy65.zms.usermanagement.application.usecase.PatchUpdatePreferencesUseCase;
-import io.github.phunguy65.zms.usermanagement.application.usecase.PatchUpdateUserUseCase;
+import io.github.phunguy65.zms.usermanagement.application.usecase.PutUpdatePreferencesUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.UpdateUserUseCase;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.presentation.request.PatchPreferencesRequest;
-import io.github.phunguy65.zms.usermanagement.presentation.request.PatchUserRequest;
 import io.github.phunguy65.zms.usermanagement.presentation.request.PutUserRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
-import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -31,24 +28,21 @@ import org.springframework.web.bind.annotation.*;
 public class MeController extends BaseController {
 
     private final GetUserUseCase getUserUseCase;
-    private final PatchUpdateUserUseCase patchUpdateUserUseCase;
     private final UpdateUserUseCase updateUserUseCase;
     private final GetUserPreferencesUseCase getPreferencesUseCase;
-    private final PatchUpdatePreferencesUseCase patchUpdatePreferencesUseCase;
+    private final PutUpdatePreferencesUseCase putUpdatePreferencesUseCase;
     private final DeleteAccountUseCase deleteAccountUseCase;
 
     public MeController(
             GetUserUseCase getUserUseCase,
-            PatchUpdateUserUseCase patchUpdateUserUseCase,
             UpdateUserUseCase updateUserUseCase,
             GetUserPreferencesUseCase getPreferencesUseCase,
-            PatchUpdatePreferencesUseCase patchUpdatePreferencesUseCase,
+            PutUpdatePreferencesUseCase putUpdatePreferencesUseCase,
             DeleteAccountUseCase deleteAccountUseCase) {
         this.getUserUseCase = getUserUseCase;
-        this.patchUpdateUserUseCase = patchUpdateUserUseCase;
         this.updateUserUseCase = updateUserUseCase;
         this.getPreferencesUseCase = getPreferencesUseCase;
-        this.patchUpdatePreferencesUseCase = patchUpdatePreferencesUseCase;
+        this.putUpdatePreferencesUseCase = putUpdatePreferencesUseCase;
         this.deleteAccountUseCase = deleteAccountUseCase;
     }
 
@@ -60,22 +54,6 @@ public class MeController extends BaseController {
             return errorResponse(new AuthError.InvalidCredentials());
         }
         return switch (getUserUseCase.execute(userId)) {
-            case Result.Success<UserResponse, AuthError> s ->
-                ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<UserResponse, AuthError> f -> errorResponse(f.error());
-        };
-    }
-
-    @Deprecated
-    @Operation(summary = "Update current user profile (deprecated, use PUT instead)")
-    @PatchMapping(value = "/{version}/me", version = "1.0")
-    public ResponseEntity<JsendResponse<UserResponse>> patchMe(
-            @Valid @RequestBody PatchUserRequest dto, Authentication auth) {
-        UserId userId = extractUserId(auth);
-        if (userId == null) {
-            return errorResponse(new AuthError.InvalidCredentials());
-        }
-        return switch (patchUpdateUserUseCase.execute(userId, dto.toCommand())) {
             case Result.Success<UserResponse, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<UserResponse, AuthError> f -> errorResponse(f.error());
@@ -112,16 +90,19 @@ public class MeController extends BaseController {
         };
     }
 
-    @Operation(summary = "Update current user preferences")
-    @PatchMapping(value = "/{version}/me/preferences", version = "1.0")
-    public ResponseEntity<JsendResponse<UserPreferencesResponse>> patchPreferences(
-            @Valid @RequestBody Map<String, Object> body, Authentication auth) {
+    @Operation(summary = "Replace current user preferences")
+    @PutMapping(value = "/{version}/me/preferences", version = "1.0")
+    public ResponseEntity<JsendResponse<UserPreferencesResponse>> putPreferences(
+            @RequestBody(required = false) Map<String, Object> settings, Authentication auth) {
         UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
-        var dto = new PatchPreferencesRequest(JsonNullable.of(body));
-        return switch (patchUpdatePreferencesUseCase.execute(userId, dto.toCommand())) {
+        if (settings == null) {
+            return validationErrorResponse("body", "Request body must not be null");
+        }
+        return switch (putUpdatePreferencesUseCase.execute(
+                userId, new PutPreferencesCommand(settings))) {
             case Result.Success<UserPreferencesResponse, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<UserPreferencesResponse, AuthError> f -> errorResponse(f.error());

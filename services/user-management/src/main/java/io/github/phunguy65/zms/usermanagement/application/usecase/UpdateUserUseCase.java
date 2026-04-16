@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Use case for replacing a user's profile via PUT.
  *
- * <p>Unlike {@link PatchUpdateUserUseCase}, this use case expects all profile fields to be provided.
- * A {@code null} value for {@code avatarUrl} clears the avatar.
+ * <p>This use case expects all profile fields to be provided. A {@code null} value for
+ * {@code avatarUrl} clears the avatar.
  */
 @Service
 public class UpdateUserUseCase {
@@ -58,7 +58,7 @@ public class UpdateUserUseCase {
                 ? new AvatarUpdate.Set(command.avatarUrl())
                 : new AvatarUpdate.Clear();
 
-        user.updateProfile(FullName.of(command.fullName()), avatarUpdate, newUsername);
+        user.replaceProfile(FullName.of(command.fullName()), avatarUpdate, newUsername);
 
         var saved = userRepository.save(user);
 

@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import org.openapitools.jackson.nullable.JsonNullableModule;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
@@ -96,7 +95,6 @@ public final class NetworkModule {
     @Singleton
     ObjectMapper provideObjectMapper() {
         return new ObjectMapper()
-                .registerModule(new JsonNullableModule())
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);

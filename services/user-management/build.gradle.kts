@@ -19,7 +19,6 @@ dependencies {
     implementation(libs.uuid.creator)
     implementation(libs.spring.boot.starter.flyway)
     implementation(libs.cloudevents.kafka)
-    implementation(libs.jackson.databind.nullable)
     implementation(libs.firebase.admin)
     runtimeOnly(libs.flyway.database.postgresql)
     testImplementation(testFixtures(libs.shared))

@@ -8,13 +8,10 @@ import static org.mockito.Mockito.when;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
-import io.github.phunguy65.zms.shared.domain.valueobject.Email;
-import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.query.SearchUsersQuery;
-import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,26 +35,24 @@ class SearchUsersUseCaseTest {
         useCase = new SearchUsersUseCase(userRepository, preferencesParser);
     }
 
-    private User buildUser(String email) {
-        return User.reconstitute(
-                UserId.of(UuidCreator.getTimeOrderedEpoch()),
-                Email.of(email),
-                null,
-                FullName.of("User"),
-                null,
+    private UserSummary buildUser(String email) {
+        Instant now = Instant.now();
+        return new UserSummary(
+                UuidCreator.getTimeOrderedEpoch(),
+                email,
+                "User",
                 null,
                 null,
                 "EMAIL",
                 null,
-                Instant.now(),
-                Instant.now(),
-                null);
+                now,
+                now);
     }
 
     @Test
     void execute_firstPage_returnsMappedContent() {
         var users = List.of(buildUser("a@example.com"), buildUser("b@example.com"));
-        when(userRepository.searchUsers(isNull(), anyInt(), any()))
+        when(userRepository.searchSummaries(isNull(), anyInt(), any()))
                 .thenReturn(CursorPageResponse.of(users, 20, false));
 
         var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);
@@ -70,7 +65,7 @@ class SearchUsersUseCaseTest {
     @Test
     void execute_hasNextPage_flagsHasNext() {
         var users = List.of(buildUser("a@example.com"), buildUser("b@example.com"));
-        when(userRepository.searchUsers(isNull(), anyInt(), any()))
+        when(userRepository.searchSummaries(isNull(), anyInt(), any()))
                 .thenReturn(CursorPageResponse.of(users, 20, true));
 
         var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);
@@ -81,7 +76,7 @@ class SearchUsersUseCaseTest {
 
     @Test
     void execute_emptyResult_returnsEmptyContent() {
-        when(userRepository.searchUsers(isNull(), anyInt(), any()))
+        when(userRepository.searchSummaries(isNull(), anyInt(), any()))
                 .thenReturn(CursorPageResponse.empty(20));
 
         var result = useCase.execute(new SearchUsersQuery(null, 20, null), null);

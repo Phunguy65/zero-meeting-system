@@ -3,8 +3,8 @@ package io.github.phunguy65.zms.usermanagement.presentation;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
@@ -120,8 +120,8 @@ class GoogleAuthAndPreferencesIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.settings").isMap());
 
-        // PATCH preferences with arbitrary keys
-        mockMvc.perform(patch("/api/v1/me/preferences")
+        // PUT preferences with arbitrary keys
+        mockMvc.perform(put("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theme\":\"dark\",\"fontSize\":16,\"lang\":\"vi\"}"))
@@ -153,7 +153,7 @@ class GoogleAuthAndPreferencesIntegrationTest {
                 .asText();
 
         // Any JSON keys should be accepted without validation errors
-        mockMvc.perform(patch("/api/v1/me/preferences")
+        mockMvc.perform(put("/api/v1/me/preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"customKey\":\"customValue\",\"anotherKey\":42,\"flag\":true}"))

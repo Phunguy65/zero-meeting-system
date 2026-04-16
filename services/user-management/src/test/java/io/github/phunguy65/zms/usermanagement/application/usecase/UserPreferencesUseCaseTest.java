@@ -5,14 +5,12 @@ import static org.mockito.Mockito.when;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -39,25 +37,24 @@ class UserPreferencesUseCaseTest {
         getUseCase = new GetUserPreferencesUseCase(userRepository, preferencesParser);
     }
 
-    private User userWithPrefs(String prefsJson) {
-        return User.reconstitute(
-                USER_ID,
-                Email.of("alice@example.com"),
+    private UserSummary userWithPrefs(String prefsJson) {
+        Instant now = Instant.now();
+        return new UserSummary(
+                USER_ID.value(),
+                "alice@example.com",
+                "Alice",
                 null,
-                FullName.of("Alice"),
                 null,
-                null,
-                "google-uid",
                 "GOOGLE",
                 prefsJson,
-                Instant.now(),
-                Instant.now(),
-                null);
+                now,
+                now);
     }
 
     @Test
     void getPreferences_nullPrefs_returnsEmpty() {
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(userWithPrefs(null)));
+        when(userRepository.findSummaryActiveById(USER_ID))
+                .thenReturn(Optional.of(userWithPrefs(null)));
 
         var result = getUseCase.execute(USER_ID);
 
@@ -70,7 +67,8 @@ class UserPreferencesUseCaseTest {
     void getPreferences_storedPrefs_returnsStoredAsIs() throws Exception {
         String json = new ObjectMapper()
                 .writeValueAsString(Map.of("theme", "dark", "fontSize", 14, "lang", "vi"));
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(userWithPrefs(json)));
+        when(userRepository.findSummaryActiveById(USER_ID))
+                .thenReturn(Optional.of(userWithPrefs(json)));
 
         var result = getUseCase.execute(USER_ID);
 
@@ -85,7 +83,8 @@ class UserPreferencesUseCaseTest {
     void getPreferences_arbitraryKeys_accepted() throws Exception {
         String json = new ObjectMapper()
                 .writeValueAsString(Map.of("customKey", "customValue", "nested", Map.of("a", 1)));
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(userWithPrefs(json)));
+        when(userRepository.findSummaryActiveById(USER_ID))
+                .thenReturn(Optional.of(userWithPrefs(json)));
 
         var result = getUseCase.execute(USER_ID);
 
@@ -97,7 +96,7 @@ class UserPreferencesUseCaseTest {
 
     @Test
     void getPreferences_userNotFound_returnsFailure() {
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.empty());
+        when(userRepository.findSummaryActiveById(USER_ID)).thenReturn(Optional.empty());
 
         var result = getUseCase.execute(USER_ID);
 
