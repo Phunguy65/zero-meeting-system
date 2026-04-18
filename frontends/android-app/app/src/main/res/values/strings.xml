@@ -328,4 +328,40 @@
     <string name="session_expired_title">Session Expired</string>
     <string name="session_expired_message">Please sign in again to continue</string>
     <string name="session_expired_snackbar">Session expired. Please sign in.</string>
+
+    <!-- ═══ Meeting history ═══ -->
+    <string name="meeting_history_title">Meeting History</string>
+    <string name="meeting_history_untitled">Untitled Meeting</string>
+    <string name="meeting_history_badge_cancelled">CANCELLED</string>
+    <string name="meeting_history_empty_title">No meetings yet</string>
+    <string name="meeting_history_empty_subtitle">Your past meetings will appear here once you\'ve
+        hosted or joined one.</string>
+    <string name="meeting_history_empty_cta">Start a meeting</string>
+    <string name="meeting_history_error_title">Something went wrong</string>
+    <string name="meeting_history_error_subtitle">We couldn\'t load your meeting history. Please try
+        again.</string>
+    <string name="meeting_history_load_more_failed">Failed to load more meetings</string>
+    <string name="meeting_history_duration_minutes">%d min</string>
+    <string name="meeting_history_duration_hours">%d h</string>
+    <string name="meeting_history_duration_hours_minutes">%1$d h %2$d min</string>
+
+    <!-- ═══ Meeting detail ═══ -->
+    <string name="meeting_detail_title">Meeting Details</string>
+    <string name="meeting_detail_section_description">Description</string>
+    <string name="meeting_detail_section_participants">Participants (%d)</string>
+    <string name="meeting_detail_section_recordings">Recordings (%d)</string>
+    <string name="meeting_detail_participants_show_more">+ %d more</string>
+    <string name="meeting_detail_recording_label">Recording %d</string>
+    <string name="meeting_detail_time_range_with_duration">%1$s - %2$s · %3$s</string>
+    <string name="meeting_detail_time_range_no_end">%1$s · —</string>
+    <string name="meeting_detail_playback_error">Unable to play recording</string>
+
+    <!-- ═══ Meeting types and statuses ═══ -->
+    <string name="meeting_type_scheduled">Scheduled</string>
+    <string name="meeting_type_instant">Instant</string>
+    <string name="meeting_status_scheduled">Scheduled</string>
+    <string name="meeting_status_live">Live</string>
+    <string name="meeting_status_ended">Ended</string>
+    <string name="meeting_status_cancelled">Cancelled</string>
+    <string name="cd_meeting_cancelled_format">%1$s, CANCELLED, %2$s</string>
 </resources>

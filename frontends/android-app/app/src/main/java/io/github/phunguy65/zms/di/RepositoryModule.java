@@ -8,6 +8,7 @@ import io.github.phunguy65.zms.data.repository.AuthRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.CalendarRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.ChatRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.MeRepositoryImpl;
+import io.github.phunguy65.zms.data.repository.MeetingHistoryRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.MeetingRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.ProfileRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.ScheduleRepositoryImpl;
@@ -16,6 +17,7 @@ import io.github.phunguy65.zms.domain.repository.AuthRepository;
 import io.github.phunguy65.zms.domain.repository.CalendarRepository;
 import io.github.phunguy65.zms.domain.repository.ChatRepository;
 import io.github.phunguy65.zms.domain.repository.MeRepository;
+import io.github.phunguy65.zms.domain.repository.MeetingHistoryRepository;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
 import io.github.phunguy65.zms.domain.repository.ProfileRepository;
 import io.github.phunguy65.zms.domain.repository.ScheduleRepository;
@@ -37,6 +39,9 @@ public abstract class RepositoryModule {
 
     @Binds
     abstract MeetingRepository bindMeetingRepository(MeetingRepositoryImpl impl);
+
+    @Binds
+    abstract MeetingHistoryRepository bindMeetingHistoryRepository(MeetingHistoryRepositoryImpl impl);
 
     @Binds
     abstract ChatRepository bindChatRepository(ChatRepositoryImpl impl);

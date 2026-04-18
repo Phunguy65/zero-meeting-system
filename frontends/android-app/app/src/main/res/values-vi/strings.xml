@@ -325,4 +325,39 @@
     <string name="session_expired_title">Phiên đã hết hạn</string>
     <string name="session_expired_message">Vui lòng đăng nhập lại để tiếp tục</string>
     <string name="session_expired_snackbar">Phiên đã hết hạn. Vui lòng đăng nhập.</string>
+
+    <!-- ═══ Lịch sử cuộc họp ═══ -->
+    <string name="meeting_history_title">Lịch sử cuộc họp</string>
+    <string name="meeting_history_untitled">Cuộc họp không có tiêu đề</string>
+    <string name="meeting_history_badge_cancelled">ĐÃ HỦY</string>
+    <string name="meeting_history_empty_title">Chưa có cuộc họp nào</string>
+    <string name="meeting_history_empty_subtitle">Các cuộc họp đã qua sẽ xuất hiện ở đây sau khi bạn
+        tổ chức hoặc tham gia.</string>
+    <string name="meeting_history_empty_cta">Bắt đầu cuộc họp</string>
+    <string name="meeting_history_error_title">Đã có lỗi xảy ra</string>
+    <string name="meeting_history_error_subtitle">Không thể tải lịch sử cuộc họp. Vui lòng thử lại.</string>
+    <string name="meeting_history_load_more_failed">Không thể tải thêm cuộc họp</string>
+    <string name="meeting_history_duration_minutes">%d phút</string>
+    <string name="meeting_history_duration_hours">%d giờ</string>
+    <string name="meeting_history_duration_hours_minutes">%1$d giờ %2$d phút</string>
+
+    <!-- ═══ Chi tiết cuộc họp ═══ -->
+    <string name="meeting_detail_title">Chi tiết cuộc họp</string>
+    <string name="meeting_detail_section_description">Mô tả</string>
+    <string name="meeting_detail_section_participants">Người tham dự (%d)</string>
+    <string name="meeting_detail_section_recordings">Bản ghi (%d)</string>
+    <string name="meeting_detail_participants_show_more">+ %d nữa</string>
+    <string name="meeting_detail_recording_label">Bản ghi %d</string>
+    <string name="meeting_detail_time_range_with_duration">%1$s - %2$s · %3$s</string>
+    <string name="meeting_detail_time_range_no_end">%1$s · —</string>
+    <string name="meeting_detail_playback_error">Không thể phát bản ghi</string>
+
+    <!-- ═══ Loại và trạng thái cuộc họp ═══ -->
+    <string name="meeting_type_scheduled">Lên lịch</string>
+    <string name="meeting_type_instant">Tức thì</string>
+    <string name="meeting_status_scheduled">Đã lên lịch</string>
+    <string name="meeting_status_live">Đang diễn ra</string>
+    <string name="meeting_status_ended">Đã kết thúc</string>
+    <string name="meeting_status_cancelled">Đã hủy</string>
+    <string name="cd_meeting_cancelled_format">%1$s, ĐÃ HỦY, %2$s</string>
 </resources>

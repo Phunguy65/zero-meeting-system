@@ -83,9 +83,8 @@ public class ProfileFragment extends Fragment {
 
         btnAccountSettings.setOnClickListener(v -> navigateToAccountSettings());
 
-        btnMeetingHistory.setOnClickListener(v -> {
-            // TODO: Navigate to meeting history
-        });
+        btnMeetingHistory.setOnClickListener(
+                v -> navController.navigate(R.id.action_profile_to_meetingHistory));
 
         btnHelpSupport.setOnClickListener(v -> {
             // TODO: Navigate to help/support

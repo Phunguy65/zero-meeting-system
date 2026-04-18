@@ -64,6 +64,13 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+
+        <action android:id="@+id/action_profile_to_meetingHistory"
+            app:destination="@id/meetingHistoryFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
 
     <!-- Full-screen destinations (BottomNav hidden) -->
@@ -91,5 +98,27 @@
         android:name="io.github.phunguy65.zms.presentation.main.accountsettings.AccountSettingsFragment"
         android:label="@string/profile_account_settings"
         tools:layout="@layout/fragment_account_settings" />
+
+    <fragment android:id="@+id/meetingHistoryFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.history.MeetingHistoryFragment"
+        android:label="@string/meeting_history_title"
+        tools:layout="@layout/fragment_meeting_history">
+
+        <action
+            android:id="@+id/action_meetingHistory_to_meetingDetail"
+            app:destination="@id/meetingDetailFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+
+    <fragment android:id="@+id/meetingDetailFragment"
+        android:name="io.github.phunguy65.zms.presentation.main.history.MeetingDetailFragment"
+        android:label="@string/meeting_detail_title"
+        tools:layout="@layout/fragment_meeting_detail">
+
+        <argument android:name="meetingId" app:argType="string" />
+    </fragment>
 
 </navigation>

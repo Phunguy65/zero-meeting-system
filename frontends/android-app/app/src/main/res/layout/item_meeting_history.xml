@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardMeetingHistory"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/spacing_lg"
+    android:layout_marginVertical="@dimen/spacing_xs"
+    android:clickable="true" android:focusable="true"
+    android:minHeight="@dimen/touch_target_min"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="@dimen/corner_radius_lg" app:cardElevation="0dp"
+    app:rippleColor="?attr/colorSurfaceVariant"
+    app:strokeColor="?attr/colorOutline" app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_md">
+
+        <TextView android:id="@+id/tvTitle"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:ellipsize="end" android:maxLines="2"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/badgeGroup"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Design Review Sync" />
+
+        <LinearLayout android:id="@+id/badgeGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm" android:gravity="end"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView android:id="@+id/tvTypeBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_history_badge_neutral"
+                android:paddingHorizontal="@dimen/spacing_sm"
+                android:paddingVertical="@dimen/spacing_xxs"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="11sp" android:textStyle="bold"
+                tools:text="SCHEDULED" />
+
+            <TextView android:id="@+id/tvCancelledBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_xs"
+                android:background="@drawable/bg_history_badge_error"
+                android:paddingHorizontal="@dimen/spacing_sm"
+                android:paddingVertical="@dimen/spacing_xxs"
+                android:text="@string/meeting_history_badge_cancelled"
+                android:textColor="?attr/colorOnError" android:textSize="11sp"
+                android:textStyle="bold" android:visibility="gone"
+                tools:visibility="visible" />
+        </LinearLayout>
+
+        <TextView android:id="@+id/tvDateTime"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs" android:ellipsize="end"
+            android:maxLines="1" android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toStartOf="@+id/tvDuration"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            tools:text="Apr 16, 2026 · 2:30 PM" />
+
+        <TextView android:id="@+id/tvDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp"
+            app:layout_constraintBaseline_toBaselineOf="@id/tvDateTime"
+            app:layout_constraintEnd_toEndOf="parent" tools:text="45 min" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

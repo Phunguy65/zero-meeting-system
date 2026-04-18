@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardRecording" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/spacing_lg"
+    android:layout_marginVertical="@dimen/spacing_xs"
+    android:clickable="true" android:focusable="true"
+    android:minHeight="@dimen/touch_target_min"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="@dimen/corner_radius_lg" app:cardElevation="0dp"
+    app:rippleColor="?attr/colorSurfaceVariant"
+    app:strokeColor="?attr/colorOutline" app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_md">
+
+        <FrameLayout android:id="@+id/playIconContainer"
+            android:layout_width="@dimen/icon_container_md"
+            android:layout_height="@dimen/icon_container_md"
+            android:background="@drawable/bg_circle_primary_container"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView android:layout_width="24dp"
+                android:layout_height="24dp" android:layout_gravity="center"
+                android:contentDescription="@null" android:src="@drawable/ic_play"
+                app:tint="?attr/colorOnPrimaryContainer" />
+        </FrameLayout>
+
+        <TextView android:id="@+id/tvRecordingLabel"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:ellipsize="end" android:maxLines="1"
+            android:textColor="?attr/colorOnSurface" android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tvDuration"
+            app:layout_constraintStart_toEndOf="@id/playIconContainer"
+            app:layout_constraintTop_toTopOf="@id/playIconContainer"
+            tools:text="Recording 1" />
+
+        <TextView android:id="@+id/tvRecordingSubtitle"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:ellipsize="end" android:maxLines="1"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@id/playIconContainer"
+            app:layout_constraintEnd_toStartOf="@id/tvDuration"
+            app:layout_constraintStart_toEndOf="@id/playIconContainer"
+            app:layout_constraintTop_toBottomOf="@id/tvRecordingLabel"
+            tools:text="Apr 16, 2026" />
+
+        <TextView android:id="@+id/tvDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" tools:text="45:12" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
