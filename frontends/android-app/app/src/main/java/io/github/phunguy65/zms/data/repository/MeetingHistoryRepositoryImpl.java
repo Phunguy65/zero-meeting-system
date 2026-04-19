@@ -59,12 +59,11 @@ public class MeetingHistoryRepositoryImpl implements MeetingHistoryRepository {
                         }
 
                         MeetingManagementCursorScrollResponseMeetingResponse body = response.body();
-                        List<MeetingHistory> items =
-                                body.getContent() == null
-                                        ? List.of()
-                                        : body.getContent().stream()
-                                                .map(meetingMapper::toMeetingHistory)
-                                                .collect(Collectors.toList());
+                        List<MeetingHistory> items = body.getContent() == null
+                                ? List.of()
+                                : body.getContent().stream()
+                                        .map(meetingMapper::toMeetingHistory)
+                                        .collect(Collectors.toList());
 
                         String nextToken = body.getNextPageToken();
                         return new MeetingHistoryPage(items, nextToken, nextToken != null);
@@ -76,15 +75,15 @@ public class MeetingHistoryRepositoryImpl implements MeetingHistoryRepository {
     }
 
     @Override
-    public CompletableFuture<MeetingHistoryDetail> getMeetingDetail(String userId, String meetingId) {
+    public CompletableFuture<MeetingHistoryDetail> getMeetingDetail(
+            String userId, String meetingId) {
         return CompletableFuture.supplyAsync(
                 () -> {
                     try {
-                        Response<MeetingManagementMeetingDetailResponse> response =
-                                userMeetingsApi
-                                        .getParticipatedMeetingDetail(
-                                                UUID.fromString(userId), UUID.fromString(meetingId))
-                                        .execute();
+                        Response<MeetingManagementMeetingDetailResponse> response = userMeetingsApi
+                                .getParticipatedMeetingDetail(
+                                        UUID.fromString(userId), UUID.fromString(meetingId))
+                                .execute();
 
                         if (!response.isSuccessful() || response.body() == null) {
                             throw new IOException(

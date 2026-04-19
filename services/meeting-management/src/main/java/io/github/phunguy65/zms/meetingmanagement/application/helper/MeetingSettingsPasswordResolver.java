@@ -18,17 +18,16 @@ public final class MeetingSettingsPasswordResolver {
     public static MeetingSettings withRawPassword(
             MeetingSettings settings, @Nullable String rawPassword, PasswordHasher passwordHasher) {
         String normalizedRawPassword = normalizeRawPassword(rawPassword);
-        String passwordHash =
+        String hashedPassword =
                 normalizedRawPassword != null ? passwordHasher.hash(normalizedRawPassword) : null;
         return new MeetingSettings(
                 settings.admissionPolicy(),
-                settings.joinRequestTimeout(),
                 settings.allowGuest(),
-                settings.muteOnEntry(),
                 settings.maxParticipants(),
-                settings.recordingEnabled(),
-                settings.screenShareMode(),
+                settings.allowScreenShare(),
                 settings.chatEnabled(),
-                passwordHash);
+                settings.allowMicrophone(),
+                settings.allowVideo(),
+                hashedPassword);
     }
 }

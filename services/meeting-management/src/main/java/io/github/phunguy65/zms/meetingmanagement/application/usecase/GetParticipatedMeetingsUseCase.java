@@ -50,13 +50,12 @@ public class GetParticipatedMeetingsUseCase {
                         meeting.status(),
                         new MeetingSettingsResponse(
                                 meeting.settings().admissionPolicy(),
-                                meeting.settings().joinRequestTimeoutSeconds(),
                                 meeting.settings().allowGuest(),
-                                meeting.settings().muteOnEntry(),
                                 meeting.settings().maxParticipants(),
-                                meeting.settings().recordingEnabled(),
-                                meeting.settings().screenShareMode(),
+                                meeting.settings().allowScreenShare(),
                                 meeting.settings().chatEnabled(),
+                                meeting.settings().allowMicrophone(),
+                                meeting.settings().allowVideo(),
                                 meeting.settings().passwordProtected()),
                         meeting.createdAt()));
     }

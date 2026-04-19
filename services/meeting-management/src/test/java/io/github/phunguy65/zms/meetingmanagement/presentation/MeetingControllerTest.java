@@ -102,12 +102,11 @@ class MeetingControllerTest {
                                         MeetingStatus.SCHEDULED,
                                         new MeetingSettingsResponse(
                                                 "MANUAL_APPROVAL",
-                                                90,
-                                                true,
                                                 true,
                                                 50,
                                                 true,
-                                                "HOST_ONLY",
+                                                true,
+                                                true,
                                                 true,
                                                 true),
                                         Instant.parse("2026-04-01T08:00:00Z")),
@@ -123,13 +122,12 @@ class MeetingControllerTest {
                                         MeetingStatus.LIVE,
                                         new MeetingSettingsResponse(
                                                 "AUTO_APPROVE",
-                                                null,
-                                                false,
                                                 false,
                                                 10,
+                                                true,
                                                 false,
-                                                "EVERYONE",
-                                                false,
+                                                true,
+                                                true,
                                                 false),
                                         secondCreatedAt)),
                         10,
@@ -171,15 +169,7 @@ class MeetingControllerTest {
                                 MeetingType.INSTANT,
                                 MeetingStatus.LIVE,
                                 new MeetingSettingsResponse(
-                                        "AUTO_APPROVE",
-                                        null,
-                                        false,
-                                        false,
-                                        10,
-                                        false,
-                                        "EVERYONE",
-                                        false,
-                                        false),
+                                        "AUTO_APPROVE", false, 10, true, false, true, true, false),
                                 Instant.parse("2026-04-01T09:00:00Z"))),
                         15,
                         false));
@@ -298,16 +288,15 @@ class MeetingControllerTest {
                                 .equals(meetingId)
                         && command.requesterId().equals(requesterId)
                         && command.settings().admissionPolicy().name().equals("MANUAL_APPROVAL")
-                        && command.settings().joinRequestTimeout().toSeconds() == 120
                         && command.settings().allowGuest()
-                        && !command.settings().muteOnEntry()
                         && command.settings().maxParticipants() == 40
-                        && command.settings().recordingEnabled()
-                        && command.settings().screenShareMode().equals("HOST_ONLY")
+                        && !command.settings().allowScreenShare()
                         && command.settings().chatEnabled()
+                        && command.settings().allowMicrophone()
+                        && command.settings().allowVideo()
                         && command.rawPassword() == null)))
                 .thenReturn(Result.success(new MeetingSettingsResponse(
-                        "MANUAL_APPROVAL", 120, true, false, 40, true, "HOST_ONLY", true, false)));
+                        "MANUAL_APPROVAL", true, 40, false, true, true, true, false)));
 
         mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
                         .principal(new TestingAuthenticationToken(requesterId.toString(), null))
@@ -315,20 +304,19 @@ class MeetingControllerTest {
                         .content("""
                                 {
                                   "admissionPolicy": "MANUAL_APPROVAL",
-                                  "joinRequestTimeoutSeconds": 120,
                                   "allowGuest": true,
-                                  "muteOnEntry": false,
                                   "maxParticipants": 40,
-                                  "recordingEnabled": true,
-                                  "screenShareMode": "HOST_ONLY",
+                                  "allowScreenShare": false,
                                   "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
                                   "password": null
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.data.admissionPolicy").value("MANUAL_APPROVAL"))
-                .andExpect(jsonPath("$.data.joinRequestTimeoutSeconds").value(120))
+                .andExpect(jsonPath("$.data.allowScreenShare").value(false))
                 .andExpect(jsonPath("$.data.requirePassword").value(false));
     }
 
@@ -343,12 +331,11 @@ class MeetingControllerTest {
                         .content("""
                                 {
                                   "admissionPolicy": "MANUAL_APPROVAL",
-                                  "joinRequestTimeoutSeconds": 120,
                                   "allowGuest": true,
-                                  "muteOnEntry": false,
-                                  "recordingEnabled": true,
-                                  "screenShareMode": "HOST_ONLY",
+                                  "allowScreenShare": false,
                                   "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
                                   "password": null
                                 }
                                 """))
@@ -369,13 +356,12 @@ class MeetingControllerTest {
                         .content("""
                                 {
                                   "admissionPolicy": "MANUAL_APPROVAL",
-                                  "joinRequestTimeoutSeconds": 120,
                                   "allowGuest": true,
-                                  "muteOnEntry": false,
                                   "maxParticipants": 40,
-                                  "recordingEnabled": true,
-                                  "screenShareMode": "HOST_ONLY",
+                                  "allowScreenShare": true,
                                   "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
                                   "password": "   "
                                 }
                                 """))
@@ -393,15 +379,14 @@ class MeetingControllerTest {
                         .contentType("application/json")
                         .content("""
                                 {
-                                  \"admissionPolicy\": \"MANUAL_APPROVAL\",
-                                  \"joinRequestTimeoutSeconds\": 120,
-                                  \"allowGuest\": true,
-                                  \"muteOnEntry\": false,
-                                  \"maxParticipants\": 40,
-                                  \"recordingEnabled\": true,
-                                  \"screenShareMode\": \"HOST_ONLY\",
-                                  \"chatEnabled\": true,
-                                  \"password\": null
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
                                 }
                                 """))
                 .andExpect(status().isUnauthorized())
@@ -429,13 +414,12 @@ class MeetingControllerTest {
                         .content("""
                                 {
                                   "admissionPolicy": "MANUAL_APPROVAL",
-                                  "joinRequestTimeoutSeconds": 120,
                                   "allowGuest": true,
-                                  "muteOnEntry": false,
                                   "maxParticipants": 40,
-                                  "recordingEnabled": true,
-                                  "screenShareMode": "HOST_ONLY",
+                                  "allowScreenShare": false,
                                   "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
                                   "password": null
                                 }
                                 """))
@@ -462,13 +446,12 @@ class MeetingControllerTest {
                         .content("""
                                 {
                                   "admissionPolicy": "MANUAL_APPROVAL",
-                                  "joinRequestTimeoutSeconds": 120,
                                   "allowGuest": true,
-                                  "muteOnEntry": false,
                                   "maxParticipants": 40,
-                                  "recordingEnabled": true,
-                                  "screenShareMode": "HOST_ONLY",
+                                  "allowScreenShare": false,
                                   "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
                                   "password": null
                                 }
                                 """))
@@ -495,13 +478,12 @@ class MeetingControllerTest {
                         .content("""
                                 {
                                   "admissionPolicy": "MANUAL_APPROVAL",
-                                  "joinRequestTimeoutSeconds": 120,
                                   "allowGuest": true,
-                                  "muteOnEntry": false,
                                   "maxParticipants": 40,
-                                  "recordingEnabled": true,
-                                  "screenShareMode": "HOST_ONLY",
+                                  "allowScreenShare": false,
                                   "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
                                   "password": null
                                 }
                                 """))
@@ -527,13 +509,12 @@ class MeetingControllerTest {
                         .content("""
                                 {
                                   "admissionPolicy": "MANUAL_APPROVAL",
-                                  "joinRequestTimeoutSeconds": 120,
                                   "allowGuest": true,
-                                  "muteOnEntry": false,
                                   "maxParticipants": 40,
-                                  "recordingEnabled": true,
-                                  "screenShareMode": "HOST_ONLY",
+                                  "allowScreenShare": false,
                                   "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
                                   "password": null
                                 }
                                 """))
@@ -561,13 +542,12 @@ class MeetingControllerTest {
                         .content("""
                                 {
                                   "admissionPolicy": "ALLOW_ALL",
-                                  "joinRequestTimeoutSeconds": 120,
                                   "allowGuest": true,
-                                  "muteOnEntry": false,
                                   "maxParticipants": 40,
-                                  "recordingEnabled": true,
-                                  "screenShareMode": "HOST_ONLY",
+                                  "allowScreenShare": false,
                                   "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
                                   "password": null
                                 }
                                 """))

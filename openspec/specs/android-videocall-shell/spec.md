@@ -26,11 +26,14 @@ isolation.
 - **THEN** it SHALL appear as a separate card in Android Recents
 - **THEN** pressing Back SHALL close only the call, not the main app
 
-### Scenario: Launch from MainActivity
+### Scenario: Launch from main app meeting flows
 
-- **WHEN** user taps "Join Meeting" or "New Meeting" in MainActivity
+- **WHEN** user successfully starts an instant meeting from the dashboard or
+  joins a meeting from the main app
 - **THEN** system creates Intent to `VideoCallActivity.class`
 - **THEN** Intent has flag `FLAG_ACTIVITY_NEW_TASK`
+- **THEN** authenticated launches from instant meeting creation SHALL include
+  the created meeting short code in `EXTRA_MEETING_CODE`
 
 ## Requirement: Camera and Microphone Permissions
 

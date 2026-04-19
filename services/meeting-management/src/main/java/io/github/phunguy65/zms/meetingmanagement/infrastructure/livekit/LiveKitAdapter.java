@@ -5,6 +5,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitTokenRequest;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantAttributes;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantGrants;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
@@ -14,6 +15,7 @@ import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.livekit.server.AccessToken;
 import io.livekit.server.CanPublish;
 import io.livekit.server.CanPublishData;
+import io.livekit.server.CanPublishSources;
 import io.livekit.server.CanSubscribe;
 import io.livekit.server.CanUpdateOwnMetadata;
 import io.livekit.server.EgressServiceClient;
@@ -23,6 +25,7 @@ import io.livekit.server.RoomName;
 import io.livekit.server.RoomServiceClient;
 import io.livekit.server.VideoGrant;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +85,8 @@ public class LiveKitAdapter implements LiveKitPort {
             token.setTtl(props.getTokenExpirySeconds() * 1_000L);
             token.getAttributes().putAll(request.participantAttributes().toMap());
             token.addGrants(new RoomJoin(true), new RoomName(request.roomName().value()));
-            token.addGrants(buildRoleGrants(request.role()).toArray(new VideoGrant[0]));
+            token.addGrants(buildRoleGrants(request.role(), request.meetingSettings())
+                    .toArray(new VideoGrant[0]));
 
             return Result.success(token.toJwt());
         } catch (Exception e) {
@@ -158,7 +162,24 @@ public class LiveKitAdapter implements LiveKitPort {
         }
     }
 
-    private List<VideoGrant> buildRoleGrants(ParticipantRole role) {
+    /**
+     * Builds LiveKit video grants based on participant role and meeting settings.
+     *
+     * <p>Permission matrix:
+     * <ul>
+     *   <li>HOST — full admin permissions regardless of meeting settings</li>
+     *   <li>GUEST — subscribe-only regardless of meeting settings</li>
+     *   <li>PARTICIPANT — derived from meeting settings:
+     *     <ul>
+     *       <li>canPublish = true only if at least one media source is enabled</li>
+     *       <li>canPublishData = chatEnabled</li>
+     *       <li>canPublishSources = filtered list based on allowMicrophone, allowVideo, allowScreenShare</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     */
+    private List<VideoGrant> buildRoleGrants(
+            ParticipantRole role, @Nullable MeetingSettings settings) {
         return switch (role) {
             case HOST ->
                 List.of(
@@ -167,12 +188,33 @@ public class LiveKitAdapter implements LiveKitPort {
                         new CanPublishData(true),
                         new CanSubscribe(true),
                         new CanUpdateOwnMetadata(true));
-            case PARTICIPANT ->
-                List.of(
-                        new CanPublish(true),
-                        new CanPublishData(true),
-                        new CanSubscribe(true),
-                        new CanUpdateOwnMetadata(true));
+            case PARTICIPANT -> {
+                ParticipantGrants grants = ParticipantGrants.fromSettings(settings, role);
+                List<VideoGrant> grantList = new ArrayList<>();
+                grantList.add(new CanSubscribe(true));
+                grantList.add(new CanUpdateOwnMetadata(true));
+                grantList.add(new CanPublishData(grants.canPublishData()));
+
+                if (settings != null && grants.canPublish()) {
+                    // When at least one source is enabled, use source-level filtering
+                    List<String> allowedSources = buildAllowedSources(settings);
+                    if (!allowedSources.isEmpty()) {
+                        grantList.add(new CanPublish(true));
+                        grantList.add(new CanPublishSources(allowedSources));
+                    } else {
+                        // All sources disabled → canPublish=false
+                        grantList.add(new CanPublish(false));
+                    }
+                } else if (settings == null) {
+                    // Backwards compatibility: no settings → full publish
+                    grantList.add(new CanPublish(true));
+                } else {
+                    // All sources disabled → canPublish=false
+                    grantList.add(new CanPublish(false));
+                }
+
+                yield List.copyOf(grantList);
+            }
             case GUEST ->
                 List.of(
                         new CanPublish(false),
@@ -180,6 +222,35 @@ public class LiveKitAdapter implements LiveKitPort {
                         new CanSubscribe(true),
                         new CanUpdateOwnMetadata(true));
         };
+    }
+
+    /**
+     * Builds the list of allowed track sources based on meeting settings.
+     *
+     * <p>Source strings follow LiveKit's canonical names:
+     * <ul>
+     *   <li>"microphone" - audio from microphone</li>
+     *   <li>"camera" - video from camera</li>
+     *   <li>"screen_share" - screen share video</li>
+     *   <li>"screen_share_audio" - screen share audio</li>
+     * </ul>
+     *
+     * @param settings current meeting settings
+     * @return list of allowed source strings for PARTICIPANT tokens
+     */
+    private List<String> buildAllowedSources(MeetingSettings settings) {
+        List<String> sources = new ArrayList<>();
+        if (settings.allowMicrophone()) {
+            sources.add("microphone");
+        }
+        if (settings.allowVideo()) {
+            sources.add("camera");
+        }
+        if (settings.allowScreenShare()) {
+            sources.add("screen_share");
+            sources.add("screen_share_audio");
+        }
+        return sources;
     }
 
     // -------------------------------------------------------------------------

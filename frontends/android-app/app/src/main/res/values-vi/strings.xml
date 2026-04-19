@@ -253,8 +253,6 @@
     <string name="schedule_meeting_settings">Cài đặt cuộc họp</string>
     <string name="schedule_waiting_room">Phòng chờ</string>
     <string name="schedule_waiting_room_desc">Duyệt khách thủ công trước khi vào họp</string>
-    <string name="schedule_host_video">Bật video chủ phòng</string>
-    <string name="schedule_host_video_desc">Bắt đầu họp với video của bạn</string>
     <string name="schedule_button">Lên lịch</string>
     <string name="schedule_error_empty_topic">Vui lòng nhập chủ đề cuộc họp</string>
     <string name="schedule_success">Đã lên lịch cuộc họp!</string>
@@ -360,4 +358,23 @@
     <string name="meeting_status_ended">Đã kết thúc</string>
     <string name="meeting_status_cancelled">Đã hủy</string>
     <string name="cd_meeting_cancelled_format">%1$s, ĐÃ HỦY, %2$s</string>
+
+    <!-- ═══ FAB và tạo cuộc họp ═══ -->
+    <string name="cd_fab_new_meeting">Bắt đầu cuộc họp mới</string>
+    <string name="fab_action_start_instant">Bắt đầu họp ngay</string>
+    <string name="fab_action_schedule">Lên lịch họp</string>
+    <string name="meeting_creation_loading">Đang bắt đầu cuộc họp…</string>
+    <string name="meeting_creation_success">Đã tạo cuộc họp!</string>
+    <string name="meeting_creation_failed">Không thể tạo cuộc họp</string>
+    <string name="schedule_creation_loading">Đang lên lịch cuộc họp…</string>
+    <string name="schedule_creation_success">Đã lên lịch cuộc họp!</string>
+    <string name="schedule_creation_failed">Không thể lên lịch cuộc họp</string>
+    <string name="error_meeting_creation">Không thể tạo cuộc họp. Vui lòng thử lại.</string>
+    <string name="error_schedule_meeting">Không thể lên lịch cuộc họp. Vui lòng thử lại.</string>
+    <string name="error_date_required">Vui lòng chọn ngày</string>
+    <string name="error_time_required">Vui lòng chọn giờ</string>
+    <string name="error_duration_required">Vui lòng chọn thời lượng</string>
+    <string name="schedule_error_past_start_time">Thời gian bắt đầu phải trong tương lai</string>
+    <string name="schedule_error_invalid_duration_range">Thời lượng phải từ 15 phút đến 8 giờ</string>
+    <string name="schedule_error_invalid_duration">Định dạng thời lượng không hợp lệ</string>
 </resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/action_start_instant"
+        android:icon="@drawable/ic_videocam"
+        android:title="@string/fab_action_start_instant" />
+
+    <item android:id="@+id/action_schedule_meeting"
+        android:icon="@drawable/ic_calendar_outlined"
+        android:title="@string/fab_action_schedule" />
+
+</menu>

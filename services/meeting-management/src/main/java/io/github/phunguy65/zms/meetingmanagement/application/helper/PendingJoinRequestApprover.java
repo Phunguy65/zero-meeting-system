@@ -127,7 +127,8 @@ public class PendingJoinRequestApprover {
                                     .map(UserId::value)
                                     .map(avatarUrls::get)
                                     .orElse(null),
-                            role)));
+                            role),
+                    meeting.getSettings()));
             if (tokenResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
                 return Result.failure(error);
             }

@@ -18,7 +18,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class GetMeetingHistoryUseCaseTest {
 
-    @Mock private MeetingHistoryRepository repository;
+    @Mock
+    private MeetingHistoryRepository repository;
 
     private GetMeetingHistoryUseCase useCase;
 

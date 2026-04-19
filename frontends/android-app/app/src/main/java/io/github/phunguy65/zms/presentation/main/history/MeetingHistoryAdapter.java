@@ -89,10 +89,8 @@ public class MeetingHistoryAdapter
                 card.setAlpha(0.7f);
                 tvCancelledBadge.setVisibility(View.VISIBLE);
                 String dateTime = formatStartDateTime(item.startTime());
-                card.setContentDescription(
-                        card.getContext()
-                                .getString(
-                                        R.string.cd_meeting_cancelled_format, title, dateTime));
+                card.setContentDescription(card.getContext()
+                        .getString(R.string.cd_meeting_cancelled_format, title, dateTime));
             } else {
                 tvTitle.setPaintFlags(tvTitle.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
                 card.setAlpha(1.0f);
@@ -108,8 +106,7 @@ public class MeetingHistoryAdapter
                 return "";
             }
             return switch (type) {
-                case SCHEDULED ->
-                        card.getContext().getString(R.string.meeting_type_scheduled);
+                case SCHEDULED -> card.getContext().getString(R.string.meeting_type_scheduled);
                 case INSTANT -> card.getContext().getString(R.string.meeting_type_instant);
             };
         }
@@ -118,12 +115,10 @@ public class MeetingHistoryAdapter
             if (startTime == null) {
                 return "";
             }
-            DateTimeFormatter date =
-                    DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-                            .withLocale(Locale.getDefault());
-            DateTimeFormatter time =
-                    DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
-                            .withLocale(Locale.getDefault());
+            DateTimeFormatter date = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+                    .withLocale(Locale.getDefault());
+            DateTimeFormatter time = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+                    .withLocale(Locale.getDefault());
             return startTime.format(date) + " · " + startTime.format(time);
         }
 

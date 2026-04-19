@@ -249,16 +249,31 @@
     <!-- ═══ Schedule screen ═══ -->
     <string name="schedule_title">Schedule</string>
     <string name="schedule_meeting_topic">Meeting Topic</string>
+    <string name="schedule_meeting_topic_hint">Optional meeting title</string>
     <string name="schedule_date">Date</string>
     <string name="schedule_start_time">Start Time</string>
     <string name="schedule_duration">Duration</string>
     <string name="schedule_meeting_settings">Meeting Settings</string>
     <string name="schedule_waiting_room">Waiting Room</string>
     <string name="schedule_waiting_room_desc">Admit guests manually before they join</string>
-    <string name="schedule_host_video">Host Video On</string>
-    <string name="schedule_host_video_desc">Start meeting with your video enabled</string>
+    <string name="schedule_allow_guest">Allow Guests</string>
+    <string name="schedule_allow_guest_desc">Allow unauthenticated users to join</string>
+    <string name="schedule_password">Require Password</string>
+    <string name="schedule_password_desc">Participants must enter a password to join</string>
+    <string name="schedule_password_hint">Enter meeting password</string>
+    <string name="schedule_advanced_settings">Advanced Settings</string>
+    <string name="schedule_max_participants">Maximum Participants</string>
+    <string name="schedule_max_participants_helper">2–1000 participants allowed</string>
+    <string name="schedule_allow_screen_share">Allow Screen Share</string>
+    <string name="schedule_chat_enabled">Enable Chat</string>
+    <string name="schedule_allow_microphone">Allow Microphone</string>
+    <string name="schedule_allow_video">Allow Video</string>
+    <string name="schedule_end_time_helper">Ends at %1$s</string>
     <string name="schedule_button">Schedule Meeting</string>
     <string name="schedule_error_empty_topic">Please enter meeting topic</string>
+    <string name="schedule_error_title_too_long">Title must be at most 255 characters</string>
+    <string name="schedule_error_max_participants_range">Must be between 2 and 1000</string>
+    <string name="schedule_error_max_participants_invalid">Enter a valid number</string>
     <string name="schedule_success">Meeting Scheduled!</string>
     <string-array name="schedule_durations">
         <item>30 minutes</item>
@@ -314,6 +329,9 @@
     <string name="cd_more_options">More options</string>
     <string name="cd_open_chat">Open chat</string>
     <string name="cd_activate_to_change">Double-tap to change</string>
+    <string name="cd_date_picker">Select meeting date</string>
+    <string name="cd_time_picker">Select meeting start time</string>
+    <string name="cd_expand_advanced_settings">Expand advanced settings</string>
 
     <!-- ═══ Video call feedback messages ═══ -->
     <string name="permission_camera_mic_required">Camera and microphone permissions are required for
@@ -364,4 +382,23 @@
     <string name="meeting_status_ended">Ended</string>
     <string name="meeting_status_cancelled">Cancelled</string>
     <string name="cd_meeting_cancelled_format">%1$s, CANCELLED, %2$s</string>
+
+    <!-- ═══ FAB and meeting creation ═══ -->
+    <string name="cd_fab_new_meeting">Start a new meeting</string>
+    <string name="fab_action_start_instant">Start Instant Meeting</string>
+    <string name="fab_action_schedule">Schedule Meeting</string>
+    <string name="meeting_creation_loading">Starting meeting…</string>
+    <string name="meeting_creation_success">Meeting created!</string>
+    <string name="meeting_creation_failed">Failed to create meeting</string>
+    <string name="schedule_creation_loading">Scheduling meeting…</string>
+    <string name="schedule_creation_success">Meeting scheduled!</string>
+    <string name="schedule_creation_failed">Failed to schedule meeting</string>
+    <string name="error_meeting_creation">Could not create meeting. Please try again.</string>
+    <string name="error_schedule_meeting">Could not schedule meeting. Please try again.</string>
+    <string name="error_date_required">Please select a date</string>
+    <string name="error_time_required">Please select a time</string>
+    <string name="error_duration_required">Please select a duration</string>
+    <string name="schedule_error_past_start_time">Start time must be in the future</string>
+    <string name="schedule_error_invalid_duration_range">Duration must be between 15 minutes and 8 hours</string>
+    <string name="schedule_error_invalid_duration">Invalid duration format</string>
 </resources>

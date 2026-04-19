@@ -27,10 +27,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class MeetingDetailViewModelTest {
 
-    @Rule public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
+    @Rule
+    public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
-    @Mock private GetMeetingDetailUseCase useCase;
-    @Mock private SessionRepository sessionRepository;
+    @Mock
+    private GetMeetingDetailUseCase useCase;
+
+    @Mock
+    private SessionRepository sessionRepository;
 
     private final Executor mainExecutor = Runnable::run;
     private static final String USER_ID = "user-123";

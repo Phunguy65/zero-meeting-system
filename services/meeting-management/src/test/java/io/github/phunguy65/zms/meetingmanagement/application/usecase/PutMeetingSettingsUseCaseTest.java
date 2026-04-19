@@ -25,7 +25,6 @@ import io.github.phunguy65.zms.meetingmanagement.domain.port.PasswordHasher;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -77,13 +76,12 @@ class PutMeetingSettingsUseCaseTest {
                 MeetingStatus.SCHEDULED,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        true,
-                        30,
-                        false,
-                        "ALL",
-                        false,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        false, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         "old"));
         when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
         when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
@@ -95,32 +93,32 @@ class PutMeetingSettingsUseCaseTest {
                 hostId,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        null,
-                        true,
-                        false,
-                        40,
-                        true,
-                        "HOST_ONLY",
-                        true,
+                        true, // allowGuest
+                        40, // maxParticipants
+                        false, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null),
                 "secret-pass"));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var response = (MeetingSettingsResponse) ((Result.Success<?, ?>) result).value();
-        assertThat(response.joinRequestTimeoutSeconds()).isNull();
         assertThat(response.allowGuest()).isTrue();
-        assertThat(response.muteOnEntry()).isFalse();
         assertThat(response.maxParticipants()).isEqualTo(40);
-        assertThat(response.screenShareMode()).isEqualTo("HOST_ONLY");
+        assertThat(response.allowScreenShare()).isFalse();
+        assertThat(response.chatEnabled()).isTrue();
+        assertThat(response.allowMicrophone()).isTrue();
+        assertThat(response.allowVideo()).isTrue();
         assertThat(response.requirePassword()).isTrue();
 
         verify(passwordHasher).hash("secret-pass");
         verify(meetingRepository)
                 .save(argThat(
-                        saved -> "hashed-secret".equals(saved.getSettings().passwordHash())
-                                && saved.getSettings().joinRequestTimeout() == null
+                        saved -> "hashed-secret".equals(saved.getSettings().password())
                                 && saved.getSettings().allowGuest()
-                                && saved.getSettings().maxParticipants() == 40));
+                                && saved.getSettings().maxParticipants() == 40
+                                && !saved.getSettings().allowScreenShare()));
         ArgumentCaptor<MeetingSettingsUpdatedEvent> eventCaptor =
                 ArgumentCaptor.forClass(MeetingSettingsUpdatedEvent.class);
         verify(eventPublisher).publishEvent(eventCaptor.capture());
@@ -128,6 +126,15 @@ class PutMeetingSettingsUseCaseTest {
         assertThat(eventCaptor.getValue().hostId()).isEqualTo(hostId);
         assertThat(eventCaptor.getValue().updatedBy()).isEqualTo(hostId);
         assertThat(eventCaptor.getValue().meetingStatus()).isEqualTo(MeetingStatus.SCHEDULED);
+        // Verify old/new settings snapshots
+        assertThat(eventCaptor.getValue().oldSettings().allowGuest()).isFalse();
+        assertThat(eventCaptor.getValue().oldSettings().maxParticipants()).isEqualTo(30);
+        assertThat(eventCaptor.getValue().oldSettings().allowScreenShare()).isTrue();
+        assertThat(eventCaptor.getValue().oldSettings().chatEnabled()).isFalse();
+        assertThat(eventCaptor.getValue().newSettings().allowGuest()).isTrue();
+        assertThat(eventCaptor.getValue().newSettings().maxParticipants()).isEqualTo(40);
+        assertThat(eventCaptor.getValue().newSettings().allowScreenShare()).isFalse();
+        assertThat(eventCaptor.getValue().newSettings().chatEnabled()).isTrue();
         verify(pendingJoinRequestApprover, never()).approveAll(any(), any());
     }
 
@@ -141,13 +148,12 @@ class PutMeetingSettingsUseCaseTest {
                 MeetingStatus.SCHEDULED,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         "old"));
         when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
         when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
@@ -158,64 +164,20 @@ class PutMeetingSettingsUseCaseTest {
                 hostId,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null),
                 null));
 
         assertThat(result).isInstanceOf(Result.Success.class);
         var response = (MeetingSettingsResponse) ((Result.Success<?, ?>) result).value();
         assertThat(response.requirePassword()).isFalse();
-        verify(meetingRepository)
-                .save(argThat(saved -> saved.getSettings().passwordHash() == null));
+        verify(meetingRepository).save(argThat(saved -> saved.getSettings().password() == null));
         verifyNoInteractions(passwordHasher);
-    }
-
-    @Test
-    void execute_nullTimeout_clearsExistingTimeout() {
-        UUID meetingId = UUID.randomUUID();
-        UUID hostId = UUID.randomUUID();
-        Meeting meeting = meetingWithStatus(
-                meetingId,
-                hostId,
-                MeetingStatus.SCHEDULED,
-                settings(
-                        AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
-                        null));
-        when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
-        when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
-        when(meetingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        var result = useCase.execute(new PutMeetingSettingsCommand(
-                meetingId,
-                hostId,
-                settings(
-                        AdmissionPolicy.MANUAL_APPROVAL,
-                        null,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
-                        null),
-                null));
-
-        assertThat(result).isInstanceOf(Result.Success.class);
-        verify(meetingRepository)
-                .save(argThat(saved -> saved.getSettings().joinRequestTimeout() == null));
     }
 
     @Test
@@ -230,13 +192,12 @@ class PutMeetingSettingsUseCaseTest {
                         MeetingStatus.SCHEDULED,
                         settings(
                                 AdmissionPolicy.MANUAL_APPROVAL,
-                                90,
-                                false,
-                                false,
-                                30,
-                                false,
-                                "ALL",
-                                true,
+                                false, // allowGuest
+                                30, // maxParticipants
+                                true, // allowScreenShare
+                                true, // chatEnabled
+                                true, // allowMicrophone
+                                true, // allowVideo
                                 null))));
 
         var result = useCase.execute(new PutMeetingSettingsCommand(
@@ -244,13 +205,12 @@ class PutMeetingSettingsUseCaseTest {
                 requesterId,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null),
                 null));
 
@@ -271,13 +231,12 @@ class PutMeetingSettingsUseCaseTest {
                         MeetingStatus.ENDED,
                         settings(
                                 AdmissionPolicy.MANUAL_APPROVAL,
-                                90,
-                                false,
-                                false,
-                                30,
-                                false,
-                                "ALL",
-                                true,
+                                false, // allowGuest
+                                30, // maxParticipants
+                                true, // allowScreenShare
+                                true, // chatEnabled
+                                true, // allowMicrophone
+                                true, // allowVideo
                                 null))));
 
         var result = useCase.execute(new PutMeetingSettingsCommand(
@@ -285,13 +244,12 @@ class PutMeetingSettingsUseCaseTest {
                 hostId,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null),
                 null));
 
@@ -314,13 +272,12 @@ class PutMeetingSettingsUseCaseTest {
                         MeetingStatus.SCHEDULED,
                         settings(
                                 AdmissionPolicy.MANUAL_APPROVAL,
-                                90,
-                                false,
-                                false,
-                                30,
-                                false,
-                                "ALL",
-                                true,
+                                false, // allowGuest
+                                30, // maxParticipants
+                                true, // allowScreenShare
+                                true, // chatEnabled
+                                true, // allowMicrophone
+                                true, // allowVideo
                                 null))));
 
         var result = useCase.execute(new PutMeetingSettingsCommand(
@@ -328,13 +285,12 @@ class PutMeetingSettingsUseCaseTest {
                 hostId,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        80,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest
+                        80, // maxParticipants - above ceiling
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null),
                 null));
 
@@ -357,19 +313,26 @@ class PutMeetingSettingsUseCaseTest {
                         MeetingStatus.SCHEDULED,
                         settings(
                                 AdmissionPolicy.MANUAL_APPROVAL,
-                                90,
-                                false,
-                                false,
-                                30,
-                                false,
-                                "ALL",
-                                true,
+                                false, // allowGuest
+                                30, // maxParticipants
+                                true, // allowScreenShare
+                                true, // chatEnabled
+                                true, // allowMicrophone
+                                true, // allowVideo
                                 null))));
 
         var result = useCase.execute(new PutMeetingSettingsCommand(
                 meetingId,
                 hostId,
-                settings(AdmissionPolicy.ALLOW_ALL, 90, false, false, 40, false, "ALL", true, null),
+                settings(
+                        AdmissionPolicy.ALLOW_ALL,
+                        false, // allowGuest
+                        40, // maxParticipants - changed
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
+                        null),
                 null));
 
         assertThat(result).isInstanceOf(Result.Failure.class);
@@ -389,13 +352,12 @@ class PutMeetingSettingsUseCaseTest {
                 MeetingStatus.LIVE,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null));
         when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
         when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
@@ -405,7 +367,15 @@ class PutMeetingSettingsUseCaseTest {
         var result = useCase.execute(new PutMeetingSettingsCommand(
                 meetingId,
                 hostId,
-                settings(AdmissionPolicy.ALLOW_ALL, 90, false, false, 30, false, "ALL", true, null),
+                settings(
+                        AdmissionPolicy.ALLOW_ALL,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
+                        null),
                 null));
 
         assertThat(result).isInstanceOf(Result.Success.class);
@@ -422,13 +392,12 @@ class PutMeetingSettingsUseCaseTest {
                 MeetingStatus.LIVE,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest - starts false
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null));
         when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
         when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
@@ -440,13 +409,12 @@ class PutMeetingSettingsUseCaseTest {
                 hostId,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        true,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        true, // allowGuest - changed to true
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null),
                 null));
 
@@ -464,13 +432,12 @@ class PutMeetingSettingsUseCaseTest {
                 MeetingStatus.LIVE,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null));
         when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
         when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
@@ -481,7 +448,15 @@ class PutMeetingSettingsUseCaseTest {
         var result = useCase.execute(new PutMeetingSettingsCommand(
                 meetingId,
                 hostId,
-                settings(AdmissionPolicy.ALLOW_ALL, 90, false, false, 30, false, "ALL", true, null),
+                settings(
+                        AdmissionPolicy.ALLOW_ALL,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
+                        null),
                 null));
 
         assertThat(result).isInstanceOf(Result.Failure.class);
@@ -502,13 +477,12 @@ class PutMeetingSettingsUseCaseTest {
                         MeetingStatus.CANCELLED,
                         settings(
                                 AdmissionPolicy.MANUAL_APPROVAL,
-                                90,
-                                false,
-                                false,
-                                30,
-                                false,
-                                "ALL",
-                                true,
+                                false, // allowGuest
+                                30, // maxParticipants
+                                true, // allowScreenShare
+                                true, // chatEnabled
+                                true, // allowMicrophone
+                                true, // allowVideo
                                 null))));
 
         var result = useCase.execute(new PutMeetingSettingsCommand(
@@ -516,13 +490,12 @@ class PutMeetingSettingsUseCaseTest {
                 hostId,
                 settings(
                         AdmissionPolicy.MANUAL_APPROVAL,
-                        90,
-                        false,
-                        false,
-                        30,
-                        false,
-                        "ALL",
-                        true,
+                        false, // allowGuest
+                        30, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
                         null),
                 null));
 
@@ -551,23 +524,21 @@ class PutMeetingSettingsUseCaseTest {
 
     private static MeetingSettings settings(
             AdmissionPolicy admissionPolicy,
-            Integer timeoutSeconds,
             boolean allowGuest,
-            boolean muteOnEntry,
             int maxParticipants,
-            boolean recordingEnabled,
-            String screenShareMode,
+            boolean allowScreenShare,
             boolean chatEnabled,
-            String passwordHash) {
+            boolean allowMicrophone,
+            boolean allowVideo,
+            String password) {
         return new MeetingSettings(
                 admissionPolicy,
-                timeoutSeconds != null ? Duration.ofSeconds(timeoutSeconds) : null,
                 allowGuest,
-                muteOnEntry,
                 maxParticipants,
-                recordingEnabled,
-                screenShareMode,
+                allowScreenShare,
                 chatEnabled,
-                passwordHash);
+                allowMicrophone,
+                allowVideo,
+                password);
     }
 }

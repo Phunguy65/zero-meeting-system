@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -85,19 +85,17 @@ public class MeetingHistoryFragment extends Fragment {
         veilRecyclerView.setAdapter(adapter);
         veilRecyclerView.addVeiledItems(5);
 
-        veilRecyclerView
-                .getRecyclerView()
-                .addOnScrollListener(new RecyclerView.OnScrollListener() {
-                    @Override
-                    public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                        if (dy <= 0) return;
-                        int total = layoutManager.getItemCount();
-                        int lastVisible = layoutManager.findLastVisibleItemPosition();
-                        if (lastVisible >= total - PAGINATION_PREFETCH_DISTANCE) {
-                            viewModel.loadMore();
-                        }
-                    }
-                });
+        veilRecyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (dy <= 0) return;
+                int total = layoutManager.getItemCount();
+                int lastVisible = layoutManager.findLastVisibleItemPosition();
+                if (lastVisible >= total - PAGINATION_PREFETCH_DISTANCE) {
+                    viewModel.loadMore();
+                }
+            }
+        });
     }
 
     private void setupListeners() {
@@ -117,19 +115,16 @@ public class MeetingHistoryFragment extends Fragment {
     private void observeViewModel() {
         viewModel.getState().observe(getViewLifecycleOwner(), this::render);
 
-        viewModel.getPageErrorEvent()
-                .observe(
-                        getViewLifecycleOwner(),
-                        message -> {
-                            if (message == null || message.isEmpty()) return;
-                            Snackbar.make(
-                                            requireView(),
-                                            R.string.meeting_history_load_more_failed,
-                                            Snackbar.LENGTH_LONG)
-                                    .setAction(R.string.retry, v -> viewModel.loadMore())
-                                    .show();
-                            viewModel.consumePageError();
-                        });
+        viewModel.getPageErrorEvent().observe(getViewLifecycleOwner(), message -> {
+            if (message == null || message.isEmpty()) return;
+            Snackbar.make(
+                            requireView(),
+                            R.string.meeting_history_load_more_failed,
+                            Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry, v -> viewModel.loadMore())
+                    .show();
+            viewModel.consumePageError();
+        });
     }
 
     private void render(MeetingHistoryUiState state) {
@@ -174,7 +169,8 @@ public class MeetingHistoryFragment extends Fragment {
         swipeRefresh.setRefreshing(false);
     }
 
-    private void onMeetingClicked(@NonNull io.github.phunguy65.zms.domain.model.MeetingHistory item) {
+    private void onMeetingClicked(
+            @NonNull io.github.phunguy65.zms.domain.model.MeetingHistory item) {
         Bundle args = new Bundle();
         args.putString("meetingId", item.id());
         navController.navigate(R.id.action_meetingHistory_to_meetingDetail, args);

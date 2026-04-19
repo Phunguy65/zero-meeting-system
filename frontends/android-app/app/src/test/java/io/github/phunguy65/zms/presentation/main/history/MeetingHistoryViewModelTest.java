@@ -29,10 +29,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class MeetingHistoryViewModelTest {
 
-    @Rule public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
+    @Rule
+    public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
-    @Mock private GetMeetingHistoryUseCase useCase;
-    @Mock private SessionRepository sessionRepository;
+    @Mock
+    private GetMeetingHistoryUseCase useCase;
+
+    @Mock
+    private SessionRepository sessionRepository;
 
     private final Executor mainExecutor = Runnable::run;
 
@@ -58,9 +62,8 @@ public class MeetingHistoryViewModelTest {
     @Test
     public void loadInitial_success_withItems_emitsSuccess() {
         when(useCase.execute(eq(USER_ID), eq(MeetingHistoryViewModel.PAGE_SIZE), isNull()))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("a")), "next", true)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("a")), "next", true)));
 
         MeetingHistoryViewModel vm =
                 new MeetingHistoryViewModel(useCase, sessionRepository, mainExecutor);
@@ -77,9 +80,8 @@ public class MeetingHistoryViewModelTest {
     @Test
     public void loadInitial_success_withEmptyItems_emitsEmpty() {
         when(useCase.execute(any(), anyInt(), any()))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(), null, false)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(), null, false)));
 
         MeetingHistoryViewModel vm =
                 new MeetingHistoryViewModel(useCase, sessionRepository, mainExecutor);
@@ -116,14 +118,12 @@ public class MeetingHistoryViewModelTest {
     public void loadMore_appendsItemsAndUpdatesToken() {
         // Initial page
         when(useCase.execute(any(), anyInt(), isNull()))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("a")), "token-1", true)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("a")), "token-1", true)));
         // Next page
         when(useCase.execute(any(), anyInt(), eq("token-1")))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("b")), null, false)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("b")), null, false)));
 
         MeetingHistoryViewModel vm =
                 new MeetingHistoryViewModel(useCase, sessionRepository, mainExecutor);
@@ -141,9 +141,8 @@ public class MeetingHistoryViewModelTest {
     @Test
     public void loadMore_whenNoMore_isNoOp() {
         when(useCase.execute(any(), anyInt(), isNull()))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("a")), null, false)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("a")), null, false)));
 
         MeetingHistoryViewModel vm =
                 new MeetingHistoryViewModel(useCase, sessionRepository, mainExecutor);
@@ -157,12 +156,10 @@ public class MeetingHistoryViewModelTest {
     @Test
     public void refresh_replacesItemsAndResetsToken() {
         when(useCase.execute(any(), anyInt(), isNull()))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("a")), "t1", true)))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("b"), item("c")), null, false)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("a")), "t1", true)))
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("b"), item("c")), null, false)));
 
         MeetingHistoryViewModel vm =
                 new MeetingHistoryViewModel(useCase, sessionRepository, mainExecutor);
@@ -180,9 +177,8 @@ public class MeetingHistoryViewModelTest {
     @Test
     public void loadMore_failure_emitsPageErrorAndRestoresState() {
         when(useCase.execute(any(), anyInt(), isNull()))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("a")), "t1", true)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("a")), "t1", true)));
         CompletableFuture<MeetingHistoryPage> failed = new CompletableFuture<>();
         failed.completeExceptionally(new RuntimeException("Boom"));
         when(useCase.execute(any(), anyInt(), eq("t1"))).thenReturn(failed);
@@ -203,9 +199,8 @@ public class MeetingHistoryViewModelTest {
     @Test
     public void refresh_failure_whileInSuccess_emitsPageErrorAndKeepsItems() {
         when(useCase.execute(any(), anyInt(), isNull()))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("a")), "t1", true)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("a")), "t1", true)));
         MeetingHistoryViewModel vm =
                 new MeetingHistoryViewModel(useCase, sessionRepository, mainExecutor);
 
@@ -218,7 +213,8 @@ public class MeetingHistoryViewModelTest {
 
         assertTrue(vm.getState().getValue() instanceof MeetingHistoryUiState.Success);
         assertEquals("Connection lost", vm.getPageErrorEvent().getValue());
-        MeetingHistoryUiState.Success s = (MeetingHistoryUiState.Success) vm.getState().getValue();
+        MeetingHistoryUiState.Success s =
+                (MeetingHistoryUiState.Success) vm.getState().getValue();
         assertEquals(1, s.items().size());
         assertFalse(s.isRefreshing());
     }
@@ -229,9 +225,8 @@ public class MeetingHistoryViewModelTest {
         failed.completeExceptionally(new RuntimeException("First attempt"));
         when(useCase.execute(any(), anyInt(), isNull()))
                 .thenReturn(failed)
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new MeetingHistoryPage(List.of(item("a")), null, false)));
+                .thenReturn(CompletableFuture.completedFuture(
+                        new MeetingHistoryPage(List.of(item("a")), null, false)));
 
         MeetingHistoryViewModel vm =
                 new MeetingHistoryViewModel(useCase, sessionRepository, mainExecutor);

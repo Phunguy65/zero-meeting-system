@@ -4,6 +4,7 @@ import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingDetailRes
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingParticipantResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementRecordingResponse;
+import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
 import io.github.phunguy65.zms.domain.model.MeetingHistory;
 import io.github.phunguy65.zms.domain.model.MeetingHistoryDetail;
 import io.github.phunguy65.zms.domain.model.MeetingParticipant;
@@ -34,18 +35,17 @@ public class MeetingMapper {
                 mapMeetingStatus(source.getStatus()));
     }
 
-    public MeetingHistoryDetail toMeetingHistoryDetail(MeetingManagementMeetingDetailResponse source) {
-        List<MeetingParticipant> participants =
-                safeList(source.getParticipants()).stream()
-                        .filter(Objects::nonNull)
-                        .map(this::toMeetingParticipant)
-                        .collect(Collectors.toList());
+    public MeetingHistoryDetail toMeetingHistoryDetail(
+            MeetingManagementMeetingDetailResponse source) {
+        List<MeetingParticipant> participants = safeList(source.getParticipants()).stream()
+                .filter(Objects::nonNull)
+                .map(this::toMeetingParticipant)
+                .collect(Collectors.toList());
 
-        List<MeetingRecording> recordings =
-                safeList(source.getRecordings()).stream()
-                        .filter(Objects::nonNull)
-                        .map(this::toMeetingRecording)
-                        .collect(Collectors.toList());
+        List<MeetingRecording> recordings = safeList(source.getRecordings()).stream()
+                .filter(Objects::nonNull)
+                .map(this::toMeetingRecording)
+                .collect(Collectors.toList());
 
         return new MeetingHistoryDetail(
                 uuidToString(source.getId()),
@@ -62,7 +62,24 @@ public class MeetingMapper {
                 recordings);
     }
 
-    private MeetingParticipant toMeetingParticipant(MeetingManagementMeetingParticipantResponse source) {
+    /**
+     * Maps a meeting response to a meeting creation result.
+     * Used after instant or scheduled meeting creation.
+     */
+    public MeetingCreationResult toMeetingCreationResult(MeetingManagementMeetingResponse source) {
+        return new MeetingCreationResult(
+                uuidToString(source.getId()),
+                source.getShortCode(),
+                source.getTitle(),
+                mapMeetingType(source.getType()),
+                mapMeetingStatus(source.getStatus()),
+                source.getStartTime(),
+                source.getEndTime(),
+                source.getCreatedAt());
+    }
+
+    private MeetingParticipant toMeetingParticipant(
+            MeetingManagementMeetingParticipantResponse source) {
         return new MeetingParticipant(
                 uuidToString(source.getUserId()),
                 source.getDisplayName(),
@@ -100,7 +117,8 @@ public class MeetingMapper {
         return MeetingStatus.valueOf(status.getValue());
     }
 
-    private MeetingStatus mapMeetingStatus(MeetingManagementMeetingDetailResponse.StatusEnum status) {
+    private MeetingStatus mapMeetingStatus(
+            MeetingManagementMeetingDetailResponse.StatusEnum status) {
         if (status == null) {
             return null;
         }

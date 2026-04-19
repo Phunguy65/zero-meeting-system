@@ -108,11 +108,7 @@ public class MeetingHistoryViewModel extends ViewModel {
         MeetingHistoryUiState current = state.getValue();
         if (current instanceof MeetingHistoryUiState.Success success) {
             state.setValue(new MeetingHistoryUiState.Success(
-                    success.items(),
-                    success.nextPageToken(),
-                    success.hasMore(),
-                    false,
-                    true));
+                    success.items(), success.nextPageToken(), success.hasMore(), false, true));
         }
 
         CompletableFuture<?> future = getMeetingHistoryUseCase
@@ -169,11 +165,7 @@ public class MeetingHistoryViewModel extends ViewModel {
         }
 
         state.setValue(new MeetingHistoryUiState.Success(
-                success.items(),
-                success.nextPageToken(),
-                success.hasMore(),
-                true,
-                false));
+                success.items(), success.nextPageToken(), success.hasMore(), true, false));
 
         CompletableFuture<?> future = getMeetingHistoryUseCase
                 .execute(userId, PAGE_SIZE, success.nextPageToken())

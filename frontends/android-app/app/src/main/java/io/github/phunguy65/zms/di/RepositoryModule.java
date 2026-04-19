@@ -41,7 +41,8 @@ public abstract class RepositoryModule {
     abstract MeetingRepository bindMeetingRepository(MeetingRepositoryImpl impl);
 
     @Binds
-    abstract MeetingHistoryRepository bindMeetingHistoryRepository(MeetingHistoryRepositoryImpl impl);
+    abstract MeetingHistoryRepository bindMeetingHistoryRepository(
+            MeetingHistoryRepositoryImpl impl);
 
     @Binds
     abstract ChatRepository bindChatRepository(ChatRepositoryImpl impl);

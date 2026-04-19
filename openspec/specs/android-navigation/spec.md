@@ -79,9 +79,16 @@ actions.
 - **THEN** system navigates via `action_dashboard_to_schedule`
 - **THEN** `ScheduleFragment` is added to back stack
 
+### Scenario: Dashboard meeting creation menu to Schedule navigation
+
+- **WHEN** user selects "Schedule Meeting" from the dashboard FAB popup menu
+- **THEN** system navigates via `action_dashboard_to_schedule`
+- **THEN** `ScheduleFragment` is added to back stack
+
 ### Scenario: Dashboard to CreateMeeting navigation
 
-- **WHEN** user taps "New Meeting" card on Dashboard
+- **WHEN** another in-app entry point explicitly requests the legacy create
+  meeting screen
 - **THEN** system navigates via `action_dashboard_to_createMeeting`
 - **THEN** `CreateMeetingFragment` is added to back stack
 
@@ -107,7 +114,9 @@ and UI logic.
 - **WHEN** `DashboardFragment` is created
 - **THEN** it SHALL use `DashboardViewModel` via Hilt injection
 - **THEN** it SHALL inflate `fragment_dashboard.xml` layout
-- **THEN** it SHALL NOT contain any `startActivity()` calls for navigation
+- **THEN** it SHALL NOT contain direct API calls for meeting creation logic
+- **THEN** it MAY launch `VideoCallActivity` in response to a ViewModel success
+  event for instant meeting creation
 
 ### Scenario: Fragment ViewModel injection
 

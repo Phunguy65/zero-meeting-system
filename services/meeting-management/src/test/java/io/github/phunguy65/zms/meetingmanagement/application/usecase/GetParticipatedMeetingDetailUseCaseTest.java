@@ -131,14 +131,13 @@ class GetParticipatedMeetingDetailUseCaseTest {
                 MeetingStatus.ENDED,
                 new MeetingSettings(
                         AdmissionPolicy.ALLOW_ALL,
-                        null,
-                        true,
-                        false,
-                        50,
-                        true,
-                        "HOST_ONLY",
-                        true,
-                        null),
+                        true, // allowGuest
+                        50, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
+                        null), // password
                 Instant.parse("2026-04-01T08:00:00Z"));
         when(participationLogRepository.existsByMeetingIdAndUserId(meetingId, userId))
                 .thenReturn(true);
@@ -216,14 +215,13 @@ class GetParticipatedMeetingDetailUseCaseTest {
                 MeetingStatus.LIVE,
                 new MeetingSettings(
                         AdmissionPolicy.ALLOW_ALL,
-                        null,
-                        true,
-                        false,
-                        10,
-                        false,
-                        "HOST_ONLY",
-                        true,
-                        null),
+                        false, // allowGuest
+                        10, // maxParticipants
+                        true, // allowScreenShare
+                        true, // chatEnabled
+                        true, // allowMicrophone
+                        true, // allowVideo
+                        null), // password
                 Instant.parse("2026-04-01T08:00:00Z"));
         when(participationLogRepository.existsByMeetingIdAndUserId(meetingId, userId))
                 .thenReturn(true);

@@ -8,7 +8,8 @@ import java.util.List;
  * <p>The backend returns a keyset-style cursor via {@code nextPageToken}. When {@code hasNext}
  * is false, {@code nextPageToken} is {@code null}.
  */
-public record MeetingHistoryPage(List<MeetingHistory> items, String nextPageToken, boolean hasNext) {
+public record MeetingHistoryPage(
+        List<MeetingHistory> items, String nextPageToken, boolean hasNext) {
 
     public MeetingHistoryPage {
         items = List.copyOf(items);

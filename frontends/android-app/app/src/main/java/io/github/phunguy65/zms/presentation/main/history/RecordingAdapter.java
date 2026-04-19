@@ -23,8 +23,7 @@ import java.util.Objects;
  * date as subtitle, and a formatted duration (MM:SS or HH:MM:SS). Tapping an item delegates to
  * {@link OnItemClickListener#onRecordingClicked} to start in-app playback.
  */
-public class RecordingAdapter
-        extends ListAdapter<MeetingRecording, RecordingAdapter.ViewHolder> {
+public class RecordingAdapter extends ListAdapter<MeetingRecording, RecordingAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
         void onRecordingClicked(@NonNull MeetingRecording recording);
@@ -68,17 +67,14 @@ public class RecordingAdapter
                 @NonNull MeetingRecording item,
                 int indexOneBased,
                 @NonNull OnItemClickListener listener) {
-            tvRecordingLabel.setText(
-                    card.getContext()
-                            .getString(R.string.meeting_detail_recording_label, indexOneBased));
+            tvRecordingLabel.setText(card.getContext()
+                    .getString(R.string.meeting_detail_recording_label, indexOneBased));
 
             if (item.createdAt() != null) {
                 tvRecordingSubtitle.setVisibility(View.VISIBLE);
-                tvRecordingSubtitle.setText(
-                        item.createdAt()
-                                .format(
-                                        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-                                                .withLocale(Locale.getDefault())));
+                tvRecordingSubtitle.setText(item.createdAt()
+                        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+                                .withLocale(Locale.getDefault())));
             } else {
                 tvRecordingSubtitle.setVisibility(View.GONE);
             }

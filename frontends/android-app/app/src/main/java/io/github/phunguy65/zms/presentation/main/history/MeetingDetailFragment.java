@@ -94,10 +94,13 @@ public class MeetingDetailFragment extends Fragment {
     private RecordingAdapter recordingAdapter;
 
     @Nullable private MeetingHistoryDetail currentDetail;
+
     private boolean participantsExpanded;
 
     @Nullable private ExoPlayer player;
+
     @Nullable private String currentRecordingUrl;
+
     private long savedPlayerPosition = 0L;
     private int savedPlayerWindow = 0;
     private boolean savedPlayWhenReady = true;
@@ -315,9 +318,8 @@ public class MeetingDetailFragment extends Fragment {
 
         DateTimeFormatter dateFmt =
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(Locale.getDefault());
-        DateTimeFormatter timeFmt =
-                DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
-                        .withLocale(Locale.getDefault());
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+                .withLocale(Locale.getDefault());
 
         tvDate.setText(start.format(dateFmt));
 
@@ -325,15 +327,13 @@ public class MeetingDetailFragment extends Fragment {
         if (end != null) {
             String endTime = end.format(timeFmt);
             String duration = formatDuration(start, end);
-            tvTimeRange.setText(
-                    getString(
-                            R.string.meeting_detail_time_range_with_duration,
-                            startTime,
-                            endTime,
-                            duration));
+            tvTimeRange.setText(getString(
+                    R.string.meeting_detail_time_range_with_duration,
+                    startTime,
+                    endTime,
+                    duration));
         } else {
-            tvTimeRange.setText(
-                    getString(R.string.meeting_detail_time_range_no_end, startTime));
+            tvTimeRange.setText(getString(R.string.meeting_detail_time_range_no_end, startTime));
         }
     }
 
@@ -418,13 +418,12 @@ public class MeetingDetailFragment extends Fragment {
         if (player != null) return;
         player = new ExoPlayer.Builder(requireContext()).build();
         playerView.setPlayer(player);
-        player.addListener(
-                new Player.Listener() {
-                    @Override
-                    public void onPlayerError(@NonNull PlaybackException error) {
-                        showPlayerError();
-                    }
-                });
+        player.addListener(new Player.Listener() {
+            @Override
+            public void onPlayerError(@NonNull PlaybackException error) {
+                showPlayerError();
+            }
+        });
     }
 
     private void playRecordingUrl(@NonNull String url) {
@@ -457,7 +456,8 @@ public class MeetingDetailFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (player != null && currentRecordingUrl != null
+        if (player != null
+                && currentRecordingUrl != null
                 && playerOverlay.getVisibility() == View.VISIBLE) {
             player.setPlayWhenReady(savedPlayWhenReady);
         }

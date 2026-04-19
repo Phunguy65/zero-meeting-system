@@ -64,8 +64,7 @@ class GetParticipatedMeetingsUseCaseTest {
                 Instant.parse("2026-04-03T11:00:00Z"),
                 MeetingType.SCHEDULED,
                 MeetingStatus.ENDED,
-                new MeetingSettingsSummary(
-                        "ALLOW_ALL", null, true, false, 100, true, "HOST_ONLY", true, false),
+                new MeetingSettingsSummary("ALLOW_ALL", true, 100, true, true, true, true, false),
                 Instant.parse("2026-04-01T08:00:00Z"),
                 lastJoinedAt);
         when(meetingRepository.findParticipatedSummariesByUserId(
@@ -86,7 +85,7 @@ class GetParticipatedMeetingsUseCaseTest {
             assertThat(item.lastJoinedAt()).isEqualTo(lastJoinedAt);
             assertThat(item.meeting().id()).isEqualTo(summary.id());
             assertThat(item.meeting().status()).isEqualTo(MeetingStatus.ENDED);
-            assertThat(item.meeting().settings().recordingEnabled()).isTrue();
+            assertThat(item.meeting().settings().allowScreenShare()).isTrue();
         });
         verify(meetingRepository)
                 .findParticipatedSummariesByUserId(userId, Set.of(MeetingStatus.ENDED), null, 20);

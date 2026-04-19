@@ -58,27 +58,30 @@
             android:layout_height="wrap_content" android:orientation="vertical"
             android:padding="@dimen/spacing_lg">
 
-            <!-- Meeting Topic -->
+            <!-- Meeting Topic (optional) -->
             <TextView android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/schedule_meeting_topic"
                 android:textColor="?attr/colorOnSurface" android:textStyle="bold" />
 
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:id="@+id/tilMeetingTopic"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xs"
+                android:hint="@string/schedule_meeting_topic_hint"
+                app:counterEnabled="true" app:counterMaxLength="255"
                 app:boxCornerRadiusBottomEnd="@dimen/corner_radius_sm"
                 app:boxCornerRadiusBottomStart="@dimen/corner_radius_sm"
                 app:boxCornerRadiusTopEnd="@dimen/corner_radius_sm"
-                app:boxCornerRadiusTopStart="@dimen/corner_radius_sm"
-                app:boxStrokeColor="?attr/colorOutline">
+                app:boxCornerRadiusTopStart="@dimen/corner_radius_sm">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtMeetingTopic"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:inputType="text" />
+                    android:layout_height="wrap_content" android:inputType="text"
+                    android:maxLength="255" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Date and Time Row -->
@@ -99,20 +102,21 @@
                         android:textColor="?attr/colorOnSurface" android:textStyle="bold" />
 
                     <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:id="@+id/tilDate"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_xs"
                         app:boxCornerRadiusBottomEnd="@dimen/corner_radius_sm"
                         app:boxCornerRadiusBottomStart="@dimen/corner_radius_sm"
                         app:boxCornerRadiusTopEnd="@dimen/corner_radius_sm"
-                        app:boxCornerRadiusTopStart="@dimen/corner_radius_sm"
-                        app:boxStrokeColor="?attr/colorOutline">
+                        app:boxCornerRadiusTopStart="@dimen/corner_radius_sm">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/edtDate" android:layout_width="match_parent"
                             android:layout_height="wrap_content" android:clickable="true"
-                            android:focusable="true" android:focusableInTouchMode="false" />
+                            android:focusable="true" android:focusableInTouchMode="false"
+                            android:contentDescription="@string/cd_date_picker" />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
@@ -128,20 +132,21 @@
                         android:textColor="?attr/colorOnSurface" android:textStyle="bold" />
 
                     <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:id="@+id/tilTime"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_xs"
                         app:boxCornerRadiusBottomEnd="@dimen/corner_radius_sm"
                         app:boxCornerRadiusBottomStart="@dimen/corner_radius_sm"
                         app:boxCornerRadiusTopEnd="@dimen/corner_radius_sm"
-                        app:boxCornerRadiusTopStart="@dimen/corner_radius_sm"
-                        app:boxStrokeColor="?attr/colorOutline">
+                        app:boxCornerRadiusTopStart="@dimen/corner_radius_sm">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/edtTime" android:layout_width="match_parent"
                             android:layout_height="wrap_content" android:clickable="true"
-                            android:focusable="true" android:focusableInTouchMode="false" />
+                            android:focusable="true" android:focusableInTouchMode="false"
+                            android:contentDescription="@string/cd_time_picker" />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -154,20 +159,30 @@
                 android:textColor="?attr/colorOnSurface" android:textStyle="bold" />
 
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:id="@+id/tilDuration"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xs"
                 app:boxCornerRadiusBottomEnd="@dimen/corner_radius_sm"
                 app:boxCornerRadiusBottomStart="@dimen/corner_radius_sm"
                 app:boxCornerRadiusTopEnd="@dimen/corner_radius_sm"
-                app:boxCornerRadiusTopStart="@dimen/corner_radius_sm"
-                app:boxStrokeColor="?attr/colorOutline">
+                app:boxCornerRadiusTopStart="@dimen/corner_radius_sm">
 
                 <AutoCompleteTextView
                     android:id="@+id/tvDuration" android:layout_width="match_parent"
                     android:layout_height="wrap_content" android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- End Time Helper Text -->
+            <TextView android:id="@+id/tvEndTimeHelper"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp" android:visibility="gone"
+                tools:text="@string/schedule_end_time_helper"
+                tools:visibility="visible" />
 
             <!-- Meeting Settings Section Header -->
             <TextView android:layout_width="wrap_content"
@@ -184,6 +199,13 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical" android:orientation="horizontal"
                 android:paddingVertical="@dimen/spacing_sm">
+
+                <ImageView android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:layout_marginEnd="@dimen/spacing_md"
+                    android:src="@drawable/ic_person_filled"
+                    android:contentDescription="@null"
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
                 <LinearLayout android:layout_width="0dp"
                     android:layout_height="wrap_content" android:layout_weight="1"
@@ -214,11 +236,18 @@
                 android:layout_marginVertical="@dimen/spacing_xs"
                 android:background="?attr/colorOutlineVariant" />
 
-            <!-- Host Video Toggle -->
+            <!-- Allow Guest Toggle -->
             <LinearLayout android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical" android:orientation="horizontal"
                 android:paddingVertical="@dimen/spacing_sm">
+
+                <ImageView android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:layout_marginEnd="@dimen/spacing_md"
+                    android:src="@drawable/ic_person_filled"
+                    android:contentDescription="@null"
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
                 <LinearLayout android:layout_width="0dp"
                     android:layout_height="wrap_content" android:layout_weight="1"
@@ -226,38 +255,282 @@
 
                     <TextView android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/schedule_host_video"
+                        android:text="@string/schedule_allow_guest"
                         android:textColor="?attr/colorOnSurface" android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_xxs"
-                        android:text="@string/schedule_host_video_desc"
+                        android:text="@string/schedule_allow_guest_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="14sp" />
                 </LinearLayout>
 
                 <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchHostVideo"
+                    android:id="@+id/switchAllowGuest"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:checked="true" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/spacing_xs"
+                android:background="?attr/colorOutlineVariant" />
+
+            <!-- Password Toggle and Field -->
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" android:orientation="horizontal"
+                android:paddingVertical="@dimen/spacing_sm">
+
+                <ImageView android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:layout_marginEnd="@dimen/spacing_md"
+                    android:src="@drawable/ic_lock" android:contentDescription="@null"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <LinearLayout android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/schedule_password"
+                        android:textColor="?attr/colorOnSurface" android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xxs"
+                        android:text="@string/schedule_password_desc"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchPassword"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:checked="false" />
+            </LinearLayout>
+
+            <!-- Password Input (shown when enabled) -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassword"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:visibility="gone" app:endIconMode="password_toggle"
+                app:boxCornerRadiusBottomEnd="@dimen/corner_radius_sm"
+                app:boxCornerRadiusBottomStart="@dimen/corner_radius_sm"
+                app:boxCornerRadiusTopEnd="@dimen/corner_radius_sm"
+                app:boxCornerRadiusTopStart="@dimen/corner_radius_sm">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtPassword" android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/schedule_password_hint"
+                    android:inputType="textPassword" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <View android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/spacing_xs"
+                android:background="?attr/colorOutlineVariant" />
+
+            <!-- Advanced Settings Section -->
+            <LinearLayout android:id="@+id/advancedSettingsHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" android:orientation="horizontal"
+                android:paddingVertical="@dimen/spacing_sm" android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+
+                <ImageView android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:layout_marginEnd="@dimen/spacing_md"
+                    android:src="@drawable/ic_settings"
+                    android:contentDescription="@null"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="@string/schedule_advanced_settings"
+                    android:textColor="?attr/colorOnSurface" android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <ImageView android:id="@+id/ivAdvancedExpand"
+                    android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:src="@drawable/ic_chevron_right"
+                    android:contentDescription="@string/cd_expand_advanced_settings"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <!-- Collapsible Advanced Settings Container -->
+            <LinearLayout android:id="@+id/advancedSettingsContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical"
+                android:visibility="gone" android:layout_marginStart="40dp">
+
+                <!-- Max Participants -->
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical" android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/spacing_sm">
+
+                    <ImageView android:layout_width="@dimen/icon_size_md"
+                        android:layout_height="@dimen/icon_size_md"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        android:src="@drawable/ic_person_filled"
+                        android:contentDescription="@null"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilMaxParticipants"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/schedule_max_participants"
+                        app:helperText="@string/schedule_max_participants_helper"
+                        app:boxCornerRadiusBottomEnd="@dimen/corner_radius_sm"
+                        app:boxCornerRadiusBottomStart="@dimen/corner_radius_sm"
+                        app:boxCornerRadiusTopEnd="@dimen/corner_radius_sm"
+                        app:boxCornerRadiusTopStart="@dimen/corner_radius_sm">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/edtMaxParticipants"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" android:inputType="number"
+                            android:text="100" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- Allow Screen Share Toggle -->
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical" android:orientation="horizontal"
+                    android:paddingVertical="@dimen/spacing_sm"
+                    android:layout_marginTop="@dimen/spacing_sm">
+
+                    <ImageView android:layout_width="@dimen/icon_size_md"
+                        android:layout_height="@dimen/icon_size_md"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        android:src="@drawable/ic_videocam"
+                        android:contentDescription="@null"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                    <TextView android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="@string/schedule_allow_screen_share"
+                        android:textColor="?attr/colorOnSurface" android:textSize="14sp" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchAllowScreenShare"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:checked="true" />
+                </LinearLayout>
+
+                <!-- Chat Enabled Toggle -->
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical" android:orientation="horizontal"
+                    android:paddingVertical="@dimen/spacing_sm">
+
+                    <ImageView android:layout_width="@dimen/icon_size_md"
+                        android:layout_height="@dimen/icon_size_md"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        android:src="@drawable/ic_chat" android:contentDescription="@null"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                    <TextView android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="@string/schedule_chat_enabled"
+                        android:textColor="?attr/colorOnSurface" android:textSize="14sp" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchChatEnabled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:checked="true" />
+                </LinearLayout>
+
+                <!-- Allow Microphone Toggle -->
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical" android:orientation="horizontal"
+                    android:paddingVertical="@dimen/spacing_sm">
+
+                    <ImageView android:layout_width="@dimen/icon_size_md"
+                        android:layout_height="@dimen/icon_size_md"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        android:src="@drawable/ic_mic" android:contentDescription="@null"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                    <TextView android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="@string/schedule_allow_microphone"
+                        android:textColor="?attr/colorOnSurface" android:textSize="14sp" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchAllowMicrophone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:checked="true" />
+                </LinearLayout>
+
+                <!-- Allow Video Toggle -->
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical" android:orientation="horizontal"
+                    android:paddingVertical="@dimen/spacing_sm">
+
+                    <ImageView android:layout_width="@dimen/icon_size_md"
+                        android:layout_height="@dimen/icon_size_md"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        android:src="@drawable/ic_videocam"
+                        android:contentDescription="@null"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                    <TextView android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="@string/schedule_allow_video"
+                        android:textColor="?attr/colorOnSurface" android:textSize="14sp" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchAllowVideo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:checked="true" />
+                </LinearLayout>
             </LinearLayout>
 
             <Space android:layout_width="match_parent"
                 android:layout_height="@dimen/spacing_xl" />
 
-            <!-- Schedule Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnScheduleMeeting"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/button_height_lg"
+            <!-- Schedule Button with Loading Indicator -->
+            <FrameLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_md"
-                android:layout_marginBottom="@dimen/spacing_lg"
-                android:text="@string/schedule_button" android:textAllCaps="false"
-                android:textSize="16sp" android:textStyle="bold"
-                app:backgroundTint="?attr/colorPrimary"
-                app:cornerRadius="@dimen/corner_radius_xl" />
+                android:layout_marginBottom="@dimen/spacing_lg">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnScheduleMeeting"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height_lg"
+                    android:text="@string/schedule_button" android:textAllCaps="false"
+                    android:textSize="16sp" android:textStyle="bold"
+                    app:backgroundTint="?attr/colorPrimary"
+                    app:cornerRadius="@dimen/corner_radius_xl" />
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/progressLoading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" android:indeterminate="true"
+                    android:visibility="gone" app:indicatorSize="24dp"
+                    app:trackThickness="3dp" app:indicatorColor="?attr/colorOnPrimary" />
+            </FrameLayout>
 
         </LinearLayout>
     </ScrollView>

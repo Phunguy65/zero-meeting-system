@@ -3,12 +3,16 @@ package io.github.phunguy65.zms.presentation.main.schedule;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -16,28 +20,55 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel;
+import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel.ValidationResult;
 import java.util.Calendar;
 import java.util.Locale;
 
 /**
  * Fragment for scheduling a new meeting.
- * Converted from ScheduleActivity to support single-activity navigation.
+ * Supports all backend meeting settings with inline validation and accessibility.
  */
 @AndroidEntryPoint
 public class ScheduleFragment extends Fragment {
 
     private ScheduleViewModel viewModel;
 
+    // Header
     private ImageView btnBack;
+
+    // Basic info fields
+    private TextInputLayout tilMeetingTopic, tilDate, tilTime, tilDuration;
     private TextInputEditText edtMeetingTopic, edtDate, edtTime;
     private AutoCompleteTextView tvDuration;
-    private MaterialSwitch switchWaitingRoom, switchHostVideo;
+    private TextView tvEndTimeHelper;
+
+    // Primary settings
+    private MaterialSwitch switchWaitingRoom, switchAllowGuest, switchPassword;
+    private TextInputLayout tilPassword;
+    private TextInputEditText edtPassword;
+
+    // Advanced settings
+    private LinearLayout advancedSettingsHeader, advancedSettingsContent;
+    private ImageView ivAdvancedExpand;
+    private TextInputLayout tilMaxParticipants;
+    private TextInputEditText edtMaxParticipants;
+    private MaterialSwitch switchAllowScreenShare,
+            switchChatEnabled,
+            switchAllowMicrophone,
+            switchAllowVideo;
+
+    // Submit
     private MaterialButton btnScheduleMeeting;
+    private CircularProgressIndicator progressLoading;
+
+    private boolean advancedExpanded = false;
 
     @Nullable @Override
     public View onCreateView(
@@ -54,26 +85,54 @@ public class ScheduleFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
 
         initViews(view);
-        setupDropdown();
+        setupDropdowns();
         setupListeners();
+        setupBlurValidation();
+        setupObservers();
     }
 
     private void initViews(View view) {
         btnBack = view.findViewById(R.id.btnBack);
+
+        // Basic info
+        tilMeetingTopic = view.findViewById(R.id.tilMeetingTopic);
         edtMeetingTopic = view.findViewById(R.id.edtMeetingTopic);
+        tilDate = view.findViewById(R.id.tilDate);
         edtDate = view.findViewById(R.id.edtDate);
+        tilTime = view.findViewById(R.id.tilTime);
         edtTime = view.findViewById(R.id.edtTime);
+        tilDuration = view.findViewById(R.id.tilDuration);
         tvDuration = view.findViewById(R.id.tvDuration);
+        tvEndTimeHelper = view.findViewById(R.id.tvEndTimeHelper);
+
+        // Primary settings
         switchWaitingRoom = view.findViewById(R.id.switchWaitingRoom);
-        switchHostVideo = view.findViewById(R.id.switchHostVideo);
+        switchAllowGuest = view.findViewById(R.id.switchAllowGuest);
+        switchPassword = view.findViewById(R.id.switchPassword);
+        tilPassword = view.findViewById(R.id.tilPassword);
+        edtPassword = view.findViewById(R.id.edtPassword);
+
+        // Advanced settings
+        advancedSettingsHeader = view.findViewById(R.id.advancedSettingsHeader);
+        advancedSettingsContent = view.findViewById(R.id.advancedSettingsContent);
+        ivAdvancedExpand = view.findViewById(R.id.ivAdvancedExpand);
+        tilMaxParticipants = view.findViewById(R.id.tilMaxParticipants);
+        edtMaxParticipants = view.findViewById(R.id.edtMaxParticipants);
+        switchAllowScreenShare = view.findViewById(R.id.switchAllowScreenShare);
+        switchChatEnabled = view.findViewById(R.id.switchChatEnabled);
+        switchAllowMicrophone = view.findViewById(R.id.switchAllowMicrophone);
+        switchAllowVideo = view.findViewById(R.id.switchAllowVideo);
+
+        // Submit
         btnScheduleMeeting = view.findViewById(R.id.btnScheduleMeeting);
+        progressLoading = view.findViewById(R.id.progressLoading);
     }
 
-    private void setupDropdown() {
+    private void setupDropdowns() {
         String[] durations = getResources().getStringArray(R.array.schedule_durations);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+        ArrayAdapter<String> durationAdapter = new ArrayAdapter<>(
                 requireContext(), android.R.layout.simple_dropdown_item_1line, durations);
-        tvDuration.setAdapter(adapter);
+        tvDuration.setAdapter(durationAdapter);
     }
 
     private void setupListeners() {
@@ -82,9 +141,36 @@ public class ScheduleFragment extends Fragment {
         edtDate.setOnClickListener(v -> showDatePicker());
         edtTime.setOnClickListener(v -> showTimePicker());
 
+        switchPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            tilPassword.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            viewModel.setPasswordEnabled(isChecked);
+            if (!isChecked && edtPassword != null) {
+                edtPassword.setText("");
+            }
+        });
+
+        switchAllowGuest.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> viewModel.setAllowGuest(isChecked));
+
+        switchAllowScreenShare.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> viewModel.setAllowScreenShare(isChecked));
+
+        switchChatEnabled.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> viewModel.setChatEnabled(isChecked));
+
+        switchAllowMicrophone.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> viewModel.setAllowMicrophone(isChecked));
+
+        switchAllowVideo.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> viewModel.setAllowVideo(isChecked));
+
+        advancedSettingsHeader.setOnClickListener(v -> toggleAdvancedSettings());
+
+        tvDuration.setOnItemClickListener((parent, view, position, id) -> updateEndTimeHelper());
+
         btnScheduleMeeting.setOnClickListener(v -> {
             String topic = edtMeetingTopic.getText() != null
-                    ? edtMeetingTopic.getText().toString().trim()
+                    ? edtMeetingTopic.getText().toString()
                     : "";
             String date =
                     edtDate.getText() != null ? edtDate.getText().toString().trim() : "";
@@ -94,18 +180,250 @@ public class ScheduleFragment extends Fragment {
                     ? tvDuration.getText().toString().trim()
                     : "";
             boolean isWaitingRoom = switchWaitingRoom.isChecked();
-            boolean isHostVideoOn = switchHostVideo.isChecked();
+            String password = switchPassword.isChecked() && edtPassword.getText() != null
+                    ? edtPassword.getText().toString()
+                    : null;
 
-            if (topic.isEmpty()) {
-                Snackbar.make(v, R.string.schedule_error_empty_topic, Snackbar.LENGTH_SHORT)
-                        .show();
-                return;
+            // Validate and update max participants in ViewModel before submission
+            if (edtMaxParticipants.getText() != null) {
+                String maxParticipantsStr =
+                        edtMaxParticipants.getText().toString().trim();
+                try {
+                    int maxParticipants = Integer.parseInt(maxParticipantsStr);
+                    viewModel.setMaxParticipants(maxParticipants);
+                } catch (NumberFormatException e) {
+                    tilMaxParticipants.setError(
+                            getString(R.string.schedule_error_max_participants_invalid));
+                    return;
+                }
             }
 
-            viewModel.scheduleMeeting(topic, date, time, duration, isWaitingRoom, isHostVideoOn);
-            Snackbar.make(v, R.string.schedule_success, Snackbar.LENGTH_SHORT).show();
-            Navigation.findNavController(v).popBackStack();
+            viewModel.scheduleMeeting(topic, date, time, duration, isWaitingRoom, password);
         });
+    }
+
+    private void setupBlurValidation() {
+        edtMeetingTopic.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String title = edtMeetingTopic.getText() != null
+                        ? edtMeetingTopic.getText().toString()
+                        : null;
+                ValidationResult result = viewModel.validateTitle(title);
+                if (!result.isValid && "TITLE_TOO_LONG".equals(result.errorCode)) {
+                    tilMeetingTopic.setError(getString(R.string.schedule_error_title_too_long));
+                } else {
+                    tilMeetingTopic.setError(null);
+                }
+            }
+        });
+
+        edtDate.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String date = edtDate.getText() != null ? edtDate.getText().toString() : null;
+                ValidationResult result = viewModel.validateDate(date);
+                if (!result.isValid) {
+                    tilDate.setError(getString(R.string.error_date_required));
+                } else {
+                    tilDate.setError(null);
+                }
+                updateEndTimeHelper();
+            }
+        });
+
+        edtTime.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String time = edtTime.getText() != null ? edtTime.getText().toString() : null;
+                ValidationResult result = viewModel.validateTime(time);
+                if (!result.isValid) {
+                    tilTime.setError(getString(R.string.error_time_required));
+                } else {
+                    tilTime.setError(null);
+                }
+                updateEndTimeHelper();
+            }
+        });
+
+        // Max participants validation on blur
+        edtMaxParticipants.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String maxParticipants = edtMaxParticipants.getText() != null
+                        ? edtMaxParticipants.getText().toString()
+                        : null;
+                ValidationResult result = viewModel.validateMaxParticipants(maxParticipants);
+                if (!result.isValid) {
+                    if ("INVALID_MAX_PARTICIPANTS_RANGE".equals(result.errorCode)) {
+                        tilMaxParticipants.setError(
+                                getString(R.string.schedule_error_max_participants_range));
+                    } else {
+                        tilMaxParticipants.setError(
+                                getString(R.string.schedule_error_max_participants_invalid));
+                    }
+                } else {
+                    tilMaxParticipants.setError(null);
+                }
+            }
+        });
+
+        tvDuration.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String duration =
+                        tvDuration.getText() != null ? tvDuration.getText().toString() : null;
+                ValidationResult result = viewModel.validateDuration(duration);
+                if (!result.isValid) {
+                    if ("INVALID_DURATION_RANGE".equals(result.errorCode)) {
+                        tilDuration.setError(
+                                getString(R.string.schedule_error_invalid_duration_range));
+                    } else if ("EMPTY_DURATION".equals(result.errorCode)) {
+                        tilDuration.setError(getString(R.string.error_duration_required));
+                    } else {
+                        tilDuration.setError(getString(R.string.schedule_error_invalid_duration));
+                    }
+                } else {
+                    tilDuration.setError(null);
+                }
+                updateEndTimeHelper();
+            }
+        });
+
+        edtPassword.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String password =
+                        edtPassword.getText() != null ? edtPassword.getText().toString() : null;
+                ValidationResult result = viewModel.validatePassword(password);
+                if (!result.isValid) {
+                    tilPassword.setError(getString(R.string.validation_required));
+                } else {
+                    tilPassword.setError(null);
+                }
+            }
+        });
+
+        TextWatcher endTimeWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateEndTimeHelper();
+            }
+        };
+        edtDate.addTextChangedListener(endTimeWatcher);
+        edtTime.addTextChangedListener(endTimeWatcher);
+        tvDuration.addTextChangedListener(endTimeWatcher);
+    }
+
+    private void setupObservers() {
+        viewModel.isLoading.observe(getViewLifecycleOwner(), isLoading -> {
+            btnScheduleMeeting.setEnabled(!isLoading);
+            edtMeetingTopic.setEnabled(!isLoading);
+            edtDate.setEnabled(!isLoading);
+            edtTime.setEnabled(!isLoading);
+            tvDuration.setEnabled(!isLoading);
+            switchWaitingRoom.setEnabled(!isLoading);
+            switchAllowGuest.setEnabled(!isLoading);
+            switchPassword.setEnabled(!isLoading);
+            edtPassword.setEnabled(!isLoading);
+            edtMaxParticipants.setEnabled(!isLoading);
+            switchAllowScreenShare.setEnabled(!isLoading);
+            switchChatEnabled.setEnabled(!isLoading);
+            switchAllowMicrophone.setEnabled(!isLoading);
+            switchAllowVideo.setEnabled(!isLoading);
+
+            if (isLoading) {
+                btnScheduleMeeting.setText("");
+                progressLoading.setVisibility(View.VISIBLE);
+            } else {
+                btnScheduleMeeting.setText(R.string.schedule_button);
+                progressLoading.setVisibility(View.GONE);
+            }
+        });
+
+        viewModel.scheduleSuccess.observe(getViewLifecycleOwner(), result -> {
+            if (result != null) {
+                Snackbar.make(
+                                requireView(),
+                                R.string.schedule_creation_success,
+                                Snackbar.LENGTH_SHORT)
+                        .show();
+                Navigation.findNavController(requireView()).popBackStack();
+            }
+        });
+
+        viewModel.scheduleError.observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null) {
+                Snackbar.make(requireView(), errorMessage, Snackbar.LENGTH_LONG).show();
+            }
+        });
+
+        viewModel.validationError.observe(getViewLifecycleOwner(), errorCode -> {
+            if (errorCode == null) return;
+
+            int messageResId;
+            switch (errorCode) {
+                case "TITLE_TOO_LONG":
+                    messageResId = R.string.schedule_error_title_too_long;
+                    break;
+                case "EMPTY_DATE":
+                    messageResId = R.string.error_date_required;
+                    break;
+                case "EMPTY_TIME":
+                    messageResId = R.string.error_time_required;
+                    break;
+                case "EMPTY_DURATION":
+                    messageResId = R.string.error_duration_required;
+                    break;
+                case "INVALID_DATE_TIME":
+                    messageResId = R.string.validation_invalid_format;
+                    break;
+                case "PAST_START_TIME":
+                    messageResId = R.string.schedule_error_past_start_time;
+                    break;
+                case "INVALID_DURATION":
+                    messageResId = R.string.schedule_error_invalid_duration;
+                    break;
+                case "INVALID_DURATION_RANGE":
+                    messageResId = R.string.schedule_error_invalid_duration_range;
+                    break;
+                case "INVALID_MAX_PARTICIPANTS_RANGE":
+                    messageResId = R.string.schedule_error_max_participants_range;
+                    break;
+                default:
+                    messageResId = R.string.validation_failed;
+            }
+
+            Snackbar.make(requireView(), messageResId, Snackbar.LENGTH_SHORT).show();
+        });
+
+        viewModel.endTimeText.observe(getViewLifecycleOwner(), endTime -> {
+            if (endTime != null && !endTime.isEmpty()) {
+                tvEndTimeHelper.setText(getString(R.string.schedule_end_time_helper, endTime));
+                tvEndTimeHelper.setVisibility(View.VISIBLE);
+            } else {
+                tvEndTimeHelper.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void toggleAdvancedSettings() {
+        advancedExpanded = !advancedExpanded;
+        advancedSettingsContent.setVisibility(advancedExpanded ? View.VISIBLE : View.GONE);
+
+        ivAdvancedExpand
+                .animate()
+                .rotation(advancedExpanded ? 90f : 0f)
+                .setDuration(200)
+                .start();
+    }
+
+    private void updateEndTimeHelper() {
+        String date = edtDate.getText() != null ? edtDate.getText().toString() : "";
+        String time = edtTime.getText() != null ? edtTime.getText().toString() : "";
+        String duration = tvDuration.getText() != null ? tvDuration.getText().toString() : "";
+
+        viewModel.updateEndTime(date, time, duration);
     }
 
     private void showDatePicker() {
@@ -124,10 +442,14 @@ public class ScheduleFragment extends Fragment {
                             selectedDay,
                             selectedYear);
                     edtDate.setText(formattedDate);
+                    tilDate.setError(null);
                 },
                 year,
                 month,
                 day);
+
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+
         datePickerDialog.show();
     }
 
@@ -145,6 +467,7 @@ public class ScheduleFragment extends Fragment {
                     String formattedTime = String.format(
                             Locale.ROOT, "%02d:%02d %s", hour12, selectedMinute, amPm);
                     edtTime.setText(formattedTime);
+                    tilTime.setError(null);
                 },
                 hour,
                 minute,

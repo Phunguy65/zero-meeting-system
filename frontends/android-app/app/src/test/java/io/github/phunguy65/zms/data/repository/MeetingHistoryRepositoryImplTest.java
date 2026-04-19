@@ -33,10 +33,17 @@ import retrofit2.Response;
 @RunWith(MockitoJUnitRunner.class)
 public class MeetingHistoryRepositoryImplTest {
 
-    @Mock private UserMeetingsApi api;
-    @Mock private MeetingMapper mapper;
-    @Mock private Call<MeetingManagementCursorScrollResponseMeetingResponse> listCall;
-    @Mock private Call<MeetingManagementMeetingDetailResponse> detailCall;
+    @Mock
+    private UserMeetingsApi api;
+
+    @Mock
+    private MeetingMapper mapper;
+
+    @Mock
+    private Call<MeetingManagementCursorScrollResponseMeetingResponse> listCall;
+
+    @Mock
+    private Call<MeetingManagementMeetingDetailResponse> detailCall;
 
     private MeetingHistoryRepositoryImpl repository;
 
@@ -51,7 +58,12 @@ public class MeetingHistoryRepositoryImplTest {
     private MeetingHistory domainItem() {
         OffsetDateTime now = OffsetDateTime.parse("2026-04-16T10:00:00Z");
         return new MeetingHistory(
-                "id", "title", now, now.plusMinutes(30), MeetingType.SCHEDULED, MeetingStatus.ENDED);
+                "id",
+                "title",
+                now,
+                now.plusMinutes(30),
+                MeetingType.SCHEDULED,
+                MeetingStatus.ENDED);
     }
 
     // ------------------- getMeetingHistory -------------------
@@ -73,7 +85,8 @@ public class MeetingHistoryRepositoryImplTest {
         when(listCall.execute()).thenReturn(Response.success(body));
         when(mapper.toMeetingHistory(dto)).thenReturn(domainItem());
 
-        MeetingHistoryPage page = repository.getMeetingHistory(USER_ID, 20, null).get();
+        MeetingHistoryPage page =
+                repository.getMeetingHistory(USER_ID, 20, null).get();
 
         assertEquals(1, page.items().size());
         assertEquals("next-token", page.nextPageToken());
@@ -90,7 +103,8 @@ public class MeetingHistoryRepositoryImplTest {
         when(api.listParticipatedMeetings(any(), anyInt(), any(), any())).thenReturn(listCall);
         when(listCall.execute()).thenReturn(Response.success(body));
 
-        MeetingHistoryPage page = repository.getMeetingHistory(USER_ID, 20, null).get();
+        MeetingHistoryPage page =
+                repository.getMeetingHistory(USER_ID, 20, null).get();
 
         assertEquals(0, page.items().size());
         assertNull(page.nextPageToken());
@@ -102,8 +116,7 @@ public class MeetingHistoryRepositoryImplTest {
         when(api.listParticipatedMeetings(any(), anyInt(), any(), any())).thenReturn(listCall);
         try {
             when(listCall.execute())
-                    .thenReturn(
-                            Response.error(500, ResponseBody.create(null, "err")));
+                    .thenReturn(Response.error(500, ResponseBody.create(null, "err")));
         } catch (Exception ignored) {
         }
 
@@ -131,20 +144,19 @@ public class MeetingHistoryRepositoryImplTest {
     @Test
     public void getMeetingDetail_success_mapsAndReturnsDomain() throws Exception {
         MeetingManagementMeetingDetailResponse body = new MeetingManagementMeetingDetailResponse();
-        MeetingHistoryDetail domain =
-                new MeetingHistoryDetail(
-                        MEETING_ID,
-                        "host",
-                        "CODE",
-                        "t",
-                        null,
-                        OffsetDateTime.parse("2026-04-16T10:00:00Z"),
-                        null,
-                        MeetingType.SCHEDULED,
-                        MeetingStatus.ENDED,
-                        OffsetDateTime.parse("2026-04-15T10:00:00Z"),
-                        List.of(),
-                        List.of());
+        MeetingHistoryDetail domain = new MeetingHistoryDetail(
+                MEETING_ID,
+                "host",
+                "CODE",
+                "t",
+                null,
+                OffsetDateTime.parse("2026-04-16T10:00:00Z"),
+                null,
+                MeetingType.SCHEDULED,
+                MeetingStatus.ENDED,
+                OffsetDateTime.parse("2026-04-15T10:00:00Z"),
+                List.of(),
+                List.of());
 
         when(api.getParticipatedMeetingDetail(
                         eq(UUID.fromString(USER_ID)), eq(UUID.fromString(MEETING_ID))))
@@ -152,7 +164,8 @@ public class MeetingHistoryRepositoryImplTest {
         when(detailCall.execute()).thenReturn(Response.success(body));
         when(mapper.toMeetingHistoryDetail(body)).thenReturn(domain);
 
-        MeetingHistoryDetail result = repository.getMeetingDetail(USER_ID, MEETING_ID).get();
+        MeetingHistoryDetail result =
+                repository.getMeetingDetail(USER_ID, MEETING_ID).get();
 
         assertSame(domain, result);
     }
@@ -162,8 +175,7 @@ public class MeetingHistoryRepositoryImplTest {
         when(api.getParticipatedMeetingDetail(any(), any())).thenReturn(detailCall);
         try {
             when(detailCall.execute())
-                    .thenReturn(
-                            Response.error(404, ResponseBody.create(null, "not found")));
+                    .thenReturn(Response.error(404, ResponseBody.create(null, "not found")));
         } catch (Exception ignored) {
         }
 
