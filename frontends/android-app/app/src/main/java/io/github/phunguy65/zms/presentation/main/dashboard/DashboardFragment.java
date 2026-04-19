@@ -14,13 +14,18 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import dagger.hilt.android.AndroidEntryPoint;
+import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
 import io.github.phunguy65.zms.frontends.R;
+import io.github.phunguy65.zms.presentation.common.state.UiState;
 import io.github.phunguy65.zms.presentation.videocall.VideoCallActivity;
+import java.util.List;
 
 /**
  * Dashboard fragment displaying quick actions and upcoming meetings.
@@ -39,9 +44,12 @@ public class DashboardFragment extends Fragment {
 
     private MaterialCardView cardJoinMeeting, cardSchedule;
     private ImageView btnSettings;
-    private View layoutEmptyState, meetingsContainer;
+    private View layoutEmptyState;
+    private RecyclerView rvUpcomingMeetings;
     private MaterialButton btnScheduleNew;
     private FloatingActionButton fabNewMeeting;
+
+    private UpcomingMeetingAdapter adapter;
 
     @Nullable @Override
     public View onCreateView(
@@ -59,6 +67,7 @@ public class DashboardFragment extends Fragment {
         navController = NavHostFragment.findNavController(this);
 
         initViews(view);
+        setupRecyclerView();
         setupListeners();
         setupObservers();
     }
@@ -68,9 +77,21 @@ public class DashboardFragment extends Fragment {
         cardSchedule = view.findViewById(R.id.cardSchedule);
         btnSettings = view.findViewById(R.id.btnSettings);
         layoutEmptyState = view.findViewById(R.id.layoutEmptyState);
-        meetingsContainer = view.findViewById(R.id.meetingsContainer);
+        rvUpcomingMeetings = view.findViewById(R.id.rvUpcomingMeetings);
         btnScheduleNew = view.findViewById(R.id.btnScheduleNew);
         fabNewMeeting = view.findViewById(R.id.fabNewMeeting);
+    }
+
+    private void setupRecyclerView() {
+        adapter = new UpcomingMeetingAdapter(this::onJoinMeetingClicked);
+        rvUpcomingMeetings.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvUpcomingMeetings.setAdapter(adapter);
+    }
+
+    private void onJoinMeetingClicked(@NonNull UpcomingMeeting meeting) {
+        if (meeting.shortCode() != null) {
+            launchVideoCall(meeting.shortCode());
+        }
     }
 
     private void setupListeners() {
@@ -147,7 +168,38 @@ public class DashboardFragment extends Fragment {
             }
         });
 
-        updateEmptyState(false);
+        viewModel.upcomingMeetingsState.observe(getViewLifecycleOwner(), this::renderUpcomingMeetings);
+    }
+
+    private void renderUpcomingMeetings(UiState<List<UpcomingMeeting>> state) {
+        switch (state) {
+            case UiState.Loading<List<UpcomingMeeting>> loading -> {
+                layoutEmptyState.setVisibility(View.GONE);
+                rvUpcomingMeetings.setVisibility(View.GONE);
+            }
+            case UiState.Success<List<UpcomingMeeting>> success -> {
+                List<UpcomingMeeting> meetings = success.data();
+                if (meetings == null || meetings.isEmpty()) {
+                    layoutEmptyState.setVisibility(View.VISIBLE);
+                    rvUpcomingMeetings.setVisibility(View.GONE);
+                } else {
+                    layoutEmptyState.setVisibility(View.GONE);
+                    rvUpcomingMeetings.setVisibility(View.VISIBLE);
+                    adapter.submitList(meetings);
+                }
+            }
+            case UiState.Error<List<UpcomingMeeting>> error -> {
+                layoutEmptyState.setVisibility(View.VISIBLE);
+                rvUpcomingMeetings.setVisibility(View.GONE);
+                if (error.error() != null) {
+                    Snackbar.make(requireView(), R.string.error_server, Snackbar.LENGTH_LONG)
+                            .setAction(R.string.retry, v -> viewModel.loadUpcomingMeetings())
+                            .show();
+                }
+            }
+            case UiState.Idle<List<UpcomingMeeting>> idle -> {
+            }
+        }
     }
 
     /**
@@ -160,16 +212,5 @@ public class DashboardFragment extends Fragment {
         intent.putExtra(VideoCallActivity.EXTRA_MEETING_CODE, meetingCode);
         intent.putExtra(VideoCallActivity.EXTRA_IS_GUEST, false);
         startActivity(intent);
-    }
-
-    /**
-     * Toggle between empty state and meetings list.
-     * @param isEmpty true to show empty state, false to show meetings
-     */
-    private void updateEmptyState(boolean isEmpty) {
-        if (layoutEmptyState != null && meetingsContainer != null) {
-            layoutEmptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-            meetingsContainer.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-        }
     }
 }

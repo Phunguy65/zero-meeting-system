@@ -3,6 +3,7 @@ package io.github.phunguy65.zms.data.repository;
 import io.github.phunguy65.zms.data.mapper.MeetingMapper;
 import io.github.phunguy65.zms.data.remote.api.MeetingsApi;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementCreateInstantMeetingRequest;
+import io.github.phunguy65.zms.data.remote.dto.MeetingManagementCursorScrollResponseMeetingResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingSettingsRequest;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementScheduleMeetingRequest;
@@ -13,13 +14,18 @@ import io.github.phunguy65.zms.di.IoExecutor;
 import io.github.phunguy65.zms.domain.model.InstantMeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
 import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
+import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import retrofit2.Response;
 
@@ -32,6 +38,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     private static final String ADMISSION_POLICY_WAITING_ROOM = "MANUAL_APPROVAL";
     private static final String ADMISSION_POLICY_OPEN = "ALLOW_ALL";
     private static final int DEFAULT_MAX_PARTICIPANTS = 100;
+    private static final int UPCOMING_PAGE_SIZE = 20;
 
     private final MeetingsApi meetingsApi;
     private final MeetingMapper meetingMapper;
@@ -91,6 +98,41 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                         }
 
                         return meetingMapper.toMeetingCreationResult(response.body());
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<List<UpcomingMeeting>> getUpcomingHostMeetings() {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        Response<MeetingManagementCursorScrollResponseMeetingResponse> response =
+                                meetingsApi.listHostMeetings(UPCOMING_PAGE_SIZE, null).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException(
+                                    "List host meetings failed: HTTP " + response.code());
+                        }
+
+                        List<MeetingManagementMeetingResponse> content = response.body().getContent();
+                        if (content == null) {
+                            return List.of();
+                        }
+
+                        OffsetDateTime now = OffsetDateTime.now();
+
+                        return content.stream()
+                                .filter(m -> m.getStatus() != null
+                                        && MeetingManagementMeetingResponse.StatusEnum.SCHEDULED
+                                                == m.getStatus())
+                                .filter(m -> m.getStartTime() != null && m.getStartTime().isAfter(now))
+                                .map(meetingMapper::toUpcomingMeeting)
+                                .sorted(Comparator.comparing(UpcomingMeeting::startTime))
+                                .collect(Collectors.toList());
                     } catch (Exception e) {
                         throw new CompletionException(translateException(e));
                     }

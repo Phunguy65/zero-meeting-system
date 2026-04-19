@@ -3,6 +3,8 @@ package io.github.phunguy65.zms.domain.repository;
 import io.github.phunguy65.zms.domain.model.InstantMeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
 import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
+import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -28,4 +30,14 @@ public interface MeetingRepository {
      *         or completes exceptionally with a localized error message
      */
     CompletableFuture<MeetingCreationResult> scheduleMeeting(ScheduleMeetingRequest request);
+
+    /**
+     * Retrieves upcoming host meetings for the dashboard.
+     *
+     * <p>Fetches meetings from the API, filters to SCHEDULED meetings with startTime in the future,
+     * maps to UpcomingMeeting, and sorts by startTime ascending.
+     *
+     * @return a CompletableFuture that completes with the list of upcoming meetings
+     */
+    CompletableFuture<List<UpcomingMeeting>> getUpcomingHostMeetings();
 }

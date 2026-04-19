@@ -4,6 +4,7 @@ import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingDetailRes
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingParticipantResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementRecordingResponse;
+import io.github.phunguy65.zms.domain.model.CalendarEvent;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
 import io.github.phunguy65.zms.domain.model.MeetingHistory;
 import io.github.phunguy65.zms.domain.model.MeetingHistoryDetail;
@@ -11,6 +12,7 @@ import io.github.phunguy65.zms.domain.model.MeetingParticipant;
 import io.github.phunguy65.zms.domain.model.MeetingRecording;
 import io.github.phunguy65.zms.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.domain.model.MeetingType;
+import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -76,6 +78,34 @@ public class MeetingMapper {
                 source.getStartTime(),
                 source.getEndTime(),
                 source.getCreatedAt());
+    }
+
+    /**
+     * Maps a meeting response to an upcoming meeting for the dashboard.
+     * Used by MeetingRepositoryImpl.getUpcomingHostMeetings().
+     */
+    public UpcomingMeeting toUpcomingMeeting(MeetingManagementMeetingResponse source) {
+        return new UpcomingMeeting(
+                uuidToString(source.getId()),
+                source.getShortCode(),
+                source.getTitle(),
+                source.getStartTime(),
+                source.getEndTime(),
+                mapMeetingStatus(source.getStatus()));
+    }
+
+    /**
+     * Maps a meeting response to a calendar event for the calendar view.
+     * Used by CalendarRepositoryImpl.getEventsForDateRange().
+     */
+    public CalendarEvent toCalendarEvent(MeetingManagementMeetingResponse source) {
+        return new CalendarEvent(
+                uuidToString(source.getId()),
+                source.getTitle(),
+                source.getStartTime(),
+                source.getEndTime(),
+                mapMeetingStatus(source.getStatus()),
+                mapMeetingType(source.getType()));
     }
 
     private MeetingParticipant toMeetingParticipant(

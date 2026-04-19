@@ -58,149 +58,41 @@
         <LinearLayout android:layout_width="match_parent"
             android:layout_height="wrap_content" android:orientation="vertical">
 
-            <!-- Month Header with Navigation -->
-            <RelativeLayout android:layout_width="match_parent"
+            <!-- Month Title -->
+            <TextView android:id="@+id/tvMonthTitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/spacing_md"
                 android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_sm">
+                android:paddingBottom="@dimen/spacing_sm"
+                android:textColor="?attr/colorOnSurface" android:textSize="22sp"
+                android:textStyle="bold" />
 
-                <TextView android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true" android:text="October 2023"
-                    android:textColor="?attr/colorOnSurface" android:textSize="22sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:orientation="horizontal">
-
-                    <FrameLayout android:id="@+id/btnPrevMonth"
-                        android:layout_width="@dimen/touch_target_min"
-                        android:layout_height="@dimen/touch_target_min"
-                        android:clickable="true" android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless">
-
-                        <ImageView android:layout_width="@dimen/icon_size_lg"
-                            android:layout_height="@dimen/icon_size_lg"
-                            android:layout_gravity="center"
-                            android:background="@drawable/bg_rounded_gray"
-                            android:padding="@dimen/spacing_sm"
-                            android:src="@drawable/ic_chevron_left"
-                            app:tint="?attr/colorOnSurfaceVariant"
-                            android:contentDescription="@string/cd_previous_month" />
-                    </FrameLayout>
-
-                    <FrameLayout android:id="@+id/btnNextMonth"
-                        android:layout_width="@dimen/touch_target_min"
-                        android:layout_height="@dimen/touch_target_min"
-                        android:clickable="true" android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless">
-
-                        <ImageView android:layout_width="@dimen/icon_size_lg"
-                            android:layout_height="@dimen/icon_size_lg"
-                            android:layout_gravity="center"
-                            android:background="@drawable/bg_rounded_gray"
-                            android:padding="@dimen/spacing_sm"
-                            android:src="@drawable/ic_chevron_right"
-                            app:tint="?attr/colorOnSurfaceVariant"
-                            android:contentDescription="@string/cd_next_month" />
-                    </FrameLayout>
-                </LinearLayout>
-            </RelativeLayout>
-
-            <!-- Week Day Strip (sample) -->
-            <LinearLayout android:layout_width="match_parent"
+            <!-- Calendar View -->
+            <com.kizitonwose.calendar.view.CalendarView
+                android:id="@+id/calendarView" android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:paddingHorizontal="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md">
-
-                <!-- Monday -->
-                <LinearLayout android:layout_width="0dp"
-                    android:layout_height="wrap_content" android:layout_weight="1"
-                    android:gravity="center" android:orientation="vertical">
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:text="M"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_sm" android:text="16"
-                        android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
-                </LinearLayout>
-
-                <!-- Tuesday -->
-                <LinearLayout android:layout_width="0dp"
-                    android:layout_height="wrap_content" android:layout_weight="1"
-                    android:gravity="center" android:orientation="vertical">
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:text="T"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_sm" android:text="17"
-                        android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
-
-                    <View android:layout_width="4dp" android:layout_height="4dp"
-                        android:layout_marginTop="@dimen/spacing_xs"
-                        android:background="@drawable/bg_dot_blue" />
-                </LinearLayout>
-
-                <!-- Wednesday (Selected) -->
-                <LinearLayout android:layout_width="0dp"
-                    android:layout_height="wrap_content" android:layout_weight="1"
-                    android:gravity="center" android:orientation="vertical">
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:text="W"
-                        android:textColor="?attr/colorPrimary" android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView android:layout_width="@dimen/avatar_size_sm"
-                        android:layout_height="@dimen/avatar_size_sm"
-                        android:layout_marginTop="@dimen/spacing_xs"
-                        android:background="@drawable/bg_circle_blue"
-                        android:gravity="center" android:text="18"
-                        android:textColor="?attr/colorOnPrimary" android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <View android:layout_width="4dp" android:layout_height="4dp"
-                        android:layout_marginTop="@dimen/spacing_xs"
-                        android:background="@drawable/bg_dot_blue"
-                        android:backgroundTint="?attr/colorSurface" />
-                </LinearLayout>
-
-                <!-- Thursday -->
-                <LinearLayout android:layout_width="0dp"
-                    android:layout_height="wrap_content" android:layout_weight="1"
-                    android:gravity="center" android:orientation="vertical">
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:text="T"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_sm" android:text="19"
-                        android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
-                </LinearLayout>
-            </LinearLayout>
+                app:cv_dayViewResource="@layout/calendar_day_layout"
+                app:cv_monthHeaderResource="@layout/calendar_month_header_layout"
+                app:cv_orientation="horizontal" app:cv_outDateStyle="endOfRow" />
 
             <!-- Events Section -->
             <LinearLayout android:id="@+id/eventsSection"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/spacing_md"
                 android:background="?attr/colorSurfaceVariant"
                 android:orientation="vertical">
+
+                <!-- Selected Date Header -->
+                <TextView android:id="@+id/tvSelectedDateHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="@dimen/spacing_md"
+                    android:paddingVertical="@dimen/spacing_md"
+                    android:textColor="?attr/colorOnSurface" android:textSize="16sp"
+                    android:textStyle="bold" android:accessibilityHeading="true" />
 
                 <!-- Empty state (hidden by default) -->
                 <include android:id="@+id/layoutEmptyState"
@@ -209,130 +101,9 @@
                     android:layout_height="wrap_content" android:visibility="gone" />
 
                 <!-- Events container (shown when there are events) -->
-                <LinearLayout android:id="@+id/eventsContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:orientation="vertical">
-
-                    <TextView android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="@dimen/spacing_md"
-                        android:paddingVertical="@dimen/spacing_md"
-                        android:text="Wednesday, Oct 18"
-                        android:textColor="?attr/colorOnSurface" android:textSize="16sp"
-                        android:textStyle="bold" android:accessibilityHeading="true" />
-
-                    <!-- Event 1 - In Progress -->
-                    <LinearLayout android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/colorSurface"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="@dimen/spacing_md"
-                        android:paddingVertical="@dimen/spacing_md">
-
-                        <LinearLayout android:layout_width="60dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <TextView android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:text="10:30"
-                                android:textColor="?attr/colorOnSurface" android:textSize="16sp"
-                                android:textStyle="bold" />
-
-                            <TextView android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:text="AM"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-
-                        <View android:layout_width="3dp"
-                            android:layout_height="match_parent"
-                            android:layout_marginEnd="@dimen/spacing_md"
-                            android:background="?attr/colorPrimary" />
-
-                        <LinearLayout android:layout_width="0dp"
-                            android:layout_height="wrap_content" android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:text="Design Sync"
-                                android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
-
-                            <LinearLayout android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:layout_marginTop="@dimen/spacing_xs">
-
-                                <View android:layout_width="6dp"
-                                    android:layout_height="6dp"
-                                    android:layout_marginEnd="@dimen/spacing_xs"
-                                    android:background="@drawable/bg_dot_blue" />
-
-                                <TextView android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/meeting_status_in_progress"
-                                    android:textColor="?attr/colorPrimary" android:textSize="12sp" />
-                            </LinearLayout>
-                        </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:layout_width="wrap_content" android:layout_height="40dp"
-                            android:text="@string/action_join" android:textAllCaps="false"
-                            app:backgroundTint="?attr/colorPrimary"
-                            app:cornerRadius="@dimen/corner_radius_lg" />
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent"
-                        android:layout_height="1dp" android:layout_marginStart="80dp"
-                        android:background="?attr/colorOutline" />
-
-                    <!-- Event 2 - Upcoming -->
-                    <LinearLayout android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/colorSurface"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="@dimen/spacing_md"
-                        android:paddingVertical="@dimen/spacing_md">
-
-                        <LinearLayout android:layout_width="60dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <TextView android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:text="1:00"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="16sp" />
-
-                            <TextView android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:text="PM"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-
-                        <View android:layout_width="3dp"
-                            android:layout_height="match_parent"
-                            android:layout_marginEnd="@dimen/spacing_md"
-                            android:background="?attr/colorOutline" />
-
-                        <LinearLayout android:layout_width="0dp"
-                            android:layout_height="wrap_content" android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Product Review"
-                                android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
-
-                            <TextView android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xs"
-                                android:text="1 hr • Weekly"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvEvents" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

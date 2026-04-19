@@ -66,6 +66,7 @@ androidxSwipeRefreshLayout = "1.1.0"
 mockito = "5.23.0"
 mockitoInline = "5.2.0"
 androidxArchCoreTesting = "2.2.0"
+kizitonwoseCalendar = "2.10.1"
 # Utilities
 ktlint = "1.8.0"
 
@@ -229,6 +230,9 @@ androidveil = { module = "com.github.skydoves:androidveil", version.ref = "andro
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "androidxSwipeRefreshLayout" }
+
+# ─── Frontend – Calendar ─────────────────────────────────────────────────────
+kizitonwose-calendar-view = { module = "com.kizitonwose.calendar:view", version.ref = "kizitonwoseCalendar" }
 
 [plugins]
 # ─── Backend ─────────────────────────────────────────────────────────────────

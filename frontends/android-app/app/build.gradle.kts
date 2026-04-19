@@ -134,6 +134,7 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.kizitonwose.calendar.view)
     annotationProcessor(libs.hilt.android.compiler)
     testImplementation(libs.junit4)
     testImplementation(libs.mockito.core)

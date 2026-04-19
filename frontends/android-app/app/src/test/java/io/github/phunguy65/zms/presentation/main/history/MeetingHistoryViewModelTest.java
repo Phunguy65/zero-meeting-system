@@ -47,6 +47,7 @@ public class MeetingHistoryViewModelTest {
         return new MeetingHistory(
                 id,
                 "Meeting " + id,
+                null,
                 start,
                 start.plusMinutes(30),
                 MeetingType.SCHEDULED,

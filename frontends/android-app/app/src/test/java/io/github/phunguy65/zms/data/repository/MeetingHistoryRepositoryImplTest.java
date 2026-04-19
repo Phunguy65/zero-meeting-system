@@ -60,6 +60,7 @@ public class MeetingHistoryRepositoryImplTest {
         return new MeetingHistory(
                 "id",
                 "title",
+                null,
                 now,
                 now.plusMinutes(30),
                 MeetingType.SCHEDULED,
