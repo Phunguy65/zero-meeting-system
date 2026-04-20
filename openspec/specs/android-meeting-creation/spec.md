@@ -132,10 +132,12 @@ to loading, success, and error transitions without hardcoded navigation.
   and one-shot success/error events
 - **THEN** `DashboardFragment` SHALL observe using `getViewLifecycleOwner()`
 
-### Scenario: Schedule screen observes submission state and derived scheduling feedback
+### Scenario: Schedule screen observes create or update submission state and derived scheduling feedback
 
-- **WHEN** `ScheduleFragment` triggers a schedule-meeting submission
-- **THEN** `ScheduleViewModel` SHALL expose observable submission state
+- **WHEN** `ScheduleFragment` triggers a schedule-meeting creation or
+  scheduled-meeting settings update
+- **THEN** `ScheduleViewModel` SHALL expose observable submission state for the
+  active mode
 - **THEN** the fragment SHALL disable duplicate submissions while a request is
   in progress
 - **THEN** the fragment SHALL react to success and error through observation
@@ -147,8 +149,8 @@ to loading, success, and error transitions without hardcoded navigation.
 ## Requirement: Schedule meeting form usability and accessibility
 
 The Android schedule meeting form SHALL provide accessible, consistent, and
-backend-aligned data entry for scheduling a meeting with the simplified meeting
-settings model.
+backend-aligned data entry for creating a meeting and reviewing or updating
+pre-meeting settings.
 
 ### Scenario: Inline field validation is shown on blur
 
@@ -187,17 +189,64 @@ settings model.
 
 ### Scenario: Schedule form starts with backend-aligned defaults
 
-- **WHEN** the user opens `ScheduleFragment`
+- **WHEN** the user opens `ScheduleFragment` in create mode
 - **THEN** the settings state SHALL default to `allowGuest=true`,
   `allowScreenShare=true`, `allowMicrophone=true`, `allowVideo=true`,
   `chatEnabled=true`, and `maxParticipants=100`
 
+### Scenario: Edit mode communicates update context
+
+- **WHEN** the user opens `ScheduleFragment` in edit mode for an existing
+  scheduled meeting
+- **THEN** the form SHALL render the current meeting values before submission
+- **THEN** the primary action label SHALL clearly communicate that the user is
+  updating an existing meeting
+
 ### Scenario: Submit action communicates in-progress state
 
-- **WHEN** the user submits a valid schedule request
+- **WHEN** the user submits a valid create or update request
 - **THEN** the schedule submit button SHALL show a loading indicator while the
   request is in progress
 - **THEN** the button SHALL prevent duplicate taps until the request completes
+
+## Requirement: ScheduleFragment supports upcoming-meeting edit mode
+
+The Android schedule screen SHALL support an edit mode launched from upcoming
+meeting cards so hosts can update pre-meeting settings before the meeting
+starts.
+
+### Scenario: Dashboard opens schedule edit mode for an upcoming meeting
+
+- **WHEN** the user selects Edit Meeting from an upcoming meeting card menu
+- **THEN** the system SHALL navigate to `ScheduleFragment` with the selected
+  meeting identifier and an edit-mode flag
+- **THEN** the fragment SHALL load the current meeting detail and meeting
+  settings before enabling update submission
+
+### Scenario: Edit mode prepopulates meeting data
+
+- **WHEN** schedule edit mode loads successfully
+- **THEN** the screen SHALL display the existing meeting title, scheduled
+  date/time context, and current settings values
+- **THEN** the primary call to action SHALL use the label "Update" instead of
+  "Schedule"
+
+### Scenario: Edit mode updates pre-meeting settings through the existing settings API
+
+- **WHEN** the host submits valid changes from `ScheduleFragment` edit mode
+- **THEN** the Android client SHALL validate the editable settings values before
+  submitting
+- **THEN** the client SHALL call the existing
+  `PUT /api/v1/meetings/{id}/settings` flow for the selected scheduled meeting
+- **THEN** a successful response SHALL return the user to `DashboardFragment`
+  with refreshed upcoming meeting data
+
+### Scenario: Edit mode failure keeps the user on the schedule screen
+
+- **WHEN** the scheduled-meeting settings update fails
+- **THEN** the system SHALL keep the user on `ScheduleFragment`
+- **THEN** the screen SHALL clear its in-progress state
+- **THEN** the UI SHALL show localized error feedback and allow retry
 
 ## Requirement: Archived delivery notes for meeting creation
 

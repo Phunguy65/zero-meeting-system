@@ -3,20 +3,24 @@ package io.github.phunguy65.zms.presentation.videocall;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -29,8 +33,7 @@ import io.github.phunguy65.zms.frontends.R;
  * Handles both guest and authenticated user flows.
  * Includes meeting code input, display name (guest only), and audio/video toggles.
  *
- * <p>Initializes mic/camera toggle states from persisted preferences and saves
- * the final states when user proceeds to join the call.
+ * <p>Now integrates with the backend join flow, handling approved and pending responses.
  */
 @AndroidEntryPoint
 public class PreJoinFragment extends Fragment {
@@ -46,6 +49,9 @@ public class PreJoinFragment extends Fragment {
     private TextView lblDisplayName, tvAudioStatus, tvVideoStatus;
     private MaterialSwitch switchAudio, switchVideo;
     private MaterialButton btnJoinMeeting;
+    private ProgressBar progressBar;
+
+    private AlertDialog waitingDialog;
 
     private final ActivityResultLauncher<String[]> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -53,8 +59,7 @@ public class PreJoinFragment extends Fragment {
                 Boolean audioGranted = result.getOrDefault(Manifest.permission.RECORD_AUDIO, false);
 
                 if (Boolean.TRUE.equals(cameraGranted) && Boolean.TRUE.equals(audioGranted)) {
-                    // Permissions granted, proceed
-                    proceedToCall();
+                    initiateJoinRequest();
                 } else {
                     Snackbar.make(
                                     requireView(),
@@ -91,6 +96,7 @@ public class PreJoinFragment extends Fragment {
         setupListeners();
         setupObservers();
         prefillFromIntent();
+        setupDeviceId();
     }
 
     private void initViews(View view) {
@@ -105,6 +111,7 @@ public class PreJoinFragment extends Fragment {
         switchAudio = view.findViewById(R.id.switchAudio);
         switchVideo = view.findViewById(R.id.switchVideo);
         btnJoinMeeting = view.findViewById(R.id.btnJoinMeeting);
+        progressBar = view.findViewById(R.id.progressBar);
     }
 
     /**
@@ -126,7 +133,6 @@ public class PreJoinFragment extends Fragment {
     }
 
     private void setupGuestMode() {
-
         Boolean isGuest = callViewModel.isGuest().getValue();
         boolean guestMode = Boolean.TRUE.equals(isGuest);
 
@@ -136,8 +142,10 @@ public class PreJoinFragment extends Fragment {
     }
 
     private void setupListeners() {
-        // Back button
-        btnBackContainer.setOnClickListener(v -> requireActivity().finish());
+        btnBackContainer.setOnClickListener(v -> {
+            callViewModel.cancelJoinRequest();
+            requireActivity().finish();
+        });
 
         switchAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
             callViewModel.setMicEnabled(isChecked);
@@ -166,18 +174,68 @@ public class PreJoinFragment extends Fragment {
                 switchVideo.setChecked(enabled);
             }
         });
+
+        callViewModel.getJoinState().observe(getViewLifecycleOwner(), this::handleJoinState);
+
+        callViewModel.getJoinError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Snackbar.make(requireView(), error, Snackbar.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /**
+     * Handles join state changes to update UI appropriately.
+     */
+    private void handleJoinState(CallViewModel.JoinState state) {
+        switch (state) {
+            case IDLE:
+                setLoading(false);
+                dismissWaitingDialog();
+                break;
+
+            case REQUESTING:
+                setLoading(true);
+                break;
+
+            case WAITING_APPROVAL:
+                setLoading(false);
+                showWaitingDialog();
+                break;
+
+            case APPROVED:
+                setLoading(false);
+                dismissWaitingDialog();
+                saveMicCameraState();
+                navigateToActiveCall();
+                break;
+
+            case DENIED:
+            case EXPIRED:
+            case ERROR:
+                setLoading(false);
+                dismissWaitingDialog();
+                break;
+        }
     }
 
     private void prefillFromIntent() {
-
         String meetingCode = callViewModel.getMeetingCode().getValue();
         if (meetingCode != null && !meetingCode.isEmpty()) {
             edtMeetingCode.setText(meetingCode);
         }
     }
 
+    /**
+     * Sets up the device ID for join requests.
+     */
+    private void setupDeviceId() {
+        String deviceId = Settings.Secure.getString(
+                requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        callViewModel.setDeviceId(deviceId);
+    }
+
     private void onJoinClicked() {
-        // Clear previous errors
         tilMeetingCode.setError(null);
         tilDisplayName.setError(null);
 
@@ -222,17 +280,64 @@ public class PreJoinFragment extends Fragment {
                 == PackageManager.PERMISSION_GRANTED;
 
         if (hasCameraPermission && hasAudioPermission) {
-            proceedToCall();
+            initiateJoinRequest();
         } else {
             permissionLauncher.launch(
                     new String[] {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO});
         }
     }
 
-    private void proceedToCall() {
-        saveMicCameraState();
+    /**
+     * Initiates the backend join request after permissions are granted.
+     */
+    private void initiateJoinRequest() {
+        callViewModel.requestJoinRoom();
+    }
 
+    /**
+     * Navigates to the active call fragment.
+     */
+    private void navigateToActiveCall() {
         navController.navigate(R.id.action_prejoin_to_activeCall);
+    }
+
+    /**
+     * Shows a waiting dialog for pending approval.
+     */
+    private void showWaitingDialog() {
+        if (waitingDialog != null && waitingDialog.isShowing()) {
+            return;
+        }
+
+        waitingDialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.prejoin_waiting_title)
+                .setMessage(R.string.prejoin_waiting_message)
+                .setCancelable(false)
+                .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+                    callViewModel.cancelJoinRequest();
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    /**
+     * Dismisses the waiting dialog if showing.
+     */
+    private void dismissWaitingDialog() {
+        if (waitingDialog != null && waitingDialog.isShowing()) {
+            waitingDialog.dismiss();
+        }
+        waitingDialog = null;
+    }
+
+    /**
+     * Sets the loading state for the join button.
+     */
+    private void setLoading(boolean loading) {
+        btnJoinMeeting.setEnabled(!loading);
+        if (progressBar != null) {
+            progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
     }
 
     /**
@@ -244,5 +349,11 @@ public class PreJoinFragment extends Fragment {
 
         preJoinViewModel.setLastMicEnabled(micEnabled);
         preJoinViewModel.setLastCameraEnabled(cameraEnabled);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        dismissWaitingDialog();
     }
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutOptionCard" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true" android:focusable="true"
+    android:gravity="center" android:orientation="vertical"
+    android:padding="@dimen/spacing_sm">
+
+    <!-- Icon card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardIcon"
+        android:layout_width="@dimen/layout_card_width"
+        android:layout_height="@dimen/layout_card_height"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        app:cardCornerRadius="@dimen/corner_radius_md" app:cardElevation="0dp"
+        app:strokeColor="@android:color/transparent" app:strokeWidth="2dp">
+
+        <ImageView android:id="@+id/ivLayoutIcon"
+            android:layout_width="@dimen/layout_card_icon_size"
+            android:layout_height="@dimen/layout_card_icon_size"
+            android:layout_gravity="center" android:src="@drawable/ic_grid_view"
+            app:tint="?attr/colorOnSurfaceVariant"
+            tools:ignore="ContentDescription" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Label -->
+    <TextView android:id="@+id/tvLayoutLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:textColor="?attr/colorOnSurface" android:textSize="12sp"
+        tools:text="Auto" />
+</LinearLayout>

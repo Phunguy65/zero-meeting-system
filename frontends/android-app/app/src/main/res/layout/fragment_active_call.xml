@@ -2,321 +2,239 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurfaceVariant">
+    android:background="@color/video_call_background">
 
-    <!-- Top bar -->
+    <!-- Top bar with meeting info, layout button, and connection quality -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topBar" android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/spacing_md"
+        android:layout_height="@dimen/video_top_bar_height"
+        android:background="@drawable/bg_video_top_scrim"
+        android:paddingHorizontal="@dimen/spacing_md"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Speaker button -->
-        <FrameLayout android:id="@+id/btnSpeakerContainer"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:clickable="true" android:focusable="true"
-            android:foreground="?attr/selectableItemBackgroundBorderless"
+        <!-- Connection quality indicator -->
+        <ImageView android:id="@+id/imgConnectionQuality"
+            android:layout_width="@dimen/icon_size_md"
+            android:layout_height="@dimen/icon_size_md"
+            android:contentDescription="@string/cd_connection_quality"
+            android:src="@drawable/ic_signal_strong"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView android:id="@+id/btnSpeaker"
-                android:layout_width="@dimen/icon_container_md"
-                android:layout_height="@dimen/icon_container_md"
-                android:layout_gravity="center"
-                android:background="@drawable/bg_circle_white"
-                android:contentDescription="@string/cd_speaker"
-                android:padding="@dimen/spacing_sm"
-                android:src="@drawable/ic_volume_up" app:tint="?attr/colorOnSurface" />
-        </FrameLayout>
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/video_call_active_speaker" />
 
         <!-- Meeting info (center) -->
         <LinearLayout android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:gravity="center"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnLayoutPicker"
+            app:layout_constraintStart_toEndOf="@id/imgConnectionQuality"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView android:id="@+id/tvMeetingTitle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:text="Meeting"
-                android:textColor="?attr/colorOnSurface" android:textSize="18sp"
-                android:textStyle="bold" />
+                android:layout_height="wrap_content"
+                android:text="@string/call_meeting_title_default"
+                android:textColor="@color/video_call_text_primary"
+                android:textSize="16sp" android:textStyle="bold" />
 
             <TextView android:id="@+id/tvTimer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:text="00:00"
-                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textColor="@color/video_call_text_secondary"
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Leave button -->
-        <TextView android:id="@+id/btnLeave"
+        <!-- Layout picker button (top-bar entry point) -->
+        <FrameLayout android:id="@+id/btnLayoutPicker"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:clickable="true"
+            android:contentDescription="@string/action_change_layout"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvParticipantCount"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:layout_gravity="center" android:src="@drawable/ic_grid_view"
+                app:tint="@color/video_call_text_primary" />
+        </FrameLayout>
+
+        <!-- Participant count badge -->
+        <TextView android:id="@+id/tvParticipantCount"
             android:layout_width="wrap_content"
-            android:minHeight="@dimen/touch_target_min" android:gravity="center"
-            android:background="@drawable/bg_leave_button"
-            android:clickable="true" android:focusable="true"
-            android:paddingHorizontal="@dimen/spacing_md"
-            android:paddingVertical="@dimen/spacing_sm"
-            android:text="@string/call_leave"
-            android:textColor="?attr/colorError" android:textStyle="bold"
+            android:layout_height="wrap_content"
+            android:background="@color/overlay_scrim"
+            android:paddingHorizontal="@dimen/spacing_sm"
+            android:paddingVertical="@dimen/spacing_xs"
+            android:textColor="@color/video_call_text_primary"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent" tools:text="4" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Video grid (placeholder for LiveKit) -->
-    <LinearLayout android:id="@+id/videoGrid"
+    <!-- Video grid using RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerVideoGrid"
         android:layout_width="match_parent" android:layout_height="0dp"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/spacing_sm"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
-        app:layout_constraintTop_toBottomOf="@id/topBar">
+        android:clipToPadding="false" android:padding="@dimen/spacing_xs"
+        app:layout_constraintBottom_toTopOf="@id/controlBar"
+        app:layout_constraintTop_toBottomOf="@id/topBar" />
 
-        <!-- Row 1: 2 video cards -->
-        <LinearLayout android:layout_width="match_parent"
-            android:layout_height="0dp" android:layout_weight="1"
-            android:orientation="horizontal">
+    <!-- Self-view preview (draggable) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/selfPreviewCard"
+        android:layout_width="@dimen/video_self_preview_width"
+        android:layout_height="@dimen/video_self_preview_height"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_md"
+        app:cardCornerRadius="@dimen/corner_radius_lg" app:cardElevation="8dp"
+        app:layout_constraintBottom_toTopOf="@id/controlBar"
+        app:layout_constraintEnd_toEndOf="parent">
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_margin="4dp" android:layout_weight="1"
-                app:cardCornerRadius="@dimen/corner_radius_lg"
-                app:cardElevation="0dp">
+        <FrameLayout android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/video_call_surface">
 
-                <RelativeLayout android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+            <!-- Self video renderer container -->
+            <FrameLayout android:id="@+id/selfVideoContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
-                    <ImageView android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="?attr/colorOutline"
-                        android:importantForAccessibility="no"
-                        android:scaleType="centerCrop" />
+            <!-- Camera off placeholder for self -->
+            <LinearLayout android:id="@+id/selfCameraOffPlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/video_call_surface"
+                android:gravity="center" android:orientation="vertical"
+                android:visibility="gone">
 
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentBottom="true"
-                        android:layout_margin="@dimen/spacing_sm"
-                        android:background="?attr/colorSurface"
-                        android:paddingHorizontal="@dimen/spacing_sm"
-                        android:paddingVertical="@dimen/spacing_xxs"
-                        android:text="@string/create_meeting_you"
-                        android:textColor="?attr/colorOnSurface" android:textSize="12sp" />
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
+                <ImageView android:layout_width="32dp"
+                    android:layout_height="32dp" android:importantForAccessibility="no"
+                    android:src="@drawable/ic_videocam_off"
+                    app:tint="@color/video_call_text_secondary" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_margin="4dp" android:layout_weight="1"
-                app:cardCornerRadius="@dimen/corner_radius_lg"
-                app:cardElevation="0dp" app:strokeColor="?attr/colorPrimary"
-                app:strokeWidth="2dp">
+                <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:text="@string/create_meeting_you"
+                    android:textColor="@color/video_call_text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
-                <RelativeLayout android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+            <!-- Camera flip button -->
+            <ImageView android:id="@+id/btnFlipCamera"
+                android:layout_width="32dp" android:layout_height="32dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="@dimen/spacing_sm"
+                android:background="@drawable/bg_control_button"
+                android:clickable="true"
+                android:contentDescription="@string/cd_flip_camera"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:padding="6dp" android:src="@drawable/ic_camera_flip"
+                app:tint="@color/video_call_text_primary" />
 
-                    <ImageView android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="?attr/colorPrimaryContainer"
-                        android:importantForAccessibility="no"
-                        android:scaleType="centerCrop" />
+        </FrameLayout>
 
-                    <ImageView android:layout_width="@dimen/icon_size_md"
-                        android:layout_height="@dimen/icon_size_md"
-                        android:layout_alignParentEnd="true"
-                        android:layout_margin="@dimen/spacing_sm"
-                        android:background="@drawable/bg_circle_white"
-                        android:importantForAccessibility="no" android:padding="4dp"
-                        android:src="@drawable/ic_mic" app:tint="?attr/colorPrimary" />
+    </com.google.android.material.card.MaterialCardView>
 
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentBottom="true"
-                        android:layout_margin="@dimen/spacing_sm"
-                        android:background="?attr/colorSurface"
-                        android:paddingHorizontal="@dimen/spacing_sm"
-                        android:paddingVertical="@dimen/spacing_xxs"
-                        android:text="Participant 1"
-                        android:textColor="?attr/colorOnSurface" android:textSize="12sp" />
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-
-        <!-- Row 2: 2 video cards -->
-        <LinearLayout android:layout_width="match_parent"
-            android:layout_height="0dp" android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_margin="4dp" android:layout_weight="1"
-                app:cardCornerRadius="@dimen/corner_radius_lg"
-                app:cardElevation="0dp">
-
-                <RelativeLayout android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="?attr/colorSurfaceVariant"
-                        android:importantForAccessibility="no"
-                        android:scaleType="centerCrop" />
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentBottom="true"
-                        android:layout_margin="@dimen/spacing_sm"
-                        android:background="?attr/colorSurface"
-                        android:paddingHorizontal="@dimen/spacing_sm"
-                        android:paddingVertical="@dimen/spacing_xxs"
-                        android:text="Participant 2"
-                        android:textColor="?attr/colorOnSurface" android:textSize="12sp" />
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_margin="4dp" android:layout_weight="1"
-                app:cardCornerRadius="@dimen/corner_radius_lg"
-                app:cardElevation="0dp">
-
-                <RelativeLayout android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="?attr/colorSurface"
-                        android:importantForAccessibility="no" />
-
-                    <TextView android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentBottom="true"
-                        android:layout_margin="@dimen/spacing_sm"
-                        android:text="Participant 3"
-                        android:textColor="?attr/colorOnSurface" android:textSize="12sp" />
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-
-        <Space android:layout_width="match_parent"
-            android:layout_height="100dp" />
-    </LinearLayout>
-
-    <!-- Floating controls -->
-    <LinearLayout android:id="@+id/floatingControls"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <!-- Compact control bar (4 buttons: Mic, Camera, More, End Call) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/controlBar" android:layout_width="wrap_content"
+        android:layout_height="@dimen/video_compact_control_bar_height"
         android:layout_marginBottom="@dimen/spacing_lg"
-        android:gravity="center" android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:cardBackgroundColor="@color/video_call_surface"
+        app:cardCornerRadius="40dp" app:cardElevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Camera toggle -->
-        <FrameLayout android:id="@+id/btnFloatVideoContainer"
-            android:layout_width="56dp" android:layout_height="56dp"
-            android:clickable="true" android:focusable="true"
-            android:foreground="?attr/selectableItemBackgroundBorderless">
+        <LinearLayout android:layout_width="wrap_content"
+            android:layout_height="match_parent" android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_md">
 
-            <ImageView android:id="@+id/btnFloatVideo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_circle_white"
-                android:contentDescription="@string/cd_enable_camera"
-                android:padding="@dimen/spacing_md"
-                android:src="@drawable/ic_videocam" app:tint="?attr/colorOnSurface" />
-        </FrameLayout>
+            <!-- Mic toggle -->
+            <FrameLayout android:id="@+id/btnMicContainer"
+                android:layout_width="@dimen/video_compact_button_size"
+                android:layout_height="@dimen/video_compact_button_size"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
 
-        <!-- Mic toggle -->
-        <FrameLayout android:id="@+id/btnFloatMicContainer"
-            android:layout_width="64dp" android:layout_height="64dp"
-            android:layout_marginHorizontal="@dimen/spacing_md"
-            android:clickable="true" android:focusable="true"
-            android:foreground="?attr/selectableItemBackgroundBorderless">
-
-            <ImageView android:id="@+id/btnFloatMic"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_circle_blue"
-                android:contentDescription="@string/cd_mute_mic"
-                android:padding="@dimen/spacing_md" android:src="@drawable/ic_mic"
-                app:tint="?attr/colorOnPrimary" />
-        </FrameLayout>
-
-        <!-- Chat button -->
-        <FrameLayout android:id="@+id/btnFloatChatContainer"
-            android:layout_width="56dp" android:layout_height="56dp"
-            android:clickable="true" android:focusable="true"
-            android:foreground="?attr/selectableItemBackgroundBorderless">
-
-            <ImageView android:id="@+id/btnFloatChat"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_circle_white"
-                android:contentDescription="@string/cd_open_chat"
-                android:padding="@dimen/spacing_md" android:src="@drawable/ic_chat"
-                app:tint="?attr/colorOnSurface" />
-        </FrameLayout>
-    </LinearLayout>
-
-    <!-- Bottom navigation bar -->
-    <LinearLayout android:id="@+id/bottomNav"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height_lg"
-        android:background="?attr/colorSurface" android:elevation="8dp"
-        android:orientation="horizontal" android:weightSum="2"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <!-- Participants button -->
-        <RelativeLayout android:layout_width="0dp"
-            android:layout_height="match_parent" android:layout_weight="1">
-
-            <FrameLayout android:id="@+id/btnParticipantsContainer"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground">
-
-                <ImageView android:id="@+id/btnNAVParticipant"
+                <ImageView android:id="@+id/btnMic"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:contentDescription="@string/call_participants"
-                    android:padding="@dimen/spacing_md"
-                    android:src="@drawable/ic_person_filled"
-                    app:tint="?attr/colorPrimary" />
+                    android:background="@drawable/bg_control_button"
+                    android:contentDescription="@string/cd_mute_mic"
+                    android:padding="@dimen/spacing_sm" android:src="@drawable/ic_mic"
+                    app:tint="@color/video_call_text_primary" />
             </FrameLayout>
 
-            <!-- Badge -->
-            <TextView android:id="@+id/tvParticipantCount"
-                android:layout_width="@dimen/spacing_md"
-                android:layout_height="@dimen/spacing_md"
-                android:layout_alignParentEnd="true"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:layout_marginEnd="@dimen/spacing_md"
-                android:background="@drawable/bg_badge_red" android:gravity="center"
-                android:text="4" android:textColor="?attr/colorOnPrimary"
-                android:textSize="10sp" android:textStyle="bold" />
-        </RelativeLayout>
+            <!-- Camera toggle -->
+            <FrameLayout android:id="@+id/btnCameraContainer"
+                android:layout_width="@dimen/video_compact_button_size"
+                android:layout_height="@dimen/video_compact_button_size"
+                android:layout_marginStart="@dimen/video_compact_button_spacing"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
 
-        <!-- More options button -->
-        <FrameLayout android:id="@+id/btnMoreContainer"
-            android:layout_width="0dp" android:layout_height="match_parent"
-            android:layout_weight="1" android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground">
+                <ImageView android:id="@+id/btnCamera"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_control_button"
+                    android:contentDescription="@string/cd_enable_camera"
+                    android:padding="@dimen/spacing_sm"
+                    android:src="@drawable/ic_videocam"
+                    app:tint="@color/video_call_text_primary" />
+            </FrameLayout>
 
-            <ImageView android:id="@+id/btnMore"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:contentDescription="@string/cd_more_options"
-                android:padding="@dimen/spacing_md"
-                android:src="@drawable/ic_settings" app:tint="?attr/colorPrimary" />
-        </FrameLayout>
-    </LinearLayout>
+            <!-- More actions button -->
+            <FrameLayout android:id="@+id/btnMoreContainer"
+                android:layout_width="@dimen/video_compact_button_size"
+                android:layout_height="@dimen/video_compact_button_size"
+                android:layout_marginStart="@dimen/video_compact_button_spacing"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView android:id="@+id/btnMore"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_control_button"
+                    android:contentDescription="@string/cd_more_options"
+                    android:padding="@dimen/spacing_sm"
+                    android:src="@drawable/ic_more_vert"
+                    app:tint="@color/video_call_text_primary" />
+            </FrameLayout>
+
+            <!-- End call button -->
+            <FrameLayout android:id="@+id/btnEndCallContainer"
+                android:layout_width="@dimen/video_compact_end_call_size"
+                android:layout_height="@dimen/video_compact_end_call_size"
+                android:layout_marginStart="@dimen/spacing_md"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView android:id="@+id/btnEndCall"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_end_call_button"
+                    android:contentDescription="@string/cd_end_call"
+                    android:padding="@dimen/spacing_md"
+                    android:src="@drawable/ic_call_end" app:tint="@color/white" />
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

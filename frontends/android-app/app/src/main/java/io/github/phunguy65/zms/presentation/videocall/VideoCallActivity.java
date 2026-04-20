@@ -22,6 +22,7 @@ public class VideoCallActivity extends AppCompatActivity {
 
     public static final String EXTRA_IS_GUEST = "isGuest";
     public static final String EXTRA_MEETING_CODE = "meetingCode";
+    public static final String EXTRA_MEETING_ID = "meetingId";
 
     private NavController navController;
 
@@ -45,6 +46,15 @@ public class VideoCallActivity extends AppCompatActivity {
         String meetingCode = getIntent().getStringExtra(EXTRA_MEETING_CODE);
         if (meetingCode != null && !meetingCode.isEmpty()) {
             viewModel.setMeetingCode(meetingCode);
+        }
+
+        String meetingId = getIntent().getStringExtra(EXTRA_MEETING_ID);
+        if (meetingId != null && !meetingId.isEmpty()) {
+            viewModel.setMeetingUuid(meetingId);
+        }
+
+        if (!viewModel.isGuestValue()) {
+            viewModel.loadUserDisplayName();
         }
     }
 

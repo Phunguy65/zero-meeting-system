@@ -3,13 +3,16 @@ package io.github.phunguy65.zms.data.mapper;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingDetailResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingParticipantResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingResponse;
+import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingSettingsResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementRecordingResponse;
 import io.github.phunguy65.zms.domain.model.CalendarEvent;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
+import io.github.phunguy65.zms.domain.model.MeetingDetail;
 import io.github.phunguy65.zms.domain.model.MeetingHistory;
 import io.github.phunguy65.zms.domain.model.MeetingHistoryDetail;
 import io.github.phunguy65.zms.domain.model.MeetingParticipant;
 import io.github.phunguy65.zms.domain.model.MeetingRecording;
+import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.domain.model.MeetingType;
 import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
@@ -20,8 +23,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 
-/** Maps meeting history DTOs from the remote API to domain models. */
+/**
+ * Maps meeting DTOs from the remote API to domain models.
+ * Handles meeting responses, settings, and related data structures.
+ */
 public class MeetingMapper {
+
+    private static final String ADMISSION_POLICY_WAITING_ROOM = "MANUAL_APPROVAL";
 
     @Inject
     public MeetingMapper() {}
@@ -106,6 +114,46 @@ public class MeetingMapper {
                 source.getEndTime(),
                 mapMeetingStatus(source.getStatus()),
                 mapMeetingType(source.getType()));
+    }
+
+    /**
+     * Maps a meeting response to a meeting detail for edit mode and settings display.
+     * Includes meeting metadata and current settings.
+     */
+    public MeetingDetail toMeetingDetail(MeetingManagementMeetingResponse source) {
+        MeetingSettings settings = toMeetingSettings(source.getSettings());
+        return new MeetingDetail(
+                uuidToString(source.getId()),
+                uuidToString(source.getHostId()),
+                source.getShortCode(),
+                source.getTitle(),
+                source.getStartTime(),
+                source.getEndTime(),
+                mapMeetingStatus(source.getStatus()),
+                mapMeetingType(source.getType()),
+                settings);
+    }
+
+    /**
+     * Maps a settings response to the domain MeetingSettings model.
+     * Handles null source by returning defaults.
+     */
+    public MeetingSettings toMeetingSettings(MeetingManagementMeetingSettingsResponse source) {
+        if (source == null) {
+            return MeetingSettings.defaults();
+        }
+
+        boolean waitingRoomEnabled = ADMISSION_POLICY_WAITING_ROOM.equals(source.getAdmissionPolicy());
+
+        return new MeetingSettings.Builder()
+                .waitingRoomEnabled(waitingRoomEnabled)
+                .allowGuest(source.getAllowGuest() != null ? source.getAllowGuest() : true)
+                .maxParticipants(source.getMaxParticipants() != null ? source.getMaxParticipants() : 100)
+                .allowScreenShare(source.getAllowScreenShare() != null ? source.getAllowScreenShare() : true)
+                .chatEnabled(source.getChatEnabled() != null ? source.getChatEnabled() : true)
+                .allowMicrophone(source.getAllowMicrophone() != null ? source.getAllowMicrophone() : true)
+                .allowVideo(source.getAllowVideo() != null ? source.getAllowVideo() : true)
+                .build();
     }
 
     private MeetingParticipant toMeetingParticipant(

@@ -25,15 +25,24 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import dagger.hilt.android.AndroidEntryPoint;
+import io.github.phunguy65.zms.domain.model.MeetingDetail;
+import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel.ValidationResult;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Locale;
 
 /**
- * Fragment for scheduling a new meeting.
- * Supports all backend meeting settings with inline validation and accessibility.
+ * Fragment for scheduling a new meeting or editing an existing meeting's settings.
+ *
+ * <p>Supports two modes:
+ * - Create mode (default): Schedule a new meeting with all fields editable.
+ * - Edit mode (when meetingId argument present): Update pre-meeting settings only.
+ *   Date/time fields are read-only in edit mode since backend doesn't support
+ *   metadata updates.
  */
 @AndroidEntryPoint
 public class ScheduleFragment extends Fragment {
@@ -42,6 +51,7 @@ public class ScheduleFragment extends Fragment {
 
     // Header
     private ImageView btnBack;
+    private TextView tvTitle;
 
     // Basic info fields
     private TextInputLayout tilMeetingTopic, tilDate, tilTime, tilDuration;
@@ -89,10 +99,14 @@ public class ScheduleFragment extends Fragment {
         setupListeners();
         setupBlurValidation();
         setupObservers();
+
+        String meetingId = getArguments() != null ? getArguments().getString("meetingId") : null;
+        viewModel.initEditMode(meetingId);
     }
 
     private void initViews(View view) {
         btnBack = view.findViewById(R.id.btnBack);
+        tvTitle = view.findViewById(R.id.tvTitle);
 
         // Basic info
         tilMeetingTopic = view.findViewById(R.id.tilMeetingTopic);
@@ -169,22 +183,11 @@ public class ScheduleFragment extends Fragment {
         tvDuration.setOnItemClickListener((parent, view, position, id) -> updateEndTimeHelper());
 
         btnScheduleMeeting.setOnClickListener(v -> {
-            String topic = edtMeetingTopic.getText() != null
-                    ? edtMeetingTopic.getText().toString()
-                    : "";
-            String date =
-                    edtDate.getText() != null ? edtDate.getText().toString().trim() : "";
-            String time =
-                    edtTime.getText() != null ? edtTime.getText().toString().trim() : "";
-            String duration = tvDuration.getText() != null
-                    ? tvDuration.getText().toString().trim()
-                    : "";
             boolean isWaitingRoom = switchWaitingRoom.isChecked();
             String password = switchPassword.isChecked() && edtPassword.getText() != null
                     ? edtPassword.getText().toString()
                     : null;
 
-            // Validate and update max participants in ViewModel before submission
             if (edtMaxParticipants.getText() != null) {
                 String maxParticipantsStr =
                         edtMaxParticipants.getText().toString().trim();
@@ -198,7 +201,22 @@ public class ScheduleFragment extends Fragment {
                 }
             }
 
-            viewModel.scheduleMeeting(topic, date, time, duration, isWaitingRoom, password);
+            Boolean isEditMode = viewModel.isEditMode.getValue();
+            if (isEditMode != null && isEditMode) {
+                viewModel.updateMeetingSettings(isWaitingRoom, password);
+            } else {
+                String topic = edtMeetingTopic.getText() != null
+                        ? edtMeetingTopic.getText().toString()
+                        : "";
+                String date =
+                        edtDate.getText() != null ? edtDate.getText().toString().trim() : "";
+                String time =
+                        edtTime.getText() != null ? edtTime.getText().toString().trim() : "";
+                String duration = tvDuration.getText() != null
+                        ? tvDuration.getText().toString().trim()
+                        : "";
+                viewModel.scheduleMeeting(topic, date, time, duration, isWaitingRoom, password);
+            }
         });
     }
 
@@ -243,7 +261,6 @@ public class ScheduleFragment extends Fragment {
             }
         });
 
-        // Max participants validation on blur
         edtMaxParticipants.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 String maxParticipants = edtMaxParticipants.getText() != null
@@ -317,11 +334,14 @@ public class ScheduleFragment extends Fragment {
 
     private void setupObservers() {
         viewModel.isLoading.observe(getViewLifecycleOwner(), isLoading -> {
+            Boolean isEditMode = viewModel.isEditMode.getValue();
+            boolean inEditMode = isEditMode != null && isEditMode;
+
             btnScheduleMeeting.setEnabled(!isLoading);
-            edtMeetingTopic.setEnabled(!isLoading);
-            edtDate.setEnabled(!isLoading);
-            edtTime.setEnabled(!isLoading);
-            tvDuration.setEnabled(!isLoading);
+            edtMeetingTopic.setEnabled(!isLoading && !inEditMode);
+            edtDate.setEnabled(!isLoading && !inEditMode);
+            edtTime.setEnabled(!isLoading && !inEditMode);
+            tvDuration.setEnabled(!isLoading && !inEditMode);
             switchWaitingRoom.setEnabled(!isLoading);
             switchAllowGuest.setEnabled(!isLoading);
             switchPassword.setEnabled(!isLoading);
@@ -336,7 +356,9 @@ public class ScheduleFragment extends Fragment {
                 btnScheduleMeeting.setText("");
                 progressLoading.setVisibility(View.VISIBLE);
             } else {
-                btnScheduleMeeting.setText(R.string.schedule_button);
+                btnScheduleMeeting.setText(inEditMode
+                        ? R.string.schedule_update_button
+                        : R.string.schedule_button);
                 progressLoading.setVisibility(View.GONE);
             }
         });
@@ -403,6 +425,36 @@ public class ScheduleFragment extends Fragment {
                 tvEndTimeHelper.setVisibility(View.VISIBLE);
             } else {
                 tvEndTimeHelper.setVisibility(View.GONE);
+            }
+        });
+
+        viewModel.isEditMode.observe(getViewLifecycleOwner(), isEditMode -> {
+            if (isEditMode != null && isEditMode) {
+                if (tvTitle != null) {
+                    tvTitle.setText(R.string.schedule_edit_title);
+                }
+                btnScheduleMeeting.setText(R.string.schedule_update_button);
+                edtMeetingTopic.setEnabled(false);
+                edtDate.setEnabled(false);
+                edtTime.setEnabled(false);
+                tvDuration.setEnabled(false);
+            }
+        });
+
+        viewModel.meetingDetail.observe(getViewLifecycleOwner(), this::populateEditModeFields);
+
+        viewModel.loadDetailError.observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null) {
+                Snackbar.make(requireView(), R.string.schedule_load_error, Snackbar.LENGTH_LONG)
+                        .show();
+            }
+        });
+
+        viewModel.updateSuccess.observe(getViewLifecycleOwner(), result -> {
+            if (result != null) {
+                Snackbar.make(requireView(), R.string.schedule_update_success, Snackbar.LENGTH_SHORT)
+                        .show();
+                Navigation.findNavController(requireView()).popBackStack();
             }
         });
     }
@@ -473,5 +525,66 @@ public class ScheduleFragment extends Fragment {
                 minute,
                 false);
         timePickerDialog.show();
+    }
+
+    private void populateEditModeFields(@Nullable MeetingDetail detail) {
+        if (detail == null) return;
+
+        if (detail.title() != null) {
+            edtMeetingTopic.setText(detail.title());
+        }
+
+        if (detail.startTime() != null) {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy", Locale.ROOT);
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ROOT);
+
+            edtDate.setText(detail.startTime().format(dateFormatter));
+            edtTime.setText(detail.startTime().format(timeFormatter));
+
+            if (detail.endTime() != null) {
+                long durationMinutes = java.time.Duration.between(
+                        detail.startTime(), detail.endTime()).toMinutes();
+                String durationText = formatDurationForDisplay(durationMinutes);
+                tvDuration.setText(durationText, false);
+            }
+        }
+
+        MeetingSettings settings = detail.settings();
+        if (settings != null) {
+            switchWaitingRoom.setChecked(settings.isWaitingRoomEnabled());
+            switchAllowGuest.setChecked(settings.isAllowGuest());
+            switchPassword.setChecked(settings.hasPassword());
+            tilPassword.setVisibility(settings.hasPassword() ? View.VISIBLE : View.GONE);
+            edtMaxParticipants.setText(String.valueOf(settings.getMaxParticipants()));
+            switchAllowScreenShare.setChecked(settings.isAllowScreenShare());
+            switchChatEnabled.setChecked(settings.isChatEnabled());
+            switchAllowMicrophone.setChecked(settings.isAllowMicrophone());
+            switchAllowVideo.setChecked(settings.isAllowVideo());
+        }
+    }
+
+    private String formatDurationForDisplay(long minutes) {
+        String[] durations = getResources().getStringArray(R.array.schedule_durations);
+        int[] durationMinutes = {30, 45, 60, 90, 120};
+
+        if (minutes <= 0) {
+            return durations.length > 0 ? durations[0] : "30 minutes";
+        }
+
+        for (int i = 0; i < durationMinutes.length; i++) {
+            if (minutes == durationMinutes[i]) {
+                return durations[i];
+            }
+        }
+
+        if (minutes < 60) {
+            return minutes + " minutes";
+        } else if (minutes % 60 == 0) {
+            int hours = (int) (minutes / 60);
+            return hours == 1 ? "1 hour" : hours + " hours";
+        } else {
+            double hours = minutes / 60.0;
+            return String.format(Locale.ROOT, "%.1f hours", hours);
+        }
     }
 }

@@ -45,4 +45,15 @@
 
     <!-- Overlays / Scrims -->
     <color name="overlay_scrim">#80000000</color>
+
+    <!-- Video Call Colors -->
+    <color name="video_call_background">#1A1A1A</color>
+    <color name="video_call_surface">#2D2D2D</color>
+    <color name="video_call_text_primary">#FFFFFF</color>
+    <color name="video_call_text_secondary">#B0B0B0</color>
+    <color name="video_call_end_button">#EA4335</color>
+    <color name="video_call_active_speaker">#34A853</color>
+    <color name="video_call_control_background">#404040</color>
+    <color name="video_call_control_active">#1877F2</color>
+    <color name="video_call_muted_badge">#EA4335</color>
 </resources>

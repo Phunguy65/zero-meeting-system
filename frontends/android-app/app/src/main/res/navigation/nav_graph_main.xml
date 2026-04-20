@@ -77,7 +77,11 @@
     <fragment android:id="@+id/scheduleFragment"
         android:name="io.github.phunguy65.zms.presentation.main.schedule.ScheduleFragment"
         android:label="@string/action_schedule"
-        tools:layout="@layout/fragment_schedule" />
+        tools:layout="@layout/fragment_schedule">
+
+        <argument android:name="meetingId" app:argType="string"
+            app:nullable="true" android:defaultValue="@null" />
+    </fragment>
 
     <fragment android:id="@+id/createMeetingFragment"
         android:name="io.github.phunguy65.zms.presentation.main.meeting.CreateMeetingFragment"

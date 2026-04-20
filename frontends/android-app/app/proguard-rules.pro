@@ -44,3 +44,26 @@
     @com.fasterxml.jackson.annotation.JsonCreator *;
     @com.fasterxml.jackson.annotation.JsonProperty *;
 }
+
+# ─── LiveKit / WebRTC ─────────────────────────────────────────────────────────
+# LiveKit SDK consumer rules should handle most cases, but we add explicit rules
+# for WebRTC and LiveKit core classes to ensure they are not stripped.
+
+# Keep WebRTC native interfaces
+-keep class org.webrtc.** { *; }
+-dontwarn org.webrtc.**
+
+# Keep LiveKit SDK classes
+-keep class io.livekit.** { *; }
+-keep class livekit.** { *; }
+-dontwarn io.livekit.**
+-dontwarn livekit.**
+
+# Keep SurfaceViewRenderer for video rendering
+-keep class org.webrtc.SurfaceViewRenderer { *; }
+-keep class org.webrtc.TextureViewRenderer { *; }
+
+# Keep VideoTrack and AudioTrack for media handling
+-keep class org.webrtc.VideoTrack { *; }
+-keep class org.webrtc.AudioTrack { *; }
+-keep class org.webrtc.MediaStreamTrack { *; }

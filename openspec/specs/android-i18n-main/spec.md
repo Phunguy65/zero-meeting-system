@@ -108,6 +108,8 @@ All UI text in VideoCall flow SHALL use string resources.
 - **THEN** meeting code label SHALL use `@string/prejoin_meeting_code`
 - **THEN** display name label SHALL use `@string/prejoin_display_name`
 - **THEN** join button SHALL use `@string/prejoin_join_button`
+- **THEN** waiting-for-approval, denied, expired, and connection failure
+  messages SHALL use string resources
 
 ### Scenario: ActiveCall strings
 
@@ -115,6 +117,8 @@ All UI text in VideoCall flow SHALL use string resources.
 - **THEN** end call button SHALL use `@string/call_end`
 - **THEN** participants button SHALL use `@string/call_participants`
 - **THEN** chat button SHALL use `@string/call_chat`
+- **THEN** connection quality labels, participant tile labels, screen-share
+  placeholder text, and unread chat badge content SHALL use string resources
 
 ## Requirement: Empty State Strings
 
@@ -150,6 +154,16 @@ Content descriptions SHALL use string resources.
     - `@string/cd_mute_mic` / `@string/cd_unmute_mic` for mic toggle
     - `@string/cd_enable_camera` / `@string/cd_disable_camera` for camera toggle
     - `@string/cd_end_call` for end call button
+    - dedicated string resources for connection quality, self-view preview,
+      screen-share placeholder, camera flip, pin participant, and raise-hand
+      actions when those controls are present
+
+### Scenario: Video tile status descriptions are accessible
+
+- **WHEN** participant video tiles display mic-muted, camera-off, or
+  active-speaker state
+- **THEN** those visual states SHALL have accessible text equivalents through
+  content descriptions or announced labels sourced from string resources
 
 ## Requirement: Vietnamese Translations
 
@@ -159,6 +173,12 @@ All new strings SHALL have Vietnamese translations in `values-vi/strings.xml`.
 
 - **WHEN** a new string is added to `values/strings.xml`
 - **THEN** a corresponding translation SHALL be added to `values-vi/strings.xml`
+
+### Scenario: Video call additions are localized
+
+- **WHEN** new strings are added for waiting-room approval, denial, expiration,
+  connection quality, call controls, or participant tile states
+- **THEN** Vietnamese translations SHALL be provided for each of those strings
 
 ### Scenario: Sample Vietnamese translations
 

@@ -2,6 +2,8 @@ package io.github.phunguy65.zms.domain.repository;
 
 import io.github.phunguy65.zms.domain.model.InstantMeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
+import io.github.phunguy65.zms.domain.model.MeetingDetail;
+import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
 import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
 import java.util.List;
@@ -9,7 +11,8 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Repository interface for meeting room operations.
- * Handles instant and scheduled meeting creation.
+ * Handles instant and scheduled meeting creation, settings management,
+ * and upcoming meeting actions.
  */
 public interface MeetingRepository {
 
@@ -40,4 +43,41 @@ public interface MeetingRepository {
      * @return a CompletableFuture that completes with the list of upcoming meetings
      */
     CompletableFuture<List<UpcomingMeeting>> getUpcomingHostMeetings();
+
+    /**
+     * Retrieves full meeting details by ID.
+     *
+     * <p>Used for pre-meeting edit mode and in-meeting settings display.
+     * Returns meeting metadata along with current settings.
+     *
+     * @param meetingId the meeting UUID
+     * @return a CompletableFuture that completes with meeting details,
+     *         or completes exceptionally if not found or unauthorized
+     */
+    CompletableFuture<MeetingDetail> getMeetingDetail(String meetingId);
+
+    /**
+     * Updates meeting settings for a SCHEDULED or LIVE meeting.
+     *
+     * <p>Replaces the meeting settings via PUT /api/v1/meetings/{id}/settings.
+     * Supports host-only live meeting settings and pre-meeting settings edits.
+     *
+     * @param meetingId the meeting UUID
+     * @param settings the new meeting settings to apply
+     * @return a CompletableFuture that completes with the updated settings from server response,
+     *         or completes exceptionally with a localized error message
+     */
+    CompletableFuture<MeetingSettings> updateMeetingSettings(String meetingId, MeetingSettings settings);
+
+    /**
+     * Cancels a scheduled meeting.
+     *
+     * <p>Used by the upcoming meeting card options menu.
+     * Only SCHEDULED meetings can be cancelled.
+     *
+     * @param meetingId the meeting UUID
+     * @return a CompletableFuture that completes when cancellation succeeds,
+     *         or completes exceptionally with a localized error message
+     */
+    CompletableFuture<Void> cancelMeeting(String meetingId);
 }

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardVideoTile" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/video_tile_padding"
+    app:cardCornerRadius="@dimen/video_tile_corner_radius"
+    app:cardElevation="0dp" app:strokeWidth="0dp">
+
+    <FrameLayout android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/video_call_surface">
+
+        <!-- Video renderer container - SurfaceViewRenderer will be added programmatically -->
+        <FrameLayout android:id="@+id/videoRendererContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!-- Camera off placeholder -->
+        <LinearLayout android:id="@+id/cameraOffPlaceholder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/video_call_surface"
+            android:gravity="center" android:orientation="vertical"
+            android:visibility="gone" tools:visibility="visible">
+
+            <ImageView android:layout_width="48dp"
+                android:layout_height="48dp" android:importantForAccessibility="no"
+                android:src="@drawable/ic_videocam_off"
+                app:tint="@color/video_call_text_secondary" />
+
+            <TextView android:id="@+id/tvCameraOffName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:textColor="@color/video_call_text_secondary"
+                android:textSize="14sp" tools:text="John Doe" />
+        </LinearLayout>
+
+        <!-- Active speaker border overlay -->
+        <View android:id="@+id/activeSpeakerBorder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_active_speaker_border"
+            android:visibility="gone" tools:visibility="visible" />
+
+        <!-- Bottom scrim for name visibility -->
+        <View android:layout_width="match_parent"
+            android:layout_height="48dp" android:layout_gravity="bottom"
+            android:background="@drawable/bg_video_bottom_scrim" />
+
+        <!-- Participant info overlay -->
+        <LinearLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_margin="@dimen/spacing_sm"
+            android:gravity="center_vertical" android:orientation="horizontal">
+
+            <!-- Participant name -->
+            <TextView android:id="@+id/tvParticipantName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/overlay_scrim"
+                android:paddingHorizontal="@dimen/video_tile_name_padding_h"
+                android:paddingVertical="@dimen/video_tile_name_padding_v"
+                android:textColor="@color/video_call_text_primary"
+                android:textSize="12sp" tools:text="John Doe" />
+        </LinearLayout>
+
+        <!-- Muted badge (top-right) -->
+        <ImageView android:id="@+id/imgMutedBadge"
+            android:layout_width="@dimen/video_muted_badge_size"
+            android:layout_height="@dimen/video_muted_badge_size"
+            android:layout_gravity="top|end"
+            android:layout_margin="@dimen/spacing_sm"
+            android:background="@drawable/bg_circle_white"
+            android:contentDescription="@string/cd_participant_muted"
+            android:padding="4dp" android:src="@drawable/ic_mic_off"
+            android:visibility="gone" app:tint="@color/video_call_muted_badge"
+            tools:visibility="visible" />
+
+    </FrameLayout>
+
+</com.google.android.material.card.MaterialCardView>

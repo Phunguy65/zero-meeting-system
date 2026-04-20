@@ -164,4 +164,14 @@ public final class NetworkModule {
     ChatApi provideChatApi(Retrofit retrofit) {
         return retrofit.create(ChatApi.class);
     }
+
+    /**
+     * Provides the LiveKit server URL from BuildConfig.
+     */
+    @Provides
+    @Singleton
+    @LiveKitUrl
+    String provideLiveKitUrl() {
+        return BuildConfig.LIVEKIT_URL;
+    }
 }

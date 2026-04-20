@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.data.remote.dto.MeetingManagementCreateInstantMee
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementCursorScrollResponseMeetingResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingSettingsRequest;
+import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingSettingsResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementScheduleMeetingRequest;
 import io.github.phunguy65.zms.data.remote.interceptor.AndroidErrorTranslator;
 import io.github.phunguy65.zms.data.remote.interceptor.ApiErrorException;
@@ -13,6 +14,8 @@ import io.github.phunguy65.zms.data.remote.interceptor.ApiFailException;
 import io.github.phunguy65.zms.di.IoExecutor;
 import io.github.phunguy65.zms.domain.model.InstantMeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
+import io.github.phunguy65.zms.domain.model.MeetingDetail;
+import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
 import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
@@ -22,6 +25,7 @@ import java.net.UnknownHostException;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -140,6 +144,74 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 ioExecutor);
     }
 
+    @Override
+    public CompletableFuture<MeetingDetail> getMeetingDetail(String meetingId) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID id = UUID.fromString(meetingId);
+                        Response<MeetingManagementMeetingResponse> response =
+                                meetingsApi.getMeeting(id).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException(
+                                    "Get meeting detail failed: HTTP " + response.code());
+                        }
+
+                        return meetingMapper.toMeetingDetail(response.body());
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<MeetingSettings> updateMeetingSettings(
+            String meetingId, MeetingSettings settings) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID id = UUID.fromString(meetingId);
+                        MeetingManagementMeetingSettingsRequest request =
+                                buildMeetingSettingsRequest(settings);
+
+                        Response<MeetingManagementMeetingSettingsResponse> response =
+                                meetingsApi.putMeetingSettings(id, request).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException(
+                                    "Update meeting settings failed: HTTP " + response.code());
+                        }
+
+                        return meetingMapper.toMeetingSettings(response.body());
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Void> cancelMeeting(String meetingId) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID id = UUID.fromString(meetingId);
+                        Response<Void> response = meetingsApi.cancelMeeting(id).execute();
+
+                        if (!response.isSuccessful()) {
+                            throw new IOException("Cancel meeting failed: HTTP " + response.code());
+                        }
+
+                        return null;
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
     /**
      * Builds the API request for instant meeting creation.
      * Uses default settings with waiting room enabled.
@@ -221,6 +293,34 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 .chatEnabled(true)
                 .allowMicrophone(true)
                 .allowVideo(true);
+    }
+
+    /**
+     * Builds meeting settings request from a MeetingSettings domain model.
+     * Used for updating meeting settings.
+     *
+     * @param settings the domain settings to convert
+     */
+    private MeetingManagementMeetingSettingsRequest buildMeetingSettingsRequest(
+            MeetingSettings settings) {
+        MeetingManagementMeetingSettingsRequest request =
+                new MeetingManagementMeetingSettingsRequest()
+                        .admissionPolicy(
+                                settings.isWaitingRoomEnabled()
+                                        ? ADMISSION_POLICY_WAITING_ROOM
+                                        : ADMISSION_POLICY_OPEN)
+                        .allowGuest(settings.isAllowGuest())
+                        .maxParticipants(settings.getMaxParticipants())
+                        .allowScreenShare(settings.isAllowScreenShare())
+                        .chatEnabled(settings.isChatEnabled())
+                        .allowMicrophone(settings.isAllowMicrophone())
+                        .allowVideo(settings.isAllowVideo());
+
+        if (settings.hasPassword()) {
+            request.password(settings.getPassword());
+        }
+
+        return request;
     }
 
     /**

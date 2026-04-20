@@ -112,7 +112,7 @@ public class CreateMeetingFragment extends Fragment {
 
         viewModel.meetingSuccess.observe(getViewLifecycleOwner(), result -> {
             if (result != null && result.getShortCode() != null) {
-                launchVideoCall(result.getShortCode());
+                launchVideoCall(result.getShortCode(), result.getMeetingId());
             }
         });
 
@@ -128,13 +128,19 @@ public class CreateMeetingFragment extends Fragment {
     }
 
     /**
-     * Launches VideoCallActivity with the created meeting short code.
+     * Launches VideoCallActivity with meeting short code and UUID.
+     *
+     * @param meetingCode the short code for joining (used by JoinRoomRepository)
+     * @param meetingId   the UUID for API calls (getMeetingDetail, updateMeetingSettings)
      */
-    private void launchVideoCall(String meetingCode) {
+    private void launchVideoCall(String meetingCode, String meetingId) {
         Intent intent = new Intent(requireContext(), VideoCallActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(VideoCallActivity.EXTRA_MEETING_CODE, meetingCode);
         intent.putExtra(VideoCallActivity.EXTRA_IS_GUEST, false);
+        if (meetingId != null) {
+            intent.putExtra(VideoCallActivity.EXTRA_MEETING_ID, meetingId);
+        }
         startActivity(intent);
     }
 

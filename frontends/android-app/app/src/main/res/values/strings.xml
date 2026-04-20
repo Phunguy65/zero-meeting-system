@@ -277,6 +277,10 @@
     <string name="schedule_allow_video">Allow Video</string>
     <string name="schedule_end_time_helper">Ends at %1$s</string>
     <string name="schedule_button">Schedule Meeting</string>
+    <string name="schedule_update_button">Update Settings</string>
+    <string name="schedule_edit_title">Edit Meeting</string>
+    <string name="schedule_update_success">Settings updated!</string>
+    <string name="schedule_load_error">Could not load meeting details</string>
     <string name="schedule_error_empty_topic">Please enter meeting topic</string>
     <string name="schedule_error_title_too_long">Title must be at most 255 characters</string>
     <string name="schedule_error_max_participants_range">Must be between 2 and 1000</string>
@@ -329,6 +333,8 @@
     <string name="cd_enable_camera">Enable camera</string>
     <string name="cd_disable_camera">Disable camera</string>
     <string name="cd_end_call">End call</string>
+    <string name="cd_screen_share">Share screen</string>
+    <string name="cd_stop_screen_share">Stop sharing screen</string>
     <string name="cd_speaker">Speaker</string>
     <string name="cd_send_message">Send message</string>
     <string name="cd_attach_file">Attach file</string>
@@ -390,6 +396,22 @@
     <string name="meeting_status_cancelled">Cancelled</string>
     <string name="cd_meeting_cancelled_format">%1$s, CANCELLED, %2$s</string>
 
+    <!-- ═══ Upcoming meeting options ═══ -->
+    <string name="upcoming_action_edit">Edit Meeting</string>
+    <string name="upcoming_action_copy_link">Copy Link</string>
+    <string name="upcoming_action_add_calendar">Add to Calendar</string>
+    <string name="upcoming_action_cancel">Cancel Meeting</string>
+    <string name="upcoming_link_copied">Meeting link copied</string>
+    <string name="upcoming_added_to_calendar">Added to calendar</string>
+    <string name="upcoming_calendar_error">Could not add to calendar</string>
+    <string name="upcoming_cancel_title">Cancel Meeting?</string>
+    <string name="upcoming_cancel_message">This will cancel the meeting and notify
+        participants. This action cannot be undone.</string>
+    <string name="upcoming_cancel_confirm">Cancel Meeting</string>
+    <string name="upcoming_cancel_dismiss">Keep Meeting</string>
+    <string name="upcoming_cancelled_success">Meeting cancelled</string>
+    <string name="upcoming_cancel_error">Could not cancel meeting</string>
+
     <!-- ═══ FAB and meeting creation ═══ -->
     <string name="cd_fab_new_meeting">Start a new meeting</string>
     <string name="fab_action_start_instant">Start Instant Meeting</string>
@@ -408,4 +430,49 @@
     <string name="schedule_error_past_start_time">Start time must be in the future</string>
     <string name="schedule_error_invalid_duration_range">Duration must be between 15 minutes and 8 hours</string>
     <string name="schedule_error_invalid_duration">Invalid duration format</string>
+
+    <!-- ═══ Video call - LiveKit integration ═══ -->
+    <string name="prejoin_waiting_title">Waiting for Approval</string>
+    <string name="prejoin_waiting_message">Please wait while the host admits you to the
+        meeting…</string>
+    <string name="call_meeting_title_default">Meeting</string>
+    <string name="call_connection_excellent">Excellent connection</string>
+    <string name="call_connection_good">Good connection</string>
+    <string name="call_connection_poor">Poor connection</string>
+    <string name="call_connection_reconnecting">Reconnecting…</string>
+    <string name="call_join_denied">Your request to join was denied</string>
+    <string name="call_join_expired">Your join request has expired</string>
+
+    <!-- ═══ Video call - Accessibility ═══ -->
+    <string name="cd_connection_quality">Connection quality indicator</string>
+    <string name="cd_flip_camera">Switch camera</string>
+    <string name="cd_participant_muted">Participant is muted</string>
+    <string name="cd_active_speaker">Active speaker</string>
+    <string name="cd_self_preview">Your camera preview</string>
+
+    <!-- ═══ Meeting actions (overflow bottom sheet) ═══ -->
+    <string name="action_screen_share">Share Screen</string>
+    <string name="action_change_layout">Change Layout</string>
+    <string name="action_meeting_settings">Meeting Settings</string>
+    <string name="action_apply_settings">Apply Settings</string>
+
+    <!-- ═══ Layout selection ═══ -->
+    <string name="layout_auto">Auto</string>
+    <string name="layout_tiled">Tiled</string>
+    <string name="layout_spotlight">Spotlight</string>
+    <string name="layout_sidebar">Sidebar</string>
+    <string name="cd_layout_option">Layout option: %1$s</string>
+    <string name="cd_layout_selected">Selected layout: %1$s</string>
+
+    <!-- ═══ Meeting settings feedback ═══ -->
+    <string name="meeting_settings_update_success">Meeting settings updated</string>
+    <string name="meeting_settings_update_error">Could not update settings</string>
+    <string name="meeting_settings_loading">Loading settings…</string>
+
+    <!-- ═══ Feature placeholders ═══ -->
+    <string name="feature_coming_soon">This feature is coming soon</string>
+
+    <!-- ═══ Badge accessibility ═══ -->
+    <string name="cd_chat_unread_count">%d unread messages</string>
+    <string name="cd_participant_count">%d participants</string>
 </resources>

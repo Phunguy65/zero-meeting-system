@@ -22,7 +22,7 @@ import java.util.Objects;
 /**
  * RecyclerView adapter for upcoming meeting list items with DiffUtil-powered updates.
  *
- * <p>Displays meeting cards with title, time range, and a join/wait action button.
+ * <p>Displays meeting cards with title, time range, join action, and more options menu.
  * The join button is enabled for LIVE meetings, disabled (showing "Wait") for SCHEDULED meetings.
  */
 public class UpcomingMeetingAdapter
@@ -32,11 +32,19 @@ public class UpcomingMeetingAdapter
         void onJoinClicked(@NonNull UpcomingMeeting meeting);
     }
 
-    private final OnJoinClickListener listener;
+    public interface OnMoreOptionsClickListener {
+        void onMoreOptionsClicked(@NonNull View anchor, @NonNull UpcomingMeeting meeting);
+    }
 
-    public UpcomingMeetingAdapter(@NonNull OnJoinClickListener listener) {
+    private final OnJoinClickListener joinListener;
+    private final OnMoreOptionsClickListener moreOptionsListener;
+
+    public UpcomingMeetingAdapter(
+            @NonNull OnJoinClickListener joinListener,
+            @NonNull OnMoreOptionsClickListener moreOptionsListener) {
         super(DIFF_CALLBACK);
-        this.listener = listener;
+        this.joinListener = joinListener;
+        this.moreOptionsListener = moreOptionsListener;
     }
 
     @NonNull @Override
@@ -48,7 +56,7 @@ public class UpcomingMeetingAdapter
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(getItem(position), listener);
+        holder.bind(getItem(position), joinListener, moreOptionsListener);
     }
 
     static final class ViewHolder extends RecyclerView.ViewHolder {
@@ -56,15 +64,20 @@ public class UpcomingMeetingAdapter
         private final TextView tvTitle;
         private final TextView tvTimeRange;
         private final MaterialButton btnJoin;
+        private final View btnMoreOptions;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvTimeRange = itemView.findViewById(R.id.tvTimeRange);
             btnJoin = itemView.findViewById(R.id.btnJoin);
+            btnMoreOptions = itemView.findViewById(R.id.btnMoreOptions);
         }
 
-        void bind(@NonNull UpcomingMeeting item, @NonNull OnJoinClickListener listener) {
+        void bind(
+                @NonNull UpcomingMeeting item,
+                @NonNull OnJoinClickListener joinListener,
+                @NonNull OnMoreOptionsClickListener moreOptionsListener) {
             String title = item.title();
             tvTitle.setText(title != null && !title.isEmpty()
                     ? title
@@ -85,7 +98,8 @@ public class UpcomingMeetingAdapter
                 btnJoin.setEnabled(true);
             }
 
-            btnJoin.setOnClickListener(v -> listener.onJoinClicked(item));
+            btnJoin.setOnClickListener(v -> joinListener.onJoinClicked(item));
+            btnMoreOptions.setOnClickListener(v -> moreOptionsListener.onMoreOptionsClicked(v, item));
         }
 
         private String formatTimeRange(OffsetDateTime startTime, OffsetDateTime endTime) {

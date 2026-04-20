@@ -6,10 +6,14 @@ import androidx.lifecycle.ViewModel;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import io.github.phunguy65.zms.di.MainExecutor;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
+import io.github.phunguy65.zms.domain.model.MeetingDetail;
+import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingSettingsInput;
 import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
+import io.github.phunguy65.zms.domain.usecase.meeting.GetMeetingDetailUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.ScheduleMeetingUseCase;
+import io.github.phunguy65.zms.domain.usecase.meeting.UpdateMeetingSettingsUseCase;
 import io.github.phunguy65.zms.presentation.common.util.SingleLiveEvent;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -37,6 +41,8 @@ public class ScheduleViewModel extends ViewModel {
     public static final int MAX_PARTICIPANTS_DEFAULT = 100;
 
     private final ScheduleMeetingUseCase scheduleMeetingUseCase;
+    private final GetMeetingDetailUseCase getMeetingDetailUseCase;
+    private final UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase;
     private final SessionRepository sessionRepository;
     private final Executor mainExecutor;
 
@@ -77,12 +83,33 @@ public class ScheduleViewModel extends ViewModel {
     private final MutableLiveData<String> _endTimeText = new MutableLiveData<>(null);
     public LiveData<String> endTimeText = _endTimeText;
 
+    private final MutableLiveData<Boolean> _isEditMode = new MutableLiveData<>(false);
+    public LiveData<Boolean> isEditMode = _isEditMode;
+
+    private final MutableLiveData<MeetingDetail> _meetingDetail = new MutableLiveData<>(null);
+    public LiveData<MeetingDetail> meetingDetail = _meetingDetail;
+
+    private final MutableLiveData<Boolean> _isLoadingDetail = new MutableLiveData<>(false);
+    public LiveData<Boolean> isLoadingDetail = _isLoadingDetail;
+
+    private final SingleLiveEvent<String> _loadDetailError = new SingleLiveEvent<>();
+    public LiveData<String> loadDetailError = _loadDetailError;
+
+    private final SingleLiveEvent<MeetingSettings> _updateSuccess = new SingleLiveEvent<>();
+    public LiveData<MeetingSettings> updateSuccess = _updateSuccess;
+
+    @Nullable private String editMeetingId = null;
+
     @Inject
     public ScheduleViewModel(
             ScheduleMeetingUseCase scheduleMeetingUseCase,
+            GetMeetingDetailUseCase getMeetingDetailUseCase,
+            UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase,
             SessionRepository sessionRepository,
             @MainExecutor Executor mainExecutor) {
         this.scheduleMeetingUseCase = scheduleMeetingUseCase;
+        this.getMeetingDetailUseCase = getMeetingDetailUseCase;
+        this.updateMeetingSettingsUseCase = updateMeetingSettingsUseCase;
         this.sessionRepository = sessionRepository;
         this.mainExecutor = mainExecutor;
     }
@@ -113,6 +140,131 @@ public class ScheduleViewModel extends ViewModel {
 
     public void setAllowVideo(boolean enabled) {
         _allowVideo.setValue(enabled);
+    }
+
+    /**
+     * Initializes edit mode by loading existing meeting details.
+     * Call this from the fragment when a meetingId argument is present.
+     *
+     * @param meetingId the meeting UUID to edit
+     */
+    public void initEditMode(@Nullable String meetingId) {
+        if (meetingId == null || meetingId.isEmpty()) {
+            _isEditMode.setValue(false);
+            return;
+        }
+
+        this.editMeetingId = meetingId;
+        _isEditMode.setValue(true);
+        loadMeetingDetail(meetingId);
+    }
+
+    /**
+     * Loads meeting details for pre-population in edit mode.
+     */
+    private void loadMeetingDetail(String meetingId) {
+        _isLoadingDetail.setValue(true);
+
+        getMeetingDetailUseCase
+                .execute(meetingId)
+                .whenCompleteAsync(
+                        (detail, error) -> {
+                            _isLoadingDetail.setValue(false);
+
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _loadDetailError.setValue(errorMessage);
+                            } else {
+                                _meetingDetail.setValue(detail);
+                                populateFromMeetingDetail(detail);
+                            }
+                        },
+                        mainExecutor);
+    }
+
+    /**
+     * Populates ViewModel state from loaded meeting details.
+     */
+    private void populateFromMeetingDetail(MeetingDetail detail) {
+        if (detail == null) return;
+
+        MeetingSettings settings = detail.settings();
+        if (settings == null) return;
+
+        _allowGuest.setValue(settings.isAllowGuest());
+        _passwordEnabled.setValue(settings.hasPassword());
+        _maxParticipants.setValue(settings.getMaxParticipants());
+        _allowScreenShare.setValue(settings.isAllowScreenShare());
+        _chatEnabled.setValue(settings.isChatEnabled());
+        _allowMicrophone.setValue(settings.isAllowMicrophone());
+        _allowVideo.setValue(settings.isAllowVideo());
+    }
+
+    /**
+     * Updates meeting settings in edit mode.
+     * Validates settings and submits via settings update API.
+     */
+    public void updateMeetingSettings(boolean isWaitingRoom, @Nullable String password) {
+        if (Boolean.TRUE.equals(_isLoading.getValue())) {
+            return;
+        }
+
+        if (editMeetingId == null) {
+            _scheduleError.setValue("No meeting to update");
+            return;
+        }
+
+        Integer maxParticipantsVal = _maxParticipants.getValue();
+        if (maxParticipantsVal == null
+                || maxParticipantsVal < MAX_PARTICIPANTS_MIN
+                || maxParticipantsVal > MAX_PARTICIPANTS_MAX) {
+            _validationError.setValue("INVALID_MAX_PARTICIPANTS_RANGE");
+            return;
+        }
+
+        _isLoading.setValue(true);
+
+        Boolean passwordEnabledVal = _passwordEnabled.getValue();
+        Boolean allowGuestVal = _allowGuest.getValue();
+        Boolean allowScreenShareVal = _allowScreenShare.getValue();
+        Boolean chatEnabledVal = _chatEnabled.getValue();
+        Boolean allowMicrophoneVal = _allowMicrophone.getValue();
+        Boolean allowVideoVal = _allowVideo.getValue();
+
+        MeetingSettings settings = new MeetingSettings.Builder()
+                .waitingRoomEnabled(isWaitingRoom)
+                .allowGuest(allowGuestVal != null ? allowGuestVal : true)
+                .password((passwordEnabledVal != null
+                                && passwordEnabledVal
+                                && password != null
+                                && !password.isEmpty())
+                        ? password
+                        : null)
+                .maxParticipants(maxParticipantsVal)
+                .allowScreenShare(allowScreenShareVal != null ? allowScreenShareVal : true)
+                .chatEnabled(chatEnabledVal != null ? chatEnabledVal : true)
+                .allowMicrophone(allowMicrophoneVal != null ? allowMicrophoneVal : true)
+                .allowVideo(allowVideoVal != null ? allowVideoVal : true)
+                .build();
+
+        updateMeetingSettingsUseCase
+                .execute(editMeetingId, settings)
+                .whenCompleteAsync(
+                        (result, error) -> {
+                            _isLoading.setValue(false);
+
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _scheduleError.setValue(errorMessage);
+                            } else {
+                                _updateSuccess.setValue(result);
+                            }
+                        },
+                        mainExecutor);
     }
 
     /**
@@ -355,7 +507,6 @@ public class ScheduleViewModel extends ViewModel {
                 allowMicrophoneVal != null ? allowMicrophoneVal : true,
                 allowVideoVal != null ? allowVideoVal : true);
 
-        // Normalize topic: treat empty/whitespace-only as null
         String normalizedTopic = (topic == null || topic.trim().isEmpty()) ? null : topic.trim();
 
         ScheduleMeetingRequest request =

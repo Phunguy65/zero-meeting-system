@@ -87,11 +87,13 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080\"")
+            buildConfigField("String", "LIVEKIT_URL", "\"ws://10.0.2.2:7880\"")
         }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             buildConfigField("String", "API_BASE_URL", "\"https://api.example.com\"")
+            buildConfigField("String", "LIVEKIT_URL", "\"wss://livekit.example.com\"")
         }
     }
 
@@ -111,6 +113,7 @@ dependencies {
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.okhttp.sse)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.jackson)
     implementation(libs.swagger.annotations)
@@ -135,6 +138,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.kizitonwose.calendar.view)
+    implementation(libs.livekit.android)
     annotationProcessor(libs.hilt.android.compiler)
     testImplementation(libs.junit4)
     testImplementation(libs.mockito.core)

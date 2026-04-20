@@ -42,6 +42,20 @@
                 android:textSize="12sp" tools:text="10:30 AM - 11:30 AM" />
         </LinearLayout>
 
+        <!-- More options button -->
+        <FrameLayout android:id="@+id/btnMoreOptions"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:clickable="true" android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_more_options">
+
+            <ImageView android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:layout_gravity="center" android:src="@drawable/ic_more_vert"
+                app:tint="?attr/colorOnSurfaceVariant" />
+        </FrameLayout>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnJoin" android:layout_width="80dp"
             android:layout_height="wrap_content"

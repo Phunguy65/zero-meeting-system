@@ -8,6 +8,7 @@ import io.github.phunguy65.zms.di.MainExecutor;
 import io.github.phunguy65.zms.domain.model.InstantMeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
 import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
+import io.github.phunguy65.zms.domain.usecase.meeting.CancelMeetingUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.CreateMeetingUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.GetUpcomingMeetingsUseCase;
 import io.github.phunguy65.zms.presentation.common.state.UiError;
@@ -26,6 +27,7 @@ public class DashboardViewModel extends ViewModel {
 
     private final CreateMeetingUseCase createMeetingUseCase;
     private final GetUpcomingMeetingsUseCase getUpcomingMeetingsUseCase;
+    private final CancelMeetingUseCase cancelMeetingUseCase;
     private final Executor mainExecutor;
 
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>(false);
@@ -38,6 +40,15 @@ public class DashboardViewModel extends ViewModel {
     private final SingleLiveEvent<String> _instantMeetingError = new SingleLiveEvent<>();
     public LiveData<String> instantMeetingError = _instantMeetingError;
 
+    private final MutableLiveData<Boolean> _isCancelling = new MutableLiveData<>(false);
+    public LiveData<Boolean> isCancelling = _isCancelling;
+
+    private final SingleLiveEvent<String> _cancelSuccess = new SingleLiveEvent<>();
+    public LiveData<String> cancelSuccess = _cancelSuccess;
+
+    private final SingleLiveEvent<String> _cancelError = new SingleLiveEvent<>();
+    public LiveData<String> cancelError = _cancelError;
+
     private final MutableLiveData<UiState<List<UpcomingMeeting>>> _upcomingMeetingsState =
             new MutableLiveData<>(new UiState.Loading<>());
     public LiveData<UiState<List<UpcomingMeeting>>> upcomingMeetingsState = _upcomingMeetingsState;
@@ -46,9 +57,11 @@ public class DashboardViewModel extends ViewModel {
     public DashboardViewModel(
             CreateMeetingUseCase createMeetingUseCase,
             GetUpcomingMeetingsUseCase getUpcomingMeetingsUseCase,
+            CancelMeetingUseCase cancelMeetingUseCase,
             @MainExecutor Executor mainExecutor) {
         this.createMeetingUseCase = createMeetingUseCase;
         this.getUpcomingMeetingsUseCase = getUpcomingMeetingsUseCase;
+        this.cancelMeetingUseCase = cancelMeetingUseCase;
         this.mainExecutor = mainExecutor;
 
         loadUpcomingMeetings();
@@ -103,6 +116,38 @@ public class DashboardViewModel extends ViewModel {
                                 _instantMeetingError.setValue(errorMessage);
                             } else {
                                 _instantMeetingSuccess.setValue(result);
+                            }
+                        },
+                        mainExecutor);
+    }
+
+    /**
+     * Cancels a scheduled meeting.
+     * Reloads upcoming meetings on success.
+     *
+     * @param meetingId the meeting UUID to cancel
+     */
+    public void cancelMeeting(String meetingId) {
+        if (Boolean.TRUE.equals(_isCancelling.getValue())) {
+            return;
+        }
+
+        _isCancelling.setValue(true);
+
+        cancelMeetingUseCase
+                .execute(meetingId)
+                .whenCompleteAsync(
+                        (result, error) -> {
+                            _isCancelling.setValue(false);
+
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _cancelError.setValue(errorMessage);
+                            } else {
+                                _cancelSuccess.setValue(meetingId);
+                                loadUpcomingMeetings();
                             }
                         },
                         mainExecutor);

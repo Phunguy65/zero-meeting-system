@@ -7,6 +7,8 @@ import dagger.hilt.components.SingletonComponent;
 import io.github.phunguy65.zms.data.repository.AuthRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.CalendarRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.ChatRepositoryImpl;
+import io.github.phunguy65.zms.data.repository.JoinRoomRepositoryImpl;
+import io.github.phunguy65.zms.data.repository.LiveKitRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.MeRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.MeetingHistoryRepositoryImpl;
 import io.github.phunguy65.zms.data.repository.MeetingRepositoryImpl;
@@ -16,6 +18,8 @@ import io.github.phunguy65.zms.data.repository.SessionRepositoryImpl;
 import io.github.phunguy65.zms.domain.repository.AuthRepository;
 import io.github.phunguy65.zms.domain.repository.CalendarRepository;
 import io.github.phunguy65.zms.domain.repository.ChatRepository;
+import io.github.phunguy65.zms.domain.repository.JoinRoomRepository;
+import io.github.phunguy65.zms.domain.repository.LiveKitRepository;
 import io.github.phunguy65.zms.domain.repository.MeRepository;
 import io.github.phunguy65.zms.domain.repository.MeetingHistoryRepository;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
@@ -55,4 +59,10 @@ public abstract class RepositoryModule {
 
     @Binds
     abstract ScheduleRepository bindScheduleRepository(ScheduleRepositoryImpl impl);
+
+    @Binds
+    abstract LiveKitRepository bindLiveKitRepository(LiveKitRepositoryImpl impl);
+
+    @Binds
+    abstract JoinRoomRepository bindJoinRoomRepository(JoinRoomRepositoryImpl impl);
 }

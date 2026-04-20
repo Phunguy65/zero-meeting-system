@@ -254,6 +254,10 @@
     <string name="schedule_waiting_room">Phòng chờ</string>
     <string name="schedule_waiting_room_desc">Duyệt khách thủ công trước khi vào họp</string>
     <string name="schedule_button">Lên lịch</string>
+    <string name="schedule_update_button">Cập nhật cài đặt</string>
+    <string name="schedule_edit_title">Chỉnh sửa cuộc họp</string>
+    <string name="schedule_update_success">Đã cập nhật cài đặt!</string>
+    <string name="schedule_load_error">Không thể tải thông tin cuộc họp</string>
     <string name="schedule_error_empty_topic">Vui lòng nhập chủ đề cuộc họp</string>
     <string name="schedule_success">Đã lên lịch cuộc họp!</string>
     <string-array name="schedule_durations">
@@ -359,6 +363,22 @@
     <string name="meeting_status_cancelled">Đã hủy</string>
     <string name="cd_meeting_cancelled_format">%1$s, ĐÃ HỦY, %2$s</string>
 
+    <!-- ═══ Tùy chọn cuộc họp sắp tới ═══ -->
+    <string name="upcoming_action_edit">Chỉnh sửa cuộc họp</string>
+    <string name="upcoming_action_copy_link">Sao chép liên kết</string>
+    <string name="upcoming_action_add_calendar">Thêm vào lịch</string>
+    <string name="upcoming_action_cancel">Hủy cuộc họp</string>
+    <string name="upcoming_link_copied">Đã sao chép liên kết cuộc họp</string>
+    <string name="upcoming_added_to_calendar">Đã thêm vào lịch</string>
+    <string name="upcoming_calendar_error">Không thể thêm vào lịch</string>
+    <string name="upcoming_cancel_title">Hủy cuộc họp?</string>
+    <string name="upcoming_cancel_message">Điều này sẽ hủy cuộc họp và thông báo cho người
+        tham gia. Hành động này không thể hoàn tác.</string>
+    <string name="upcoming_cancel_confirm">Hủy cuộc họp</string>
+    <string name="upcoming_cancel_dismiss">Giữ lại</string>
+    <string name="upcoming_cancelled_success">Đã hủy cuộc họp</string>
+    <string name="upcoming_cancel_error">Không thể hủy cuộc họp</string>
+
     <!-- ═══ FAB và tạo cuộc họp ═══ -->
     <string name="cd_fab_new_meeting">Bắt đầu cuộc họp mới</string>
     <string name="fab_action_start_instant">Bắt đầu họp ngay</string>
@@ -377,4 +397,49 @@
     <string name="schedule_error_past_start_time">Thời gian bắt đầu phải trong tương lai</string>
     <string name="schedule_error_invalid_duration_range">Thời lượng phải từ 15 phút đến 8 giờ</string>
     <string name="schedule_error_invalid_duration">Định dạng thời lượng không hợp lệ</string>
+
+    <!-- ═══ Cuộc gọi video - Tích hợp LiveKit ═══ -->
+    <string name="prejoin_waiting_title">Đang chờ phê duyệt</string>
+    <string name="prejoin_waiting_message">Vui lòng đợi trong khi chủ phòng cho phép bạn vào
+        cuộc họp…</string>
+    <string name="call_meeting_title_default">Cuộc họp</string>
+    <string name="call_connection_excellent">Kết nối tuyệt vời</string>
+    <string name="call_connection_good">Kết nối tốt</string>
+    <string name="call_connection_poor">Kết nối yếu</string>
+    <string name="call_connection_reconnecting">Đang kết nối lại…</string>
+    <string name="call_join_denied">Yêu cầu tham gia của bạn đã bị từ chối</string>
+    <string name="call_join_expired">Yêu cầu tham gia của bạn đã hết hạn</string>
+
+    <!-- ═══ Cuộc gọi video - Trợ năng ═══ -->
+    <string name="cd_connection_quality">Chỉ báo chất lượng kết nối</string>
+    <string name="cd_flip_camera">Chuyển camera</string>
+    <string name="cd_participant_muted">Người tham gia đã tắt tiếng</string>
+    <string name="cd_active_speaker">Người đang nói</string>
+    <string name="cd_self_preview">Xem trước camera của bạn</string>
+
+    <!-- ═══ Hành động cuộc họp (menu mở rộng) ═══ -->
+    <string name="action_screen_share">Chia sẻ màn hình</string>
+    <string name="action_change_layout">Thay đổi bố cục</string>
+    <string name="action_meeting_settings">Cài đặt cuộc họp</string>
+    <string name="action_apply_settings">Áp dụng cài đặt</string>
+
+    <!-- ═══ Chọn bố cục ═══ -->
+    <string name="layout_auto">Tự động</string>
+    <string name="layout_tiled">Lưới</string>
+    <string name="layout_spotlight">Tiêu điểm</string>
+    <string name="layout_sidebar">Thanh bên</string>
+    <string name="cd_layout_option">Tùy chọn bố cục: %1$s</string>
+    <string name="cd_layout_selected">Bố cục đã chọn: %1$s</string>
+
+    <!-- ═══ Phản hồi cài đặt cuộc họp ═══ -->
+    <string name="meeting_settings_update_success">Đã cập nhật cài đặt cuộc họp</string>
+    <string name="meeting_settings_update_error">Không thể cập nhật cài đặt</string>
+    <string name="meeting_settings_loading">Đang tải cài đặt…</string>
+
+    <!-- ═══ Tính năng sắp ra mắt ═══ -->
+    <string name="feature_coming_soon">Tính năng này sắp ra mắt</string>
+
+    <!-- ═══ Trợ năng badge ═══ -->
+    <string name="cd_chat_unread_count">%d tin nhắn chưa đọc</string>
+    <string name="cd_participant_count">%d người tham gia</string>
 </resources>
