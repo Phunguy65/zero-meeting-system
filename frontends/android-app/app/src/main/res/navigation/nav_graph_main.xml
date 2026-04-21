@@ -26,13 +26,6 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
 
-        <action android:id="@+id/action_dashboard_to_joinMeeting"
-            app:destination="@id/joinMeetingFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-
         <action android:id="@+id/action_dashboard_to_settings"
             app:destination="@id/settingsFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
@@ -87,11 +80,6 @@
         android:name="io.github.phunguy65.zms.presentation.main.meeting.CreateMeetingFragment"
         android:label="@string/action_new_meeting"
         tools:layout="@layout/fragment_create_meeting" />
-
-    <fragment android:id="@+id/joinMeetingFragment"
-        android:name="io.github.phunguy65.zms.presentation.main.meeting.JoinMeetingFragment"
-        android:label="@string/action_join_meeting"
-        tools:layout="@layout/fragment_join_meeting" />
 
     <fragment android:id="@+id/settingsFragment"
         android:name="io.github.phunguy65.zms.presentation.main.settings.SettingsFragment"

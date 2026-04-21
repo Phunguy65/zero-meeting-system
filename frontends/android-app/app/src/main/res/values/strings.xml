@@ -321,8 +321,6 @@
     <string name="join_meeting_options">JOIN OPTIONS</string>
     <string name="join_meeting_with_audio">Join with Audio</string>
     <string name="join_meeting_with_video">Join with Video</string>
-    <string name="join_meeting_error_empty_id">Please enter a valid Meeting ID</string>
-    <string name="join_meeting_joining">Joining meeting %1$s…</string>
 
     <!-- ═══ Accessibility - Content descriptions ═══ -->
     <string name="cd_avatar">Profile picture</string>

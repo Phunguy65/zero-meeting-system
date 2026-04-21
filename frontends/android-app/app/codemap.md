@@ -143,9 +143,7 @@ presentation/
 │   │   └── ScheduleViewModel.java          @HiltViewModel — schedule state
 │   ├── meeting/
 │   │   ├── CreateMeetingFragment.java      @AndroidEntryPoint — create meeting with AV toggle
-│   │   ├── CreateMeetingViewModel.java     @HiltViewModel
-│   │   ├── JoinMeetingFragment.java        @AndroidEntryPoint — join by meeting ID
-│   │   └── JoinMeetingViewModel.java       @HiltViewModel
+│   │   └── CreateMeetingViewModel.java     @HiltViewModel
 │   └── settings/
 │       ├── SettingsFragment.java           @AndroidEntryPoint — language + about settings
 │       └── SettingsViewModel.java          @HiltViewModel
@@ -176,7 +174,6 @@ res/
 │   ├── fragment_profile.xml                Profile menu items
 │   ├── fragment_schedule.xml               Schedule meeting form
 │   ├── fragment_create_meeting.xml         Create meeting with AV preview
-│   ├── fragment_join_meeting.xml           Join by meeting ID
 │   ├── fragment_settings.xml               Language + about settings
 │   ├── fragment_prejoin.xml                Pre-join screen with AV toggle
 │   ├── fragment_active_call.xml            Video grid + call controls

@@ -295,8 +295,6 @@
     <string name="join_meeting_options">TÙY CHỌN THAM GIA</string>
     <string name="join_meeting_with_audio">Tham gia với âm thanh</string>
     <string name="join_meeting_with_video">Tham gia với video</string>
-    <string name="join_meeting_error_empty_id">Vui lòng nhập mã cuộc họp hợp lệ</string>
-    <string name="join_meeting_joining">Đang tham gia cuộc họp %1$s…</string>
 
     <!-- ═══ Mô tả trợ năng ═══ -->
     <string name="cd_avatar">Ảnh đại diện</string>

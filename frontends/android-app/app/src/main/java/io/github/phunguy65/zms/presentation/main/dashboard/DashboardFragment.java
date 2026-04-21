@@ -202,7 +202,9 @@ public class DashboardFragment extends Fragment {
 
     private void setupListeners() {
         cardJoinMeeting.setOnClickListener(v -> {
-            navController.navigate(R.id.action_dashboard_to_joinMeeting);
+            Intent intent = new Intent(requireContext(), VideoCallActivity.class);
+            intent.putExtra(VideoCallActivity.EXTRA_IS_GUEST, false);
+            startActivity(intent);
         });
 
         cardSchedule.setOnClickListener(v -> {
