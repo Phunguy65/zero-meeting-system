@@ -77,6 +77,13 @@ public class CallViewModel extends ViewModel {
 
     private String deviceId;
 
+    private final MutableLiveData<Boolean> _requiresPassword = new MutableLiveData<>(false);
+    private final MutableLiveData<String> _password = new MutableLiveData<>("");
+    private final MutableLiveData<Boolean> _isFetchingMeetingInfo = new MutableLiveData<>(false);
+    private final MutableLiveData<String> _fetchError = new MutableLiveData<>(null);
+    private final MutableLiveData<Boolean> _readyToJoin = new MutableLiveData<>(false);
+    private final MutableLiveData<JoinRoomResult.DenyReasonCode> _denyReasonCode = new MutableLiveData<>(null);
+
     /**
      * Represents the join request state machine.
      */
@@ -194,6 +201,38 @@ public class CallViewModel extends ViewModel {
         _settingsUpdateSuccess.setValue(false);
     }
 
+    public LiveData<Boolean> requiresPassword() {
+        return _requiresPassword;
+    }
+
+    public LiveData<String> getPassword() {
+        return _password;
+    }
+
+    public LiveData<Boolean> isFetchingMeetingInfo() {
+        return _isFetchingMeetingInfo;
+    }
+
+    public LiveData<String> getFetchError() {
+        return _fetchError;
+    }
+
+    public LiveData<Boolean> isReadyToJoin() {
+        return _readyToJoin;
+    }
+
+    public void clearReadyToJoin() {
+        _readyToJoin.setValue(false);
+    }
+
+    public LiveData<JoinRoomResult.DenyReasonCode> getDenyReasonCode() {
+        return _denyReasonCode;
+    }
+
+    public void setPassword(String password) {
+        _password.setValue(password);
+    }
+
     public void setMicEnabled(boolean enabled) {
         _isMicEnabled.setValue(enabled);
     }
@@ -204,13 +243,16 @@ public class CallViewModel extends ViewModel {
 
     /**
      * Sets the meeting code for join requests.
-     * Clears cached meetingUuid if code differs from original,
+     * Clears cached meetingUuid and password-related state if code changes,
      * forcing fresh resolution during join.
      */
     public void setMeetingCode(String code) {
         String current = _meetingCode.getValue();
         if (current != null && !current.equals(code)) {
             this.meetingUuid = null;
+            _password.setValue("");
+            _requiresPassword.setValue(false);
+            _fetchError.setValue(null);
         }
         _meetingCode.setValue(code);
     }
@@ -342,16 +384,58 @@ public class CallViewModel extends ViewModel {
                 }, mainExecutor);
     }
 
+    /**
+     * Fetches meeting info by short code to determine if password is required.
+     * If meeting does not require password, signals ready to join (fragment handles permissions).
+     * If meeting requires password, reveals password field and waits for user input.
+     *
+     * @param shortCode the meeting short code to lookup
+     */
+    public void fetchMeetingInfoAndJoin(String shortCode) {
+        if (shortCode == null || shortCode.isEmpty()) {
+            _fetchError.setValue("Meeting code is required");
+            return;
+        }
+
+        _isFetchingMeetingInfo.setValue(true);
+        _fetchError.setValue(null);
+        _readyToJoin.setValue(false);
+
+        meetingRepository.getMeetingByShortCode(shortCode)
+                .whenCompleteAsync((detail, error) -> {
+                    _isFetchingMeetingInfo.postValue(false);
+
+                    if (error != null) {
+                        Throwable cause = error.getCause() != null ? error.getCause() : error;
+                        String errorMessage = cause.getMessage();
+                        _fetchError.postValue(errorMessage);
+                        return;
+                    }
+
+                    this.meetingUuid = detail.id();
+                    boolean needsPassword = detail.settings() != null
+                            && detail.settings().isRequirePassword();
+
+                    _requiresPassword.postValue(needsPassword);
+
+                    if (!needsPassword) {
+                        _readyToJoin.postValue(true);
+                    }
+                }, mainExecutor);
+    }
+
 
     /**
      * Initiates a join request to the backend.
      * Handles APPROVED and PENDING responses appropriately.
      * Uses meetingUuid when available (from Dashboard/CreateMeeting flows),
      * otherwise resolves shortCode via API lookup.
+     * Passes current password for protected meetings.
      */
     public void requestJoinRoom() {
         String code = _meetingCode.getValue();
         String name = _displayName.getValue();
+        String password = _password.getValue();
 
         if (code == null || code.isEmpty()) {
             _joinError.setValue("Meeting code is required");
@@ -361,7 +445,9 @@ public class CallViewModel extends ViewModel {
         _joinState.setValue(JoinState.REQUESTING);
         _joinError.setValue(null);
 
-        joinRoomRepository.requestJoin(code, meetingUuid, name != null ? name : "", deviceId)
+        String passwordToSend = (password != null && !password.isEmpty()) ? password : null;
+
+        joinRoomRepository.requestJoin(code, meetingUuid, name != null ? name : "", deviceId, passwordToSend)
                 .whenCompleteAsync((result, error) -> {
                     if (error != null) {
                         _joinState.postValue(JoinState.ERROR);
@@ -400,6 +486,7 @@ public class CallViewModel extends ViewModel {
 
             case DENIED:
                 _joinState.setValue(JoinState.DENIED);
+                _denyReasonCode.setValue(result.getDenyReasonCode());
                 _joinError.setValue(result.getDenyReason());
                 break;
         }
@@ -470,7 +557,7 @@ public class CallViewModel extends ViewModel {
             public void onExpired() {
                 mainExecutor.execute(() -> {
                     _joinState.setValue(JoinState.EXPIRED);
-                    _joinError.setValue("Join request expired");
+                    _joinError.setValue(null);
                 });
             }
 
@@ -494,10 +581,17 @@ public class CallViewModel extends ViewModel {
 
     /**
      * Resets join state to allow retry.
+     * Clears password-related state, cached lookup errors, and password-required flags.
      */
     public void resetJoinState() {
         _joinState.setValue(JoinState.IDLE);
         _joinError.setValue(null);
+        _denyReasonCode.setValue(null);
+        _password.setValue("");
+        _requiresPassword.setValue(false);
+        _fetchError.setValue(null);
+        _isFetchingMeetingInfo.setValue(false);
+        _readyToJoin.setValue(false);
     }
 
     /**

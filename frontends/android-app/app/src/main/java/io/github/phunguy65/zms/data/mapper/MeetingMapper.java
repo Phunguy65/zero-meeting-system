@@ -144,10 +144,12 @@ public class MeetingMapper {
         }
 
         boolean waitingRoomEnabled = ADMISSION_POLICY_WAITING_ROOM.equals(source.getAdmissionPolicy());
+        boolean requirePassword = source.getRequirePassword() != null ? source.getRequirePassword() : false;
 
         return new MeetingSettings.Builder()
                 .waitingRoomEnabled(waitingRoomEnabled)
                 .allowGuest(source.getAllowGuest() != null ? source.getAllowGuest() : true)
+                .requirePassword(requirePassword)
                 .maxParticipants(source.getMaxParticipants() != null ? source.getMaxParticipants() : 100)
                 .allowScreenShare(source.getAllowScreenShare() != null ? source.getAllowScreenShare() : true)
                 .chatEnabled(source.getChatEnabled() != null ? source.getChatEnabled() : true)

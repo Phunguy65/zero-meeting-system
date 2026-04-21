@@ -20,11 +20,30 @@ public class JoinRoomResult {
         DENIED
     }
 
+    /**
+     * Reason codes for denial. Used for localization in the presentation layer.
+     */
+    public enum DenyReasonCode {
+        /** Generic denial by host. */
+        HOST_DENIED,
+        /** Request expired before approval. */
+        REQUEST_EXPIRED,
+        /** Invalid password provided. */
+        INVALID_PASSWORD,
+        /** Unknown response status from server. */
+        UNKNOWN_STATUS,
+        /** Missing required data in response. */
+        MISSING_DATA,
+        /** Custom reason with message. */
+        CUSTOM
+    }
+
     private final Status status;
     private final String livekitToken;
     private final String roomName;
     private final String requestId;
     private final String denyReason;
+    private final DenyReasonCode denyReasonCode;
     private final String meetingUuid;
 
     private JoinRoomResult(
@@ -33,12 +52,14 @@ public class JoinRoomResult {
             @Nullable String roomName,
             @Nullable String requestId,
             @Nullable String denyReason,
+            @Nullable DenyReasonCode denyReasonCode,
             @Nullable String meetingUuid) {
         this.status = status;
         this.livekitToken = livekitToken;
         this.roomName = roomName;
         this.requestId = requestId;
         this.denyReason = denyReason;
+        this.denyReasonCode = denyReasonCode;
         this.meetingUuid = meetingUuid;
     }
 
@@ -46,7 +67,7 @@ public class JoinRoomResult {
      * Creates an APPROVED result with the LiveKit access token, room name, and meeting UUID.
      */
     public static JoinRoomResult approved(String livekitToken, String roomName, String meetingUuid) {
-        return new JoinRoomResult(Status.APPROVED, livekitToken, roomName, null, null, meetingUuid);
+        return new JoinRoomResult(Status.APPROVED, livekitToken, roomName, null, null, null, meetingUuid);
     }
 
     /**
@@ -55,7 +76,7 @@ public class JoinRoomResult {
      */
     @Deprecated
     public static JoinRoomResult approved(String livekitToken, String roomName) {
-        return new JoinRoomResult(Status.APPROVED, livekitToken, roomName, null, null, null);
+        return new JoinRoomResult(Status.APPROVED, livekitToken, roomName, null, null, null, null);
     }
 
     /**
@@ -64,14 +85,14 @@ public class JoinRoomResult {
      */
     @Deprecated
     public static JoinRoomResult approved(String livekitToken) {
-        return new JoinRoomResult(Status.APPROVED, livekitToken, null, null, null, null);
+        return new JoinRoomResult(Status.APPROVED, livekitToken, null, null, null, null, null);
     }
 
     /**
      * Creates a PENDING result with the join request ID and meeting UUID for SSE subscription.
      */
     public static JoinRoomResult pending(String requestId, String meetingUuid) {
-        return new JoinRoomResult(Status.PENDING, null, null, requestId, null, meetingUuid);
+        return new JoinRoomResult(Status.PENDING, null, null, requestId, null, null, meetingUuid);
     }
 
     /**
@@ -80,14 +101,21 @@ public class JoinRoomResult {
      */
     @Deprecated
     public static JoinRoomResult pending(String requestId) {
-        return new JoinRoomResult(Status.PENDING, null, null, requestId, null, null);
+        return new JoinRoomResult(Status.PENDING, null, null, requestId, null, null, null);
     }
 
     /**
-     * Creates a DENIED result with the denial reason.
+     * Creates a DENIED result with a reason code for localization.
+     */
+    public static JoinRoomResult denied(DenyReasonCode reasonCode) {
+        return new JoinRoomResult(Status.DENIED, null, null, null, null, reasonCode, null);
+    }
+
+    /**
+     * Creates a DENIED result with a custom message (for server-provided reasons).
      */
     public static JoinRoomResult denied(String reason) {
-        return new JoinRoomResult(Status.DENIED, null, null, null, reason, null);
+        return new JoinRoomResult(Status.DENIED, null, null, null, reason, DenyReasonCode.CUSTOM, null);
     }
 
     public Status getStatus() {
@@ -120,6 +148,13 @@ public class JoinRoomResult {
      */
     public String getDenyReason() {
         return denyReason;
+    }
+
+    /**
+     * Returns the denial reason code for localization. Only valid when status is DENIED.
+     */
+    @Nullable public DenyReasonCode getDenyReasonCode() {
+        return denyReasonCode;
     }
 
     /**

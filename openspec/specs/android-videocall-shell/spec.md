@@ -75,8 +75,9 @@ The `VideoCallActivity` SHALL use a navigation graph for call flow.
 
 ## Requirement: PreJoinFragment
 
-The `PreJoinFragment` SHALL handle pre-call setup and backend room-join
-orchestration for both guest and authenticated users.
+The `PreJoinFragment` SHALL handle pre-call setup, password-aware meeting
+lookup, and backend room-join orchestration for both guest and authenticated
+users.
 
 ### Scenario: Guest mode display
 
@@ -96,16 +97,49 @@ orchestration for both guest and authenticated users.
 - **THEN** it SHALL show:
     - Camera preview surface or placeholder
     - Meeting code input field
+    - Password label and input that are hidden by default
     - Microphone toggle switch
     - Camera toggle switch
     - "Join" button
 
-### Scenario: Validation before join
+### Scenario: Validation before initial lookup
 
 - **WHEN** user taps "Join" without meeting code
 - **THEN** system SHALL show inline error on meeting code field
-- **WHEN** guest user taps "Join" without display name
-- **THEN** system SHALL show inline error on display name field
+- **THEN** it SHALL NOT request meeting lookup or room join
+
+### Scenario: Validation before protected join submission
+
+- **WHEN** the current meeting requires a password and user taps "Join" without
+  entering one
+- **THEN** system SHALL show inline error on the password field
+- **THEN** it SHALL NOT submit the join request until a password is provided
+
+### Scenario: Password section appears after protected lookup
+
+- **WHEN** meeting lookup succeeds and reports `requirePassword=true`
+- **THEN** PreJoinFragment SHALL animate the password label and input into view
+  with an expand-and-fade transition
+- **THEN** the join button SHALL return to an enabled state after the lookup
+- **THEN** the password input SHALL request focus after the reveal completes
+
+### Scenario: Meeting lookup loading state is visible
+
+- **WHEN** the app is fetching meeting info by short code before a join request
+- **THEN** the join button SHALL be disabled
+- **THEN** a spinner and checking label SHALL appear if the lookup remains in
+  progress past the configured delay
+- **THEN** the loading state SHALL clear when lookup succeeds, fails, or the
+  join request phase begins
+
+### Scenario: Meeting code changes invalidate password prompt
+
+- **WHEN** the user changes the meeting code after the password UI is visible
+- **THEN** the fragment SHALL clear the password value and related errors
+- **THEN** it SHALL treat the next tap on Join as a fresh lookup for the new
+  code
+- **THEN** it SHALL NOT reuse the previous meeting UUID or password-required
+  state
 
 ### Scenario: Join request approval navigates into active call
 
@@ -123,6 +157,15 @@ orchestration for both guest and authenticated users.
   active
 - **THEN** the user SHALL remain on the pre-join surface until approval, denial,
   or expiration is received
+
+### Scenario: Lookup and password errors stay attached to the correct field
+
+- **WHEN** meeting lookup reports not found, join submission fails with invalid
+  password, or lookup fails due to network issues
+- **THEN** not-found feedback SHALL appear inline on the meeting code field
+- **THEN** invalid-password feedback SHALL appear inline on the password field
+- **THEN** retryable network lookup failures SHALL be shown through a snackbar
+  with a retry action
 
 ## Requirement: Hosts can update meeting settings during an active call
 
@@ -201,8 +244,9 @@ with compact controls, layout switching, and host-aware action surfaces.
 
 ## Requirement: CallViewModel
 
-A shared `CallViewModel` SHALL manage backend join state, LiveKit room state,
-selected layout, and meeting-settings state across call fragments.
+A shared `CallViewModel` SHALL manage backend join, password-gating lookup
+state, LiveKit room state, selected layout, and meeting-settings state across
+call fragments.
 
 ### Scenario: ViewModel scope
 
@@ -219,6 +263,9 @@ selected layout, and meeting-settings state across call fragments.
     - `isCameraEnabled` (LiveData<Boolean>)
     - `meetingCode` (LiveData<String>)
     - `displayName` (LiveData<String>) for guest mode
+    - password-gating state including whether the current meeting requires a
+      password, the current password value, and meeting-lookup loading/error
+      signals
     - room connection state (`DISCONNECTED`, `CONNECTING`, `CONNECTED`,
       `RECONNECTING`, `FAILED`)
     - a LiveData participant collection for visible room participants
@@ -226,6 +273,31 @@ selected layout, and meeting-settings state across call fragments.
     - `currentLayout` for the selected `VideoLayout`
     - `meetingSettings` for the latest editable meeting settings snapshot
     - `isHost` for host-only UI branching
+
+### Scenario: Meeting lookup orchestrates protected join state
+
+- **WHEN** `fetchMeetingInfoAndJoin(shortCode)` is called with a valid meeting
+  code
+- **THEN** `CallViewModel` SHALL fetch meeting detail by short code and cache
+  the resolved meeting UUID for the current join attempt
+- **THEN** it SHALL publish whether the current meeting requires a password
+- **THEN** it SHALL only proceed to join submission immediately when the meeting
+  does not require a password
+
+### Scenario: Protected join submission includes password state
+
+- **WHEN** `requestJoinRoom()` is called after a protected meeting lookup
+- **THEN** `CallViewModel` SHALL pass the current password value to
+  `JoinRoomRepository.requestJoin(...)`
+- **THEN** it SHALL preserve the existing approved, pending, denied, and expired
+  join-state handling
+
+### Scenario: Resetting join state clears password-specific state
+
+- **WHEN** the pre-join flow is reset for retry or cancellation
+- **THEN** `CallViewModel` SHALL clear password value, password-required state,
+  and meeting-lookup error/loading state
+- **THEN** the next join attempt SHALL start from a clean pre-lookup state
 
 ### Scenario: Room and settings methods coordinate call control
 

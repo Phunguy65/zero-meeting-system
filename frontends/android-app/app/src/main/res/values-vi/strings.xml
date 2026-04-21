@@ -226,6 +226,14 @@
         vụ</string>
     <string name="prejoin_error_meeting_code">Vui lòng nhập mã phòng họp</string>
     <string name="prejoin_error_display_name">Vui lòng nhập tên hiển thị</string>
+    <string name="prejoin_password">Mật khẩu</string>
+    <string name="prejoin_password_hint">Nhập mật khẩu cuộc họp</string>
+    <string name="prejoin_password_helper">Cuộc họp này yêu cầu mật khẩu để tham gia</string>
+    <string name="prejoin_error_password_required">Vui lòng nhập mật khẩu cuộc họp</string>
+    <string name="prejoin_error_invalid_password">Mật khẩu không đúng. Vui lòng thử lại.</string>
+    <string name="prejoin_error_meeting_not_found">Không tìm thấy cuộc họp. Vui lòng kiểm tra mã.</string>
+    <string name="prejoin_checking">Đang kiểm tra cuộc họp…</string>
+    <string name="prejoin_network_error_retry">Lỗi mạng. Nhấn để thử lại.</string>
     <string name="call_leave">Rời đi</string>
     <string name="call_leave_title">Rời khỏi cuộc họp?</string>
     <string name="call_leave_message">Bạn có chắc muốn rời khỏi cuộc họp này không?</string>

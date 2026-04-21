@@ -80,4 +80,16 @@ public interface MeetingRepository {
      *         or completes exceptionally with a localized error message
      */
     CompletableFuture<Void> cancelMeeting(String meetingId);
+
+    /**
+     * Retrieves meeting details by short code.
+     *
+     * <p>Used for pre-join lookup to determine if the meeting requires a password
+     * before attempting to join. Returns meeting metadata along with current settings.
+     *
+     * @param shortCode the meeting short code
+     * @return a CompletableFuture that completes with meeting details,
+     *         or completes exceptionally if not found or network error
+     */
+    CompletableFuture<MeetingDetail> getMeetingByShortCode(String shortCode);
 }

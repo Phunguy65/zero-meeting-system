@@ -17,13 +17,15 @@ public interface JoinRoomRepository {
      * @param meetingUuid the meeting UUID (if available, used directly for API call)
      * @param displayName the display name for the participant
      * @param deviceId    the device identifier
+     * @param password    the meeting password (for protected meetings, nullable)
      * @return a CompletableFuture that completes with the join result
      */
     CompletableFuture<JoinRoomResult> requestJoin(
             String meetingCode,
             @Nullable String meetingUuid,
             String displayName,
-            String deviceId);
+            String deviceId,
+            @Nullable String password);
 
     /**
      * Subscribes to approval status updates for a pending join request.

@@ -114,6 +114,40 @@
                 android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Password label (protected meetings) -->
+        <TextView android:id="@+id/lblPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/prejoin_password"
+            android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+            android:visibility="gone" android:alpha="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilDisplayName" />
+
+        <!-- Password input (protected meetings) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:visibility="gone" android:alpha="0"
+            app:boxCornerRadiusBottomEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusBottomStart="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopStart="@dimen/corner_radius_md"
+            app:helperText="@string/prejoin_password_helper"
+            app:helperTextEnabled="true" app:endIconMode="password_toggle"
+            app:layout_constraintTop_toBottomOf="@id/lblPassword">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtPassword" android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prejoin_password_hint"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Join options label -->
         <TextView android:id="@+id/lblJoinOptions"
             android:layout_width="wrap_content"
@@ -123,7 +157,7 @@
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="12sp" android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilDisplayName" />
+            app:layout_constraintTop_toBottomOf="@id/tilPassword" />
 
         <!-- Audio option -->
         <LinearLayout android:id="@+id/llAudioOption"
@@ -219,6 +253,30 @@
             android:background="?attr/colorOutline"
             app:layout_constraintTop_toBottomOf="@id/llVideoOption" />
 
+        <!-- Checking state indicator -->
+        <LinearLayout android:id="@+id/llCheckingState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_lg" android:gravity="center"
+            android:orientation="horizontal" android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider">
+
+            <ProgressBar android:id="@+id/progressChecking"
+                android:layout_width="@dimen/icon_size_sm"
+                android:layout_height="@dimen/icon_size_sm"
+                android:indeterminate="true" />
+
+            <TextView android:id="@+id/tvCheckingState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:text="@string/prejoin_checking"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
+        </LinearLayout>
+
         <!-- Join button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnJoinMeeting" android:layout_width="match_parent"
@@ -228,7 +286,7 @@
             android:textAllCaps="false" android:textSize="18sp"
             android:textStyle="bold" app:backgroundTint="?attr/colorPrimary"
             app:cornerRadius="@dimen/corner_radius_md"
-            app:layout_constraintTop_toBottomOf="@id/divider" />
+            app:layout_constraintTop_toBottomOf="@id/llCheckingState" />
 
         <!-- Terms text -->
         <TextView android:id="@+id/tvTerms"

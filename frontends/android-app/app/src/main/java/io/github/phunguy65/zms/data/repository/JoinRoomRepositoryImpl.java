@@ -59,7 +59,8 @@ public class JoinRoomRepositoryImpl implements JoinRoomRepository {
             String meetingCode,
             @Nullable String meetingUuid,
             String displayName,
-            String deviceId) {
+            String deviceId,
+            @Nullable String password) {
         return CompletableFuture.supplyAsync(
                 () -> {
                     try {
@@ -68,7 +69,8 @@ public class JoinRoomRepositoryImpl implements JoinRoomRepository {
                         MeetingManagementJoinRequestRequest request =
                                 new MeetingManagementJoinRequestRequest()
                                         .displayName(displayName)
-                                        .deviceId(deviceId);
+                                        .deviceId(deviceId)
+                                        .password(password);
 
                         Response<MeetingManagementRequestJoinResponse> response =
                                 joinRequestsApi.requestJoin(meetingId, request).execute();
@@ -78,6 +80,8 @@ public class JoinRoomRepositoryImpl implements JoinRoomRepository {
                         }
 
                         return mapToJoinRoomResult(response.body(), meetingId.toString());
+                    } catch (ApiFailException e) {
+                        return mapApiFailToResult(e);
                     } catch (Exception e) {
                         throw new CompletionException(translateException(e));
                     }
@@ -140,14 +144,14 @@ public class JoinRoomRepositoryImpl implements JoinRoomRepository {
     private JoinRoomResult mapToJoinRoomResult(
             MeetingManagementRequestJoinResponse response, String resolvedMeetingUuid) {
         if (response.getStatus() == null) {
-            return JoinRoomResult.denied("Unknown response status");
+            return JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.UNKNOWN_STATUS);
         }
 
         switch (response.getStatus()) {
             case APPROVED:
                 String token = response.getToken();
                 if (token == null || token.isEmpty()) {
-                    return JoinRoomResult.denied("No access token provided");
+                    return JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.MISSING_DATA);
                 }
                 String roomName = response.getRoomName();
                 return JoinRoomResult.approved(token, roomName, resolvedMeetingUuid);
@@ -155,19 +159,34 @@ public class JoinRoomRepositoryImpl implements JoinRoomRepository {
             case PENDING:
                 UUID requestId = response.getRequestId();
                 if (requestId == null) {
-                    return JoinRoomResult.denied("No request ID for pending approval");
+                    return JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.MISSING_DATA);
                 }
                 return JoinRoomResult.pending(requestId.toString(), resolvedMeetingUuid);
 
             case DENIED:
-                return JoinRoomResult.denied("Join request denied");
+                return JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.HOST_DENIED);
 
             case EXPIRED:
-                return JoinRoomResult.denied("Join request expired");
+                return JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.REQUEST_EXPIRED);
 
             default:
-                return JoinRoomResult.denied("Unknown status: " + response.getStatus());
+                return JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.UNKNOWN_STATUS);
         }
+    }
+
+    private static final String ERROR_CODE_INVALID_PASSWORD = "INVALID_PASSWORD";
+
+    /**
+     * Maps an {@link ApiFailException} to a {@link JoinRoomResult} using the machine-readable
+     * error code. Known codes (e.g. {@code INVALID_PASSWORD}) produce typed denial results;
+     * unrecognized codes produce a custom denial with the translated message.
+     */
+    private JoinRoomResult mapApiFailToResult(ApiFailException e) {
+        if (ERROR_CODE_INVALID_PASSWORD.equals(e.getCode())) {
+            return JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.INVALID_PASSWORD);
+        }
+        String translatedMessage = errorTranslator.translate(e.getCode(), e.getMessage());
+        return JoinRoomResult.denied(translatedMessage);
     }
 
     /**

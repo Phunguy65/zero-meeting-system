@@ -14,6 +14,7 @@ public final class MeetingSettings {
     private final boolean waitingRoomEnabled;
     private final boolean allowGuest;
     @Nullable private final String password;
+    private final boolean requirePassword;
     private final int maxParticipants;
     private final boolean allowScreenShare;
     private final boolean chatEnabled;
@@ -24,6 +25,7 @@ public final class MeetingSettings {
         this.waitingRoomEnabled = builder.waitingRoomEnabled;
         this.allowGuest = builder.allowGuest;
         this.password = builder.password;
+        this.requirePassword = builder.requirePassword;
         this.maxParticipants = builder.maxParticipants;
         this.allowScreenShare = builder.allowScreenShare;
         this.chatEnabled = builder.chatEnabled;
@@ -60,6 +62,10 @@ public final class MeetingSettings {
         return password != null && !password.isEmpty();
     }
 
+    public boolean isRequirePassword() {
+        return requirePassword;
+    }
+
     public int getMaxParticipants() {
         return maxParticipants;
     }
@@ -85,6 +91,7 @@ public final class MeetingSettings {
                 .waitingRoomEnabled(waitingRoomEnabled)
                 .allowGuest(allowGuest)
                 .password(password)
+                .requirePassword(requirePassword)
                 .maxParticipants(maxParticipants)
                 .allowScreenShare(allowScreenShare)
                 .chatEnabled(chatEnabled)
@@ -96,6 +103,7 @@ public final class MeetingSettings {
         private boolean waitingRoomEnabled = true;
         private boolean allowGuest = true;
         @Nullable private String password = null;
+        private boolean requirePassword = false;
         private int maxParticipants = 100;
         private boolean allowScreenShare = true;
         private boolean chatEnabled = true;
@@ -114,6 +122,11 @@ public final class MeetingSettings {
 
         public Builder password(@Nullable String value) {
             this.password = value;
+            return this;
+        }
+
+        public Builder requirePassword(boolean value) {
+            this.requirePassword = value;
             return this;
         }
 

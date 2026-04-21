@@ -235,6 +235,14 @@
         Privacy Policy.</string>
     <string name="prejoin_error_meeting_code">Please enter Meeting ID</string>
     <string name="prejoin_error_display_name">Please enter your display name</string>
+    <string name="prejoin_password">Password</string>
+    <string name="prejoin_password_hint">Enter meeting password</string>
+    <string name="prejoin_password_helper">This meeting requires a password to join</string>
+    <string name="prejoin_error_password_required">Please enter the meeting password</string>
+    <string name="prejoin_error_invalid_password">Invalid password. Please try again.</string>
+    <string name="prejoin_error_meeting_not_found">Meeting not found. Please check the code.</string>
+    <string name="prejoin_checking">Checking meeting…</string>
+    <string name="prejoin_network_error_retry">Network error. Tap to retry.</string>
     <string name="call_end">End Call</string>
     <string name="call_leave">Leave</string>
     <string name="call_leave_title">Leave Meeting</string>

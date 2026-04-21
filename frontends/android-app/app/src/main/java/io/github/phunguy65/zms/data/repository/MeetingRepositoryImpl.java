@@ -212,6 +212,33 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 ioExecutor);
     }
 
+    @Override
+    public CompletableFuture<MeetingDetail> getMeetingByShortCode(String shortCode) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        Response<MeetingManagementMeetingResponse> response =
+                                meetingsApi.getMeetingByShortCode(shortCode).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            int code = response.code();
+                            if (code == 404) {
+                                throw new MeetingNotFoundException("Meeting not found");
+                            }
+                            throw new IOException(
+                                    "Get meeting by short code failed: HTTP " + code);
+                        }
+
+                        return meetingMapper.toMeetingDetail(response.body());
+                    } catch (MeetingNotFoundException e) {
+                        throw new CompletionException(e);
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
     /**
      * Builds the API request for instant meeting creation.
      * Uses default settings with waiting room enabled.
@@ -362,6 +389,16 @@ public class MeetingRepositoryImpl implements MeetingRepository {
      */
     public static class MeetingCreationException extends RuntimeException {
         public MeetingCreationException(String message) {
+            super(message);
+        }
+    }
+
+    /**
+     * Exception indicating a meeting was not found by short code.
+     * Used to distinguish 404 from other errors for UI handling.
+     */
+    public static class MeetingNotFoundException extends RuntimeException {
+        public MeetingNotFoundException(String message) {
             super(message);
         }
     }
