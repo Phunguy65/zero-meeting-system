@@ -3,18 +3,11 @@ package io.github.phunguy65.zms.presentation.videocall;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
-import com.google.android.material.card.MaterialCardView;
 import io.github.phunguy65.zms.domain.model.VideoParticipant;
 import io.github.phunguy65.zms.frontends.R;
-import io.livekit.android.renderer.SurfaceViewRenderer;
-import io.livekit.android.room.track.VideoTrack;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -58,8 +51,7 @@ public class VideoGridAdapter extends ListAdapter<VideoParticipant, VideoTileVie
         notifyDataSetChanged();
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public VideoTileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_video_tile, parent, false);
@@ -69,8 +61,8 @@ public class VideoGridAdapter extends ListAdapter<VideoParticipant, VideoTileVie
     @Override
     public void onBindViewHolder(@NonNull VideoTileViewHolder holder, int position) {
         VideoParticipant participant = getItem(position);
-        boolean isActiveSpeaker = activeSpeakerIds.contains(participant.getId()) 
-                || participant.isActiveSpeaker();
+        boolean isActiveSpeaker =
+                activeSpeakerIds.contains(participant.getId()) || participant.isActiveSpeaker();
         holder.bind(participant, isActiveSpeaker);
     }
 

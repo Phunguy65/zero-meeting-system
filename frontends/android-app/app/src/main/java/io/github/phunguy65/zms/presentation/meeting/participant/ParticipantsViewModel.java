@@ -37,8 +37,7 @@ public class ParticipantsViewModel extends ViewModel {
 
     @Inject
     public ParticipantsViewModel(
-            ParticipantRepository participantRepository,
-            @MainExecutor Executor mainExecutor) {
+            ParticipantRepository participantRepository, @MainExecutor Executor mainExecutor) {
         this.participantRepository = participantRepository;
         this.mainExecutor = mainExecutor;
     }
@@ -51,9 +50,8 @@ public class ParticipantsViewModel extends ViewModel {
      * Receives LiveKit participants from CallViewModel and publishes a merged list.
      */
     public void setLiveKitParticipants(List<VideoParticipant> videoParticipants) {
-        cachedLiveKitParticipants = videoParticipants != null
-                ? new ArrayList<>(videoParticipants)
-                : new ArrayList<>();
+        cachedLiveKitParticipants =
+                videoParticipants != null ? new ArrayList<>(videoParticipants) : new ArrayList<>();
         publishMergedList();
     }
 
@@ -64,29 +62,34 @@ public class ParticipantsViewModel extends ViewModel {
     public void enrichWithRoles(String meetingId) {
         if (meetingId == null || meetingId.isEmpty()) return;
 
-        participantRepository.getParticipantRoles(meetingId)
-                .whenCompleteAsync((roleInfos, error) -> {
-                    if (error != null) {
-                        publishMergedList();
-                        return;
-                    }
-
-                    roleByIdentity = new HashMap<>();
-                    roleByDisplayName = new HashMap<>();
-
-                    if (roleInfos != null) {
-                        for (ParticipantRoleInfo info : roleInfos) {
-                            if (info.getId() != null && !info.getId().isEmpty()) {
-                                roleByIdentity.put(info.getId(), info.getRole());
+        participantRepository
+                .getParticipantRoles(meetingId)
+                .whenCompleteAsync(
+                        (roleInfos, error) -> {
+                            if (error != null) {
+                                publishMergedList();
+                                return;
                             }
-                            if (info.getDisplayName() != null && !info.getDisplayName().isEmpty()) {
-                                roleByDisplayName.put(info.getDisplayName(), info.getRole());
-                            }
-                        }
-                    }
 
-                    publishMergedList();
-                }, mainExecutor);
+                            roleByIdentity = new HashMap<>();
+                            roleByDisplayName = new HashMap<>();
+
+                            if (roleInfos != null) {
+                                for (ParticipantRoleInfo info : roleInfos) {
+                                    if (info.getId() != null && !info.getId().isEmpty()) {
+                                        roleByIdentity.put(info.getId(), info.getRole());
+                                    }
+                                    if (info.getDisplayName() != null
+                                            && !info.getDisplayName().isEmpty()) {
+                                        roleByDisplayName.put(
+                                                info.getDisplayName(), info.getRole());
+                                    }
+                                }
+                            }
+
+                            publishMergedList();
+                        },
+                        mainExecutor);
     }
 
     private void publishMergedList() {

@@ -106,8 +106,9 @@ public class CalendarViewModel extends ViewModel {
                             } else {
                                 Map<LocalDate, List<CalendarEvent>> eventsByDate = events.stream()
                                         .filter(e -> e.startTime() != null)
-                                        .collect(Collectors.groupingBy(
-                                                e -> e.startTime().atZoneSameInstant(zoneId).toLocalDate()));
+                                        .collect(Collectors.groupingBy(e -> e.startTime()
+                                                .atZoneSameInstant(zoneId)
+                                                .toLocalDate()));
 
                                 _monthEvents.setValue(eventsByDate);
 

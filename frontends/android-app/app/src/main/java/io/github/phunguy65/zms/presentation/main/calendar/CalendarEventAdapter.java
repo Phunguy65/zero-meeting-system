@@ -66,8 +66,10 @@ public class CalendarEventAdapter
             // Format time
             OffsetDateTime startTime = item.startTime();
             if (startTime != null) {
-                DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm", Locale.getDefault());
-                DateTimeFormatter amPmFormatter = DateTimeFormatter.ofPattern("a", Locale.getDefault());
+                DateTimeFormatter timeFormatter =
+                        DateTimeFormatter.ofPattern("h:mm", Locale.getDefault());
+                DateTimeFormatter amPmFormatter =
+                        DateTimeFormatter.ofPattern("a", Locale.getDefault());
                 tvTime.setText(startTime.format(timeFormatter));
                 tvAmPm.setText(startTime.format(amPmFormatter));
             } else {
@@ -77,31 +79,35 @@ public class CalendarEventAdapter
 
             // Set title
             String title = item.title();
-            tvTitle.setText(title != null && !title.isEmpty()
-                    ? title
-                    : itemView.getContext().getString(R.string.meeting_history_untitled));
+            tvTitle.setText(
+                    title != null && !title.isEmpty()
+                            ? title
+                            : itemView.getContext().getString(R.string.meeting_history_untitled));
 
             // Set status indicator
             boolean isLive = item.status() == MeetingStatus.LIVE;
             if (isLive) {
-                viewStatusIndicator.setBackgroundColor(
-                        itemView.getContext().getColor(
-                                com.google.android.material.R.color.m3_ref_palette_dynamic_primary40));
-                tvTime.setTextColor(
-                        itemView.getContext().getColor(
-                                com.google.android.material.R.color.m3_ref_palette_black));
-                tvTime.setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleMedium);
+                viewStatusIndicator.setBackgroundColor(itemView.getContext()
+                        .getColor(com.google
+                                .android
+                                .material
+                                .R
+                                .color
+                                .m3_ref_palette_dynamic_primary40));
+                tvTime.setTextColor(itemView.getContext()
+                        .getColor(com.google.android.material.R.color.m3_ref_palette_black));
+                tvTime.setTextAppearance(
+                        com.google.android.material.R.style.TextAppearance_Material3_TitleMedium);
 
                 statusContainer.setVisibility(View.VISIBLE);
                 tvStatus.setText(R.string.meeting_status_in_progress);
             } else {
-                viewStatusIndicator.setBackgroundColor(
-                        itemView.getContext().getColor(
-                                com.google.android.material.R.color.m3_ref_palette_neutral60));
-                tvTime.setTextColor(
-                        itemView.getContext().getColor(
-                                com.google.android.material.R.color.m3_ref_palette_neutral40));
-                tvTime.setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge);
+                viewStatusIndicator.setBackgroundColor(itemView.getContext()
+                        .getColor(com.google.android.material.R.color.m3_ref_palette_neutral60));
+                tvTime.setTextColor(itemView.getContext()
+                        .getColor(com.google.android.material.R.color.m3_ref_palette_neutral40));
+                tvTime.setTextAppearance(
+                        com.google.android.material.R.style.TextAppearance_Material3_BodyLarge);
 
                 statusContainer.setVisibility(View.GONE);
             }

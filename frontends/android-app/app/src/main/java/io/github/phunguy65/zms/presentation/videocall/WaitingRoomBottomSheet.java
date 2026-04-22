@@ -54,8 +54,7 @@ public class WaitingRoomBottomSheet extends BottomSheetDialogFragment
         callViewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
 
@@ -75,8 +74,7 @@ public class WaitingRoomBottomSheet extends BottomSheetDialogFragment
         return dialog;
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,

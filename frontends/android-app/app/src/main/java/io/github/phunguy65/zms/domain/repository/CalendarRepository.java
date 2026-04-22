@@ -17,5 +17,6 @@ public interface CalendarRepository {
      * @param end the end of the date range (inclusive)
      * @return a CompletableFuture that completes with the list of calendar events
      */
-    CompletableFuture<List<CalendarEvent>> getEventsForDateRange(OffsetDateTime start, OffsetDateTime end);
+    CompletableFuture<List<CalendarEvent>> getEventsForDateRange(
+            OffsetDateTime start, OffsetDateTime end);
 }

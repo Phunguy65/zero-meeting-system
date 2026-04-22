@@ -42,8 +42,7 @@ public class LayoutPickerBottomSheet extends BottomSheetDialogFragment {
         viewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
 
@@ -61,8 +60,7 @@ public class LayoutPickerBottomSheet extends BottomSheetDialogFragment {
         return dialog;
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
@@ -135,8 +133,9 @@ public class LayoutPickerBottomSheet extends BottomSheetDialogFragment {
         android.util.TypedValue typedValue = new android.util.TypedValue();
 
         if (isSelected) {
-            requireContext().getTheme().resolveAttribute(
-                    androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+            requireContext()
+                    .getTheme()
+                    .resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
             int primaryColor = typedValue.data;
 
             iconCard.setStrokeColor(primaryColor);
@@ -144,8 +143,9 @@ public class LayoutPickerBottomSheet extends BottomSheetDialogFragment {
             icon.setImageTintList(android.content.res.ColorStateList.valueOf(primaryColor));
             card.setContentDescription(getString(R.string.cd_layout_selected, label.getText()));
         } else {
-            requireContext().getTheme().resolveAttribute(
-                    android.R.attr.textColorPrimary, typedValue, true);
+            requireContext()
+                    .getTheme()
+                    .resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
             int onSurfaceColor = typedValue.data;
 
             iconCard.setStrokeColor(android.graphics.Color.TRANSPARENT);

@@ -143,17 +143,22 @@ public class MeetingMapper {
             return MeetingSettings.defaults();
         }
 
-        boolean waitingRoomEnabled = ADMISSION_POLICY_WAITING_ROOM.equals(source.getAdmissionPolicy());
-        boolean requirePassword = source.getRequirePassword() != null ? source.getRequirePassword() : false;
+        boolean waitingRoomEnabled =
+                ADMISSION_POLICY_WAITING_ROOM.equals(source.getAdmissionPolicy());
+        boolean requirePassword =
+                source.getRequirePassword() != null ? source.getRequirePassword() : false;
 
         return new MeetingSettings.Builder()
                 .waitingRoomEnabled(waitingRoomEnabled)
                 .allowGuest(source.getAllowGuest() != null ? source.getAllowGuest() : true)
                 .requirePassword(requirePassword)
-                .maxParticipants(source.getMaxParticipants() != null ? source.getMaxParticipants() : 100)
-                .allowScreenShare(source.getAllowScreenShare() != null ? source.getAllowScreenShare() : true)
+                .maxParticipants(
+                        source.getMaxParticipants() != null ? source.getMaxParticipants() : 100)
+                .allowScreenShare(
+                        source.getAllowScreenShare() != null ? source.getAllowScreenShare() : true)
                 .chatEnabled(source.getChatEnabled() != null ? source.getChatEnabled() : true)
-                .allowMicrophone(source.getAllowMicrophone() != null ? source.getAllowMicrophone() : true)
+                .allowMicrophone(
+                        source.getAllowMicrophone() != null ? source.getAllowMicrophone() : true)
                 .allowVideo(source.getAllowVideo() != null ? source.getAllowVideo() : true)
                 .build();
     }

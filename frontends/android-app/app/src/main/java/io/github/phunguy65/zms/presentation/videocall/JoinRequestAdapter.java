@@ -25,8 +25,7 @@ public class JoinRequestAdapter extends RecyclerView.Adapter<JoinRequestAdapter.
         this.actionCallback = actionCallback;
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_join_request, parent, false);

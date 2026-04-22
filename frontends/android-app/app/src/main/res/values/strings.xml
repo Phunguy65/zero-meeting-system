@@ -360,6 +360,14 @@
     <string name="call_muted_all">Muted all participants</string>
     <string name="call_attachment_coming_soon">File attachment coming soon</string>
     <string name="call_message_sent">Message sent</string>
+    <string name="chat_empty">No messages yet</string>
+    <string name="chat_loading">Loading messages…</string>
+    <string name="chat_error_load">Failed to load messages</string>
+    <string name="chat_send_failed">Failed to send message</string>
+    <string name="chat_retry">Retry</string>
+    <string name="chat_meeting_not_active">Meeting is not active</string>
+    <string name="chat_failed_to_load">Failed to load chat</string>
+    <string name="chat_failed_to_send">Failed to send message</string>
 
     <!-- ═══ Session expired ═══ -->
     <string name="session_expired_title">Session Expired</string>

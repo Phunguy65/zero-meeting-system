@@ -43,31 +43,57 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- More options button -->
-        <FrameLayout android:id="@+id/btnMoreContainer"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:layout_marginEnd="@dimen/spacing_sm" android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackgroundBorderless"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView android:id="@+id/btnMore"
-                android:layout_width="@dimen/icon_size_md"
-                android:layout_height="@dimen/icon_size_md"
-                android:layout_gravity="center"
-                android:contentDescription="@string/cd_more_options"
-                android:src="@drawable/ic_settings" app:tint="?attr/colorOnSurface" />
-        </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Loading state -->
+    <ProgressBar android:id="@+id/progressLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/layoutInput"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+
+    <!-- Empty state -->
+    <TextView android:id="@+id/tvEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:text="@string/chat_empty"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="14sp" android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/layoutInput"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+
+    <!-- Error state -->
+    <LinearLayout android:id="@+id/layoutError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:gravity="center"
+        android:orientation="vertical" android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/layoutInput"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout">
+
+        <TextView android:id="@+id/tvError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/chat_error_load"
+            android:textColor="?attr/colorError" android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRetry"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/chat_retry" />
+    </LinearLayout>
 
     <!-- Chat messages list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvChat" android:layout_width="match_parent"
         android:layout_height="0dp" android:paddingTop="@dimen/spacing_md"
-        android:clipToPadding="false"
+        android:clipToPadding="false" android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/layoutInput"
         app:layout_constraintTop_toBottomOf="@id/headerLayout" />
 

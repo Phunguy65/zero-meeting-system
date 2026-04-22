@@ -79,17 +79,18 @@ public class UpcomingMeetingAdapter
                 @NonNull OnJoinClickListener joinListener,
                 @NonNull OnMoreOptionsClickListener moreOptionsListener) {
             String title = item.title();
-            tvTitle.setText(title != null && !title.isEmpty()
-                    ? title
-                    : itemView.getContext().getString(R.string.meeting_history_untitled));
+            tvTitle.setText(
+                    title != null && !title.isEmpty()
+                            ? title
+                            : itemView.getContext().getString(R.string.meeting_history_untitled));
 
             tvTimeRange.setText(formatTimeRange(item.startTime(), item.endTime()));
 
             boolean isLive = item.status() == MeetingStatus.LIVE;
             if (isLive) {
                 btnJoin.setText(R.string.action_join);
-                int colorPrimary = MaterialColors.getColor(
-                        itemView, androidx.appcompat.R.attr.colorPrimary);
+                int colorPrimary =
+                        MaterialColors.getColor(itemView, androidx.appcompat.R.attr.colorPrimary);
                 btnJoin.setBackgroundTintList(
                         android.content.res.ColorStateList.valueOf(colorPrimary));
                 btnJoin.setEnabled(true);
@@ -99,7 +100,8 @@ public class UpcomingMeetingAdapter
             }
 
             btnJoin.setOnClickListener(v -> joinListener.onJoinClicked(item));
-            btnMoreOptions.setOnClickListener(v -> moreOptionsListener.onMoreOptionsClicked(v, item));
+            btnMoreOptions.setOnClickListener(
+                    v -> moreOptionsListener.onMoreOptionsClicked(v, item));
         }
 
         private String formatTimeRange(OffsetDateTime startTime, OffsetDateTime endTime) {

@@ -116,8 +116,11 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void setupObservers() {
-        callViewModel.getParticipants().observe(getViewLifecycleOwner(), videoParticipants ->
-                viewModel.setLiveKitParticipants(videoParticipants));
+        callViewModel
+                .getParticipants()
+                .observe(
+                        getViewLifecycleOwner(),
+                        videoParticipants -> viewModel.setLiveKitParticipants(videoParticipants));
 
         viewModel.getParticipants().observe(getViewLifecycleOwner(), participants -> {
             adapter.updateList(participants);

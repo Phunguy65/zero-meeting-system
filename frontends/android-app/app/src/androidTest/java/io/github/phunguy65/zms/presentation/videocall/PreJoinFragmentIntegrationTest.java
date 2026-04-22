@@ -45,14 +45,16 @@ public class PreJoinFragmentIntegrationTest {
     }
 
     private Intent createGuestIntent() {
-        Intent intent = new Intent(ApplicationProvider.getApplicationContext(), VideoCallActivity.class);
+        Intent intent =
+                new Intent(ApplicationProvider.getApplicationContext(), VideoCallActivity.class);
         intent.putExtra("isGuest", true);
         return intent;
     }
 
     @Test
     public void prejoinScreen_displaysPasswordFieldsHiddenByDefault() {
-        try (ActivityScenario<VideoCallActivity> scenario = ActivityScenario.launch(createGuestIntent())) {
+        try (ActivityScenario<VideoCallActivity> scenario =
+                ActivityScenario.launch(createGuestIntent())) {
             onView(withId(R.id.lblPassword)).check(matches(not(isDisplayed())));
             onView(withId(R.id.tilPassword)).check(matches(not(isDisplayed())));
         }
@@ -60,9 +62,9 @@ public class PreJoinFragmentIntegrationTest {
 
     @Test
     public void prejoinScreen_showsMeetingCodeError_whenJoinWithEmptyCode() {
-        try (ActivityScenario<VideoCallActivity> scenario = ActivityScenario.launch(createGuestIntent())) {
-            onView(withId(R.id.edtDisplayName))
-                    .perform(typeText("Test User"), closeSoftKeyboard());
+        try (ActivityScenario<VideoCallActivity> scenario =
+                ActivityScenario.launch(createGuestIntent())) {
+            onView(withId(R.id.edtDisplayName)).perform(typeText("Test User"), closeSoftKeyboard());
 
             onView(withId(R.id.btnJoinMeeting)).perform(click());
 
@@ -72,9 +74,9 @@ public class PreJoinFragmentIntegrationTest {
 
     @Test
     public void prejoinScreen_showsDisplayNameError_whenGuestJoinsWithEmptyName() {
-        try (ActivityScenario<VideoCallActivity> scenario = ActivityScenario.launch(createGuestIntent())) {
-            onView(withId(R.id.edtMeetingCode))
-                    .perform(typeText("ABC123"), closeSoftKeyboard());
+        try (ActivityScenario<VideoCallActivity> scenario =
+                ActivityScenario.launch(createGuestIntent())) {
+            onView(withId(R.id.edtMeetingCode)).perform(typeText("ABC123"), closeSoftKeyboard());
 
             onView(withId(R.id.btnJoinMeeting)).perform(click());
 
@@ -84,14 +86,16 @@ public class PreJoinFragmentIntegrationTest {
 
     @Test
     public void prejoinScreen_checkingStateHiddenByDefault() {
-        try (ActivityScenario<VideoCallActivity> scenario = ActivityScenario.launch(createGuestIntent())) {
+        try (ActivityScenario<VideoCallActivity> scenario =
+                ActivityScenario.launch(createGuestIntent())) {
             onView(withId(R.id.llCheckingState)).check(matches(not(isDisplayed())));
         }
     }
 
     @Test
     public void prejoinScreen_joinButtonEnabledByDefault() {
-        try (ActivityScenario<VideoCallActivity> scenario = ActivityScenario.launch(createGuestIntent())) {
+        try (ActivityScenario<VideoCallActivity> scenario =
+                ActivityScenario.launch(createGuestIntent())) {
             onView(withId(R.id.btnJoinMeeting)).check(matches(isDisplayed()));
         }
     }

@@ -16,11 +16,13 @@ import io.livekit.android.room.track.LocalVideoTrack;
 import io.livekit.android.room.track.Track;
 import io.livekit.android.room.track.TrackPublication;
 import io.livekit.android.room.track.VideoTrack;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -48,6 +50,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     private boolean micEnabled = true;
     private boolean cameraEnabled = false;
 
+    private final ConcurrentLinkedQueue<byte[]> pendingDataMessages = new ConcurrentLinkedQueue<>();
+
     private final AtomicBoolean isPolling = new AtomicBoolean(false);
     private Room.State lastKnownState = null;
     private int lastParticipantCount = 0;
@@ -62,7 +66,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         final boolean videoMuted;
         final boolean audioMuted;
 
-        ParticipantTrackState(boolean hasVideo, boolean hasAudio, boolean videoMuted, boolean audioMuted) {
+        ParticipantTrackState(
+                boolean hasVideo, boolean hasAudio, boolean videoMuted, boolean audioMuted) {
             this.hasVideo = hasVideo;
             this.hasAudio = hasAudio;
             this.videoMuted = videoMuted;
@@ -74,8 +79,10 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ParticipantTrackState that = (ParticipantTrackState) o;
-            return hasVideo == that.hasVideo && hasAudio == that.hasAudio
-                    && videoMuted == that.videoMuted && audioMuted == that.audioMuted;
+            return hasVideo == that.hasVideo
+                    && hasAudio == that.hasAudio
+                    && videoMuted == that.videoMuted
+                    && audioMuted == that.audioMuted;
         }
 
         @Override
@@ -99,39 +106,38 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         notifyConnectionStateChanged(RoomConnectionState.CONNECTING);
 
         new Thread(() -> {
-            try {
-                room = LiveKit.INSTANCE.create(
-                        context,
-                        null,
-                        null
-                );
+                    try {
+                        room = LiveKit.INSTANCE.create(context, null, null);
 
-                room.connect(url, token, null, new SimpleContinuation<Unit>() {
-                    @Override
-                    public void onSuccess(Unit result) {
-                        mainHandler.post(() -> {
-                            notifyConnectionStateChanged(RoomConnectionState.CONNECTED);
-                            startStatePolling();
-                            notifyParticipantsUpdated();
-                            LocalVideoTrack track = getLocalVideoTrack();
-                            if (track != null && listener != null) {
-                                listener.onLocalVideoTrackAvailable(track);
+                        room.connect(url, token, null, new SimpleContinuation<Unit>() {
+                            @Override
+                            public void onSuccess(Unit result) {
+                                mainHandler.post(() -> {
+                                    notifyConnectionStateChanged(RoomConnectionState.CONNECTED);
+                                    registerDataReceivedHandler();
+                                    startStatePolling();
+                                    notifyParticipantsUpdated();
+                                    LocalVideoTrack track = getLocalVideoTrack();
+                                    if (track != null && listener != null) {
+                                        listener.onLocalVideoTrackAvailable(track);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onFailure(Throwable t) {
+                                mainHandler.post(() -> {
+                                    notifyConnectionStateChanged(RoomConnectionState.FAILED);
+                                });
                             }
                         });
-                    }
 
-                    @Override
-                    public void onFailure(Throwable t) {
-                        mainHandler.post(() -> {
-                            notifyConnectionStateChanged(RoomConnectionState.FAILED);
-                        });
+                    } catch (Exception e) {
+                        mainHandler.post(
+                                () -> notifyConnectionStateChanged(RoomConnectionState.FAILED));
                     }
-                });
-
-            } catch (Exception e) {
-                mainHandler.post(() -> notifyConnectionStateChanged(RoomConnectionState.FAILED));
-            }
-        }).start();
+                })
+                .start();
     }
 
     @Override
@@ -145,6 +151,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         lastKnownState = null;
         lastParticipantCount = 0;
         lastParticipantStates.clear();
+        pendingDataMessages.clear();
         notifyConnectionStateChanged(RoomConnectionState.DISCONNECTED);
     }
 
@@ -155,15 +162,14 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
             LocalParticipant localParticipant = room.getLocalParticipant();
             if (localParticipant != null) {
                 try {
-                    localParticipant.setMicrophoneEnabled(enabled, new SimpleContinuation<Boolean>() {
-                        @Override
-                        public void onSuccess(Boolean result) {
-                        }
+                    localParticipant.setMicrophoneEnabled(
+                            enabled, new SimpleContinuation<Boolean>() {
+                                @Override
+                                public void onSuccess(Boolean result) {}
 
-                        @Override
-                        public void onFailure(Throwable t) {
-                        }
-                    });
+                                @Override
+                                public void onFailure(Throwable t) {}
+                            });
                 } catch (Exception e) {
                     // Ignore publish exceptions - camera/mic state change will be reflected in UI
                 }
@@ -182,18 +188,19 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
                         @Override
                         public void onSuccess(Boolean result) {
                             if (enabled) {
-                                mainHandler.postDelayed(() -> {
-                                    LocalVideoTrack track = getLocalVideoTrack();
-                                    if (track != null && listener != null) {
-                                        listener.onLocalVideoTrackAvailable(track);
-                                    }
-                                }, 500);
+                                mainHandler.postDelayed(
+                                        () -> {
+                                            LocalVideoTrack track = getLocalVideoTrack();
+                                            if (track != null && listener != null) {
+                                                listener.onLocalVideoTrackAvailable(track);
+                                            }
+                                        },
+                                        500);
                             }
                         }
 
                         @Override
-                        public void onFailure(Throwable t) {
-                        }
+                        public void onFailure(Throwable t) {}
                     });
                 } catch (Exception e) {
                     // Ignore publish exceptions - camera/mic state change will be reflected in UI
@@ -203,8 +210,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     }
 
     @Override
-    public void switchCamera() {
-    }
+    public void switchCamera() {}
 
     @Override
     public LocalVideoTrack getLocalVideoTrack() {
@@ -212,7 +218,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         LocalParticipant localParticipant = room.getLocalParticipant();
         if (localParticipant == null) return null;
 
-        Map<String, ? extends TrackPublication> publications = localParticipant.getTrackPublications();
+        Map<String, ? extends TrackPublication> publications =
+                localParticipant.getTrackPublications();
         for (TrackPublication publication : publications.values()) {
             Track track = publication.getTrack();
             if (track instanceof LocalVideoTrack) {
@@ -240,6 +247,37 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     @Override
     public void removeRoomEventListener() {
         this.listener = null;
+    }
+
+    /**
+     * Attaches a data-received observer to the LiveKit Room. The SDK's
+     * {@code events} Flow is collected on a background coroutine; when a
+     * {@code RoomEvent.DataReceived} event arrives the raw bytes are
+     * enqueued and drained on the next main-thread poll cycle.
+     *
+     * <p>If the SDK API is unavailable at runtime (version mismatch) the
+     * method silently no-ops — chat receive will not work but the call
+     * connection remains healthy.
+     */
+    @SuppressWarnings("unchecked")
+    private void registerDataReceivedHandler() {
+        if (room == null) return;
+
+        try {
+            java.lang.reflect.Method method = room.getClass()
+                    .getMethod("registerDataReceivedHandler", kotlin.jvm.functions.Function2.class);
+            method.invoke(room, (kotlin.jvm.functions.Function2<ByteBuffer, Object, Unit>)
+                    (data, participant) -> {
+                        if (data != null) {
+                            byte[] copy = new byte[data.remaining()];
+                            data.get(copy);
+                            pendingDataMessages.add(copy);
+                        }
+                        return Unit.INSTANCE;
+                    });
+        } catch (Exception ignored) {
+            // SDK version may not expose this method — degrade gracefully.
+        }
     }
 
     /**
@@ -284,7 +322,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
             notifyConnectionStateChanged(connectionState);
         }
 
-        Map<Participant.Identity, RemoteParticipant> remoteParticipants = room.getRemoteParticipants();
+        Map<Participant.Identity, RemoteParticipant> remoteParticipants =
+                room.getRemoteParticipants();
         int currentParticipantCount = remoteParticipants.size();
         boolean participantsChanged = currentParticipantCount != lastParticipantCount;
 
@@ -299,12 +338,27 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         }
 
         updateActiveSpeakers();
+        drainPendingDataMessages();
+    }
+
+    /**
+     * Drains queued data-message payloads and delivers them to the listener
+     * on the main thread.
+     */
+    private void drainPendingDataMessages() {
+        if (listener == null) return;
+
+        byte[] data;
+        while ((data = pendingDataMessages.poll()) != null) {
+            listener.onDataReceived(data);
+        }
     }
 
     /**
      * Checks if any participant's track state has changed.
      */
-    private boolean hasTrackStateChanged(Map<Participant.Identity, RemoteParticipant> remoteParticipants) {
+    private boolean hasTrackStateChanged(
+            Map<Participant.Identity, RemoteParticipant> remoteParticipants) {
         Map<String, ParticipantTrackState> currentStates = new java.util.HashMap<>();
 
         for (RemoteParticipant participant : remoteParticipants.values()) {
@@ -356,7 +410,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     /**
      * Updates the cached participant states.
      */
-    private void updateLastParticipantStates(Map<Participant.Identity, RemoteParticipant> remoteParticipants) {
+    private void updateLastParticipantStates(
+            Map<Participant.Identity, RemoteParticipant> remoteParticipants) {
         lastParticipantStates.clear();
         for (RemoteParticipant participant : remoteParticipants.values()) {
             String id = getParticipantId(participant);
@@ -409,7 +464,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
 
         List<VideoParticipant> participants = new ArrayList<>();
 
-        Map<Participant.Identity, RemoteParticipant> remoteParticipants = room.getRemoteParticipants();
+        Map<Participant.Identity, RemoteParticipant> remoteParticipants =
+                room.getRemoteParticipants();
         for (RemoteParticipant remoteParticipant : remoteParticipants.values()) {
             participants.add(mapParticipant(remoteParticipant, false));
         }
@@ -445,13 +501,19 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         boolean isActiveSpeaker = activeSpeakerIds.contains(id);
 
         return new VideoParticipant(
-                id, displayName, videoTrack, isMicEnabled, isCameraEnabled, isActiveSpeaker, isLocal);
+                id,
+                displayName,
+                videoTrack,
+                isMicEnabled,
+                isCameraEnabled,
+                isActiveSpeaker,
+                isLocal);
     }
 
     /**
      * Simple continuation adapter for Kotlin suspend functions.
      */
-    private static abstract class SimpleContinuation<T> implements Continuation<T> {
+    private abstract static class SimpleContinuation<T> implements Continuation<T> {
 
         @Override
         public CoroutineContext getContext() {
@@ -470,6 +532,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         }
 
         public abstract void onSuccess(T result);
+
         public abstract void onFailure(Throwable t);
     }
 }

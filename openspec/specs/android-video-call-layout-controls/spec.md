@@ -24,13 +24,22 @@ bar with a compact primary control bar and a secondary overflow actions surface.
 - **THEN** the sheet SHALL expose Settings only when the current participant is
   the meeting host
 
-### Scenario: Overflow actions reflect live badge and count state
+### Scenario: Overflow actions reflect participant count without unread chat badge
 
-- **WHEN** unread chat state or participant count changes during the call
-- **THEN** the meeting actions bottom sheet SHALL render the latest badge/count
-  state for the affected action row
-- **THEN** selecting Chat or Participants SHALL open the existing in-call
-  surface without leaving `ActiveCallFragment`
+- **WHEN** participant count changes during the call
+- **THEN** the meeting actions bottom sheet SHALL render the latest participant
+  count state for the Participants action row
+- **THEN** the Chat action row SHALL remain accessible without unread badge or
+  unread count indicators
+
+### Scenario: Chat and Participants open their in-call surfaces
+
+- **WHEN** the user selects Chat or Participants from the meeting actions bottom
+  sheet
+- **THEN** the selected in-call surface SHALL open without leaving
+  `ActiveCallFragment`
+- **THEN** chat availability SHALL follow active-meeting constraints from chat
+  capability requirements
 
 ## Requirement: Layout picker presents the supported video arrangements
 

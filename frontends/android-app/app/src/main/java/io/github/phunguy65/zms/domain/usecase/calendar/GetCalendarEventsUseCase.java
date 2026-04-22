@@ -24,7 +24,8 @@ public class GetCalendarEventsUseCase {
      * @param end the end of the date range (inclusive)
      * @return a CompletableFuture that completes with the list of calendar events
      */
-    public CompletableFuture<List<CalendarEvent>> execute(OffsetDateTime start, OffsetDateTime end) {
+    public CompletableFuture<List<CalendarEvent>> execute(
+            OffsetDateTime start, OffsetDateTime end) {
         return calendarRepository.getEventsForDateRange(start, end);
     }
 }

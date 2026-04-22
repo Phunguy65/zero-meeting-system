@@ -30,9 +30,13 @@ public class MeetingActionsBottomSheet extends BottomSheetDialogFragment {
 
     public interface ActionsCallback {
         void onScreenShareClicked();
+
         void onChatClicked();
+
         void onParticipantsClicked();
+
         void onChangeLayoutClicked();
+
         void onMeetingSettingsClicked();
     }
 
@@ -45,7 +49,6 @@ public class MeetingActionsBottomSheet extends BottomSheetDialogFragment {
     private LinearLayout rowChangeLayout;
     private LinearLayout rowMeetingSettings;
     private View dividerSettings;
-    private TextView tvChatBadge;
     private TextView tvParticipantCount;
     private TextView tvCurrentLayout;
 
@@ -59,8 +62,7 @@ public class MeetingActionsBottomSheet extends BottomSheetDialogFragment {
         viewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
 
@@ -78,8 +80,7 @@ public class MeetingActionsBottomSheet extends BottomSheetDialogFragment {
         return dialog;
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
@@ -102,7 +103,6 @@ public class MeetingActionsBottomSheet extends BottomSheetDialogFragment {
         rowChangeLayout = view.findViewById(R.id.rowChangeLayout);
         rowMeetingSettings = view.findViewById(R.id.rowMeetingSettings);
         dividerSettings = view.findViewById(R.id.dividerSettings);
-        tvChatBadge = view.findViewById(R.id.tvChatBadge);
         tvParticipantCount = view.findViewById(R.id.tvParticipantCount);
         tvCurrentLayout = view.findViewById(R.id.tvCurrentLayout);
     }
@@ -113,7 +113,8 @@ public class MeetingActionsBottomSheet extends BottomSheetDialogFragment {
             if (callback != null) {
                 callback.onScreenShareClicked();
             } else {
-                Snackbar.make(requireView(), R.string.feature_coming_soon, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(requireView(), R.string.feature_coming_soon, Snackbar.LENGTH_SHORT)
+                        .show();
             }
         });
 

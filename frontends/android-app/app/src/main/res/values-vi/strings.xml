@@ -328,6 +328,14 @@
     <string name="call_muted_all">Đã tắt tiếng tất cả</string>
     <string name="call_attachment_coming_soon">Tính năng đính kèm tệp sắp ra mắt</string>
     <string name="call_message_sent">Đã gửi tin nhắn</string>
+    <string name="chat_empty">Chưa có tin nhắn nào</string>
+    <string name="chat_loading">Đang tải tin nhắn…</string>
+    <string name="chat_error_load">Không thể tải tin nhắn</string>
+    <string name="chat_send_failed">Không thể gửi tin nhắn</string>
+    <string name="chat_retry">Thử lại</string>
+    <string name="chat_meeting_not_active">Cuộc họp không hoạt động</string>
+    <string name="chat_failed_to_load">Không thể tải cuộc trò chuyện</string>
+    <string name="chat_failed_to_send">Không thể gửi tin nhắn</string>
 
     <!-- ═══ Phiên hết hạn ═══ -->
     <string name="session_expired_title">Phiên đã hết hạn</string>

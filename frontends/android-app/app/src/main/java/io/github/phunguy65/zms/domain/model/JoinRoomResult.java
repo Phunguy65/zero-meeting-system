@@ -66,8 +66,10 @@ public class JoinRoomResult {
     /**
      * Creates an APPROVED result with the LiveKit access token, room name, and meeting UUID.
      */
-    public static JoinRoomResult approved(String livekitToken, String roomName, String meetingUuid) {
-        return new JoinRoomResult(Status.APPROVED, livekitToken, roomName, null, null, null, meetingUuid);
+    public static JoinRoomResult approved(
+            String livekitToken, String roomName, String meetingUuid) {
+        return new JoinRoomResult(
+                Status.APPROVED, livekitToken, roomName, null, null, null, meetingUuid);
     }
 
     /**
@@ -115,7 +117,8 @@ public class JoinRoomResult {
      * Creates a DENIED result with a custom message (for server-provided reasons).
      */
     public static JoinRoomResult denied(String reason) {
-        return new JoinRoomResult(Status.DENIED, null, null, null, reason, DenyReasonCode.CUSTOM, null);
+        return new JoinRoomResult(
+                Status.DENIED, null, null, null, reason, DenyReasonCode.CUSTOM, null);
     }
 
     public Status getStatus() {

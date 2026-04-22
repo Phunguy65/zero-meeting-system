@@ -29,7 +29,8 @@ public class MeetingEventSseClient {
 
     @Inject
     public MeetingEventSseClient(OkHttpClient httpClient) {
-        this.httpClient = httpClient.newBuilder()
+        this.httpClient = httpClient
+                .newBuilder()
                 .readTimeout(SSE_TIMEOUT_MINUTES, TimeUnit.MINUTES)
                 .build();
         this.mainHandler = new Handler(Looper.getMainLooper());
@@ -48,9 +49,8 @@ public class MeetingEventSseClient {
         this.currentListener = listener;
 
         String url = BuildConfig.API_BASE_URL + String.format(SSE_PATH, meetingId);
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(url)
-                .header("Accept", "text/event-stream");
+        Request.Builder requestBuilder =
+                new Request.Builder().url(url).header("Accept", "text/event-stream");
 
         if (authToken != null && !authToken.isEmpty()) {
             requestBuilder.header("Authorization", "Bearer " + authToken);

@@ -80,8 +80,7 @@ public class ActiveCallFragment extends Fragment
         viewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
@@ -103,7 +102,9 @@ public class ActiveCallFragment extends Fragment
         viewModel.startCallTimer();
 
         RoomConnectionState state = viewModel.getConnectionState().getValue();
-        if (state == null || state == RoomConnectionState.DISCONNECTED || state == RoomConnectionState.FAILED) {
+        if (state == null
+                || state == RoomConnectionState.DISCONNECTED
+                || state == RoomConnectionState.FAILED) {
             viewModel.connectToRoom();
         }
     }
@@ -144,8 +145,7 @@ public class ActiveCallFragment extends Fragment
     private void setupSelfPreview() {
         selfSurfaceRenderer = new SurfaceViewRenderer(requireContext());
         selfSurfaceRenderer.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
         EglBase.Context eglContext = EglBase.create().getEglBaseContext();
         selfSurfaceRenderer.init(eglContext, null);
@@ -215,15 +215,16 @@ public class ActiveCallFragment extends Fragment
         sheet.show(getChildFragmentManager(), WaitingRoomBottomSheet.TAG);
     }
 
-
     @Override
     public void onScreenShareClicked() {
-        Snackbar.make(requireView(), R.string.feature_coming_soon, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(requireView(), R.string.feature_coming_soon, Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     @Override
     public void onChatClicked() {
-        MeetingChatBottomSheet chatSheet = new MeetingChatBottomSheet();
+        String meetingId = viewModel.getMeetingId().getValue();
+        MeetingChatBottomSheet chatSheet = MeetingChatBottomSheet.newInstance(meetingId);
         chatSheet.show(getChildFragmentManager(), MeetingChatBottomSheet.TAG);
         resetAutoHideTimer();
     }
@@ -263,7 +264,9 @@ public class ActiveCallFragment extends Fragment
             updateSelfPreview(enabled);
         });
 
-        viewModel.getConnectionState().observe(getViewLifecycleOwner(), this::updateConnectionIndicator);
+        viewModel
+                .getConnectionState()
+                .observe(getViewLifecycleOwner(), this::updateConnectionIndicator);
 
         viewModel.getParticipants().observe(getViewLifecycleOwner(), this::updateParticipants);
 
@@ -271,17 +274,22 @@ public class ActiveCallFragment extends Fragment
             videoGridAdapter.setActiveSpeakers(new HashSet<>(speakerIds));
         });
 
-        viewModel.getLocalVideoTrack().observe(getViewLifecycleOwner(), this::attachLocalVideoTrack);
+        viewModel
+                .getLocalVideoTrack()
+                .observe(getViewLifecycleOwner(), this::attachLocalVideoTrack);
 
         viewModel.getCurrentLayout().observe(getViewLifecycleOwner(), this::applyLayout);
 
-        viewModel.isHost().observe(getViewLifecycleOwner(), isHost ->
-                updateWaitingRoomButtonVisibility(isHost, viewModel.getMeetingSettings().getValue()));
+        viewModel
+                .isHost()
+                .observe(
+                        getViewLifecycleOwner(),
+                        isHost -> updateWaitingRoomButtonVisibility(
+                                isHost, viewModel.getMeetingSettings().getValue()));
 
         viewModel.getMeetingSettings().observe(getViewLifecycleOwner(), settings -> {
             Boolean isHost = viewModel.isHost().getValue();
-            updateWaitingRoomButtonVisibility(
-                    isHost != null && isHost, settings);
+            updateWaitingRoomButtonVisibility(isHost != null && isHost, settings);
         });
 
         viewModel.getPendingCount().observe(getViewLifecycleOwner(), count -> {
@@ -407,8 +415,8 @@ public class ActiveCallFragment extends Fragment
                 color = R.color.video_call_text_secondary;
                 break;
         }
-        imgConnectionQuality.setImageTintList(android.content.res.ColorStateList.valueOf(
-                getResources().getColor(color, null)));
+        imgConnectionQuality.setImageTintList(
+                android.content.res.ColorStateList.valueOf(getResources().getColor(color, null)));
     }
 
     private void updateParticipants(List<VideoParticipant> participants) {

@@ -2,7 +2,6 @@ package io.github.phunguy65.zms.presentation.videocall;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -10,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 import io.github.phunguy65.zms.di.LiveKitUrl;
 import io.github.phunguy65.zms.di.MainExecutor;
 import io.github.phunguy65.zms.domain.model.JoinRequestItem;
+import io.github.phunguy65.zms.data.repository.ChatDataMessageHandler;
 import io.github.phunguy65.zms.domain.model.JoinRoomResult;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.RoomConnectionState;
@@ -42,6 +42,7 @@ public class CallViewModel extends ViewModel {
     private final MeetingRepository meetingRepository;
     private final WaitingRoomRepository waitingRoomRepository;
     private final String liveKitUrl;
+    private final ChatDataMessageHandler chatDataMessageHandler;
     private final Executor mainExecutor;
 
     private final MutableLiveData<Boolean> _isMicEnabled = new MutableLiveData<>(true);
@@ -59,9 +60,11 @@ public class CallViewModel extends ViewModel {
     private final MutableLiveData<List<VideoParticipant>> _participants =
             new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<LocalVideoTrack> _localVideoTrack = new MutableLiveData<>(null);
-    private final MutableLiveData<List<String>> _activeSpeakers = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<String>> _activeSpeakers =
+            new MutableLiveData<>(new ArrayList<>());
 
-    private final MutableLiveData<VideoLayout> _currentLayout = new MutableLiveData<>(VideoLayout.AUTO);
+    private final MutableLiveData<VideoLayout> _currentLayout =
+            new MutableLiveData<>(VideoLayout.AUTO);
 
     private final MutableLiveData<Boolean> _isHost = new MutableLiveData<>(false);
     private final MutableLiveData<String> _meetingId = new MutableLiveData<>(null);
@@ -73,7 +76,8 @@ public class CallViewModel extends ViewModel {
     private final MutableLiveData<List<JoinRequestItem>> _pendingJoinRequests =
             new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Integer> _pendingCount = new MutableLiveData<>(0);
-    private final MutableLiveData<Boolean> _isWaitingRoomSseConnected = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> _isWaitingRoomSseConnected =
+            new MutableLiveData<>(false);
     private final MutableLiveData<String> _participantKickedEvent = new MutableLiveData<>(null);
 
     private static final long RECONNECT_INITIAL_DELAY_MS = 1000;
@@ -98,7 +102,8 @@ public class CallViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _isFetchingMeetingInfo = new MutableLiveData<>(false);
     private final MutableLiveData<String> _fetchError = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> _readyToJoin = new MutableLiveData<>(false);
-    private final MutableLiveData<JoinRoomResult.DenyReasonCode> _denyReasonCode = new MutableLiveData<>(null);
+    private final MutableLiveData<JoinRoomResult.DenyReasonCode> _denyReasonCode =
+            new MutableLiveData<>(null);
 
     /**
      * Represents the join request state machine.
@@ -117,6 +122,7 @@ public class CallViewModel extends ViewModel {
     public CallViewModel(
             LiveKitRepository liveKitRepository,
             JoinRoomRepository joinRoomRepository,
+            ChatDataMessageHandler chatDataMessageHandler,
             SessionRepository sessionRepository,
             MeetingRepository meetingRepository,
             WaitingRoomRepository waitingRoomRepository,
@@ -124,6 +130,7 @@ public class CallViewModel extends ViewModel {
             @MainExecutor Executor mainExecutor) {
         this.liveKitRepository = liveKitRepository;
         this.joinRoomRepository = joinRoomRepository;
+        this.chatDataMessageHandler = chatDataMessageHandler;
         this.sessionRepository = sessionRepository;
         this.meetingRepository = meetingRepository;
         this.waitingRoomRepository = waitingRoomRepository;
@@ -132,8 +139,6 @@ public class CallViewModel extends ViewModel {
 
         liveKitRepository.setRoomEventListener(new RoomEventListenerImpl());
     }
-
-
 
     public LiveData<Boolean> isMicEnabled() {
         return _isMicEnabled;
@@ -341,7 +346,6 @@ public class CallViewModel extends ViewModel {
         this.meetingUuid = uuid;
     }
 
-
     /**
      * Sets the current video layout mode.
      * Notifies observers to update the participant grid arrangement.
@@ -349,7 +353,6 @@ public class CallViewModel extends ViewModel {
     public void setCurrentLayout(VideoLayout layout) {
         _currentLayout.setValue(layout);
     }
-
 
     /**
      * Sets the meeting ID for the current call.
@@ -379,20 +382,23 @@ public class CallViewModel extends ViewModel {
         _isSettingsLoading.setValue(true);
         _settingsError.setValue(null);
 
-        meetingRepository.getMeetingDetail(meetingId)
-                .whenCompleteAsync((detail, error) -> {
-                    _isSettingsLoading.postValue(false);
+        meetingRepository
+                .getMeetingDetail(meetingId)
+                .whenCompleteAsync(
+                        (detail, error) -> {
+                            _isSettingsLoading.postValue(false);
 
-                    if (error != null) {
-                        String errorMessage = error.getCause() != null
-                                ? error.getCause().getMessage()
-                                : error.getMessage();
-                        _settingsError.postValue(errorMessage);
-                        return;
-                    }
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _settingsError.postValue(errorMessage);
+                                return;
+                            }
 
-                    _meetingSettings.postValue(detail.settings());
-                }, mainExecutor);
+                            _meetingSettings.postValue(detail.settings());
+                        },
+                        mainExecutor);
     }
 
     /**
@@ -409,21 +415,24 @@ public class CallViewModel extends ViewModel {
         _settingsError.setValue(null);
         _settingsUpdateSuccess.setValue(false);
 
-        meetingRepository.updateMeetingSettings(meetingId, settings)
-                .whenCompleteAsync((updatedSettings, error) -> {
-                    _isSettingsLoading.postValue(false);
+        meetingRepository
+                .updateMeetingSettings(meetingId, settings)
+                .whenCompleteAsync(
+                        (updatedSettings, error) -> {
+                            _isSettingsLoading.postValue(false);
 
-                    if (error != null) {
-                        String errorMessage = error.getCause() != null
-                                ? error.getCause().getMessage()
-                                : error.getMessage();
-                        _settingsError.postValue(errorMessage);
-                        return;
-                    }
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _settingsError.postValue(errorMessage);
+                                return;
+                            }
 
-                    _meetingSettings.postValue(updatedSettings);
-                    _settingsUpdateSuccess.postValue(true);
-                }, mainExecutor);
+                            _meetingSettings.postValue(updatedSettings);
+                            _settingsUpdateSuccess.postValue(true);
+                        },
+                        mainExecutor);
     }
 
     /**
@@ -443,29 +452,32 @@ public class CallViewModel extends ViewModel {
         _fetchError.setValue(null);
         _readyToJoin.setValue(false);
 
-        meetingRepository.getMeetingByShortCode(shortCode)
-                .whenCompleteAsync((detail, error) -> {
-                    _isFetchingMeetingInfo.postValue(false);
+        meetingRepository
+                .getMeetingByShortCode(shortCode)
+                .whenCompleteAsync(
+                        (detail, error) -> {
+                            _isFetchingMeetingInfo.postValue(false);
 
-                    if (error != null) {
-                        Throwable cause = error.getCause() != null ? error.getCause() : error;
-                        String errorMessage = cause.getMessage();
-                        _fetchError.postValue(errorMessage);
-                        return;
-                    }
+                            if (error != null) {
+                                Throwable cause =
+                                        error.getCause() != null ? error.getCause() : error;
+                                String errorMessage = cause.getMessage();
+                                _fetchError.postValue(errorMessage);
+                                return;
+                            }
 
-                    this.meetingUuid = detail.id();
-                    boolean needsPassword = detail.settings() != null
-                            && detail.settings().isRequirePassword();
+                            this.meetingUuid = detail.id();
+                            boolean needsPassword = detail.settings() != null
+                                    && detail.settings().isRequirePassword();
 
-                    _requiresPassword.postValue(needsPassword);
+                            _requiresPassword.postValue(needsPassword);
 
-                    if (!needsPassword) {
-                        _readyToJoin.postValue(true);
-                    }
-                }, mainExecutor);
+                            if (!needsPassword) {
+                                _readyToJoin.postValue(true);
+                            }
+                        },
+                        mainExecutor);
     }
-
 
     /**
      * Initiates a join request to the backend.
@@ -489,19 +501,22 @@ public class CallViewModel extends ViewModel {
 
         String passwordToSend = (password != null && !password.isEmpty()) ? password : null;
 
-        joinRoomRepository.requestJoin(code, meetingUuid, name != null ? name : "", deviceId, passwordToSend)
-                .whenCompleteAsync((result, error) -> {
-                    if (error != null) {
-                        _joinState.postValue(JoinState.ERROR);
-                        String errorMessage = error.getCause() != null
-                                ? error.getCause().getMessage()
-                                : error.getMessage();
-                        _joinError.postValue(errorMessage);
-                        return;
-                    }
+        joinRoomRepository
+                .requestJoin(code, meetingUuid, name != null ? name : "", deviceId, passwordToSend)
+                .whenCompleteAsync(
+                        (result, error) -> {
+                            if (error != null) {
+                                _joinState.postValue(JoinState.ERROR);
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _joinError.postValue(errorMessage);
+                                return;
+                            }
 
-                    handleJoinResult(result);
-                }, mainExecutor);
+                            handleJoinResult(result);
+                        },
+                        mainExecutor);
     }
 
     /**
@@ -555,72 +570,78 @@ public class CallViewModel extends ViewModel {
      * When user is host and waiting room is enabled, starts the waiting room SSE.
      */
     private void fetchHostStatus(String meetingId) {
-        meetingRepository.getMeetingDetail(meetingId)
-                .whenCompleteAsync((detail, error) -> {
-                    if (error != null) {
-                        _isHost.postValue(false);
-                        return;
-                    }
+        meetingRepository
+                .getMeetingDetail(meetingId)
+                .whenCompleteAsync(
+                        (detail, error) -> {
+                            if (error != null) {
+                                _isHost.postValue(false);
+                                return;
+                            }
 
-                    SessionInfo session = sessionRepository.getSession();
-                    if (session != null && detail != null) {
-                        String currentUserId = session.userId();
-                        String hostId = detail.hostId();
-                        boolean isHost = currentUserId != null && currentUserId.equals(hostId);
-                        _isHost.postValue(isHost);
+                            SessionInfo session = sessionRepository.getSession();
+                            if (session != null && detail != null) {
+                                String currentUserId = session.userId();
+                                String hostId = detail.hostId();
+                                boolean isHost =
+                                        currentUserId != null && currentUserId.equals(hostId);
+                                _isHost.postValue(isHost);
 
-                        if (detail.settings() != null) {
-                            _meetingSettings.postValue(detail.settings());
-                        }
+                                if (detail.settings() != null) {
+                                    _meetingSettings.postValue(detail.settings());
+                                }
 
-                        if (isHost && detail.settings() != null
-                                && detail.settings().isWaitingRoomEnabled()) {
-                            startWaitingRoomSse();
-                        }
-                    } else {
-                        _isHost.postValue(false);
-                    }
-                }, mainExecutor);
+                                if (isHost
+                                        && detail.settings() != null
+                                        && detail.settings().isWaitingRoomEnabled()) {
+                                    startWaitingRoomSse();
+                                }
+                            } else {
+                                _isHost.postValue(false);
+                            }
+                        },
+                        mainExecutor);
     }
 
     /**
      * Subscribes to SSE approval events for pending requests.
      */
     private void subscribeToApprovalEvents(String requestId) {
-        joinRoomRepository.subscribeToApproval(requestId, new JoinRoomRepository.ApprovalEventListener() {
-            @Override
-            public void onApproved(String livekitToken) {
-                mainExecutor.execute(() -> {
-                    _joinState.setValue(JoinState.APPROVED);
-                    _livekitToken.setValue(livekitToken);
-                    initializeMeetingContext();
-                });
-            }
+        joinRoomRepository.subscribeToApproval(
+                requestId, new JoinRoomRepository.ApprovalEventListener() {
+                    @Override
+                    public void onApproved(String livekitToken) {
+                        mainExecutor.execute(() -> {
+                            _joinState.setValue(JoinState.APPROVED);
+                            _livekitToken.setValue(livekitToken);
+                            initializeMeetingContext();
+                        });
+                    }
 
-            @Override
-            public void onDenied(String reason) {
-                mainExecutor.execute(() -> {
-                    _joinState.setValue(JoinState.DENIED);
-                    _joinError.setValue(reason);
-                });
-            }
+                    @Override
+                    public void onDenied(String reason) {
+                        mainExecutor.execute(() -> {
+                            _joinState.setValue(JoinState.DENIED);
+                            _joinError.setValue(reason);
+                        });
+                    }
 
-            @Override
-            public void onExpired() {
-                mainExecutor.execute(() -> {
-                    _joinState.setValue(JoinState.EXPIRED);
-                    _joinError.setValue(null);
-                });
-            }
+                    @Override
+                    public void onExpired() {
+                        mainExecutor.execute(() -> {
+                            _joinState.setValue(JoinState.EXPIRED);
+                            _joinError.setValue(null);
+                        });
+                    }
 
-            @Override
-            public void onError(String message) {
-                mainExecutor.execute(() -> {
-                    _joinState.setValue(JoinState.ERROR);
-                    _joinError.setValue(message);
+                    @Override
+                    public void onError(String message) {
+                        mainExecutor.execute(() -> {
+                            _joinState.setValue(JoinState.ERROR);
+                            _joinError.setValue(message);
+                        });
+                    }
                 });
-            }
-        });
     }
 
     /**
@@ -824,12 +845,15 @@ public class CallViewModel extends ViewModel {
         String meetingId = _meetingId.getValue();
         if (meetingId == null || meetingId.isEmpty()) return;
 
-        waitingRoomRepository.listPendingRequests(meetingId)
-                .whenCompleteAsync((requests, error) -> {
-                    if (error != null) return;
-                    _pendingJoinRequests.postValue(requests);
-                    _pendingCount.postValue(requests.size());
-                }, mainExecutor);
+        waitingRoomRepository
+                .listPendingRequests(meetingId)
+                .whenCompleteAsync(
+                        (requests, error) -> {
+                            if (error != null) return;
+                            _pendingJoinRequests.postValue(requests);
+                            _pendingCount.postValue(requests.size());
+                        },
+                        mainExecutor);
     }
 
     /**
@@ -879,7 +903,6 @@ public class CallViewModel extends ViewModel {
     public void toggleCamera() {
         toggleLocalCamera();
     }
-
 
     /**
      * Starts the call timer. Should be called once when entering ActiveCallFragment.
@@ -952,7 +975,6 @@ public class CallViewModel extends ViewModel {
         joinRoomRepository.cancelApprovalSubscription();
     }
 
-
     private class RoomEventListenerImpl implements LiveKitRepository.RoomEventListener {
 
         @Override
@@ -963,6 +985,11 @@ public class CallViewModel extends ViewModel {
         @Override
         public void onParticipantConnected(VideoParticipant participant) {
             // Participants list is updated via onParticipantsUpdated
+        }
+
+        @Override
+        public void onDataReceived(byte[] data) {
+            chatDataMessageHandler.handleDataReceived(data);
         }
 
         @Override

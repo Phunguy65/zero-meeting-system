@@ -65,7 +65,13 @@ public class VideoParticipant {
      */
     public VideoParticipant withActiveSpeaker(boolean isActiveSpeaker) {
         return new VideoParticipant(
-                id, displayName, videoTrack, isMicEnabled, isCameraEnabled, isActiveSpeaker, isLocal);
+                id,
+                displayName,
+                videoTrack,
+                isMicEnabled,
+                isCameraEnabled,
+                isActiveSpeaker,
+                isLocal);
     }
 
     /**
@@ -73,7 +79,13 @@ public class VideoParticipant {
      */
     public VideoParticipant withVideoTrack(VideoTrack videoTrack) {
         return new VideoParticipant(
-                id, displayName, videoTrack, isMicEnabled, isCameraEnabled, isActiveSpeaker, isLocal);
+                id,
+                displayName,
+                videoTrack,
+                isMicEnabled,
+                isCameraEnabled,
+                isActiveSpeaker,
+                isLocal);
     }
 
     /**
@@ -81,7 +93,13 @@ public class VideoParticipant {
      */
     public VideoParticipant withMicEnabled(boolean isMicEnabled) {
         return new VideoParticipant(
-                id, displayName, videoTrack, isMicEnabled, isCameraEnabled, isActiveSpeaker, isLocal);
+                id,
+                displayName,
+                videoTrack,
+                isMicEnabled,
+                isCameraEnabled,
+                isActiveSpeaker,
+                isLocal);
     }
 
     /**
@@ -89,6 +107,12 @@ public class VideoParticipant {
      */
     public VideoParticipant withCameraEnabled(boolean isCameraEnabled) {
         return new VideoParticipant(
-                id, displayName, videoTrack, isMicEnabled, isCameraEnabled, isActiveSpeaker, isLocal);
+                id,
+                displayName,
+                videoTrack,
+                isMicEnabled,
+                isCameraEnabled,
+                isActiveSpeaker,
+                isLocal);
     }
 }

@@ -44,8 +44,7 @@ public class MeetingSettingsBottomSheet extends BottomSheetDialogFragment {
         viewModel = new ViewModelProvider(requireActivity()).get(CallViewModel.class);
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
 
@@ -63,8 +62,7 @@ public class MeetingSettingsBottomSheet extends BottomSheetDialogFragment {
         return dialog;
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
@@ -109,14 +107,22 @@ public class MeetingSettingsBottomSheet extends BottomSheetDialogFragment {
 
         viewModel.getSettingsError().observe(getViewLifecycleOwner(), error -> {
             if (error != null) {
-                Snackbar.make(requireView(), R.string.meeting_settings_update_error, Snackbar.LENGTH_LONG).show();
+                Snackbar.make(
+                                requireView(),
+                                R.string.meeting_settings_update_error,
+                                Snackbar.LENGTH_LONG)
+                        .show();
             }
         });
 
         viewModel.getSettingsUpdateSuccess().observe(getViewLifecycleOwner(), success -> {
             if (success) {
                 viewModel.clearSettingsUpdateSuccess();
-                Snackbar.make(requireView(), R.string.meeting_settings_update_success, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(
+                                requireView(),
+                                R.string.meeting_settings_update_success,
+                                Snackbar.LENGTH_SHORT)
+                        .show();
                 dismiss();
             }
         });

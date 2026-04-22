@@ -28,9 +28,7 @@ public class CalendarRepositoryImpl implements CalendarRepository {
 
     @Inject
     public CalendarRepositoryImpl(
-            MeetingsApi meetingsApi,
-            MeetingMapper meetingMapper,
-            @IoExecutor Executor ioExecutor) {
+            MeetingsApi meetingsApi, MeetingMapper meetingMapper, @IoExecutor Executor ioExecutor) {
         this.meetingsApi = meetingsApi;
         this.meetingMapper = meetingMapper;
         this.ioExecutor = ioExecutor;
@@ -43,14 +41,17 @@ public class CalendarRepositoryImpl implements CalendarRepository {
                 () -> {
                     try {
                         Response<MeetingManagementCursorScrollResponseMeetingResponse> response =
-                                meetingsApi.listHostMeetings(CALENDAR_PAGE_SIZE, null).execute();
+                                meetingsApi
+                                        .listHostMeetings(CALENDAR_PAGE_SIZE, null)
+                                        .execute();
 
                         if (!response.isSuccessful() || response.body() == null) {
                             throw new IOException(
                                     "List host meetings failed: HTTP " + response.code());
                         }
 
-                        List<MeetingManagementMeetingResponse> content = response.body().getContent();
+                        List<MeetingManagementMeetingResponse> content =
+                                response.body().getContent();
                         if (content == null) {
                             return List.of();
                         }

@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -96,9 +95,8 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        adapter = new UpcomingMeetingAdapter(
-                this::onJoinMeetingClicked,
-                this::onMoreOptionsClicked);
+        adapter =
+                new UpcomingMeetingAdapter(this::onJoinMeetingClicked, this::onMoreOptionsClicked);
         rvUpcomingMeetings.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvUpcomingMeetings.setAdapter(adapter);
     }
@@ -153,7 +151,8 @@ public class DashboardFragment extends Fragment {
         ClipData clip = ClipData.newPlainText("Meeting Link", link);
         clipboard.setPrimaryClip(clip);
 
-        Snackbar.make(requireView(), R.string.upcoming_link_copied, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(requireView(), R.string.upcoming_link_copied, Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     private void addToCalendar(UpcomingMeeting meeting) {
@@ -163,21 +162,30 @@ public class DashboardFragment extends Fragment {
 
         Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setData(CalendarContract.Events.CONTENT_URI);
-        intent.putExtra(CalendarContract.Events.TITLE, meeting.title() != null
-                ? meeting.title()
-                : getString(R.string.meeting_history_untitled));
-        intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,
-                meeting.startTime().atZoneSameInstant(ZoneId.systemDefault())
-                        .toInstant().toEpochMilli());
+        intent.putExtra(
+                CalendarContract.Events.TITLE,
+                meeting.title() != null
+                        ? meeting.title()
+                        : getString(R.string.meeting_history_untitled));
+        intent.putExtra(
+                CalendarContract.EXTRA_EVENT_BEGIN_TIME,
+                meeting.startTime()
+                        .atZoneSameInstant(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli());
 
         if (meeting.endTime() != null) {
-            intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME,
-                    meeting.endTime().atZoneSameInstant(ZoneId.systemDefault())
-                            .toInstant().toEpochMilli());
+            intent.putExtra(
+                    CalendarContract.EXTRA_EVENT_END_TIME,
+                    meeting.endTime()
+                            .atZoneSameInstant(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli());
         }
 
         if (meeting.shortCode() != null) {
-            intent.putExtra(CalendarContract.Events.DESCRIPTION,
+            intent.putExtra(
+                    CalendarContract.Events.DESCRIPTION,
                     getString(R.string.upcoming_action_copy_link) + ": " + meeting.shortCode());
         }
 
@@ -276,11 +284,15 @@ public class DashboardFragment extends Fragment {
             }
         });
 
-        viewModel.upcomingMeetingsState.observe(getViewLifecycleOwner(), this::renderUpcomingMeetings);
+        viewModel.upcomingMeetingsState.observe(
+                getViewLifecycleOwner(), this::renderUpcomingMeetings);
 
         viewModel.cancelSuccess.observe(getViewLifecycleOwner(), meetingId -> {
             if (meetingId != null) {
-                Snackbar.make(requireView(), R.string.upcoming_cancelled_success, Snackbar.LENGTH_SHORT)
+                Snackbar.make(
+                                requireView(),
+                                R.string.upcoming_cancelled_success,
+                                Snackbar.LENGTH_SHORT)
                         .show();
             }
         });
@@ -319,8 +331,7 @@ public class DashboardFragment extends Fragment {
                             .show();
                 }
             }
-            case UiState.Idle<List<UpcomingMeeting>> idle -> {
-            }
+            case UiState.Idle<List<UpcomingMeeting>> idle -> {}
         }
     }
 

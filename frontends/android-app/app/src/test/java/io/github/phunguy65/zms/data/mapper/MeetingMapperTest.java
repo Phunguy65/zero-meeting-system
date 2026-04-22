@@ -32,7 +32,8 @@ public class MeetingMapperTest {
 
     @Test
     public void toMeetingSettings_requirePasswordTrue_mapsCorrectly() {
-        MeetingManagementMeetingSettingsResponse source = new MeetingManagementMeetingSettingsResponse();
+        MeetingManagementMeetingSettingsResponse source =
+                new MeetingManagementMeetingSettingsResponse();
         source.setRequirePassword(true);
         source.setAllowGuest(true);
         source.setMaxParticipants(50);
@@ -48,7 +49,8 @@ public class MeetingMapperTest {
 
     @Test
     public void toMeetingSettings_requirePasswordFalse_mapsCorrectly() {
-        MeetingManagementMeetingSettingsResponse source = new MeetingManagementMeetingSettingsResponse();
+        MeetingManagementMeetingSettingsResponse source =
+                new MeetingManagementMeetingSettingsResponse();
         source.setRequirePassword(false);
         source.setAllowGuest(true);
         source.setMaxParticipants(100);
@@ -64,7 +66,8 @@ public class MeetingMapperTest {
 
     @Test
     public void toMeetingSettings_requirePasswordNull_defaultsToFalse() {
-        MeetingManagementMeetingSettingsResponse source = new MeetingManagementMeetingSettingsResponse();
+        MeetingManagementMeetingSettingsResponse source =
+                new MeetingManagementMeetingSettingsResponse();
         source.setRequirePassword(null);
         source.setAllowGuest(true);
         source.setMaxParticipants(100);
@@ -80,7 +83,8 @@ public class MeetingMapperTest {
 
     @Test
     public void toMeetingSettings_waitingRoomFromAdmissionPolicy_mapsCorrectly() {
-        MeetingManagementMeetingSettingsResponse source = new MeetingManagementMeetingSettingsResponse();
+        MeetingManagementMeetingSettingsResponse source =
+                new MeetingManagementMeetingSettingsResponse();
         source.setAdmissionPolicy("MANUAL_APPROVAL");
         source.setRequirePassword(false);
         source.setAllowGuest(true);
@@ -97,7 +101,8 @@ public class MeetingMapperTest {
 
     @Test
     public void toMeetingSettings_noWaitingRoom_whenDifferentPolicy() {
-        MeetingManagementMeetingSettingsResponse source = new MeetingManagementMeetingSettingsResponse();
+        MeetingManagementMeetingSettingsResponse source =
+                new MeetingManagementMeetingSettingsResponse();
         source.setAdmissionPolicy("AUTO_ADMIT");
         source.setRequirePassword(false);
         source.setAllowGuest(true);
@@ -114,7 +119,8 @@ public class MeetingMapperTest {
 
     @Test
     public void toMeetingSettings_allFieldsMapped() {
-        MeetingManagementMeetingSettingsResponse source = new MeetingManagementMeetingSettingsResponse();
+        MeetingManagementMeetingSettingsResponse source =
+                new MeetingManagementMeetingSettingsResponse();
         source.setAdmissionPolicy("MANUAL_APPROVAL");
         source.setRequirePassword(true);
         source.setAllowGuest(false);

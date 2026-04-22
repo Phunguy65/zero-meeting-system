@@ -13,7 +13,9 @@ public final class MeetingSettings {
 
     private final boolean waitingRoomEnabled;
     private final boolean allowGuest;
+
     @Nullable private final String password;
+
     private final boolean requirePassword;
     private final int maxParticipants;
     private final boolean allowScreenShare;
@@ -53,8 +55,7 @@ public final class MeetingSettings {
         return allowGuest;
     }
 
-    @Nullable
-    public String getPassword() {
+    @Nullable public String getPassword() {
         return password;
     }
 
@@ -102,7 +103,9 @@ public final class MeetingSettings {
     public static final class Builder {
         private boolean waitingRoomEnabled = true;
         private boolean allowGuest = true;
+
         @Nullable private String password = null;
+
         private boolean requirePassword = false;
         private int maxParticipants = 100;
         private boolean allowScreenShare = true;

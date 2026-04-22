@@ -87,8 +87,7 @@ public class VideoTileViewHolder extends RecyclerView.ViewHolder {
         if (surfaceViewRenderer == null) {
             surfaceViewRenderer = new SurfaceViewRenderer(itemView.getContext());
             surfaceViewRenderer.setLayoutParams(new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT));
+                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
             // Initialize renderer with EGL context
             EglBase.Context eglContext = EglBase.create().getEglBaseContext();

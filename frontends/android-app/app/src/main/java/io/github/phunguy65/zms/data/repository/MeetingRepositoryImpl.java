@@ -115,14 +115,17 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 () -> {
                     try {
                         Response<MeetingManagementCursorScrollResponseMeetingResponse> response =
-                                meetingsApi.listHostMeetings(UPCOMING_PAGE_SIZE, null).execute();
+                                meetingsApi
+                                        .listHostMeetings(UPCOMING_PAGE_SIZE, null)
+                                        .execute();
 
                         if (!response.isSuccessful() || response.body() == null) {
                             throw new IOException(
                                     "List host meetings failed: HTTP " + response.code());
                         }
 
-                        List<MeetingManagementMeetingResponse> content = response.body().getContent();
+                        List<MeetingManagementMeetingResponse> content =
+                                response.body().getContent();
                         if (content == null) {
                             return List.of();
                         }
@@ -133,7 +136,8 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                                 .filter(m -> m.getStatus() != null
                                         && MeetingManagementMeetingResponse.StatusEnum.SCHEDULED
                                                 == m.getStatus())
-                                .filter(m -> m.getStartTime() != null && m.getStartTime().isAfter(now))
+                                .filter(m -> m.getStartTime() != null
+                                        && m.getStartTime().isAfter(now))
                                 .map(meetingMapper::toUpcomingMeeting)
                                 .sorted(Comparator.comparing(UpcomingMeeting::startTime))
                                 .collect(Collectors.toList());
@@ -225,8 +229,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                             if (code == 404) {
                                 throw new MeetingNotFoundException("Meeting not found");
                             }
-                            throw new IOException(
-                                    "Get meeting by short code failed: HTTP " + code);
+                            throw new IOException("Get meeting by short code failed: HTTP " + code);
                         }
 
                         return meetingMapper.toMeetingDetail(response.body());

@@ -206,8 +206,7 @@ public class JoinRoomRepositoryImpl implements JoinRoomRepository {
         }
 
         if (e instanceof ApiErrorException) {
-            return new JoinRoomException(
-                    errorTranslator.translate("SERVER_ERROR", e.getMessage()));
+            return new JoinRoomException(errorTranslator.translate("SERVER_ERROR", e.getMessage()));
         }
 
         if (e instanceof UnknownHostException || e instanceof SocketTimeoutException) {

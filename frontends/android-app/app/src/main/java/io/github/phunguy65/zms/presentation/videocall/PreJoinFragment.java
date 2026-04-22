@@ -248,7 +248,8 @@ public class PreJoinFragment extends Fragment {
 
         callViewModel.getFetchError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
-                if (error.toLowerCase().contains("not found") || error.toLowerCase().contains("404")) {
+                if (error.toLowerCase().contains("not found")
+                        || error.toLowerCase().contains("404")) {
                     tilMeetingCode.setError(getString(R.string.prejoin_error_meeting_not_found));
                 } else {
                     showNetworkErrorSnackbar(error);
@@ -299,7 +300,8 @@ public class PreJoinFragment extends Fragment {
             case EXPIRED:
                 setLoading(false);
                 dismissWaitingDialog();
-                Snackbar.make(requireView(), R.string.call_join_expired, Snackbar.LENGTH_LONG).show();
+                Snackbar.make(requireView(), R.string.call_join_expired, Snackbar.LENGTH_LONG)
+                        .show();
                 break;
 
             case ERROR:
@@ -318,28 +320,33 @@ public class PreJoinFragment extends Fragment {
         if (error != null && !error.isEmpty()) {
             Snackbar.make(requireView(), error, Snackbar.LENGTH_LONG).show();
         } else {
-            Snackbar.make(requireView(), R.string.call_join_denied, Snackbar.LENGTH_LONG).show();
+            Snackbar.make(requireView(), R.string.call_join_denied, Snackbar.LENGTH_LONG)
+                    .show();
         }
     }
 
     private void showJoinDeniedMessage() {
-        JoinRoomResult.DenyReasonCode reasonCode = callViewModel.getDenyReasonCode().getValue();
-        
+        JoinRoomResult.DenyReasonCode reasonCode =
+                callViewModel.getDenyReasonCode().getValue();
+
         if (reasonCode != null) {
             switch (reasonCode) {
                 case INVALID_PASSWORD:
                     tilPassword.setError(getString(R.string.prejoin_error_invalid_password));
                     return;
                 case REQUEST_EXPIRED:
-                    Snackbar.make(requireView(), R.string.call_join_expired, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(requireView(), R.string.call_join_expired, Snackbar.LENGTH_LONG)
+                            .show();
                     return;
                 case HOST_DENIED:
-                    Snackbar.make(requireView(), R.string.call_join_denied, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(requireView(), R.string.call_join_denied, Snackbar.LENGTH_LONG)
+                            .show();
                     return;
                 case CUSTOM:
                     String error = callViewModel.getJoinError().getValue();
                     if (error != null && !error.isEmpty()) {
-                        Snackbar.make(requireView(), error, Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(requireView(), error, Snackbar.LENGTH_LONG)
+                                .show();
                         return;
                     }
                     break;
@@ -347,8 +354,9 @@ public class PreJoinFragment extends Fragment {
                     break;
             }
         }
-        
-        Snackbar.make(requireView(), R.string.call_join_denied, Snackbar.LENGTH_LONG).show();
+
+        Snackbar.make(requireView(), R.string.call_join_denied, Snackbar.LENGTH_LONG)
+                .show();
     }
 
     private void prefillFromIntent() {
@@ -397,9 +405,8 @@ public class PreJoinFragment extends Fragment {
 
         Boolean requiresPassword = callViewModel.requiresPassword().getValue();
         if (Boolean.TRUE.equals(requiresPassword)) {
-            String password = edtPassword.getText() != null
-                    ? edtPassword.getText().toString()
-                    : "";
+            String password =
+                    edtPassword.getText() != null ? edtPassword.getText().toString() : "";
             if (password.isEmpty()) {
                 tilPassword.setError(getString(R.string.prejoin_error_password_required));
                 hasError = true;
@@ -519,9 +526,11 @@ public class PreJoinFragment extends Fragment {
         AnimatorSet animatorSet = new AnimatorSet();
 
         ObjectAnimator labelAlpha = ObjectAnimator.ofFloat(lblPassword, View.ALPHA, 0f, 1f);
-        ObjectAnimator labelTranslate = ObjectAnimator.ofFloat(lblPassword, View.TRANSLATION_Y, -20f, 0f);
+        ObjectAnimator labelTranslate =
+                ObjectAnimator.ofFloat(lblPassword, View.TRANSLATION_Y, -20f, 0f);
         ObjectAnimator inputAlpha = ObjectAnimator.ofFloat(tilPassword, View.ALPHA, 0f, 1f);
-        ObjectAnimator inputTranslate = ObjectAnimator.ofFloat(tilPassword, View.TRANSLATION_Y, -20f, 0f);
+        ObjectAnimator inputTranslate =
+                ObjectAnimator.ofFloat(tilPassword, View.TRANSLATION_Y, -20f, 0f);
 
         animatorSet.playTogether(labelAlpha, labelTranslate, inputAlpha, inputTranslate);
         animatorSet.setDuration(250);

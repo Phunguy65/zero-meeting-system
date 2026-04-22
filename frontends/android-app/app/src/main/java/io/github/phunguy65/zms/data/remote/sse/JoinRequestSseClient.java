@@ -31,7 +31,8 @@ public class JoinRequestSseClient {
     @Inject
     public JoinRequestSseClient(OkHttpClient httpClient) {
         // Create SSE-specific client with longer read timeout
-        this.httpClient = httpClient.newBuilder()
+        this.httpClient = httpClient
+                .newBuilder()
                 .readTimeout(SSE_TIMEOUT_MINUTES, TimeUnit.MINUTES)
                 .build();
         this.mainHandler = new Handler(Looper.getMainLooper());
@@ -51,9 +52,8 @@ public class JoinRequestSseClient {
         this.currentListener = listener;
 
         String url = BuildConfig.API_BASE_URL + String.format(SSE_PATH, requestId);
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(url)
-                .header("Accept", "text/event-stream");
+        Request.Builder requestBuilder =
+                new Request.Builder().url(url).header("Accept", "text/event-stream");
 
         if (authToken != null && !authToken.isEmpty()) {
             requestBuilder.header("Authorization", "Bearer " + authToken);

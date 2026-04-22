@@ -21,7 +21,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.domain.model.CalendarEvent;
 import io.github.phunguy65.zms.frontends.R;
 import java.time.DayOfWeek;
-import kotlin.Unit;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -29,6 +28,7 @@ import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import kotlin.Unit;
 
 /**
  * Calendar fragment displaying meeting calendar with month navigation and day selection.
@@ -106,16 +106,19 @@ public class CalendarFragment extends Fragment {
 
                     if (isSelected) {
                         container.tvDayNumber.setBackgroundResource(R.drawable.bg_circle_blue);
-                        container.tvDayNumber.setTextColor(
-                                requireContext().getColor(com.google.android.material.R.color.m3_ref_palette_white));
+                        container.tvDayNumber.setTextColor(requireContext()
+                                .getColor(
+                                        com.google.android.material.R.color.m3_ref_palette_white));
                     } else {
                         container.tvDayNumber.setBackground(null);
-                        container.tvDayNumber.setTextColor(
-                                requireContext().getColor(com.google.android.material.R.color.m3_ref_palette_black));
+                        container.tvDayNumber.setTextColor(requireContext()
+                                .getColor(
+                                        com.google.android.material.R.color.m3_ref_palette_black));
                     }
 
                     Map<LocalDate, List<CalendarEvent>> events = viewModel.monthEvents.getValue();
-                    boolean hasEvents = events != null && events.containsKey(date)
+                    boolean hasEvents = events != null
+                            && events.containsKey(date)
                             && !events.get(date).isEmpty();
                     container.viewEventDot.setVisibility(hasEvents ? View.VISIBLE : View.INVISIBLE);
 
@@ -128,7 +131,8 @@ public class CalendarFragment extends Fragment {
             }
         });
 
-        String[] weekdayAbbreviations = getResources().getStringArray(R.array.weekday_abbreviations);
+        String[] weekdayAbbreviations =
+                getResources().getStringArray(R.array.weekday_abbreviations);
         calendarView.setMonthHeaderBinder(new MonthHeaderFooterBinder<HeaderViewContainer>() {
             @NonNull @Override
             public HeaderViewContainer create(@NonNull View view) {
@@ -137,7 +141,9 @@ public class CalendarFragment extends Fragment {
 
             @Override
             public void bind(@NonNull HeaderViewContainer container, @NonNull CalendarMonth month) {
-                for (int i = 0; i < container.weekdayLabels.length && i < weekdayAbbreviations.length; i++) {
+                for (int i = 0;
+                        i < container.weekdayLabels.length && i < weekdayAbbreviations.length;
+                        i++) {
                     container.weekdayLabels[i].setText(weekdayAbbreviations[i]);
                 }
             }

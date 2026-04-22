@@ -4,13 +4,13 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import io.github.phunguy65.zms.di.MainExecutor;
 import io.github.phunguy65.zms.domain.model.JoinRequestItem;
 import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import javax.inject.Inject;
-import io.github.phunguy65.zms.di.MainExecutor;
 
 /**
  * ViewModel for the waiting room bottom sheet.
@@ -34,8 +34,7 @@ public class WaitingRoomViewModel extends ViewModel {
 
     @Inject
     public WaitingRoomViewModel(
-            WaitingRoomRepository waitingRoomRepository,
-            @MainExecutor Executor mainExecutor) {
+            WaitingRoomRepository waitingRoomRepository, @MainExecutor Executor mainExecutor) {
         this.waitingRoomRepository = waitingRoomRepository;
         this.mainExecutor = mainExecutor;
     }
@@ -87,79 +86,91 @@ public class WaitingRoomViewModel extends ViewModel {
         _isLoading.setValue(true);
         _error.setValue(null);
 
-        waitingRoomRepository.listPendingRequests(meetingId)
-                .whenCompleteAsync((requests, error) -> {
-                    _isLoading.postValue(false);
+        waitingRoomRepository
+                .listPendingRequests(meetingId)
+                .whenCompleteAsync(
+                        (requests, error) -> {
+                            _isLoading.postValue(false);
 
-                    if (error != null) {
-                        String errorMessage = error.getCause() != null
-                                ? error.getCause().getMessage()
-                                : error.getMessage();
-                        _error.postValue(errorMessage);
-                        return;
-                    }
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _error.postValue(errorMessage);
+                                return;
+                            }
 
-                    _joinRequests.postValue(requests);
-                    _isEmpty.postValue(requests == null || requests.isEmpty());
-                }, mainExecutor);
+                            _joinRequests.postValue(requests);
+                            _isEmpty.postValue(requests == null || requests.isEmpty());
+                        },
+                        mainExecutor);
     }
 
     /**
      * Approves a single join request and removes it from the local list on success.
      */
     public void approveRequest(String meetingId, String requestId) {
-        waitingRoomRepository.approveRequest(meetingId, requestId)
-                .whenCompleteAsync((result, error) -> {
-                    if (error != null) {
-                        String errorMessage = error.getCause() != null
-                                ? error.getCause().getMessage()
-                                : error.getMessage();
-                        _actionError.postValue(errorMessage);
-                        return;
-                    }
+        waitingRoomRepository
+                .approveRequest(meetingId, requestId)
+                .whenCompleteAsync(
+                        (result, error) -> {
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _actionError.postValue(errorMessage);
+                                return;
+                            }
 
-                    removeRequestFromList(requestId);
-                    _approvedOrDeniedRequestId.postValue(requestId);
-                }, mainExecutor);
+                            removeRequestFromList(requestId);
+                            _approvedOrDeniedRequestId.postValue(requestId);
+                        },
+                        mainExecutor);
     }
 
     /**
      * Denies a single join request and removes it from the local list on success.
      */
     public void denyRequest(String meetingId, String requestId) {
-        waitingRoomRepository.denyRequest(meetingId, requestId)
-                .whenCompleteAsync((result, error) -> {
-                    if (error != null) {
-                        String errorMessage = error.getCause() != null
-                                ? error.getCause().getMessage()
-                                : error.getMessage();
-                        _actionError.postValue(errorMessage);
-                        return;
-                    }
+        waitingRoomRepository
+                .denyRequest(meetingId, requestId)
+                .whenCompleteAsync(
+                        (result, error) -> {
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _actionError.postValue(errorMessage);
+                                return;
+                            }
 
-                    removeRequestFromList(requestId);
-                    _approvedOrDeniedRequestId.postValue(requestId);
-                }, mainExecutor);
+                            removeRequestFromList(requestId);
+                            _approvedOrDeniedRequestId.postValue(requestId);
+                        },
+                        mainExecutor);
     }
 
     /**
      * Approves all pending join requests and clears the local list on success.
      */
     public void approveAll(String meetingId) {
-        waitingRoomRepository.approveAll(meetingId)
-                .whenCompleteAsync((result, error) -> {
-                    if (error != null) {
-                        String errorMessage = error.getCause() != null
-                                ? error.getCause().getMessage()
-                                : error.getMessage();
-                        _actionError.postValue(errorMessage);
-                        return;
-                    }
+        waitingRoomRepository
+                .approveAll(meetingId)
+                .whenCompleteAsync(
+                        (result, error) -> {
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _actionError.postValue(errorMessage);
+                                return;
+                            }
 
-                    _joinRequests.postValue(new ArrayList<>());
-                    _isEmpty.postValue(true);
-                    _approveAllSuccess.postValue(true);
-                }, mainExecutor);
+                            _joinRequests.postValue(new ArrayList<>());
+                            _isEmpty.postValue(true);
+                            _approveAllSuccess.postValue(true);
+                        },
+                        mainExecutor);
     }
 
     private void removeRequestFromList(String requestId) {

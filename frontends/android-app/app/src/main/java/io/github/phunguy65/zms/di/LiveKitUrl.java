@@ -5,6 +5,5 @@ import java.lang.annotation.RetentionPolicy;
 import javax.inject.Qualifier;
 
 /** Qualifier for the LiveKit server URL. */
-@Qualifier
-@Retention(RetentionPolicy.RUNTIME)
+@Qualifier @Retention(RetentionPolicy.RUNTIME)
 public @interface LiveKitUrl {}

@@ -99,5 +99,8 @@ public interface LiveKitRepository {
 
         /** Called when the local video track becomes available. */
         void onLocalVideoTrackAvailable(LocalVideoTrack track);
+
+        /** Called when a reliable data message is received from a remote participant. */
+        default void onDataReceived(byte[] data) {}
     }
 }

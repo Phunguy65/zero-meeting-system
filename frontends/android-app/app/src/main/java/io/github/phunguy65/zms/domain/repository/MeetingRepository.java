@@ -67,7 +67,8 @@ public interface MeetingRepository {
      * @return a CompletableFuture that completes with the updated settings from server response,
      *         or completes exceptionally with a localized error message
      */
-    CompletableFuture<MeetingSettings> updateMeetingSettings(String meetingId, MeetingSettings settings);
+    CompletableFuture<MeetingSettings> updateMeetingSettings(
+            String meetingId, MeetingSettings settings);
 
     /**
      * Cancels a scheduled meeting.

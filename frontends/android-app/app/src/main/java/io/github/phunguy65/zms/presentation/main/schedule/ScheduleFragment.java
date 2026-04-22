@@ -30,7 +30,6 @@ import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel.ValidationResult;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Locale;
@@ -356,9 +355,8 @@ public class ScheduleFragment extends Fragment {
                 btnScheduleMeeting.setText("");
                 progressLoading.setVisibility(View.VISIBLE);
             } else {
-                btnScheduleMeeting.setText(inEditMode
-                        ? R.string.schedule_update_button
-                        : R.string.schedule_button);
+                btnScheduleMeeting.setText(
+                        inEditMode ? R.string.schedule_update_button : R.string.schedule_button);
                 progressLoading.setVisibility(View.GONE);
             }
         });
@@ -452,7 +450,10 @@ public class ScheduleFragment extends Fragment {
 
         viewModel.updateSuccess.observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
-                Snackbar.make(requireView(), R.string.schedule_update_success, Snackbar.LENGTH_SHORT)
+                Snackbar.make(
+                                requireView(),
+                                R.string.schedule_update_success,
+                                Snackbar.LENGTH_SHORT)
                         .show();
                 Navigation.findNavController(requireView()).popBackStack();
             }
@@ -535,7 +536,8 @@ public class ScheduleFragment extends Fragment {
         }
 
         if (detail.startTime() != null) {
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy", Locale.ROOT);
+            DateTimeFormatter dateFormatter =
+                    DateTimeFormatter.ofPattern("MM/dd/yyyy", Locale.ROOT);
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ROOT);
 
             edtDate.setText(detail.startTime().format(dateFormatter));
@@ -543,7 +545,8 @@ public class ScheduleFragment extends Fragment {
 
             if (detail.endTime() != null) {
                 long durationMinutes = java.time.Duration.between(
-                        detail.startTime(), detail.endTime()).toMinutes();
+                                detail.startTime(), detail.endTime())
+                        .toMinutes();
                 String durationText = formatDurationForDisplay(durationMinutes);
                 tvDuration.setText(durationText, false);
             }

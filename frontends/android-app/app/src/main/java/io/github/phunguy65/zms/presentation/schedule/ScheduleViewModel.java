@@ -236,12 +236,13 @@ public class ScheduleViewModel extends ViewModel {
         MeetingSettings settings = new MeetingSettings.Builder()
                 .waitingRoomEnabled(isWaitingRoom)
                 .allowGuest(allowGuestVal != null ? allowGuestVal : true)
-                .password((passwordEnabledVal != null
-                                && passwordEnabledVal
-                                && password != null
-                                && !password.isEmpty())
-                        ? password
-                        : null)
+                .password(
+                        (passwordEnabledVal != null
+                                        && passwordEnabledVal
+                                        && password != null
+                                        && !password.isEmpty())
+                                ? password
+                                : null)
                 .maxParticipants(maxParticipantsVal)
                 .allowScreenShare(allowScreenShareVal != null ? allowScreenShareVal : true)
                 .chatEnabled(chatEnabledVal != null ? chatEnabledVal : true)

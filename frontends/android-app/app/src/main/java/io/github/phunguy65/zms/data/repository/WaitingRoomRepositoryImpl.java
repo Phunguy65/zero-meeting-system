@@ -40,74 +40,90 @@ public class WaitingRoomRepositoryImpl implements WaitingRoomRepository {
 
     @Override
     public CompletableFuture<List<JoinRequestItem>> listPendingRequests(String meetingId) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                UUID uuid = UUID.fromString(meetingId);
-                Response<MeetingManagementOffsetScrollResponseJoinRequestResponse> response =
-                        joinRequestsApi.listJoinRequests(uuid, DEFAULT_PAGE_SIZE, 0).execute();
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID uuid = UUID.fromString(meetingId);
+                        Response<MeetingManagementOffsetScrollResponseJoinRequestResponse>
+                                response = joinRequestsApi
+                                        .listJoinRequests(uuid, DEFAULT_PAGE_SIZE, 0)
+                                        .execute();
 
-                if (!response.isSuccessful() || response.body() == null) {
-                    throw new IOException("Failed to list join requests: HTTP " + response.code());
-                }
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException(
+                                    "Failed to list join requests: HTTP " + response.code());
+                        }
 
-                return mapToJoinRequestItems(response.body());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, ioExecutor);
+                        return mapToJoinRequestItems(response.body());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                ioExecutor);
     }
 
     @Override
     public CompletableFuture<Void> approveRequest(String meetingId, String requestId) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                UUID meetingUuid = UUID.fromString(meetingId);
-                UUID requestUuid = UUID.fromString(requestId);
-                Response<Void> response =
-                        joinRequestsApi.approveJoinRequest(meetingUuid, requestUuid).execute();
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        UUID meetingUuid = UUID.fromString(meetingId);
+                        UUID requestUuid = UUID.fromString(requestId);
+                        Response<Void> response = joinRequestsApi
+                                .approveJoinRequest(meetingUuid, requestUuid)
+                                .execute();
 
-                if (!response.isSuccessful()) {
-                    throw new IOException("Failed to approve request: HTTP " + response.code());
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, ioExecutor);
+                        if (!response.isSuccessful()) {
+                            throw new IOException(
+                                    "Failed to approve request: HTTP " + response.code());
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                ioExecutor);
     }
 
     @Override
     public CompletableFuture<Void> denyRequest(String meetingId, String requestId) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                UUID meetingUuid = UUID.fromString(meetingId);
-                UUID requestUuid = UUID.fromString(requestId);
-                Response<Void> response =
-                        joinRequestsApi.denyJoinRequest(meetingUuid, requestUuid).execute();
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        UUID meetingUuid = UUID.fromString(meetingId);
+                        UUID requestUuid = UUID.fromString(requestId);
+                        Response<Void> response = joinRequestsApi
+                                .denyJoinRequest(meetingUuid, requestUuid)
+                                .execute();
 
-                if (!response.isSuccessful()) {
-                    throw new IOException("Failed to deny request: HTTP " + response.code());
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, ioExecutor);
+                        if (!response.isSuccessful()) {
+                            throw new IOException(
+                                    "Failed to deny request: HTTP " + response.code());
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                ioExecutor);
     }
 
     @Override
     public CompletableFuture<Void> approveAll(String meetingId) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                UUID meetingUuid = UUID.fromString(meetingId);
-                Response<?> response =
-                        joinRequestsApi.approveAllJoinRequests(meetingUuid).execute();
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        UUID meetingUuid = UUID.fromString(meetingId);
+                        Response<?> response = joinRequestsApi
+                                .approveAllJoinRequests(meetingUuid)
+                                .execute();
 
-                if (!response.isSuccessful()) {
-                    throw new IOException("Failed to approve all: HTTP " + response.code());
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, ioExecutor);
+                        if (!response.isSuccessful()) {
+                            throw new IOException("Failed to approve all: HTTP " + response.code());
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                ioExecutor);
     }
 
     @Override
@@ -115,8 +131,7 @@ public class WaitingRoomRepositoryImpl implements WaitingRoomRepository {
             String meetingId, String authToken, HostEventListener listener) {
         sseClient.subscribe(meetingId, authToken, new MeetingEventSseClient.MeetingEventListener() {
             @Override
-            public void onConnected() {
-            }
+            public void onConnected() {}
 
             @Override
             public void onDisconnected() {

@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
+import io.github.phunguy65.zms.data.repository.ChatDataMessageHandler;
 import io.github.phunguy65.zms.domain.model.JoinRoomResult;
 import io.github.phunguy65.zms.domain.model.MeetingDetail;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
@@ -16,6 +17,7 @@ import io.github.phunguy65.zms.domain.repository.JoinRoomRepository;
 import io.github.phunguy65.zms.domain.repository.LiveKitRepository;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
+import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
 import java.time.OffsetDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -49,6 +51,12 @@ public class CallViewModelTest {
     @Mock
     private MeetingRepository meetingRepository;
 
+    @Mock
+    private WaitingRoomRepository waitingRoomRepository;
+
+    @Mock
+    private ChatDataMessageHandler chatDataMessageHandler;
+
     private CallViewModel viewModel;
     private final Executor immediateExecutor = Runnable::run;
     private static final String LIVEKIT_URL = "wss://test.livekit.cloud";
@@ -58,8 +66,10 @@ public class CallViewModelTest {
         viewModel = new CallViewModel(
                 liveKitRepository,
                 joinRoomRepository,
+                chatDataMessageHandler,
                 sessionRepository,
                 meetingRepository,
+                waitingRoomRepository,
                 LIVEKIT_URL,
                 immediateExecutor);
     }
@@ -132,8 +142,7 @@ public class CallViewModelTest {
     public void fetchMeetingInfoAndJoin_failure_setsFetchError() {
         CompletableFuture<MeetingDetail> failedFuture = new CompletableFuture<>();
         failedFuture.completeExceptionally(new RuntimeException("Meeting not found"));
-        when(meetingRepository.getMeetingByShortCode("INVALID"))
-                .thenReturn(failedFuture);
+        when(meetingRepository.getMeetingByShortCode("INVALID")).thenReturn(failedFuture);
 
         viewModel.fetchMeetingInfoAndJoin("INVALID");
 
@@ -145,8 +154,7 @@ public class CallViewModelTest {
     @Test
     public void fetchMeetingInfoAndJoin_setsLoadingState() {
         CompletableFuture<MeetingDetail> pendingFuture = new CompletableFuture<>();
-        when(meetingRepository.getMeetingByShortCode("ABC123"))
-                .thenReturn(pendingFuture);
+        when(meetingRepository.getMeetingByShortCode("ABC123")).thenReturn(pendingFuture);
 
         viewModel.fetchMeetingInfoAndJoin("ABC123");
 
@@ -197,17 +205,15 @@ public class CallViewModelTest {
         viewModel.setDeviceId("device-id");
 
         JoinRoomResult joinResult = JoinRoomResult.approved("token123", "meeting-uuid");
-        when(joinRoomRepository.requestJoin(anyString(), any(), anyString(), anyString(), anyString()))
+        when(joinRoomRepository.requestJoin(
+                        anyString(), any(), anyString(), anyString(), anyString()))
                 .thenReturn(CompletableFuture.completedFuture(joinResult));
 
         viewModel.requestJoinRoom();
 
-        verify(joinRoomRepository).requestJoin(
-                eq("ABC123"),
-                any(),
-                eq("Test User"),
-                eq("device-id"),
-                eq("secret123"));
+        verify(joinRoomRepository)
+                .requestJoin(
+                        eq("ABC123"), any(), eq("Test User"), eq("device-id"), eq("secret123"));
     }
 
     @Test
@@ -223,12 +229,8 @@ public class CallViewModelTest {
 
         viewModel.requestJoinRoom();
 
-        verify(joinRoomRepository).requestJoin(
-                eq("ABC123"),
-                any(),
-                eq("Test User"),
-                eq("device-id"),
-                eq(null));
+        verify(joinRoomRepository)
+                .requestJoin(eq("ABC123"), any(), eq("Test User"), eq("device-id"), eq(null));
     }
 
     @Test
@@ -245,13 +247,17 @@ public class CallViewModelTest {
         viewModel.setPassword("wrong-password");
         viewModel.setDeviceId("device-id");
 
-        JoinRoomResult denyResult = JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.INVALID_PASSWORD);
-        when(joinRoomRepository.requestJoin(anyString(), any(), anyString(), anyString(), anyString()))
+        JoinRoomResult denyResult =
+                JoinRoomResult.denied(JoinRoomResult.DenyReasonCode.INVALID_PASSWORD);
+        when(joinRoomRepository.requestJoin(
+                        anyString(), any(), anyString(), anyString(), anyString()))
                 .thenReturn(CompletableFuture.completedFuture(denyResult));
 
         viewModel.requestJoinRoom();
 
         assertEquals(CallViewModel.JoinState.DENIED, viewModel.getJoinState().getValue());
-        assertEquals(JoinRoomResult.DenyReasonCode.INVALID_PASSWORD, viewModel.getDenyReasonCode().getValue());
+        assertEquals(
+                JoinRoomResult.DenyReasonCode.INVALID_PASSWORD,
+                viewModel.getDenyReasonCode().getValue());
     }
 }
