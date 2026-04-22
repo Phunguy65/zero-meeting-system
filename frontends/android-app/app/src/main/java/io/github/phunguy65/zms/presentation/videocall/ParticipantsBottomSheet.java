@@ -84,6 +84,11 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
         setupRecyclerView();
         setupListeners();
         setupObservers();
+
+        String meetingId = callViewModel.getMeetingId().getValue();
+        if (meetingId != null && !meetingId.isEmpty()) {
+            viewModel.enrichWithRoles(meetingId);
+        }
     }
 
     private void initViews(View view) {
@@ -111,6 +116,9 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void setupObservers() {
+        callViewModel.getParticipants().observe(getViewLifecycleOwner(), videoParticipants ->
+                viewModel.setLiveKitParticipants(videoParticipants));
+
         viewModel.getParticipants().observe(getViewLifecycleOwner(), participants -> {
             adapter.updateList(participants);
 

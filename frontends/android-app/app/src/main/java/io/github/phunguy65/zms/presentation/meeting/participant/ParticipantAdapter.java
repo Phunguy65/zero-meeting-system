@@ -9,9 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.color.MaterialColors;
 import io.github.phunguy65.zms.domain.model.Participant;
+import io.github.phunguy65.zms.domain.model.ParticipantRole;
 import io.github.phunguy65.zms.frontends.R;
 import java.util.List;
 
+/**
+ * RecyclerView adapter for the participants bottom sheet.
+ * Displays role badges (Host/Guest), local-participant marker, mic/camera state,
+ * and binds against the refactored {@link Participant} model fields.
+ */
 public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.ViewHolder> {
 
     private final List<Participant> participantList;
@@ -20,7 +26,8 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         this.participantList = participantList;
     }
 
-    @NonNull @Override
+    @NonNull
+    @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_participant, parent, false);
@@ -32,27 +39,35 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         Participant p = participantList.get(position);
         holder.tvName.setText(p.getName());
 
-        // Role status (Host, Me)
-        if (p.getRoleStatus() != null && !p.getRoleStatus().isEmpty()) {
+        bindLocalIndicator(holder, p);
+        bindRoleBadge(holder, p);
+        bindMicState(holder, p);
+        bindCameraState(holder, p);
+    }
+
+    private void bindLocalIndicator(ViewHolder holder, Participant p) {
+        if (p.isLocal()) {
             holder.tvStatus.setVisibility(View.VISIBLE);
-            holder.tvStatus.setText(p.getRoleStatus());
-            holder.tvName.setPadding(0, 0, 0, 0);
+            holder.tvStatus.setText(R.string.participant_me_suffix);
         } else {
             holder.tvStatus.setVisibility(View.GONE);
         }
+    }
 
-        // Connection status (Connecting...)
-        if (p.getConnectionStatus() != null && !p.getConnectionStatus().isEmpty()) {
-            holder.tvSubStatus.setVisibility(View.VISIBLE);
-            holder.tvSubStatus.setText(p.getConnectionStatus());
+    private void bindRoleBadge(ViewHolder holder, Participant p) {
+        ParticipantRole role = p.getRole();
+        if (role == ParticipantRole.HOST) {
+            holder.tvRoleBadge.setVisibility(View.VISIBLE);
+            holder.tvRoleBadge.setText(R.string.participant_role_host);
+        } else if (role == ParticipantRole.GUEST) {
+            holder.tvRoleBadge.setVisibility(View.VISIBLE);
+            holder.tvRoleBadge.setText(R.string.participant_role_guest);
         } else {
-            holder.tvSubStatus.setVisibility(View.GONE);
+            holder.tvRoleBadge.setVisibility(View.GONE);
         }
+    }
 
-        // Red alert indicator
-        holder.indicatorRed.setVisibility(p.isHasAlert() ? View.VISIBLE : View.GONE);
-
-        // Mic icon color using theme colors
+    private void bindMicState(ViewHolder holder, Participant p) {
         if (p.isMicOn()) {
             int colorOnSurface = MaterialColors.getColor(
                     holder.itemView, com.google.android.material.R.attr.colorOnSurface);
@@ -67,8 +82,9 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             holder.btnMic.setBackgroundTintList(
                     android.content.res.ColorStateList.valueOf(colorErrorContainer));
         }
+    }
 
-        // Camera icon color using theme colors
+    private void bindCameraState(ViewHolder holder, Participant p) {
         if (p.isVideoOn()) {
             int colorOnSurface = MaterialColors.getColor(
                     holder.itemView, com.google.android.material.R.attr.colorOnSurface);
@@ -97,18 +113,16 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvStatus, tvSubStatus;
+        TextView tvName, tvStatus, tvRoleBadge;
         ImageView btnMic, btnCamera;
-        View indicatorRed;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
             tvStatus = itemView.findViewById(R.id.tvStatus);
-            tvSubStatus = itemView.findViewById(R.id.tvSubStatus);
+            tvRoleBadge = itemView.findViewById(R.id.tvRoleBadge);
             btnMic = itemView.findViewById(R.id.btnMic);
             btnCamera = itemView.findViewById(R.id.btnCamera);
-            indicatorRed = itemView.findViewById(R.id.indicatorRed);
         }
     }
 }

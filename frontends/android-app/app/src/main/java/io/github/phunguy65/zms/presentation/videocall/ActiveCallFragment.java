@@ -60,6 +60,8 @@ public class ActiveCallFragment extends Fragment
     private ImageView btnMic, btnCamera, btnMore, btnEndCall;
     private View btnMicContainer, btnCameraContainer, btnMoreContainer, btnEndCallContainer;
     private View btnLayoutPicker;
+    private View btnWaitingRoomContainer;
+    private TextView tvWaitingRoomBadge;
     private TextView tvTimer, tvParticipantCount;
     private ImageView imgConnectionQuality;
 
@@ -124,6 +126,8 @@ public class ActiveCallFragment extends Fragment
         btnMoreContainer = view.findViewById(R.id.btnMoreContainer);
         btnEndCallContainer = view.findViewById(R.id.btnEndCallContainer);
         btnLayoutPicker = view.findViewById(R.id.btnLayoutPicker);
+        btnWaitingRoomContainer = view.findViewById(R.id.btnWaitingRoomContainer);
+        tvWaitingRoomBadge = view.findViewById(R.id.tvWaitingRoomBadge);
         tvTimer = view.findViewById(R.id.tvTimer);
         tvParticipantCount = view.findViewById(R.id.tvParticipantCount);
         imgConnectionQuality = view.findViewById(R.id.imgConnectionQuality);
@@ -181,7 +185,11 @@ public class ActiveCallFragment extends Fragment
             resetAutoHideTimer();
         });
 
-        // Flip camera
+        btnWaitingRoomContainer.setOnClickListener(v -> {
+            showWaitingRoomSheet();
+            resetAutoHideTimer();
+        });
+
         btnFlipCamera.setOnClickListener(v -> {
             viewModel.switchCamera();
             resetAutoHideTimer();
@@ -200,6 +208,11 @@ public class ActiveCallFragment extends Fragment
     private void showLayoutPicker() {
         LayoutPickerBottomSheet sheet = new LayoutPickerBottomSheet();
         sheet.show(getChildFragmentManager(), LayoutPickerBottomSheet.TAG);
+    }
+
+    private void showWaitingRoomSheet() {
+        WaitingRoomBottomSheet sheet = new WaitingRoomBottomSheet();
+        sheet.show(getChildFragmentManager(), WaitingRoomBottomSheet.TAG);
     }
 
 
@@ -261,6 +274,24 @@ public class ActiveCallFragment extends Fragment
         viewModel.getLocalVideoTrack().observe(getViewLifecycleOwner(), this::attachLocalVideoTrack);
 
         viewModel.getCurrentLayout().observe(getViewLifecycleOwner(), this::applyLayout);
+
+        viewModel.isHost().observe(getViewLifecycleOwner(), isHost ->
+                updateWaitingRoomButtonVisibility(isHost, viewModel.getMeetingSettings().getValue()));
+
+        viewModel.getMeetingSettings().observe(getViewLifecycleOwner(), settings -> {
+            Boolean isHost = viewModel.isHost().getValue();
+            updateWaitingRoomButtonVisibility(
+                    isHost != null && isHost, settings);
+        });
+
+        viewModel.getPendingCount().observe(getViewLifecycleOwner(), count -> {
+            if (count != null && count > 0) {
+                tvWaitingRoomBadge.setText(String.valueOf(count));
+                tvWaitingRoomBadge.setVisibility(View.VISIBLE);
+            } else {
+                tvWaitingRoomBadge.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void setupAutoHide() {
@@ -352,6 +383,12 @@ public class ActiveCallFragment extends Fragment
         if (track != null) {
             track.addRenderer(selfSurfaceRenderer);
         }
+    }
+
+    private void updateWaitingRoomButtonVisibility(
+            boolean isHost, io.github.phunguy65.zms.domain.model.MeetingSettings settings) {
+        boolean visible = isHost && settings != null && settings.isWaitingRoomEnabled();
+        btnWaitingRoomContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     private void updateConnectionIndicator(RoomConnectionState state) {

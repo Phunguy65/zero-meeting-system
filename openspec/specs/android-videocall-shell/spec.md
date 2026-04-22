@@ -207,7 +207,8 @@ meeting settings during a LIVE meeting without leaving the call.
 ## Requirement: ActiveCallFragment
 
 The `ActiveCallFragment` SHALL display a LiveKit-backed active video call UI
-with compact controls, layout switching, and host-aware action surfaces.
+with compact controls, layout switching, host-aware action surfaces, and host
+waiting-room access.
 
 ### Scenario: ActiveCall UI elements
 
@@ -220,6 +221,8 @@ with compact controls, layout switching, and host-aware action surfaces.
     - Floating call controls for microphone, camera, more-actions, and end call
     - Secondary entry points for chat, participants, screen sharing, and
       host-only settings through the meeting actions surface
+    - A host-only waiting-room toolbar action with pending badge when waiting
+      room is enabled for the meeting
 
 ### Scenario: Dynamic video tiles reflect participant state
 
@@ -245,8 +248,9 @@ with compact controls, layout switching, and host-aware action surfaces.
 ## Requirement: CallViewModel
 
 A shared `CallViewModel` SHALL manage backend join, password-gating lookup
-state, LiveKit room state, selected layout, and meeting-settings state across
-call fragments.
+state, LiveKit room state, selected layout, meeting-settings state, host
+waiting-room SSE lifecycle, and waiting-room pending state exposure across call
+fragments.
 
 ### Scenario: ViewModel scope
 
@@ -273,6 +277,8 @@ call fragments.
     - `currentLayout` for the selected `VideoLayout`
     - `meetingSettings` for the latest editable meeting settings snapshot
     - `isHost` for host-only UI branching
+    - host waiting-room pending list or count state consumed by active-call host
+      UI
 
 ### Scenario: Meeting lookup orchestrates protected join state
 
@@ -312,17 +318,35 @@ call fragments.
 - **THEN** `endCall()` SHALL disconnect from the LiveKit room and stop call
   timers or related resources
 
+### Scenario: Host waiting-room SSE is bound to active call lifecycle
+
+- **WHEN** host enters an active call for a waiting-room-enabled meeting
+- **THEN** `CallViewModel` SHALL connect host meeting SSE and process supported
+  event types
+- **WHEN** host call ends or leaves active call
+- **THEN** `CallViewModel` SHALL disconnect host meeting SSE and stop reconnect
+  scheduling
+
+### Scenario: Waiting-room state is resynchronized after reconnect
+
+- **WHEN** host meeting SSE reconnects after interruption
+- **THEN** `CallViewModel` SHALL trigger pending join-request list
+  synchronization
+- **THEN** it SHALL expose synchronized pending state for waiting-room badge and
+  sheet consumers
+
 ## Requirement: Participants BottomSheet
 
-The `ParticipantsBottomSheet` SHALL display participant list over the active
-call.
+The `ParticipantsBottomSheet` SHALL display merged real participant data over
+the active call.
 
 ### Scenario: Show participants
 
 - **WHEN** user selects the Participants action from the active call meeting
   actions surface
 - **THEN** `ParticipantsBottomSheet` is shown as modal bottom sheet
-- **THEN** it displays list of participants (placeholder data for now)
+- **THEN** it displays merged participant rows using LiveKit real-time state and
+  backend role enrichment
 
 ### Scenario: Dismiss participants
 

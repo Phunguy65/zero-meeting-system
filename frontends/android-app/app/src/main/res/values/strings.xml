@@ -481,4 +481,17 @@
     <!-- ═══ Badge accessibility ═══ -->
     <string name="cd_chat_unread_count">%d unread messages</string>
     <string name="cd_participant_count">%d participants</string>
+
+    <!-- ═══ Waiting room ═══ -->
+    <string name="waiting_room_title">Waiting Room</string>
+    <string name="waiting_room_empty">No pending requests</string>
+    <string name="waiting_room_approve">Approve</string>
+    <string name="waiting_room_deny">Deny</string>
+    <string name="waiting_room_approve_all">Approve All</string>
+    <string name="waiting_room_error">Failed to load requests</string>
+
+    <!-- ═══ Participant roles ═══ -->
+    <string name="participant_role_host">Host</string>
+    <string name="participant_role_guest">Guest</string>
+    <string name="participant_me_suffix">(Me)</string>
 </resources>

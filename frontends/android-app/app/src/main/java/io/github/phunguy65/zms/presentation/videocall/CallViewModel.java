@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import io.github.phunguy65.zms.di.LiveKitUrl;
 import io.github.phunguy65.zms.di.MainExecutor;
+import io.github.phunguy65.zms.domain.model.JoinRequestItem;
 import io.github.phunguy65.zms.domain.model.JoinRoomResult;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.RoomConnectionState;
@@ -19,6 +20,7 @@ import io.github.phunguy65.zms.domain.repository.JoinRoomRepository;
 import io.github.phunguy65.zms.domain.repository.LiveKitRepository;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
+import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
 import io.livekit.android.room.track.LocalVideoTrack;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,7 @@ public class CallViewModel extends ViewModel {
     private final JoinRoomRepository joinRoomRepository;
     private final SessionRepository sessionRepository;
     private final MeetingRepository meetingRepository;
+    private final WaitingRoomRepository waitingRoomRepository;
     private final String liveKitUrl;
     private final Executor mainExecutor;
 
@@ -66,6 +69,19 @@ public class CallViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _isSettingsLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> _settingsError = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> _settingsUpdateSuccess = new MutableLiveData<>(false);
+
+    private final MutableLiveData<List<JoinRequestItem>> _pendingJoinRequests =
+            new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<Integer> _pendingCount = new MutableLiveData<>(0);
+    private final MutableLiveData<Boolean> _isWaitingRoomSseConnected = new MutableLiveData<>(false);
+    private final MutableLiveData<String> _participantKickedEvent = new MutableLiveData<>(null);
+
+    private static final long RECONNECT_INITIAL_DELAY_MS = 1000;
+    private static final long RECONNECT_MAX_DELAY_MS = 30000;
+    private long currentReconnectDelay = RECONNECT_INITIAL_DELAY_MS;
+    private Handler reconnectHandler;
+    private Runnable reconnectRunnable;
+    private boolean waitingRoomSseActive = false;
 
     private String meetingUuid;
 
@@ -103,12 +119,14 @@ public class CallViewModel extends ViewModel {
             JoinRoomRepository joinRoomRepository,
             SessionRepository sessionRepository,
             MeetingRepository meetingRepository,
+            WaitingRoomRepository waitingRoomRepository,
             @LiveKitUrl String liveKitUrl,
             @MainExecutor Executor mainExecutor) {
         this.liveKitRepository = liveKitRepository;
         this.joinRoomRepository = joinRoomRepository;
         this.sessionRepository = sessionRepository;
         this.meetingRepository = meetingRepository;
+        this.waitingRoomRepository = waitingRoomRepository;
         this.liveKitUrl = liveKitUrl;
         this.mainExecutor = mainExecutor;
 
@@ -199,6 +217,30 @@ public class CallViewModel extends ViewModel {
 
     public void clearSettingsUpdateSuccess() {
         _settingsUpdateSuccess.setValue(false);
+    }
+
+    public LiveData<List<JoinRequestItem>> getPendingJoinRequests() {
+        return _pendingJoinRequests;
+    }
+
+    public LiveData<Integer> getPendingCount() {
+        return _pendingCount;
+    }
+
+    public LiveData<Boolean> isWaitingRoomSseConnected() {
+        return _isWaitingRoomSseConnected;
+    }
+
+    /**
+     * LiveData event carrying the display name of the most recently kicked participant.
+     * Emits null when cleared.
+     */
+    public LiveData<String> getParticipantKickedEvent() {
+        return _participantKickedEvent;
+    }
+
+    public void clearParticipantKickedEvent() {
+        _participantKickedEvent.setValue(null);
     }
 
     public LiveData<Boolean> requiresPassword() {
@@ -510,6 +552,7 @@ public class CallViewModel extends ViewModel {
 
     /**
      * Fetches meeting detail to determine if current user is the host.
+     * When user is host and waiting room is enabled, starts the waiting room SSE.
      */
     private void fetchHostStatus(String meetingId) {
         meetingRepository.getMeetingDetail(meetingId)
@@ -525,6 +568,15 @@ public class CallViewModel extends ViewModel {
                         String hostId = detail.hostId();
                         boolean isHost = currentUserId != null && currentUserId.equals(hostId);
                         _isHost.postValue(isHost);
+
+                        if (detail.settings() != null) {
+                            _meetingSettings.postValue(detail.settings());
+                        }
+
+                        if (isHost && detail.settings() != null
+                                && detail.settings().isWaitingRoomEnabled()) {
+                            startWaitingRoomSse();
+                        }
                     } else {
                         _isHost.postValue(false);
                     }
@@ -646,10 +698,173 @@ public class CallViewModel extends ViewModel {
     }
 
     /**
+     * Starts the host waiting room SSE subscription.
+     * Subscribes to meeting events for join request notifications.
+     */
+    public void startWaitingRoomSse() {
+        String meetingId = _meetingId.getValue();
+        if (meetingId == null || meetingId.isEmpty()) return;
+        if (waitingRoomSseActive) return;
+
+        waitingRoomSseActive = true;
+        currentReconnectDelay = RECONNECT_INITIAL_DELAY_MS;
+        String authToken = sessionRepository.getAccessToken();
+
+        waitingRoomRepository.subscribeToHostEvents(
+                meetingId, authToken, new WaitingRoomRepository.HostEventListener() {
+                    @Override
+                    public void onJoinRequestCreated(
+                            String requestId, String eventMeetingId, String displayName) {
+                        mainExecutor.execute(() -> {
+                            _isWaitingRoomSseConnected.setValue(true);
+                            currentReconnectDelay = RECONNECT_INITIAL_DELAY_MS;
+
+                            List<JoinRequestItem> current = _pendingJoinRequests.getValue();
+                            List<JoinRequestItem> updated =
+                                    current != null ? new ArrayList<>(current) : new ArrayList<>();
+
+                            boolean alreadyExists = false;
+                            for (JoinRequestItem existing : updated) {
+                                if (existing.getId().equals(requestId)) {
+                                    alreadyExists = true;
+                                    break;
+                                }
+                            }
+
+                            if (!alreadyExists) {
+                                updated.add(new JoinRequestItem(
+                                        requestId, eventMeetingId, displayName, ""));
+                                _pendingJoinRequests.setValue(updated);
+                                _pendingCount.setValue(updated.size());
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onJoinRequestExpired(String requestId) {
+                        mainExecutor.execute(() -> {
+                            List<JoinRequestItem> current = _pendingJoinRequests.getValue();
+                            if (current == null) return;
+                            List<JoinRequestItem> updated = new ArrayList<>();
+                            for (JoinRequestItem item : current) {
+                                if (!item.getId().equals(requestId)) {
+                                    updated.add(item);
+                                }
+                            }
+                            _pendingJoinRequests.setValue(updated);
+                            _pendingCount.setValue(updated.size());
+                        });
+                    }
+
+                    @Override
+                    public void onParticipantKicked(
+                            String eventMeetingId, String kickedUserId, String displayName) {
+                        mainExecutor.execute(() -> _participantKickedEvent.setValue(displayName));
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        mainExecutor.execute(() -> {
+                            _isWaitingRoomSseConnected.setValue(false);
+                            scheduleReconnect();
+                        });
+                    }
+                });
+
+        _isWaitingRoomSseConnected.setValue(true);
+        syncPendingRequests();
+    }
+
+    /**
+     * Stops the host waiting room SSE subscription and cancels any pending reconnect.
+     */
+    public void stopWaitingRoomSse() {
+        waitingRoomSseActive = false;
+        waitingRoomRepository.cancelHostSubscription();
+        _isWaitingRoomSseConnected.setValue(false);
+        cancelReconnect();
+    }
+
+    /**
+     * Schedules a reconnect attempt using exponential backoff.
+     * Delay progression: 1s, 2s, 4s, 8s, 16s, capped at 30s.
+     */
+    private void scheduleReconnect() {
+        if (!waitingRoomSseActive) return;
+
+        cancelReconnect();
+
+        if (reconnectHandler == null) {
+            reconnectHandler = new Handler(Looper.getMainLooper());
+        }
+
+        reconnectRunnable = () -> {
+            if (!waitingRoomSseActive) return;
+            waitingRoomRepository.cancelHostSubscription();
+            waitingRoomSseActive = false;
+            startWaitingRoomSse();
+        };
+
+        reconnectHandler.postDelayed(reconnectRunnable, currentReconnectDelay);
+        currentReconnectDelay = Math.min(currentReconnectDelay * 2, RECONNECT_MAX_DELAY_MS);
+    }
+
+    private void cancelReconnect() {
+        if (reconnectHandler != null && reconnectRunnable != null) {
+            reconnectHandler.removeCallbacks(reconnectRunnable);
+            reconnectRunnable = null;
+        }
+    }
+
+    /**
+     * Fetches the full pending join request list from the API and replaces local state.
+     * Called after successful SSE reconnect to repair any missed events.
+     */
+    public void syncPendingRequests() {
+        String meetingId = _meetingId.getValue();
+        if (meetingId == null || meetingId.isEmpty()) return;
+
+        waitingRoomRepository.listPendingRequests(meetingId)
+                .whenCompleteAsync((requests, error) -> {
+                    if (error != null) return;
+                    _pendingJoinRequests.postValue(requests);
+                    _pendingCount.postValue(requests.size());
+                }, mainExecutor);
+    }
+
+    /**
+     * Removes a pending request from local state after external moderation
+     * (approve or deny) so the toolbar badge stays in sync.
+     *
+     * @param requestId the id of the moderated request
+     */
+    public void removePendingRequest(String requestId) {
+        List<JoinRequestItem> current = _pendingJoinRequests.getValue();
+        if (current == null) return;
+        List<JoinRequestItem> updated = new ArrayList<>();
+        for (JoinRequestItem item : current) {
+            if (!item.getId().equals(requestId)) {
+                updated.add(item);
+            }
+        }
+        _pendingJoinRequests.setValue(updated);
+        _pendingCount.setValue(updated.size());
+    }
+
+    /**
+     * Clears all pending requests from local state after an approve-all action.
+     */
+    public void clearAllPendingRequests() {
+        _pendingJoinRequests.setValue(new ArrayList<>());
+        _pendingCount.setValue(0);
+    }
+
+    /**
      * Ends the call and disconnects from the room.
      */
     public void endCall() {
         stopCallTimer();
+        stopWaitingRoomSse();
         liveKitRepository.disconnect();
         joinRoomRepository.cancelApprovalSubscription();
         _connectionState.setValue(RoomConnectionState.DISCONNECTED);
@@ -731,6 +946,7 @@ public class CallViewModel extends ViewModel {
     protected void onCleared() {
         super.onCleared();
         stopCallTimer();
+        stopWaitingRoomSse();
         liveKitRepository.removeRoomEventListener();
         liveKitRepository.disconnect();
         joinRoomRepository.cancelApprovalSubscription();

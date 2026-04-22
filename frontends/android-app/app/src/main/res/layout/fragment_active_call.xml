@@ -58,13 +58,42 @@
             android:focusable="true"
             android:foreground="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/tvParticipantCount"
+            app:layout_constraintEnd_toStartOf="@id/btnWaitingRoomContainer"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView android:layout_width="@dimen/icon_size_md"
                 android:layout_height="@dimen/icon_size_md"
                 android:layout_gravity="center" android:src="@drawable/ic_grid_view"
                 app:tint="@color/video_call_text_primary" />
+        </FrameLayout>
+
+        <!-- Waiting room button (host-only) -->
+        <FrameLayout android:id="@+id/btnWaitingRoomContainer"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:clickable="true"
+            android:contentDescription="@string/waiting_room_title"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvParticipantCount"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView android:id="@+id/btnWaitingRoom"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_person_add"
+                app:tint="@color/video_call_text_primary" />
+
+            <TextView android:id="@+id/tvWaitingRoomBadge"
+                android:layout_width="20dp" android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/bg_badge_red" android:gravity="center"
+                android:textColor="@color/white" android:textSize="10sp"
+                android:textStyle="bold" android:visibility="gone" tools:text="3"
+                tools:visibility="visible" />
         </FrameLayout>
 
         <!-- Participant count badge -->
