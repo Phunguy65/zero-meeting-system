@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.presentation.main.accountsettings;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -18,6 +20,7 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
@@ -34,6 +37,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.common.util.InitialsDrawable;
+import io.github.phunguy65.zms.presentation.welcome.WelcomeActivity;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -62,6 +66,10 @@ public class AccountSettingsFragment extends Fragment {
     private TextInputLayout tilEmail;
     private TextInputEditText etEmail;
     private MaterialButton btnSave;
+    private MaterialButton btnDeleteAccount;
+
+    private AlertDialog deleteDialog;
+    private String lastConfirmText = "";
 
     private boolean isUpdatingFields = false;
 
@@ -126,6 +134,7 @@ public class AccountSettingsFragment extends Fragment {
         tilEmail = view.findViewById(R.id.tilEmail);
         etEmail = view.findViewById(R.id.etEmail);
         btnSave = view.findViewById(R.id.btnSave);
+        btnDeleteAccount = view.findViewById(R.id.btnDeleteAccount);
 
         getChildFragmentManager()
                 .setFragmentResultListener(
@@ -182,6 +191,7 @@ public class AccountSettingsFragment extends Fragment {
         });
 
         btnSave.setOnClickListener(v -> viewModel.saveProfile());
+        btnDeleteAccount.setOnClickListener(v -> viewModel.requestDeleteAccount());
     }
 
     private void setupBackPressHandler() {
@@ -261,6 +271,7 @@ public class AccountSettingsFragment extends Fragment {
     private void observeViewModel() {
         viewModel.getUiState().observe(getViewLifecycleOwner(), this::handleUiState);
         viewModel.getSaveEvent().observe(getViewLifecycleOwner(), this::handleSaveEvent);
+        viewModel.getDeleteUiState().observe(getViewLifecycleOwner(), this::handleDeleteUiState);
     }
 
     private void handleUiState(AccountSettingsViewModel.AccountSettingsUiState state) {
@@ -366,5 +377,105 @@ public class AccountSettingsFragment extends Fragment {
                         .show();
             }
         }
+    }
+
+    private void handleDeleteUiState(AccountSettingsViewModel.DeleteUiState state) {
+        switch (state) {
+            case AccountSettingsViewModel.DeleteUiState.Idle idle -> dismissDeleteDialog();
+            case AccountSettingsViewModel.DeleteUiState.Confirming confirming ->
+                    showDeleteConfirmationDialog();
+            case AccountSettingsViewModel.DeleteUiState.Deleting deleting ->
+                    updateDeleteDialogDeleting();
+            case AccountSettingsViewModel.DeleteUiState.Error error -> {
+                dismissDeleteDialog();
+                Snackbar.make(
+                                requireView(),
+                                R.string.account_settings_delete_error,
+                                Snackbar.LENGTH_LONG)
+                        .setAction(
+                                R.string.account_settings_delete_retry,
+                                v -> viewModel.confirmDeleteAccount(lastConfirmText))
+                        .show();
+            }
+            case AccountSettingsViewModel.DeleteUiState.Deleted deleted -> {
+                dismissDeleteDialog();
+                navigateToWelcome();
+            }
+        }
+    }
+
+    private void showDeleteConfirmationDialog() {
+        if (deleteDialog != null && deleteDialog.isShowing()) {
+            return;
+        }
+
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_delete_account, null);
+
+        TextInputEditText etConfirm = dialogView.findViewById(R.id.etDeleteConfirm);
+
+        deleteDialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.account_settings_delete_dialog_title)
+                .setMessage(R.string.account_settings_delete_dialog_message)
+                .setView(dialogView)
+                .setPositiveButton(R.string.account_settings_delete_confirm_button, null)
+                .setNegativeButton(R.string.account_settings_delete_cancel_button,
+                        (dialog, which) -> viewModel.cancelDelete())
+                .setOnCancelListener(dialog -> viewModel.cancelDelete())
+                .create();
+
+        deleteDialog.show();
+
+        Button positiveButton = deleteDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        positiveButton.setEnabled(false);
+
+        etConfirm.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                lastConfirmText = s.toString();
+                positiveButton.setEnabled("DELETE".equals(lastConfirmText));
+            }
+        });
+
+        positiveButton.setOnClickListener(
+                v -> viewModel.confirmDeleteAccount(lastConfirmText));
+    }
+
+    private void updateDeleteDialogDeleting() {
+        if (deleteDialog == null || !deleteDialog.isShowing()) {
+            return;
+        }
+
+        Button positiveButton = deleteDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button negativeButton = deleteDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+        positiveButton.setEnabled(false);
+        positiveButton.setText(R.string.account_settings_deleting);
+        negativeButton.setEnabled(false);
+        deleteDialog.setCancelable(false);
+
+        TextInputEditText etConfirm = deleteDialog.findViewById(R.id.etDeleteConfirm);
+        if (etConfirm != null) {
+            etConfirm.setEnabled(false);
+        }
+    }
+
+    private void dismissDeleteDialog() {
+        if (deleteDialog != null && deleteDialog.isShowing()) {
+            deleteDialog.dismiss();
+        }
+        deleteDialog = null;
+    }
+
+    private void navigateToWelcome() {
+        Intent intent = new Intent(requireContext(), WelcomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 }

@@ -112,5 +112,37 @@
             android:text="@string/account_settings_save"
             app:cornerRadius="@dimen/corner_radius_md" />
 
+        <!-- Danger zone -->
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xl" />
+
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/account_settings_danger_zone_title"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="?attr/colorError" />
+
+        <TextView android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:text="@string/account_settings_danger_zone_description"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?android:attr/textColorSecondary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteAccount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/account_settings_delete_account"
+            android:textColor="?attr/colorError"
+            app:cornerRadius="@dimen/corner_radius_md"
+            app:iconTint="?attr/colorError" app:rippleColor="?attr/colorError"
+            app:strokeColor="?attr/colorError"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
     </LinearLayout>
 </ScrollView>

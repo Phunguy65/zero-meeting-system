@@ -1,7 +1,8 @@
 # Purpose
 
 Define how the Android account settings flow lets authenticated users edit
-profile data, validate inputs, manage avatar changes, and safely submit updates.
+profile data, validate inputs, manage avatar changes, safely submit updates, and
+access destructive account-management actions.
 
 # Requirements
 
@@ -175,6 +176,29 @@ when tapped.
 - **THEN** the system SHALL display Snackbar "Failed to upload photo"
 - **AND** the Snackbar SHALL include a "Retry" action
 - **AND** the profile text changes SHALL NOT be submitted (all-or-nothing)
+
+## Requirement: Account settings screen exposes account deletion entry point
+
+AccountSettingsFragment SHALL include a destructive account-deletion entry point
+as part of the account-management experience.
+
+### Scenario: Danger zone appears below profile save controls
+
+- **WHEN** the account settings screen is displayed
+- **THEN** the layout SHALL render additional spacing and a divider below the
+  Save button
+- **AND** the layout SHALL show a `Danger Zone` section beneath the profile
+  editing controls
+- **AND** the section header SHALL use the error color to visually distinguish
+  the destructive action
+
+### Scenario: Delete action reflects destructive styling
+
+- **WHEN** the `Delete Account` entry point is shown
+- **THEN** it SHALL use destructive styling consistent with Material 3 outlined
+  buttons and the app's error color tokens
+- **AND** its description SHALL communicate that deletion is permanent and
+  cannot be undone
 
 ## Requirement: Back navigation with unsaved changes shows confirmation
 

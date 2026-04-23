@@ -9,6 +9,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import io.github.phunguy65.zms.data.remote.interceptor.ApiFailException;
 import io.github.phunguy65.zms.domain.model.User;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
+import io.github.phunguy65.zms.domain.usecase.me.DeleteAccountUseCase;
 import io.github.phunguy65.zms.domain.usecase.me.GetMeUseCase;
 import io.github.phunguy65.zms.domain.usecase.me.UpdateProfileUseCase;
 import io.github.phunguy65.zms.presentation.main.accountsettings.AccountSettingsViewModel.AccountSettingsUiState;
@@ -39,6 +40,9 @@ public class AccountSettingsViewModelTest {
     private UpdateProfileUseCase updateProfileUseCase;
 
     @Mock
+    private DeleteAccountUseCase deleteAccountUseCase;
+
+    @Mock
     private SessionRepository sessionRepository;
 
     @Mock
@@ -64,7 +68,8 @@ public class AccountSettingsViewModelTest {
         when(mockAvatarUri.toString()).thenReturn(MOCK_AVATAR_URI_STRING);
 
         viewModel = new AccountSettingsViewModel(
-                getMeUseCase, updateProfileUseCase, sessionRepository, testExecutor);
+                getMeUseCase, updateProfileUseCase, deleteAccountUseCase,
+                sessionRepository, testExecutor);
     }
 
     // ==================== Initial Load Tests ====================
@@ -91,7 +96,8 @@ public class AccountSettingsViewModelTest {
 
         // Create new ViewModel
         viewModel = new AccountSettingsViewModel(
-                getMeUseCase, updateProfileUseCase, sessionRepository, testExecutor);
+                getMeUseCase, updateProfileUseCase, deleteAccountUseCase,
+                sessionRepository, testExecutor);
 
         // Assert
         AccountSettingsUiState state = viewModel.getUiState().getValue();
@@ -478,5 +484,71 @@ public class AccountSettingsViewModelTest {
         AccountSettingsUiState state = AccountSettingsUiState.error("Error message");
         assertTrue(state instanceof AccountSettingsUiState.Error);
         assertEquals("Error message", ((AccountSettingsUiState.Error) state).message());
+    }
+
+    // ==================== Delete Account Tests ====================
+
+    @Test
+    public void requestDeleteAccount_emitsConfirmingState() {
+        viewModel.requestDeleteAccount();
+
+        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Confirming);
+    }
+
+    @Test
+    public void cancelDelete_resetsToIdleState() {
+        viewModel.requestDeleteAccount();
+        viewModel.cancelDelete();
+
+        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Idle);
+    }
+
+    @Test
+    public void confirmDeleteAccount_wrongText_doesNothing() {
+        viewModel.requestDeleteAccount();
+        viewModel.confirmDeleteAccount("WRONG");
+
+        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Confirming);
+        verify(deleteAccountUseCase, never()).execute();
+    }
+
+    @Test
+    public void confirmDeleteAccount_correctText_transitionsToDeletedOnSuccess() {
+        when(deleteAccountUseCase.execute())
+                .thenReturn(CompletableFuture.completedFuture(null));
+
+        viewModel.requestDeleteAccount();
+        viewModel.confirmDeleteAccount("DELETE");
+
+        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Deleted);
+    }
+
+    @Test
+    public void confirmDeleteAccount_correctText_transitionsToErrorOnFailure() {
+        CompletableFuture<Void> failedFuture = new CompletableFuture<>();
+        failedFuture.completeExceptionally(new RuntimeException("Delete failed"));
+        when(deleteAccountUseCase.execute()).thenReturn(failedFuture);
+
+        viewModel.requestDeleteAccount();
+        viewModel.confirmDeleteAccount("DELETE");
+
+        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Error);
+        assertEquals("Delete failed",
+                ((AccountSettingsViewModel.DeleteUiState.Error) state).message());
+    }
+
+    @Test
+    public void confirmDeleteAccount_lowercaseDelete_doesNothing() {
+        viewModel.requestDeleteAccount();
+        viewModel.confirmDeleteAccount("delete");
+
+        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Confirming);
+        verify(deleteAccountUseCase, never()).execute();
     }
 }

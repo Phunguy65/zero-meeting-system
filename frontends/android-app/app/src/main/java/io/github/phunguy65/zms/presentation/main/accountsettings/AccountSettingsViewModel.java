@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 import io.github.phunguy65.zms.data.remote.interceptor.ApiFailException;
 import io.github.phunguy65.zms.di.MainExecutor;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
+import io.github.phunguy65.zms.domain.usecase.me.DeleteAccountUseCase;
 import io.github.phunguy65.zms.domain.usecase.me.GetMeUseCase;
 import io.github.phunguy65.zms.domain.usecase.me.UpdateProfileUseCase;
 import io.github.phunguy65.zms.presentation.common.util.SingleLiveEvent;
@@ -28,14 +29,19 @@ public class AccountSettingsViewModel extends ViewModel {
     private static final int USERNAME_MAX_LENGTH = 30;
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]+$");
 
+    private static final String DELETE_CONFIRMATION_TEXT = "DELETE";
+
     private final GetMeUseCase getMeUseCase;
     private final UpdateProfileUseCase updateProfileUseCase;
+    private final DeleteAccountUseCase deleteAccountUseCase;
     private final SessionRepository sessionRepository;
     private final Executor mainExecutor;
 
     private final MutableLiveData<AccountSettingsUiState> uiState =
             new MutableLiveData<>(AccountSettingsUiState.loading());
     private final SingleLiveEvent<SaveEvent> saveEvent = new SingleLiveEvent<>();
+    private final MutableLiveData<DeleteUiState> deleteUiState =
+            new MutableLiveData<>(new DeleteUiState.Idle());
 
     private String originalFullName;
     private String originalUsername;
@@ -51,10 +57,12 @@ public class AccountSettingsViewModel extends ViewModel {
     public AccountSettingsViewModel(
             GetMeUseCase getMeUseCase,
             UpdateProfileUseCase updateProfileUseCase,
+            DeleteAccountUseCase deleteAccountUseCase,
             SessionRepository sessionRepository,
             @MainExecutor Executor mainExecutor) {
         this.getMeUseCase = getMeUseCase;
         this.updateProfileUseCase = updateProfileUseCase;
+        this.deleteAccountUseCase = deleteAccountUseCase;
         this.sessionRepository = sessionRepository;
         this.mainExecutor = mainExecutor;
 
@@ -67,6 +75,54 @@ public class AccountSettingsViewModel extends ViewModel {
 
     public LiveData<SaveEvent> getSaveEvent() {
         return saveEvent;
+    }
+
+    /**
+     * Returns the LiveData for delete-account UI state.
+     */
+    public LiveData<DeleteUiState> getDeleteUiState() {
+        return deleteUiState;
+    }
+
+    /**
+     * Initiates the delete-account flow by transitioning to the confirming state.
+     */
+    public void requestDeleteAccount() {
+        deleteUiState.setValue(new DeleteUiState.Confirming());
+    }
+
+    /**
+     * Cancels the delete-account flow and returns to idle.
+     */
+    public void cancelDelete() {
+        deleteUiState.setValue(new DeleteUiState.Idle());
+    }
+
+    /**
+     * Confirms account deletion if the confirmation text matches exactly {@code DELETE}.
+     *
+     * @param confirmText the user-typed confirmation string
+     */
+    public void confirmDeleteAccount(String confirmText) {
+        if (!DELETE_CONFIRMATION_TEXT.equals(confirmText)) {
+            return;
+        }
+
+        deleteUiState.setValue(new DeleteUiState.Deleting());
+
+        deleteAccountUseCase
+                .execute()
+                .thenRunAsync(
+                        () -> deleteUiState.setValue(new DeleteUiState.Deleted()),
+                        mainExecutor)
+                .exceptionally(error -> {
+                    mainExecutor.execute(() -> {
+                        Throwable cause = error.getCause() != null ? error.getCause() : error;
+                        deleteUiState.setValue(
+                                new DeleteUiState.Error(cause.getMessage()));
+                    });
+                    return null;
+                });
     }
 
     /**
@@ -329,5 +385,24 @@ public class AccountSettingsViewModel extends ViewModel {
         static SaveEvent error(String message) {
             return new Error(message);
         }
+    }
+
+    /**
+     * UI state for the delete-account flow.
+     *
+     * <p>Managed independently from {@link AccountSettingsUiState} to keep delete-account
+     * state transitions isolated from profile-edit behavior.
+     */
+    public sealed interface DeleteUiState {
+
+        record Idle() implements DeleteUiState {}
+
+        record Confirming() implements DeleteUiState {}
+
+        record Deleting() implements DeleteUiState {}
+
+        record Error(String message) implements DeleteUiState {}
+
+        record Deleted() implements DeleteUiState {}
     }
 }

@@ -75,6 +75,25 @@ public class MeRepositoryImpl implements MeRepository {
                 ioExecutor);
     }
 
+    @Override
+    public CompletableFuture<Void> deleteMe() {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        Response<?> response = meApi.deleteMe().execute();
+
+                        if (!response.isSuccessful()) {
+                            throw new IOException("Delete me failed: HTTP " + response.code());
+                        }
+
+                        return null;
+                    } catch (Exception e) {
+                        throw new CompletionException(e);
+                    }
+                },
+                ioExecutor);
+    }
+
     private User mapToUser(UserManagementUserResponse body) {
         return new User(
                 body.getId() != null ? body.getId().toString() : null,

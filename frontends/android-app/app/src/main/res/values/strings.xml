@@ -199,6 +199,22 @@
     <string name="account_settings_discard_confirm">Discard</string>
     <string name="account_settings_discard_cancel">Keep Editing</string>
 
+    <!-- ═══ Account Settings – Danger Zone ═══ -->
+    <string name="account_settings_danger_zone_title">Danger Zone</string>
+    <string name="account_settings_danger_zone_description">Deleting your account is permanent and
+        cannot be undone. All your data will be removed.</string>
+    <string name="account_settings_delete_account">Delete Account</string>
+    <string name="account_settings_delete_dialog_title">Delete Account?</string>
+    <string name="account_settings_delete_dialog_message">Your account will be permanently
+        deleted, you will be logged out on all devices, and this action cannot be
+        undone.</string>
+    <string name="account_settings_delete_confirm_hint">Type DELETE to confirm</string>
+    <string name="account_settings_delete_confirm_button">Delete My Account</string>
+    <string name="account_settings_delete_cancel_button">Cancel</string>
+    <string name="account_settings_deleting">Deleting…</string>
+    <string name="account_settings_delete_error">Failed to delete account. Please try again.</string>
+    <string name="account_settings_delete_retry">Retry</string>
+
     <!-- ═══ Avatar Picker ═══ -->
     <string name="avatar_picker_title">Change photo</string>
     <string name="avatar_picker_take_photo">Take Photo</string>

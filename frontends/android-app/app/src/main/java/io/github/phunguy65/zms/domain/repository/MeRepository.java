@@ -28,4 +28,11 @@ public interface MeRepository {
      * @return a future that completes with the updated user profile
      */
     CompletableFuture<User> updateMe(String fullName, String username, String avatarUrl);
+
+    /**
+     * Permanently deletes the current authenticated user's account.
+     *
+     * @return a future that completes with {@link Void} on successful deletion
+     */
+    CompletableFuture<Void> deleteMe();
 }
