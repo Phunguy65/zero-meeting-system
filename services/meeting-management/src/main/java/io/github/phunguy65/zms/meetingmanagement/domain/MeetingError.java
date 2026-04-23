@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.RecordingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.RecordingId;
 import io.github.phunguy65.zms.shared.domain.DomainError;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -220,6 +221,20 @@ public sealed interface MeetingError extends DomainError {
         @Override
         public String message() {
             return "Invalid kick target: " + detail;
+        }
+    }
+
+    /**
+     * Some join requests failed during bulk approval while others succeeded.
+     *
+     * @param approvedCount number of requests that were successfully approved
+     * @param failedIds     request IDs that failed approval (e.g., token generation failure)
+     */
+    record PartialApprovalFailure(int approvedCount, List<UUID> failedIds) implements MeetingError {
+        @Override
+        public String message() {
+            return "Partial approval: " + approvedCount + " approved, " + failedIds.size()
+                    + " failed";
         }
     }
 }

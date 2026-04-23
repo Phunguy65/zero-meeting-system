@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -155,5 +156,29 @@ class JoinRequestControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(getJoinRequestsUseCase);
+    }
+
+    @Test
+    void approveAllJoinRequests_partialFailureReturns207WithApprovedCountAndFailedIds()
+            throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID hostId = UUID.randomUUID();
+        UUID failedId1 = UUID.randomUUID();
+        UUID failedId2 = UUID.randomUUID();
+
+        when(approveAllJoinRequestsUseCase.execute(any()))
+                .thenReturn(Result.failure(
+                        new MeetingError.PartialApprovalFailure(3, List.of(failedId1, failedId2))));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/joinRequests:approveAll", meetingId)
+                        .principal(new TestingAuthenticationToken(hostId.toString(), null)))
+                .andExpect(status().isMultiStatus())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("PARTIAL_APPROVAL_FAILURE"))
+                .andExpect(jsonPath("$.data.approvedCount").value(3))
+                .andExpect(jsonPath("$.data.failedIds[0]").value(failedId1.toString()))
+                .andExpect(jsonPath("$.data.failedIds[1]").value(failedId2.toString()))
+                .andExpect(
+                        jsonPath("$.data.message").value("Partial approval: 3 approved, 2 failed"));
     }
 }

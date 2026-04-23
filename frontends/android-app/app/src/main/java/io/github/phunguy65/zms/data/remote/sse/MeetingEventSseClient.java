@@ -14,18 +14,29 @@ import okhttp3.sse.EventSources;
 
 /**
  * SSE client for subscribing to host-side meeting events.
- * Handles join_request_created, join_request_expired, and participant_kicked event types.
+ *
+ * <p>Handles join_request_created, join_request_expired, and participant_kicked event types.
+ * Automatically retries failed connections up to {@value #MAX_RETRIES} times using
+ * exponential back-off (1s, 2s, 4s). Retries are suppressed after explicit cancellation.
  */
 public class MeetingEventSseClient {
 
     private static final String SSE_PATH = "/api/v1/meetings/%s/events";
-    private static final int SSE_TIMEOUT_MINUTES = 5;
+    private static final int SSE_TIMEOUT_MINUTES = 10;
+    private static final int MAX_RETRIES = 3;
+    private static final int BASE_RETRY_DELAY_MS = 1000;
 
     private final OkHttpClient httpClient;
     private final Handler mainHandler;
 
     private EventSource currentEventSource;
     private MeetingEventListener currentListener;
+
+    private volatile boolean cancelled;
+    private int retryCount;
+    private String savedMeetingId;
+    private String savedAuthToken;
+    private MeetingEventListener savedListener;
 
     @Inject
     public MeetingEventSseClient(OkHttpClient httpClient) {
@@ -46,8 +57,29 @@ public class MeetingEventSseClient {
     public void subscribe(String meetingId, String authToken, MeetingEventListener listener) {
         cancel();
 
+        this.cancelled = false;
+        this.retryCount = 0;
+        this.savedMeetingId = meetingId;
+        this.savedAuthToken = authToken;
+        this.savedListener = listener;
         this.currentListener = listener;
 
+        openEventSource(meetingId, authToken);
+    }
+
+    /**
+     * Cancels the current SSE subscription.
+     */
+    public void cancel() {
+        cancelled = true;
+        if (currentEventSource != null) {
+            currentEventSource.cancel();
+            currentEventSource = null;
+        }
+        currentListener = null;
+    }
+
+    private void openEventSource(String meetingId, String authToken) {
         String url = BuildConfig.API_BASE_URL + String.format(SSE_PATH, meetingId);
         Request.Builder requestBuilder =
                 new Request.Builder().url(url).header("Accept", "text/event-stream");
@@ -60,15 +92,27 @@ public class MeetingEventSseClient {
         currentEventSource = factory.newEventSource(requestBuilder.build(), new SseEventListener());
     }
 
-    /**
-     * Cancels the current SSE subscription.
-     */
-    public void cancel() {
-        if (currentEventSource != null) {
-            currentEventSource.cancel();
-            currentEventSource = null;
+    private void scheduleRetry() {
+        if (cancelled || retryCount >= MAX_RETRIES) {
+            if (!cancelled && currentListener != null) {
+                mainHandler.post(() -> {
+                    if (currentListener != null) {
+                        currentListener.onError("Connection failed after " + MAX_RETRIES + " retries");
+                    }
+                });
+            }
+            return;
         }
-        currentListener = null;
+
+        int delayMs = BASE_RETRY_DELAY_MS * (1 << retryCount);
+        retryCount++;
+
+        mainHandler.postDelayed(() -> {
+            if (!cancelled && savedListener != null) {
+                currentListener = savedListener;
+                openEventSource(savedMeetingId, savedAuthToken);
+            }
+        }, delayMs);
     }
 
     private class SseEventListener extends EventSourceListener {
@@ -131,14 +175,9 @@ public class MeetingEventSseClient {
 
         @Override
         public void onFailure(EventSource eventSource, Throwable t, Response response) {
-            if (currentListener == null) return;
+            if (cancelled || currentListener == null) return;
 
-            mainHandler.post(() -> {
-                if (currentListener != null) {
-                    String message = t != null ? t.getMessage() : "Connection failed";
-                    currentListener.onError(message);
-                }
-            });
+            scheduleRetry();
         }
 
         private String extractField(String data, String fieldName) {

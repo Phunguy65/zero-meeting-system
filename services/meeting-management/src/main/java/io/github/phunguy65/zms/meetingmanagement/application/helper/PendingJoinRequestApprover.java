@@ -95,6 +95,7 @@ public class PendingJoinRequestApprover {
                 : Long.MAX_VALUE;
 
         int approvedCount = 0;
+        List<UUID> failedIds = new ArrayList<>();
         List<PreparedApproval> preparedApprovals = new ArrayList<>();
 
         for (JoinRequest joinRequest : pendingRequests) {
@@ -104,7 +105,12 @@ public class PendingJoinRequestApprover {
 
             var approveResult = joinRequest.approve();
             if (approveResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
-                return Result.failure(error);
+                failedIds.add(joinRequest.getId().value());
+                log.warn(
+                        "Failed to approve join request '{}': {}",
+                        joinRequest.getId().value(),
+                        error.message());
+                continue;
             }
 
             ParticipantRole role = joinRequest.getUserId().isPresent()
@@ -130,7 +136,12 @@ public class PendingJoinRequestApprover {
                             role),
                     meeting.getSettings()));
             if (tokenResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
-                return Result.failure(error);
+                failedIds.add(joinRequest.getId().value());
+                log.warn(
+                        "Token generation failed for join request '{}': {}",
+                        joinRequest.getId().value(),
+                        error.message());
+                continue;
             }
             String token = ((Result.Success<String, MeetingError>) tokenResult).value();
 
@@ -173,6 +184,11 @@ public class PendingJoinRequestApprover {
                 "Auto-approved {} pending join request(s) for meeting '{}'",
                 approvedCount,
                 meeting.getId().value());
+
+        if (!failedIds.isEmpty()) {
+            return Result.failure(
+                    new MeetingError.PartialApprovalFailure(approvedCount, failedIds));
+        }
 
         return Result.success(approvedCount);
     }
