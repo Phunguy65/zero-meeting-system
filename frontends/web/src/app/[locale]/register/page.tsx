@@ -1,5 +1,5 @@
-import { AuthScreen } from "@/components/auth-screen";
+import { AuthScreen } from '@/components/auth-screen.tsx';
 
 export default function RegisterPage() {
-  return <AuthScreen variant="register" />;
+    return <AuthScreen variant='register' />;
 }

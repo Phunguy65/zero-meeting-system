@@ -1,5 +1,5 @@
-import { WorkspaceProfileScreen } from "@/components/workspace-profile-screen";
+import { WorkspaceProfileScreen } from '@/components/workspace-profile-screen.tsx';
 
 export default function WorkspaceProfilePage() {
-  return <WorkspaceProfileScreen />;
+    return <WorkspaceProfileScreen />;
 }
