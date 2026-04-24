@@ -1,12 +1,12 @@
 package io.github.phunguy65.zms.data.remote.interceptor;
 
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Mirrors the server-side {@code JsendResponse} record.
  *
- * <p>The {@code data} field is kept as a raw {@link JsonElement} so the interceptor can
+ * <p>The {@code data} field is kept as a raw {@link JsonNode} so the interceptor can
  * re-serialize it for Retrofit without knowing the concrete type.
  *
  * <p>On {@code "success"}: {@code data} holds the payload, {@code message} is null.<br>
@@ -15,20 +15,20 @@ import com.google.gson.annotations.SerializedName;
  */
 public final class JsendEnvelope {
 
-    @SerializedName("status")
+    @JsonProperty("status")
     private String status;
 
-    @SerializedName("data")
-    private JsonElement data;
+    @JsonProperty("data")
+    private JsonNode data;
 
-    @SerializedName("message")
+    @JsonProperty("message")
     private String message;
 
     public String getStatus() {
         return status;
     }
 
-    public JsonElement getData() {
+    public JsonNode getData() {
         return data;
     }
 

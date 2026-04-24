@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:paddingHorizontal="@dimen/spacing_lg"
+    android:paddingVertical="@dimen/spacing_md">
+
+    <ImageView android:id="@+id/imgAvatar"
+        android:layout_width="@dimen/avatar_size_md"
+        android:layout_height="@dimen/avatar_size_md"
+        android:background="@drawable/bg_circle_white"
+        android:importantForAccessibility="no" android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView android:id="@+id/tvDisplayName"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginEnd="@dimen/spacing_md" android:ellipsize="end"
+        android:maxLines="1" android:textColor="?attr/colorOnSurface"
+        android:textSize="16sp" android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/tvRequestedAt"
+        app:layout_constraintEnd_toStartOf="@id/btnDeny"
+        app:layout_constraintStart_toEndOf="@id/imgAvatar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView android:id="@+id/tvRequestedAt"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="12sp" android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/tvDisplayName"
+        app:layout_constraintStart_toStartOf="@id/tvDisplayName"
+        app:layout_constraintTop_toBottomOf="@id/tvDisplayName" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDeny"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/spacing_xs" android:minWidth="0dp"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:text="@string/waiting_room_deny" android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btnApprove"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnApprove" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:minWidth="0dp"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:text="@string/waiting_room_approve"
+        android:textAllCaps="false" app:backgroundTint="?attr/colorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

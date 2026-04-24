@@ -7,9 +7,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * Handles validation errors and unexpected exceptions for servlet-based controllers, producing
@@ -36,6 +38,25 @@ public class GlobalExceptionHandler {
 
         FailData body =
                 new FailData("Validation failed", CommonErrorCode.VALIDATION_ERROR, violations);
+        return ResponseEntity.badRequest().body(JsendResponse.fail(body));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<JsendResponse<FailData>> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex) {
+        FailData body = new FailData(
+                "HTTP method not supported", CommonErrorCode.METHOD_NOT_ALLOWED, List.of());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(JsendResponse.fail(body));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<JsendResponse<FailData>> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex) {
+        FailData body = new FailData(
+                "Validation failed",
+                CommonErrorCode.VALIDATION_ERROR,
+                List.of(new Violation(
+                        ex.getName(), "Invalid value", ViolationCode.INVALID_FORMAT)));
         return ResponseEntity.badRequest().body(JsendResponse.fail(body));
     }
 

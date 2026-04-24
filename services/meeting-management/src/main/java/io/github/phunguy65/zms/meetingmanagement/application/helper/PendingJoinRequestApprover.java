@@ -13,6 +13,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRep
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Service;
  * <ol>
  *   <li>{@link io.github.phunguy65.zms.meetingmanagement.application.usecase.ApproveAllJoinRequestsUseCase}
  *       — when host explicitly approves all.</li>
- *   <li>{@link io.github.phunguy65.zms.meetingmanagement.application.usecase.UpdateMeetingSettingsUseCase}
+ *   <li>{@link io.github.phunguy65.zms.meetingmanagement.application.usecase.PutMeetingSettingsUseCase}
  *       — when admissionPolicy transitions to ALLOW_ALL on a LIVE meeting.</li>
  * </ol>
  *
@@ -69,14 +70,15 @@ public class PendingJoinRequestApprover {
      *
      * @param meeting    the meeting whose pending requests should be approved
      * @param approvedBy the user ID of the approver (included in the published event)
-     * @return number of requests successfully approved
+     * @return number of requests successfully approved, or a failure if any request cannot be
+     *     deterministically approved
      */
-    public int approveAll(Meeting meeting, UUID approvedBy) {
+    public Result<Integer, MeetingError> approveAll(Meeting meeting, UUID approvedBy) {
         List<JoinRequest> pendingRequests =
                 joinRequestRepository.findPendingByMeetingId(meeting.getId().value());
 
         if (pendingRequests.isEmpty()) {
-            return 0;
+            return Result.success(0);
         }
 
         LiveKitRoomName roomName = LiveKitRoomName.fromMeetingId(meeting.getId());
@@ -93,6 +95,8 @@ public class PendingJoinRequestApprover {
                 : Long.MAX_VALUE;
 
         int approvedCount = 0;
+        List<UUID> failedIds = new ArrayList<>();
+        List<PreparedApproval> preparedApprovals = new ArrayList<>();
 
         for (JoinRequest joinRequest : pendingRequests) {
             if (remainingSlots <= 0) {
@@ -100,7 +104,12 @@ public class PendingJoinRequestApprover {
             }
 
             var approveResult = joinRequest.approve();
-            if (approveResult instanceof Result.Failure<?, MeetingError>) {
+            if (approveResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+                failedIds.add(joinRequest.getId().value());
+                log.warn(
+                        "Failed to approve join request '{}': {}",
+                        joinRequest.getId().value(),
+                        error.message());
                 continue;
             }
 
@@ -124,11 +133,25 @@ public class PendingJoinRequestApprover {
                                     .map(UserId::value)
                                     .map(avatarUrls::get)
                                     .orElse(null),
-                            role)));
-            if (tokenResult instanceof Result.Failure<?, MeetingError>) {
+                            role),
+                    meeting.getSettings()));
+            if (tokenResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+                failedIds.add(joinRequest.getId().value());
+                log.warn(
+                        "Token generation failed for join request '{}': {}",
+                        joinRequest.getId().value(),
+                        error.message());
                 continue;
             }
             String token = ((Result.Success<String, MeetingError>) tokenResult).value();
+
+            preparedApprovals.add(new PreparedApproval(joinRequest, role, identity, token));
+            approvedCount++;
+            remainingSlots--;
+        }
+
+        for (PreparedApproval preparedApproval : preparedApprovals) {
+            JoinRequest joinRequest = preparedApproval.joinRequest();
 
             joinRequestRepository.updateStatus(
                     joinRequest.getId().value(), JoinRequestStatus.APPROVED);
@@ -137,12 +160,12 @@ public class PendingJoinRequestApprover {
                     meeting.getId(),
                     joinRequest.getUserId().map(UserId::value).orElse(null),
                     joinRequest.getDisplayName(),
-                    role,
-                    identity);
+                    preparedApproval.role(),
+                    preparedApproval.identity());
             participationLogRepository.save(participationLog);
             log.debug(
                     "Recorded participation log for identity '{}' in meeting '{}'",
-                    identity.value(),
+                    preparedApproval.identity().value(),
                     meeting.getId().value());
 
             applicationEventPublisher.publishEvent(new JoinRequestApprovedEvent(
@@ -150,14 +173,11 @@ public class PendingJoinRequestApprover {
                     meeting.getId().value(),
                     joinRequest.getId().value(),
                     approvedBy,
-                    token,
+                    preparedApproval.token(),
                     Instant.now()));
 
             joinRequestRepository.removeFromQueue(
                     meeting.getId().value(), joinRequest.getId().value());
-
-            approvedCount++;
-            remainingSlots--;
         }
 
         log.info(
@@ -165,6 +185,17 @@ public class PendingJoinRequestApprover {
                 approvedCount,
                 meeting.getId().value());
 
-        return approvedCount;
+        if (!failedIds.isEmpty()) {
+            return Result.failure(
+                    new MeetingError.PartialApprovalFailure(approvedCount, failedIds));
+        }
+
+        return Result.success(approvedCount);
     }
+
+    private record PreparedApproval(
+            JoinRequest joinRequest,
+            ParticipantRole role,
+            LiveKitIdentity identity,
+            String token) {}
 }

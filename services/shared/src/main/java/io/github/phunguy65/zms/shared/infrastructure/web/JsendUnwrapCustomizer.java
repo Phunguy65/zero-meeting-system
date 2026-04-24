@@ -24,14 +24,23 @@ import org.springframework.stereotype.Component;
  * Client-side interceptors ({@code JsendUnwrapInterceptor}) already strip the envelope at runtime,
  * so generated client types should reference the inner payload type directly.
  *
- * <p>This customizer:
+ * <p>For each component schema whose name starts with {@code JsendResponse}, this customizer
+ * inspects the {@code data} property and rewrites response schemas in one of three ways:
+ *
  * <ol>
- *   <li>Finds all schemas whose name starts with {@code JsendResponse}.</li>
- *   <li>Extracts the {@code data} property's {@code $ref} as the inner payload type.</li>
- *   <li>Rewrites all response schema references from the wrapper to the inner type.</li>
- *   <li>For {@code JsendResponse<Void>} (no {@code data.$ref}), removes the response content.</li>
- *   <li>Removes all wrapper schema definitions from {@code components/schemas}.</li>
+ *   <li><b>Named-type payload</b> — {@code data} is a direct {@code $ref} (e.g.
+ *       {@code JsendResponse<MeetingResponse>}). The response schema is replaced with that
+ *       {@code $ref}.</li>
+ *   <li><b>Inline payload</b> — {@code data} is a non-{@code $ref} schema such as
+ *       {@code type: array} with inline {@code items} (e.g. {@code JsendResponse<List<T>>}),
+ *       an inline object, or a primitive. The response schema is replaced with the full inline
+ *       {@code data} schema, preserving {@code type}, {@code items}, {@code properties}, etc.</li>
+ *   <li><b>Empty payload</b> — {@code data} is absent or has no type information (e.g.
+ *       {@code JsendResponse<Void>}). The response content is cleared entirely.</li>
  * </ol>
+ *
+ * <p>After rewriting all responses, every {@code JsendResponse*} wrapper is removed from
+ * {@code components/schemas}.
  *
  * <p>Placed in the shared module and auto-discovered by all services via
  * {@code scanBasePackages = "io.github.phunguy65.zms.shared"}.
@@ -51,29 +60,30 @@ public class JsendUnwrapCustomizer implements OpenApiCustomizer {
 
         Map<String, Schema> schemas = components.getSchemas();
 
-        Map<String, String> wrapperToInnerRef = buildWrapperMapping(schemas);
-        if (wrapperToInnerRef.isEmpty()) {
+        Map<String, Schema> wrapperToInnerSchema = buildWrapperMapping(schemas);
+        if (wrapperToInnerSchema.isEmpty()) {
             return;
         }
 
         if (openApi.getPaths() != null) {
             for (PathItem pathItem : openApi.getPaths().values()) {
-                rewritePathItem(pathItem, wrapperToInnerRef);
+                rewritePathItem(pathItem, wrapperToInnerSchema);
             }
         }
 
-        for (String wrapperName : wrapperToInnerRef.keySet()) {
+        for (String wrapperName : wrapperToInnerSchema.keySet()) {
             schemas.remove(wrapperName);
         }
     }
 
     /**
-     * Scans component schemas for {@code JsendResponse*} wrappers and maps each to the inner
-     * payload type's {@code $ref}. If the {@code data} property has no {@code $ref} (e.g.
-     * {@code JsendResponse<Void>}), the value is {@code null}.
+     * Scans component schemas for {@code JsendResponse*} wrappers and maps each wrapper name to its
+     * inner {@code data} property schema. The mapped value is {@code null} when the wrapper has no
+     * meaningful payload (e.g. {@code JsendResponse<Void>}); otherwise it is the full {@link Schema}
+     * object describing the payload (named ref, array, inline object, or primitive).
      */
-    private Map<String, String> buildWrapperMapping(Map<String, Schema> schemas) {
-        Map<String, String> mapping = new HashMap<>();
+    private Map<String, Schema> buildWrapperMapping(Map<String, Schema> schemas) {
+        Map<String, Schema> mapping = new HashMap<>();
 
         for (Map.Entry<String, Schema> entry : schemas.entrySet()) {
             String name = entry.getKey();
@@ -83,27 +93,42 @@ public class JsendUnwrapCustomizer implements OpenApiCustomizer {
 
             Schema wrapperSchema = entry.getValue();
             Map<String, Schema> properties = wrapperSchema.getProperties();
-            if (properties == null || !properties.containsKey("data")) {
+            if (properties == null) {
+                mapping.put(name, null);
                 continue;
             }
 
             Schema dataProperty = properties.get("data");
-            String innerRef = dataProperty.get$ref();
-            mapping.put(name, innerRef);
+            mapping.put(name, hasPayload(dataProperty) ? dataProperty : null);
         }
 
         return mapping;
     }
 
+    /**
+     * Returns {@code true} when the {@code data} property carries enough type information to be
+     * treated as a real payload schema.
+     */
+    private boolean hasPayload(Schema dataProperty) {
+        if (dataProperty == null) {
+            return false;
+        }
+        return dataProperty.get$ref() != null
+                || dataProperty.getType() != null
+                || dataProperty.getProperties() != null
+                || dataProperty.getItems() != null
+                || dataProperty.get$schema() != null;
+    }
+
     /** Rewrites response schemas across all HTTP operations in a {@link PathItem}. */
-    private void rewritePathItem(PathItem pathItem, Map<String, String> wrapperToInnerRef) {
+    private void rewritePathItem(PathItem pathItem, Map<String, Schema> wrapperToInnerSchema) {
         for (Operation operation : allOperations(pathItem)) {
-            rewriteOperation(operation, wrapperToInnerRef);
+            rewriteOperation(operation, wrapperToInnerSchema);
         }
     }
 
     /** Rewrites response schema references for a single {@link Operation}. */
-    private void rewriteOperation(Operation operation, Map<String, String> wrapperToInnerRef) {
+    private void rewriteOperation(Operation operation, Map<String, Schema> wrapperToInnerSchema) {
         ApiResponses responses = operation.getResponses();
         if (responses == null) {
             return;
@@ -122,15 +147,14 @@ public class JsendUnwrapCustomizer implements OpenApiCustomizer {
                     continue;
                 }
 
-                String ref = schema.get$ref();
-                String schemaName = extractSchemaName(ref);
-                if (schemaName == null || !wrapperToInnerRef.containsKey(schemaName)) {
+                String schemaName = extractSchemaName(schema.get$ref());
+                if (schemaName == null || !wrapperToInnerSchema.containsKey(schemaName)) {
                     continue;
                 }
 
-                String innerRef = wrapperToInnerRef.get(schemaName);
-                if (innerRef != null) {
-                    schema.set$ref(innerRef);
+                Schema innerSchema = wrapperToInnerSchema.get(schemaName);
+                if (innerSchema != null) {
+                    mediaType.setSchema(innerSchema);
                 } else {
                     response.setContent(null);
                     break;

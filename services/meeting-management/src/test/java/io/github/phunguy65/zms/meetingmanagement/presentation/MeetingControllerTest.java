@@ -5,7 +5,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,9 +20,9 @@ import io.github.phunguy65.zms.meetingmanagement.application.usecase.EndMeetingU
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetHostMeetingsUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetMeetingByShortCodeUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetMeetingUseCase;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.PutMeetingSettingsUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.ScheduleMeetingUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.StartMeetingUseCase;
-import io.github.phunguy65.zms.meetingmanagement.application.usecase.UpdateMeetingSettingsUseCase;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingType;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.web.WebConfig;
@@ -72,7 +74,7 @@ class MeetingControllerTest {
     CancelMeetingUseCase cancelMeetingUseCase;
 
     @MockitoBean
-    UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase;
+    PutMeetingSettingsUseCase putMeetingSettingsUseCase;
 
     @MockitoBean
     CursorTokenEncoder cursorTokenEncoder;
@@ -100,12 +102,11 @@ class MeetingControllerTest {
                                         MeetingStatus.SCHEDULED,
                                         new MeetingSettingsResponse(
                                                 "MANUAL_APPROVAL",
-                                                90,
-                                                true,
                                                 true,
                                                 50,
                                                 true,
-                                                "HOST_ONLY",
+                                                true,
+                                                true,
                                                 true,
                                                 true),
                                         Instant.parse("2026-04-01T08:00:00Z")),
@@ -121,13 +122,12 @@ class MeetingControllerTest {
                                         MeetingStatus.LIVE,
                                         new MeetingSettingsResponse(
                                                 "AUTO_APPROVE",
-                                                null,
-                                                false,
                                                 false,
                                                 10,
+                                                true,
                                                 false,
-                                                "EVERYONE",
-                                                false,
+                                                true,
+                                                true,
                                                 false),
                                         secondCreatedAt)),
                         10,
@@ -169,15 +169,7 @@ class MeetingControllerTest {
                                 MeetingType.INSTANT,
                                 MeetingStatus.LIVE,
                                 new MeetingSettingsResponse(
-                                        "AUTO_APPROVE",
-                                        null,
-                                        false,
-                                        false,
-                                        10,
-                                        false,
-                                        "EVERYONE",
-                                        false,
-                                        false),
+                                        "AUTO_APPROVE", false, 10, true, false, true, true, false),
                                 Instant.parse("2026-04-01T09:00:00Z"))),
                         15,
                         false));
@@ -286,5 +278,296 @@ class MeetingControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value("fail"))
                 .andExpect(jsonPath("$.data.code").value("INVALID_STATUS_TRANSITION"));
+    }
+
+    @Test
+    void putMeetingSettings_returnsOkWhenSuccessful() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        when(putMeetingSettingsUseCase.execute(argThat(command -> command.meetingId()
+                                .equals(meetingId)
+                        && command.requesterId().equals(requesterId)
+                        && command.settings().admissionPolicy().name().equals("MANUAL_APPROVAL")
+                        && command.settings().allowGuest()
+                        && command.settings().maxParticipants() == 40
+                        && !command.settings().allowScreenShare()
+                        && command.settings().chatEnabled()
+                        && command.settings().allowMicrophone()
+                        && command.settings().allowVideo()
+                        && command.rawPassword() == null)))
+                .thenReturn(Result.success(new MeetingSettingsResponse(
+                        "MANUAL_APPROVAL", true, 40, false, true, true, true, false)));
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.data.admissionPolicy").value("MANUAL_APPROVAL"))
+                .andExpect(jsonPath("$.data.allowScreenShare").value(false))
+                .andExpect(jsonPath("$.data.requirePassword").value(false));
+    }
+
+    @Test
+    void putMeetingSettings_missingRequiredField_returns400() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+
+        verifyNoInteractions(putMeetingSettingsUseCase);
+    }
+
+    @Test
+    void putMeetingSettings_blankPassword_returns400() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": true,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": "   "
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.data.code").value("VALIDATION_ERROR"));
+
+        verifyNoInteractions(putMeetingSettingsUseCase);
+    }
+
+    @Test
+    void putMeetingSettings_returns401WhenUnauthenticated() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
+                                }
+                                """))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+
+        verifyNoInteractions(putMeetingSettingsUseCase);
+    }
+
+    @Test
+    void putMeetingSettings_returns403WhenRequesterIsNotHost() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        UUID hostId = UUID.randomUUID();
+        when(putMeetingSettingsUseCase.execute(
+                        argThat(command -> command.meetingId().equals(meetingId)
+                                && command.requesterId().equals(requesterId))))
+                .thenReturn(Result.failure(
+                        new io.github.phunguy65.zms.meetingmanagement.domain.MeetingError
+                                .NotAuthorized(requesterId, hostId)));
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
+                                }
+                                """))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("NOT_AUTHORIZED"));
+    }
+
+    @Test
+    void putMeetingSettings_returns409ForEndedMeeting() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        when(putMeetingSettingsUseCase.execute(
+                        argThat(command -> command.meetingId().equals(meetingId)
+                                && command.requesterId().equals(requesterId))))
+                .thenReturn(
+                        Result.failure(new io.github.phunguy65.zms.meetingmanagement.domain
+                                .MeetingError.InvalidStatusTransition(
+                                MeetingStatus.ENDED, MeetingStatus.SCHEDULED)));
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
+                                }
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_STATUS_TRANSITION"));
+    }
+
+    @Test
+    void putMeetingSettings_returns409ForCancelledMeeting() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        when(putMeetingSettingsUseCase.execute(
+                        argThat(command -> command.meetingId().equals(meetingId)
+                                && command.requesterId().equals(requesterId))))
+                .thenReturn(
+                        Result.failure(new io.github.phunguy65.zms.meetingmanagement.domain
+                                .MeetingError.InvalidStatusTransition(
+                                MeetingStatus.CANCELLED, MeetingStatus.SCHEDULED)));
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
+                                }
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_STATUS_TRANSITION"));
+    }
+
+    @Test
+    void putMeetingSettings_returns400ForMaxParticipantsCeilingViolation() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        when(putMeetingSettingsUseCase.execute(
+                        argThat(command -> command.meetingId().equals(meetingId)
+                                && command.requesterId().equals(requesterId))))
+                .thenReturn(Result.failure(
+                        new io.github.phunguy65.zms.meetingmanagement.domain.MeetingError
+                                .InvalidSettings("maxParticipants exceeds ceiling")));
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "MANUAL_APPROVAL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_SETTINGS"));
+    }
+
+    @Test
+    void putMeetingSettings_returns400ForAllowAllMaxParticipantsViolation() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        when(putMeetingSettingsUseCase.execute(
+                        argThat(command -> command.meetingId().equals(meetingId)
+                                && command.requesterId().equals(requesterId))))
+                .thenReturn(
+                        Result.failure(
+                                new io.github.phunguy65.zms.meetingmanagement.domain.MeetingError
+                                        .InvalidSettings(
+                                        "maxParticipants cannot be changed when admissionPolicy is ALLOW_ALL")));
+
+        mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "admissionPolicy": "ALLOW_ALL",
+                                  "allowGuest": true,
+                                  "maxParticipants": 40,
+                                  "allowScreenShare": false,
+                                  "chatEnabled": true,
+                                  "allowMicrophone": true,
+                                  "allowVideo": true,
+                                  "password": null
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_SETTINGS"));
+    }
+
+    @Test
+    void patchMeetingSettings_removed_returns405() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/v1/meetings/{id}/settings", meetingId)
+                        .principal(new TestingAuthenticationToken(requesterId.toString(), null))
+                        .contentType("application/json")
+                        .content("{\"allowGuest\":true}"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.data.code").value("METHOD_NOT_ALLOWED"));
+
+        verifyNoInteractions(putMeetingSettingsUseCase);
     }
 }

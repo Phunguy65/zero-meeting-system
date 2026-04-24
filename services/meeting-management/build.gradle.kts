@@ -15,7 +15,6 @@ dependencies {
     implementation(libs.uuid.creator)
     implementation(libs.spring.boot.starter.flyway)
     implementation(libs.cloudevents.kafka)
-    implementation(libs.jackson.databind.nullable)
     implementation(libs.livekit.server)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.bouncycastle)

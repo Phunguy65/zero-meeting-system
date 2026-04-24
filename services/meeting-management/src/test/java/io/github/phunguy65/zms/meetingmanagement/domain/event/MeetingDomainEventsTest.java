@@ -2,7 +2,9 @@ package io.github.phunguy65.zms.meetingmanagement.domain.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -12,18 +14,50 @@ class MeetingDomainEventsTest {
 
     @Test
     void meetingSettingsUpdatedEvent_exposesExpectedMetadata() {
+        var oldSettings = new MeetingSettings(
+                AdmissionPolicy.MANUAL_APPROVAL, true, 50, true, true, true, true, null);
+        var newSettings = new MeetingSettings(
+                AdmissionPolicy.ALLOW_ALL, true, 50, false, false, false, false, null);
         var event = new MeetingSettingsUpdatedEvent(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 MeetingStatus.SCHEDULED,
+                oldSettings,
+                newSettings,
                 Instant.parse("2026-04-02T09:00:00Z"));
 
         assertThat(event.aggregateType()).isEqualTo("meeting");
         assertThat(event.eventType())
                 .isEqualTo("io.github.phunguy65.zms.meeting.settings.updated.v1");
         assertThat(event.topic()).isEqualTo("meeting-management.meeting.settings.updated");
+        assertThat(event.oldSettings()).isEqualTo(oldSettings);
+        assertThat(event.newSettings()).isEqualTo(newSettings);
+    }
+
+    @Test
+    void meetingSettingsUpdatedEvent_carriesBothSettingsSnapshots() {
+        var oldSettings = new MeetingSettings(
+                AdmissionPolicy.MANUAL_APPROVAL, false, 30, true, true, true, true, null);
+        var newSettings = new MeetingSettings(
+                AdmissionPolicy.MANUAL_APPROVAL, false, 30, true, false, false, true, null);
+        var event = new MeetingSettingsUpdatedEvent(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                MeetingStatus.LIVE,
+                oldSettings,
+                newSettings,
+                Instant.parse("2026-04-19T10:00:00Z"));
+
+        // Old settings reflect pre-update state
+        assertThat(event.oldSettings().chatEnabled()).isTrue();
+        assertThat(event.oldSettings().allowMicrophone()).isTrue();
+        // New settings reflect post-update state
+        assertThat(event.newSettings().chatEnabled()).isFalse();
+        assertThat(event.newSettings().allowMicrophone()).isFalse();
     }
 
     @Test

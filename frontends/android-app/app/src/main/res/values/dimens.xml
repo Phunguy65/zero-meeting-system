@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Spacing tokens -->
+    <dimen name="spacing_xxs">2dp</dimen>
     <dimen name="spacing_xs">4dp</dimen>
     <dimen name="spacing_sm">8dp</dimen>
     <dimen name="spacing_md">16dp</dimen>
@@ -11,6 +12,76 @@
     <dimen name="touch_target_min">48dp</dimen>
 
     <!-- Corner radii -->
+    <dimen name="corner_radius_sm">4dp</dimen>
     <dimen name="corner_radius_md">8dp</dimen>
     <dimen name="corner_radius_lg">12dp</dimen>
+    <dimen name="corner_radius_xl">16dp</dimen>
+
+    <!-- Icon sizes -->
+    <dimen name="icon_size_sm">16dp</dimen>
+    <dimen name="icon_size_md">24dp</dimen>
+    <dimen name="icon_size_lg">32dp</dimen>
+
+    <!-- Avatar sizes -->
+    <dimen name="avatar_size_sm">40dp</dimen>
+    <dimen name="avatar_size_md">48dp</dimen>
+    <dimen name="avatar_size_lg">100dp</dimen>
+    <dimen name="avatar_size_xl">120dp</dimen>
+
+    <!-- Quick action card size -->
+    <dimen name="quick_action_size">80dp</dimen>
+
+    <!-- Button sizes -->
+    <dimen name="button_height_lg">60dp</dimen>
+
+    <!-- Icon container sizes -->
+    <dimen name="icon_container_md">40dp</dimen>
+    <dimen name="icon_size_xs">14dp</dimen>
+
+    <!-- List item offsets -->
+    <dimen name="list_item_icon_offset">56dp</dimen>
+
+    <!-- Floating button sizes -->
+    <dimen name="float_button_sm">56dp</dimen>
+    <dimen name="float_button_lg">64dp</dimen>
+
+    <!-- Chat input -->
+    <dimen name="chat_input_height">50dp</dimen>
+
+    <!-- Video grid -->
+    <dimen name="video_grid_bottom_clearance">100dp</dimen>
+
+    <!-- Video call specific -->
+    <dimen name="video_tile_corner_radius">12dp</dimen>
+    <dimen name="video_tile_padding">4dp</dimen>
+    <dimen name="video_tile_name_padding_h">8dp</dimen>
+    <dimen name="video_tile_name_padding_v">4dp</dimen>
+    <dimen name="video_self_preview_width">120dp</dimen>
+    <dimen name="video_self_preview_height">160dp</dimen>
+    <dimen name="video_control_bar_height">80dp</dimen>
+    <dimen name="video_control_button_size">56dp</dimen>
+    <dimen name="video_end_call_button_size">64dp</dimen>
+    <dimen name="video_muted_badge_size">20dp</dimen>
+    <dimen name="video_top_bar_height">56dp</dimen>
+
+    <!-- Compact call controls (redesign) -->
+    <dimen name="video_compact_control_bar_height">72dp</dimen>
+    <dimen name="video_compact_button_size">48dp</dimen>
+    <dimen name="video_compact_end_call_size">56dp</dimen>
+    <dimen name="video_compact_button_spacing">12dp</dimen>
+
+    <!-- Bottom sheet dimensions -->
+    <dimen name="bottom_sheet_row_height">56dp</dimen>
+    <dimen name="bottom_sheet_icon_size">24dp</dimen>
+    <dimen name="bottom_sheet_badge_size">20dp</dimen>
+    <dimen name="bottom_sheet_handle_width">32dp</dimen>
+    <dimen name="bottom_sheet_handle_height">4dp</dimen>
+
+    <!-- Layout picker card dimensions -->
+    <dimen name="layout_card_width">72dp</dimen>
+    <dimen name="layout_card_height">56dp</dimen>
+    <dimen name="layout_card_icon_size">28dp</dimen>
+
+    <!-- Calendar -->
+    <dimen name="list_item_time_offset">80dp</dimen>
 </resources>

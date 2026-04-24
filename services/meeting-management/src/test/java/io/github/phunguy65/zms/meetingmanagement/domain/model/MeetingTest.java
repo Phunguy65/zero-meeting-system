@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingCancelledEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingSettingsUpdatedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTimeRange;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTitle;
@@ -16,6 +17,79 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class MeetingTest {
+
+    @Test
+    void updateSettings_capturesOldAndNewSettingsInEvent() {
+        Meeting meeting = scheduledMeeting();
+        UUID updaterId = UUID.randomUUID();
+
+        MeetingSettings oldSettings = meeting.getSettings();
+        MeetingSettings newSettings = new MeetingSettings(
+                AdmissionPolicy.ALLOW_ALL,
+                false, // allowGuest
+                50, // maxParticipants
+                false, // allowScreenShare
+                false, // chatEnabled
+                false, // allowMicrophone
+                true, // allowVideo
+                null);
+
+        Result<Void, MeetingError> result = meeting.updateSettings(newSettings, updaterId);
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        assertThat(meeting.getSettings()).isEqualTo(newSettings);
+        assertThat(meeting.getDomainEvents())
+                .last()
+                .isInstanceOfSatisfying(MeetingSettingsUpdatedEvent.class, event -> {
+                    assertThat(event.oldSettings()).isEqualTo(oldSettings);
+                    assertThat(event.newSettings()).isEqualTo(newSettings);
+                    assertThat(event.updatedBy()).isEqualTo(updaterId);
+                    assertThat(event.meetingStatus()).isEqualTo(MeetingStatus.SCHEDULED);
+                });
+    }
+
+    @Test
+    void updateSettings_forLiveMeeting_includesLiveStatusInEvent() {
+        Meeting meeting = scheduledMeeting();
+        assertThat(meeting.start()).isInstanceOf(Result.Success.class);
+        meeting.clearDomainEvents(); // Clear start event to isolate settings update
+
+        MeetingSettings newSettings = new MeetingSettings(
+                AdmissionPolicy.MANUAL_APPROVAL,
+                true,
+                100,
+                false, // allowScreenShare changed
+                false, // chatEnabled changed
+                true,
+                true,
+                null);
+
+        Result<Void, MeetingError> result = meeting.updateSettings(newSettings, UUID.randomUUID());
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        assertThat(meeting.getDomainEvents())
+                .last()
+                .isInstanceOfSatisfying(MeetingSettingsUpdatedEvent.class, event -> {
+                    assertThat(event.meetingStatus()).isEqualTo(MeetingStatus.LIVE);
+                    assertThat(event.oldSettings().allowScreenShare()).isTrue();
+                    assertThat(event.newSettings().allowScreenShare()).isFalse();
+                });
+    }
+
+    @Test
+    void updateSettings_forEndedMeeting_fails() {
+        Meeting meeting = scheduledMeeting();
+        assertThat(meeting.start()).isInstanceOf(Result.Success.class);
+        assertThat(meeting.end()).isInstanceOf(Result.Success.class);
+
+        Result<Void, MeetingError> result =
+                meeting.updateSettings(MeetingSettings.defaults(), UUID.randomUUID());
+
+        assertThat(result)
+                .isInstanceOfSatisfying(Result.Failure.class, failure -> assertThat(failure.error())
+                        .isEqualTo(new MeetingError.InvalidStatusTransition(
+                                MeetingStatus.ENDED, MeetingStatus.SCHEDULED)));
+    }
 
     @Test
     void cancelScheduledMeeting_registersCancelledEventWithInvitees() {

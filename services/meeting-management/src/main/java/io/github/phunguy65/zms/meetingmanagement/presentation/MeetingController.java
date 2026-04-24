@@ -11,8 +11,8 @@ import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingSet
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.CreateInstantMeetingRequest;
+import io.github.phunguy65.zms.meetingmanagement.presentation.request.MeetingSettingsRequest;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.ScheduleMeetingRequest;
-import io.github.phunguy65.zms.meetingmanagement.presentation.request.UpdateMeetingSettingsRequest;
 import io.github.phunguy65.zms.shared.domain.CursorErrorCode;
 import io.github.phunguy65.zms.shared.domain.CursorTokenEncoder;
 import io.github.phunguy65.zms.shared.domain.Result;
@@ -43,7 +43,7 @@ public class MeetingController extends BaseController {
     private final StartMeetingUseCase startMeetingUseCase;
     private final EndMeetingUseCase endMeetingUseCase;
     private final CancelMeetingUseCase cancelMeetingUseCase;
-    private final UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase;
+    private final PutMeetingSettingsUseCase putMeetingSettingsUseCase;
     private final CursorTokenEncoder cursorTokenEncoder;
 
     public MeetingController(
@@ -55,7 +55,7 @@ public class MeetingController extends BaseController {
             StartMeetingUseCase startMeetingUseCase,
             EndMeetingUseCase endMeetingUseCase,
             CancelMeetingUseCase cancelMeetingUseCase,
-            UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase,
+            PutMeetingSettingsUseCase putMeetingSettingsUseCase,
             CursorTokenEncoder cursorTokenEncoder) {
         this.scheduleMeetingUseCase = scheduleMeetingUseCase;
         this.createInstantMeetingUseCase = createInstantMeetingUseCase;
@@ -65,7 +65,7 @@ public class MeetingController extends BaseController {
         this.startMeetingUseCase = startMeetingUseCase;
         this.endMeetingUseCase = endMeetingUseCase;
         this.cancelMeetingUseCase = cancelMeetingUseCase;
-        this.updateMeetingSettingsUseCase = updateMeetingSettingsUseCase;
+        this.putMeetingSettingsUseCase = putMeetingSettingsUseCase;
         this.cursorTokenEncoder = cursorTokenEncoder;
     }
 
@@ -190,15 +190,15 @@ public class MeetingController extends BaseController {
         };
     }
 
-    @Operation(summary = "Update meeting settings")
-    @PatchMapping(value = "/{version}/meetings/{id}/settings", version = "1.0")
-    public ResponseEntity<JsendResponse<MeetingSettingsResponse>> updateMeetingSettings(
+    @Operation(summary = "Replace meeting settings")
+    @PutMapping(value = "/{version}/meetings/{id}/settings", version = "1.0")
+    public ResponseEntity<JsendResponse<MeetingSettingsResponse>> putMeetingSettings(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateMeetingSettingsRequest request,
+            @Valid @RequestBody MeetingSettingsRequest request,
             Authentication auth) {
         UUID requesterId = extractUserId(auth);
         if (requesterId == null) return unauthenticated();
-        return switch (updateMeetingSettingsUseCase.execute(request.toCommand(id, requesterId))) {
+        return switch (putMeetingSettingsUseCase.execute(request.toCommand(id, requesterId))) {
             case Result.Success<MeetingSettingsResponse, MeetingError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
             case Result.Failure<MeetingSettingsResponse, MeetingError> f ->

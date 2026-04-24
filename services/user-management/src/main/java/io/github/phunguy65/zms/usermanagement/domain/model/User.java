@@ -181,31 +181,15 @@ public class User extends AggregateRoot<UserId> {
         this.updatedAt = Instant.now();
     }
 
-    /**
-     * Partially updates the user's profile fields.
-     *
-     * @param newFullName    new full name, or {@code null} to leave unchanged
-     * @param avatarUpdate   {@link AvatarUpdate.Keep} to skip, {@link AvatarUpdate.Set} to replace,
-     *                       {@link AvatarUpdate.Clear} to remove
-     * @param newUsername    new username, or {@code null} to leave unchanged
-     */
-    public void updateProfile(
-            @Nullable FullName newFullName,
-            AvatarUpdate avatarUpdate,
-            @Nullable Username newUsername) {
-        if (newFullName != null) {
-            this.fullName = newFullName;
-        }
+    /** Replaces the user's profile fields and records a {@link UserUpdatedEvent}. */
+    public void replaceProfile(
+            FullName newFullName, AvatarUpdate avatarUpdate, Username newUsername) {
+        this.fullName = newFullName;
         switch (avatarUpdate) {
             case AvatarUpdate.Set s -> this.avatarUrl = s.url();
             case AvatarUpdate.Clear ignored -> this.avatarUrl = null;
-            case AvatarUpdate.Keep ignored -> {
-                /* no-op */
-            }
         }
-        if (newUsername != null) {
-            this.username = newUsername;
-        }
+        this.username = newUsername;
         this.updatedAt = Instant.now();
         registerEvent(new UserUpdatedEvent(
                 UuidCreator.getTimeOrderedEpoch(),

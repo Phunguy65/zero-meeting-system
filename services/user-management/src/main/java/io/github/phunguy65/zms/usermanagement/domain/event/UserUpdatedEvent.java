@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Published when a user's profile is updated via {@code PATCH /users/me}.
+ * Published when a user's profile is replaced via the current-user update API.
  * Carries enough data for downstream services to update local projections without
  * HTTP callbacks. Topic: {@code user-management.user.updated}.
  *

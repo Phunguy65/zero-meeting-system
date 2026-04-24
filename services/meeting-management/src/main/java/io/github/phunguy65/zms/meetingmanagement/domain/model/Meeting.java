@@ -205,7 +205,7 @@ public class Meeting extends AggregateRoot<MeetingId> {
 
     /**
      * Updates meeting settings when status is SCHEDULED or LIVE.
-     * Registers {@code MeetingSettingsUpdatedEvent}.
+     * Registers {@code MeetingSettingsUpdatedEvent} with both old and new settings snapshots.
      *
      * @param newSettings the new settings to apply
      * @param updatedBy   the user ID performing the update
@@ -216,10 +216,18 @@ public class Meeting extends AggregateRoot<MeetingId> {
             return Result.failure(
                     new MeetingError.InvalidStatusTransition(status, MeetingStatus.SCHEDULED));
         }
+        MeetingSettings oldSettings = this.settings;
         this.settings = newSettings;
         Instant now = Instant.now();
         registerEvent(new MeetingSettingsUpdatedEvent(
-                UUID.randomUUID(), id.value(), hostId.value(), updatedBy, status, now));
+                UUID.randomUUID(),
+                id.value(),
+                hostId.value(),
+                updatedBy,
+                status,
+                oldSettings,
+                newSettings,
+                now));
         return Result.success();
     }
 

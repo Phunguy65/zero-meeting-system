@@ -51,7 +51,7 @@ class GetHostMeetingsUseCaseTest {
                 MeetingType.SCHEDULED,
                 MeetingStatus.SCHEDULED,
                 new MeetingSettingsSummary(
-                        "MANUAL_APPROVAL", 90, true, true, 50, true, "HOST_ONLY", true, true),
+                        "MANUAL_APPROVAL", true, 50, true, true, true, true, true),
                 Instant.parse("2026-04-01T08:00:00Z"));
         MeetingSummary secondSummary = new MeetingSummary(
                 secondMeetingId,
@@ -64,7 +64,7 @@ class GetHostMeetingsUseCaseTest {
                 MeetingType.INSTANT,
                 MeetingStatus.LIVE,
                 new MeetingSettingsSummary(
-                        "AUTO_APPROVE", null, false, false, 10, false, "EVERYONE", false, false),
+                        "AUTO_APPROVE", false, 10, true, false, true, true, false),
                 Instant.parse("2026-04-01T09:00:00Z"));
         when(meetingRepository.findSummariesByHostId(hostId, cursor, 10))
                 .thenReturn(CursorPageResponse.of(
@@ -85,13 +85,12 @@ class GetHostMeetingsUseCaseTest {
             assertThat(meeting.status()).isEqualTo(MeetingStatus.SCHEDULED);
             assertThat(meeting.createdAt()).isEqualTo(Instant.parse("2026-04-01T08:00:00Z"));
             assertThat(meeting.settings().admissionPolicy()).isEqualTo("MANUAL_APPROVAL");
-            assertThat(meeting.settings().joinRequestTimeoutSeconds()).isEqualTo(90);
             assertThat(meeting.settings().allowGuest()).isTrue();
-            assertThat(meeting.settings().muteOnEntry()).isTrue();
             assertThat(meeting.settings().maxParticipants()).isEqualTo(50);
-            assertThat(meeting.settings().recordingEnabled()).isTrue();
-            assertThat(meeting.settings().screenShareMode()).isEqualTo("HOST_ONLY");
+            assertThat(meeting.settings().allowScreenShare()).isTrue();
             assertThat(meeting.settings().chatEnabled()).isTrue();
+            assertThat(meeting.settings().allowMicrophone()).isTrue();
+            assertThat(meeting.settings().allowVideo()).isTrue();
             assertThat(meeting.settings().requirePassword()).isTrue();
         });
         assertThat(result.items().get(1)).satisfies(meeting -> {
@@ -102,7 +101,6 @@ class GetHostMeetingsUseCaseTest {
             assertThat(meeting.endTime()).isNull();
             assertThat(meeting.type()).isEqualTo(MeetingType.INSTANT);
             assertThat(meeting.status()).isEqualTo(MeetingStatus.LIVE);
-            assertThat(meeting.settings().joinRequestTimeoutSeconds()).isNull();
             assertThat(meeting.settings().allowGuest()).isFalse();
             assertThat(meeting.settings().requirePassword()).isFalse();
         });

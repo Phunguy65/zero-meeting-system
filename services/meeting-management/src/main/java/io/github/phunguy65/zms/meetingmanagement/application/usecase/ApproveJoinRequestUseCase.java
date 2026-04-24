@@ -104,7 +104,8 @@ public class ApproveJoinRequestUseCase {
                 new ParticipantAttributes(
                         participantAvatarResolver.resolveAvatar(
                                 joinRequest.getUserId().map(UserId::value).orElse(null)),
-                        role)));
+                        role),
+                meeting.getSettings()));
         if (tokenResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
             return Result.failure(error);
         }

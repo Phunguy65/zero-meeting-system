@@ -3,6 +3,7 @@ package io.github.phunguy65.zms.meetingmanagement.application.usecase;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestDeniedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingEndedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequest;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.JoinRequestStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.JoinRequestRepository;
 import java.time.Instant;
 import java.util.List;
@@ -52,6 +53,9 @@ public class MeetingEndedJoinRequestHandleUseCase {
                 meetingId);
 
         for (JoinRequest joinRequest : pendingRequests) {
+            joinRequestRepository.updateStatus(
+                    joinRequest.getId().value(), JoinRequestStatus.DENIED);
+
             var deniedEvent = new JoinRequestDeniedEvent(
                     UUID.randomUUID(), meetingId, joinRequest.getId().value(), null, Instant.now());
             applicationEventPublisher.publishEvent(deniedEvent);

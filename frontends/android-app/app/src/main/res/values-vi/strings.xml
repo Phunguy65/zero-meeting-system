@@ -21,6 +21,7 @@
     <string name="login_or_continue_with">HOẶC TIẾP TỤC VỚI</string>
     <string name="login_btn_google">Đăng nhập với Google</string>
     <string name="login_need_account">Chưa có tài khoản? Đăng ký</string>
+    <string name="login_remember_me">Ghi nhớ đăng nhập</string>
     <string name="login_forgot_password_coming_soon">Tính năng khôi phục mật khẩu sắp ra mắt</string>
 
     <!-- ═══ Màn hình quên mật khẩu ═══ -->
@@ -121,4 +122,338 @@
         lại.</string>
     <string name="error_google_only_account">Tài khoản này sử dụng đăng nhập Google. Vui lòng
         đăng nhập bằng Google.</string>
+
+    <!-- ═══ Điều hướng ═══ -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_calendar">Lịch</string>
+    <string name="nav_profile">Cá nhân</string>
+
+    <!-- ═══ Màn hình Dashboard ═══ -->
+    <string name="dashboard_title">Bảng điều khiển</string>
+    <string name="action_new_meeting">Cuộc họp mới</string>
+    <string name="action_new_meeting_subtitle">Bắt đầu ngay</string>
+    <string name="action_join_meeting">Tham gia họp</string>
+    <string name="action_join_meeting_subtitle">Với mã phòng</string>
+    <string name="action_schedule">Lên lịch</string>
+    <string name="action_schedule_subtitle">Lên kế hoạch</string>
+    <string name="section_upcoming_meetings">Cuộc họp sắp tới</string>
+    <string name="action_see_all">Xem tất cả</string>
+    <string name="action_join">Tham gia</string>
+    <string name="action_wait">Chờ</string>
+
+    <!-- ═══ Màn hình Lịch ═══ -->
+    <string name="calendar_title">Lịch họp</string>
+    <string name="meeting_status_in_progress">Đang diễn ra</string>
+    <string name="meeting_duration_hour">1 giờ</string>
+    <string name="meeting_recurrence_weekly">Hàng tuần</string>
+    <string-array name="weekday_abbreviations">
+        <item>T2</item>
+        <item>T3</item>
+        <item>T4</item>
+        <item>T5</item>
+        <item>T6</item>
+        <item>T7</item>
+        <item>CN</item>
+    </string-array>
+
+    <!-- ═══ Màn hình Cá nhân ═══ -->
+    <string name="profile_title">Cá nhân</string>
+    <string name="profile_account_settings">Cài đặt tài khoản</string>
+    <string name="profile_meeting_history">Lịch sử họp</string>
+    <string name="profile_help_support">Trợ giúp &amp; Hỗ trợ</string>
+    <string name="profile_log_out">Đăng xuất</string>
+    <string name="profile_logged_out">Đã đăng xuất</string>
+    <string name="profile_loading">Đang tải…</string>
+    <string name="profile_error">Không thể tải hồ sơ</string>
+    <string name="retry">Thử lại</string>
+
+    <!-- ═══ Màn hình Cài đặt tài khoản ═══ -->
+    <string name="account_settings_change_photo">Đổi ảnh</string>
+    <string name="account_settings_full_name">Họ và tên</string>
+    <string name="account_settings_username">Tên người dùng</string>
+    <string name="account_settings_username_helper">3–30 ký tự: chữ cái, số, _ hoặc -</string>
+    <string name="account_settings_email">Email</string>
+    <string name="account_settings_email_readonly">Không thể thay đổi email</string>
+    <string name="account_settings_save">Lưu thay đổi</string>
+    <string name="account_settings_saving">Đang lưu…</string>
+    <string name="account_settings_saved">Đã cập nhật hồ sơ</string>
+    <string name="account_settings_error_fullname_required">Họ và tên là bắt buộc</string>
+    <string name="account_settings_error_fullname_too_long">Họ và tên quá dài (tối đa 255 ký tự)</string>
+    <string name="account_settings_error_username_short">Tên người dùng phải có ít nhất 3 ký tự</string>
+    <string name="account_settings_error_username_long">Tên người dùng tối đa 30 ký tự</string>
+    <string name="account_settings_error_username_format">Tên người dùng chỉ được chứa chữ cái, số, _ và -</string>
+    <string name="account_settings_error_username_taken">Tên người dùng đã được sử dụng</string>
+    <string name="account_settings_error_upload">Không thể tải ảnh lên</string>
+    <string name="account_settings_discard_title">Bỏ thay đổi?</string>
+    <string name="account_settings_discard_message">Bạn có thay đổi chưa lưu. Bạn có muốn bỏ chúng
+        không?</string>
+    <string name="account_settings_discard_confirm">Bỏ</string>
+    <string name="account_settings_discard_cancel">Tiếp tục chỉnh sửa</string>
+
+    <!-- ═══ Chọn ảnh đại diện ═══ -->
+    <string name="avatar_picker_title">Đổi ảnh</string>
+    <string name="avatar_picker_take_photo">Chụp ảnh</string>
+    <string name="avatar_picker_choose_gallery">Chọn từ thư viện</string>
+    <string name="avatar_picker_remove_photo">Xóa ảnh</string>
+
+    <!-- ═══ Màn hình Cài đặt ═══ -->
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_theme">Giao diện</string>
+    <string name="settings_about">Giới thiệu</string>
+
+    <!-- Tùy chọn giao diện -->
+    <string name="theme_dark">Tối</string>
+    <string name="theme_light">Sáng</string>
+    <string name="theme_system">Hệ thống (theo thiết bị)</string>
+    <string name="theme_dialog_title">Chọn giao diện</string>
+
+    <!-- ═══ Màn hình cuộc gọi video ═══ -->
+    <string name="prejoin_title">Tham gia cuộc họp</string>
+    <string name="prejoin_meeting_code">Mã phòng họp</string>
+    <string name="prejoin_meeting_code_hint">Nhập mã phòng họp</string>
+    <string name="prejoin_display_name">Tên hiển thị</string>
+    <string name="prejoin_display_name_hint">Nhập tên của bạn</string>
+    <string name="prejoin_connect_audio">Kết nối âm thanh</string>
+    <string name="prejoin_audio_on">Âm thanh bật</string>
+    <string name="prejoin_audio_off">Âm thanh tắt</string>
+    <string name="prejoin_turn_on_video">Bật video</string>
+    <string name="prejoin_video_on">Video bật</string>
+    <string name="prejoin_video_off">Video tắt</string>
+    <string name="prejoin_join_options">TÙY CHỌN THAM GIA</string>
+    <string name="prejoin_join_button">Tham gia</string>
+    <string name="prejoin_terms">Bằng việc tham gia, bạn đồng ý với điều khoản dịch
+        vụ</string>
+    <string name="prejoin_error_meeting_code">Vui lòng nhập mã phòng họp</string>
+    <string name="prejoin_error_display_name">Vui lòng nhập tên hiển thị</string>
+    <string name="prejoin_password">Mật khẩu</string>
+    <string name="prejoin_password_hint">Nhập mật khẩu cuộc họp</string>
+    <string name="prejoin_password_helper">Cuộc họp này yêu cầu mật khẩu để tham gia</string>
+    <string name="prejoin_error_password_required">Vui lòng nhập mật khẩu cuộc họp</string>
+    <string name="prejoin_error_invalid_password">Mật khẩu không đúng. Vui lòng thử lại.</string>
+    <string name="prejoin_error_meeting_not_found">Không tìm thấy cuộc họp. Vui lòng kiểm tra mã.</string>
+    <string name="prejoin_checking">Đang kiểm tra cuộc họp…</string>
+    <string name="prejoin_network_error_retry">Lỗi mạng. Nhấn để thử lại.</string>
+    <string name="call_leave">Rời đi</string>
+    <string name="call_leave_title">Rời khỏi cuộc họp?</string>
+    <string name="call_leave_message">Bạn có chắc muốn rời khỏi cuộc họp này không?</string>
+    <string name="call_leave_confirm">Rời đi</string>
+    <string name="call_end">Kết thúc</string>
+    <string name="call_participants">Thành viên</string>
+    <string name="call_participants_count">%1$d thành viên</string>
+    <string name="call_chat">Trò chuyện</string>
+    <string name="call_mute_all">Tắt tiếng tất cả</string>
+    <string name="call_search_participants">Tìm thành viên</string>
+    <string name="call_type_message">Nhập tin nhắn…</string>
+    <string name="call_meeting_chat">Trò chuyện cuộc họp</string>
+
+    <!-- ═══ Trạng thái trống ═══ -->
+    <string name="empty_no_upcoming_meetings">Không có cuộc họp sắp tới</string>
+    <string name="empty_schedule_meeting">Lên lịch cuộc họp</string>
+    <string name="empty_no_meetings_today">Không có cuộc họp hôm nay</string>
+
+    <!-- ═══ Màn hình Lên lịch ═══ -->
+    <string name="schedule_title">Lên lịch</string>
+    <string name="schedule_meeting_topic">Chủ đề cuộc họp</string>
+    <string name="schedule_date">Ngày</string>
+    <string name="schedule_start_time">Giờ bắt đầu</string>
+    <string name="schedule_duration">Thời lượng</string>
+    <string name="schedule_meeting_settings">Cài đặt cuộc họp</string>
+    <string name="schedule_waiting_room">Phòng chờ</string>
+    <string name="schedule_waiting_room_desc">Duyệt khách thủ công trước khi vào họp</string>
+    <string name="schedule_button">Lên lịch</string>
+    <string name="schedule_update_button">Cập nhật cài đặt</string>
+    <string name="schedule_edit_title">Chỉnh sửa cuộc họp</string>
+    <string name="schedule_update_success">Đã cập nhật cài đặt!</string>
+    <string name="schedule_load_error">Không thể tải thông tin cuộc họp</string>
+    <string name="schedule_error_empty_topic">Vui lòng nhập chủ đề cuộc họp</string>
+    <string name="schedule_success">Đã lên lịch cuộc họp!</string>
+    <string-array name="schedule_durations">
+        <item>30 phút</item>
+        <item>45 phút</item>
+        <item>1 giờ</item>
+        <item>1,5 giờ</item>
+        <item>2 giờ</item>
+    </string-array>
+
+    <!-- ═══ Màn hình Tạo cuộc họp ═══ -->
+    <string name="create_meeting_title">Cuộc họp mới</string>
+    <string name="create_meeting_video">Video</string>
+    <string name="create_meeting_audio">Âm thanh</string>
+    <string name="create_meeting_you">Bạn</string>
+    <string name="create_meeting_start">Bắt đầu họp</string>
+    <string name="create_meeting_copy_link">Sao chép liên kết</string>
+    <string name="create_meeting_link_copied">Đã sao chép liên kết vào clipboard</string>
+    <string name="create_meeting_starting">Đang bắt đầu cuộc họp…</string>
+
+    <!-- ═══ Màn hình Tham gia họp ═══ -->
+    <string name="join_meeting_title">Tham gia họp</string>
+    <string name="join_meeting_hint">Nhập mã cuộc họp hoặc liên kết</string>
+    <string name="join_meeting_button">Tham gia</string>
+    <string name="join_meeting_invitation_hint">Nếu bạn nhận được liên kết mời, hãy nhấn vào liên
+        kết đó để tham gia.</string>
+    <string name="join_meeting_options">TÙY CHỌN THAM GIA</string>
+    <string name="join_meeting_with_audio">Tham gia với âm thanh</string>
+    <string name="join_meeting_with_video">Tham gia với video</string>
+
+    <!-- ═══ Mô tả trợ năng ═══ -->
+    <string name="cd_avatar">Ảnh đại diện</string>
+    <string name="cd_avatar_tap_to_edit">Ảnh đại diện. Nhấn đúp để thay đổi</string>
+    <string name="cd_avatar_tap_to_change">Ảnh đại diện. Nhấn đúp để thay đổi</string>
+    <string name="cd_back">Quay lại</string>
+    <string name="cd_settings">Cài đặt</string>
+    <string name="cd_search">Tìm kiếm</string>
+    <string name="cd_previous_month">Tháng trước</string>
+    <string name="cd_next_month">Tháng sau</string>
+    <string name="cd_new_meeting">Bắt đầu cuộc họp mới</string>
+    <string name="cd_join_meeting">Tham gia cuộc họp</string>
+    <string name="cd_schedule_meeting">Lên lịch cuộc họp</string>
+    <string name="cd_mute_mic">Tắt tiếng mic</string>
+    <string name="cd_unmute_mic">Bật tiếng mic</string>
+    <string name="cd_enable_camera">Bật camera</string>
+    <string name="cd_disable_camera">Tắt camera</string>
+    <string name="cd_end_call">Kết thúc cuộc gọi</string>
+    <string name="cd_speaker">Loa</string>
+    <string name="cd_send_message">Gửi tin nhắn</string>
+    <string name="cd_attach_file">Đính kèm tệp</string>
+    <string name="cd_close">Đóng</string>
+    <string name="cd_more_options">Tùy chọn khác</string>
+    <string name="cd_open_chat">Mở trò chuyện</string>
+    <string name="cd_activate_to_change">Nhấn đúp để thay đổi</string>
+
+    <!-- ═══ Thông báo cuộc gọi video ═══ -->
+    <string name="permission_camera_mic_required">Cần quyền truy cập camera và mic cho cuộc gọi video</string>
+    <string name="permission_camera_required">Cần quyền truy cập camera để chụp ảnh</string>
+    <string name="error_camera_file">Không thể tạo tệp ảnh</string>
+    <string name="call_muted_all">Đã tắt tiếng tất cả</string>
+    <string name="call_attachment_coming_soon">Tính năng đính kèm tệp sắp ra mắt</string>
+    <string name="call_message_sent">Đã gửi tin nhắn</string>
+    <string name="chat_empty">Chưa có tin nhắn nào</string>
+    <string name="chat_loading">Đang tải tin nhắn…</string>
+    <string name="chat_error_load">Không thể tải tin nhắn</string>
+    <string name="chat_send_failed">Không thể gửi tin nhắn</string>
+    <string name="chat_retry">Thử lại</string>
+    <string name="chat_meeting_not_active">Cuộc họp không hoạt động</string>
+    <string name="chat_failed_to_load">Không thể tải cuộc trò chuyện</string>
+    <string name="chat_failed_to_send">Không thể gửi tin nhắn</string>
+
+    <!-- ═══ Phiên hết hạn ═══ -->
+    <string name="session_expired_title">Phiên đã hết hạn</string>
+    <string name="session_expired_message">Vui lòng đăng nhập lại để tiếp tục</string>
+    <string name="session_expired_snackbar">Phiên đã hết hạn. Vui lòng đăng nhập.</string>
+
+    <!-- ═══ Lịch sử cuộc họp ═══ -->
+    <string name="meeting_history_title">Lịch sử cuộc họp</string>
+    <string name="meeting_history_untitled">Cuộc họp không có tiêu đề</string>
+    <string name="meeting_history_badge_cancelled">ĐÃ HỦY</string>
+    <string name="meeting_history_empty_title">Chưa có cuộc họp nào</string>
+    <string name="meeting_history_empty_subtitle">Các cuộc họp đã qua sẽ xuất hiện ở đây sau khi bạn
+        tổ chức hoặc tham gia.</string>
+    <string name="meeting_history_empty_cta">Bắt đầu cuộc họp</string>
+    <string name="meeting_history_error_title">Đã có lỗi xảy ra</string>
+    <string name="meeting_history_error_subtitle">Không thể tải lịch sử cuộc họp. Vui lòng thử lại.</string>
+    <string name="meeting_history_load_more_failed">Không thể tải thêm cuộc họp</string>
+    <string name="meeting_history_duration_minutes">%d phút</string>
+    <string name="meeting_history_duration_hours">%d giờ</string>
+    <string name="meeting_history_duration_hours_minutes">%1$d giờ %2$d phút</string>
+
+    <!-- ═══ Chi tiết cuộc họp ═══ -->
+    <string name="meeting_detail_title">Chi tiết cuộc họp</string>
+    <string name="meeting_detail_section_description">Mô tả</string>
+    <string name="meeting_detail_section_participants">Người tham dự (%d)</string>
+    <string name="meeting_detail_section_recordings">Bản ghi (%d)</string>
+    <string name="meeting_detail_participants_show_more">+ %d nữa</string>
+    <string name="meeting_detail_recording_label">Bản ghi %d</string>
+    <string name="meeting_detail_time_range_with_duration">%1$s - %2$s · %3$s</string>
+    <string name="meeting_detail_time_range_no_end">%1$s · —</string>
+    <string name="meeting_detail_playback_error">Không thể phát bản ghi</string>
+
+    <!-- ═══ Loại và trạng thái cuộc họp ═══ -->
+    <string name="meeting_type_scheduled">Lên lịch</string>
+    <string name="meeting_type_instant">Tức thì</string>
+    <string name="meeting_status_scheduled">Đã lên lịch</string>
+    <string name="meeting_status_live">Đang diễn ra</string>
+    <string name="meeting_status_ended">Đã kết thúc</string>
+    <string name="meeting_status_cancelled">Đã hủy</string>
+    <string name="cd_meeting_cancelled_format">%1$s, ĐÃ HỦY, %2$s</string>
+
+    <!-- ═══ Tùy chọn cuộc họp sắp tới ═══ -->
+    <string name="upcoming_action_edit">Chỉnh sửa cuộc họp</string>
+    <string name="upcoming_action_copy_link">Sao chép liên kết</string>
+    <string name="upcoming_action_add_calendar">Thêm vào lịch</string>
+    <string name="upcoming_action_cancel">Hủy cuộc họp</string>
+    <string name="upcoming_link_copied">Đã sao chép liên kết cuộc họp</string>
+    <string name="upcoming_added_to_calendar">Đã thêm vào lịch</string>
+    <string name="upcoming_calendar_error">Không thể thêm vào lịch</string>
+    <string name="upcoming_cancel_title">Hủy cuộc họp?</string>
+    <string name="upcoming_cancel_message">Điều này sẽ hủy cuộc họp và thông báo cho người
+        tham gia. Hành động này không thể hoàn tác.</string>
+    <string name="upcoming_cancel_confirm">Hủy cuộc họp</string>
+    <string name="upcoming_cancel_dismiss">Giữ lại</string>
+    <string name="upcoming_cancelled_success">Đã hủy cuộc họp</string>
+    <string name="upcoming_cancel_error">Không thể hủy cuộc họp</string>
+
+    <!-- ═══ FAB và tạo cuộc họp ═══ -->
+    <string name="cd_fab_new_meeting">Bắt đầu cuộc họp mới</string>
+    <string name="fab_action_start_instant">Bắt đầu họp ngay</string>
+    <string name="fab_action_schedule">Lên lịch họp</string>
+    <string name="meeting_creation_loading">Đang bắt đầu cuộc họp…</string>
+    <string name="meeting_creation_success">Đã tạo cuộc họp!</string>
+    <string name="meeting_creation_failed">Không thể tạo cuộc họp</string>
+    <string name="schedule_creation_loading">Đang lên lịch cuộc họp…</string>
+    <string name="schedule_creation_success">Đã lên lịch cuộc họp!</string>
+    <string name="schedule_creation_failed">Không thể lên lịch cuộc họp</string>
+    <string name="error_meeting_creation">Không thể tạo cuộc họp. Vui lòng thử lại.</string>
+    <string name="error_schedule_meeting">Không thể lên lịch cuộc họp. Vui lòng thử lại.</string>
+    <string name="error_date_required">Vui lòng chọn ngày</string>
+    <string name="error_time_required">Vui lòng chọn giờ</string>
+    <string name="error_duration_required">Vui lòng chọn thời lượng</string>
+    <string name="schedule_error_past_start_time">Thời gian bắt đầu phải trong tương lai</string>
+    <string name="schedule_error_invalid_duration_range">Thời lượng phải từ 15 phút đến 8 giờ</string>
+    <string name="schedule_error_invalid_duration">Định dạng thời lượng không hợp lệ</string>
+
+    <!-- ═══ Cuộc gọi video - Tích hợp LiveKit ═══ -->
+    <string name="prejoin_waiting_title">Đang chờ phê duyệt</string>
+    <string name="prejoin_waiting_message">Vui lòng đợi trong khi chủ phòng cho phép bạn vào
+        cuộc họp…</string>
+    <string name="call_meeting_title_default">Cuộc họp</string>
+    <string name="call_connection_excellent">Kết nối tuyệt vời</string>
+    <string name="call_connection_good">Kết nối tốt</string>
+    <string name="call_connection_poor">Kết nối yếu</string>
+    <string name="call_connection_reconnecting">Đang kết nối lại…</string>
+    <string name="call_join_denied">Yêu cầu tham gia của bạn đã bị từ chối</string>
+    <string name="call_join_expired">Yêu cầu tham gia của bạn đã hết hạn</string>
+
+    <!-- ═══ Cuộc gọi video - Trợ năng ═══ -->
+    <string name="cd_connection_quality">Chỉ báo chất lượng kết nối</string>
+    <string name="cd_flip_camera">Chuyển camera</string>
+    <string name="cd_participant_muted">Người tham gia đã tắt tiếng</string>
+    <string name="cd_active_speaker">Người đang nói</string>
+    <string name="cd_self_preview">Xem trước camera của bạn</string>
+
+    <!-- ═══ Hành động cuộc họp (menu mở rộng) ═══ -->
+    <string name="action_screen_share">Chia sẻ màn hình</string>
+    <string name="action_change_layout">Thay đổi bố cục</string>
+    <string name="action_meeting_settings">Cài đặt cuộc họp</string>
+    <string name="action_apply_settings">Áp dụng cài đặt</string>
+
+    <!-- ═══ Chọn bố cục ═══ -->
+    <string name="layout_auto">Tự động</string>
+    <string name="layout_tiled">Lưới</string>
+    <string name="layout_spotlight">Tiêu điểm</string>
+    <string name="layout_sidebar">Thanh bên</string>
+    <string name="cd_layout_option">Tùy chọn bố cục: %1$s</string>
+    <string name="cd_layout_selected">Bố cục đã chọn: %1$s</string>
+
+    <!-- ═══ Phản hồi cài đặt cuộc họp ═══ -->
+    <string name="meeting_settings_update_success">Đã cập nhật cài đặt cuộc họp</string>
+    <string name="meeting_settings_update_error">Không thể cập nhật cài đặt</string>
+    <string name="meeting_settings_loading">Đang tải cài đặt…</string>
+
+    <!-- ═══ Tính năng sắp ra mắt ═══ -->
+    <string name="feature_coming_soon">Tính năng này sắp ra mắt</string>
+
+    <!-- ═══ Trợ năng badge ═══ -->
+    <string name="cd_chat_unread_count">%d tin nhắn chưa đọc</string>
+    <string name="cd_participant_count">%d người tham gia</string>
 </resources>

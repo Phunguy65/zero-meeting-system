@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/video_call_background">
+
+    <!-- Top bar with meeting info, layout button, and connection quality -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBar" android:layout_width="match_parent"
+        android:layout_height="@dimen/video_top_bar_height"
+        android:background="@drawable/bg_video_top_scrim"
+        android:paddingHorizontal="@dimen/spacing_md"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Connection quality indicator -->
+        <ImageView android:id="@+id/imgConnectionQuality"
+            android:layout_width="@dimen/icon_size_md"
+            android:layout_height="@dimen/icon_size_md"
+            android:contentDescription="@string/cd_connection_quality"
+            android:src="@drawable/ic_signal_strong"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/video_call_active_speaker" />
+
+        <!-- Meeting info (center) -->
+        <LinearLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnLayoutPicker"
+            app:layout_constraintStart_toEndOf="@id/imgConnectionQuality"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView android:id="@+id/tvMeetingTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/call_meeting_title_default"
+                android:textColor="@color/video_call_text_primary"
+                android:textSize="16sp" android:textStyle="bold" />
+
+            <TextView android:id="@+id/tvTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:text="00:00"
+                android:textColor="@color/video_call_text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Layout picker button (top-bar entry point) -->
+        <FrameLayout android:id="@+id/btnLayoutPicker"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:clickable="true"
+            android:contentDescription="@string/action_change_layout"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnWaitingRoomContainer"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:layout_gravity="center" android:src="@drawable/ic_grid_view"
+                app:tint="@color/video_call_text_primary" />
+        </FrameLayout>
+
+        <!-- Waiting room button (host-only) -->
+        <FrameLayout android:id="@+id/btnWaitingRoomContainer"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:clickable="true"
+            android:contentDescription="@string/waiting_room_title"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvParticipantCount"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView android:id="@+id/btnWaitingRoom"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_person_add"
+                app:tint="@color/video_call_text_primary" />
+
+            <TextView android:id="@+id/tvWaitingRoomBadge"
+                android:layout_width="20dp" android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/bg_badge_red" android:gravity="center"
+                android:textColor="@color/white" android:textSize="10sp"
+                android:textStyle="bold" android:visibility="gone" tools:text="3"
+                tools:visibility="visible" />
+        </FrameLayout>
+
+        <!-- Participant count badge -->
+        <TextView android:id="@+id/tvParticipantCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/overlay_scrim"
+            android:paddingHorizontal="@dimen/spacing_sm"
+            android:paddingVertical="@dimen/spacing_xs"
+            android:textColor="@color/video_call_text_primary"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" tools:text="4" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Video grid using RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerVideoGrid"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:clipToPadding="false" android:padding="@dimen/spacing_xs"
+        app:layout_constraintBottom_toTopOf="@id/controlBar"
+        app:layout_constraintTop_toBottomOf="@id/topBar" />
+
+    <!-- Self-view preview (draggable) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/selfPreviewCard"
+        android:layout_width="@dimen/video_self_preview_width"
+        android:layout_height="@dimen/video_self_preview_height"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_md"
+        app:cardCornerRadius="@dimen/corner_radius_lg" app:cardElevation="8dp"
+        app:layout_constraintBottom_toTopOf="@id/controlBar"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <FrameLayout android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/video_call_surface">
+
+            <!-- Self video renderer container -->
+            <FrameLayout android:id="@+id/selfVideoContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Camera off placeholder for self -->
+            <LinearLayout android:id="@+id/selfCameraOffPlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/video_call_surface"
+                android:gravity="center" android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView android:layout_width="32dp"
+                    android:layout_height="32dp" android:importantForAccessibility="no"
+                    android:src="@drawable/ic_videocam_off"
+                    app:tint="@color/video_call_text_secondary" />
+
+                <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:text="@string/create_meeting_you"
+                    android:textColor="@color/video_call_text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Camera flip button -->
+            <ImageView android:id="@+id/btnFlipCamera"
+                android:layout_width="32dp" android:layout_height="32dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="@dimen/spacing_sm"
+                android:background="@drawable/bg_control_button"
+                android:clickable="true"
+                android:contentDescription="@string/cd_flip_camera"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:padding="6dp" android:src="@drawable/ic_camera_flip"
+                app:tint="@color/video_call_text_primary" />
+
+        </FrameLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Compact control bar (4 buttons: Mic, Camera, More, End Call) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/controlBar" android:layout_width="wrap_content"
+        android:layout_height="@dimen/video_compact_control_bar_height"
+        android:layout_marginBottom="@dimen/spacing_lg"
+        app:cardBackgroundColor="@color/video_call_surface"
+        app:cardCornerRadius="40dp" app:cardElevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout android:layout_width="wrap_content"
+            android:layout_height="match_parent" android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_md">
+
+            <!-- Mic toggle -->
+            <FrameLayout android:id="@+id/btnMicContainer"
+                android:layout_width="@dimen/video_compact_button_size"
+                android:layout_height="@dimen/video_compact_button_size"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView android:id="@+id/btnMic"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_control_button"
+                    android:contentDescription="@string/cd_mute_mic"
+                    android:padding="@dimen/spacing_sm" android:src="@drawable/ic_mic"
+                    app:tint="@color/video_call_text_primary" />
+            </FrameLayout>
+
+            <!-- Camera toggle -->
+            <FrameLayout android:id="@+id/btnCameraContainer"
+                android:layout_width="@dimen/video_compact_button_size"
+                android:layout_height="@dimen/video_compact_button_size"
+                android:layout_marginStart="@dimen/video_compact_button_spacing"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView android:id="@+id/btnCamera"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_control_button"
+                    android:contentDescription="@string/cd_enable_camera"
+                    android:padding="@dimen/spacing_sm"
+                    android:src="@drawable/ic_videocam"
+                    app:tint="@color/video_call_text_primary" />
+            </FrameLayout>
+
+            <!-- More actions button -->
+            <FrameLayout android:id="@+id/btnMoreContainer"
+                android:layout_width="@dimen/video_compact_button_size"
+                android:layout_height="@dimen/video_compact_button_size"
+                android:layout_marginStart="@dimen/video_compact_button_spacing"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView android:id="@+id/btnMore"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_control_button"
+                    android:contentDescription="@string/cd_more_options"
+                    android:padding="@dimen/spacing_sm"
+                    android:src="@drawable/ic_more_vert"
+                    app:tint="@color/video_call_text_primary" />
+            </FrameLayout>
+
+            <!-- End call button -->
+            <FrameLayout android:id="@+id/btnEndCallContainer"
+                android:layout_width="@dimen/video_compact_end_call_size"
+                android:layout_height="@dimen/video_compact_end_call_size"
+                android:layout_marginStart="@dimen/spacing_md"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView android:id="@+id/btnEndCall"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_end_call_button"
+                    android:contentDescription="@string/cd_end_call"
+                    android:padding="@dimen/spacing_md"
+                    android:src="@drawable/ic_call_end" app:tint="@color/white" />
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurface" android:orientation="vertical"
+    android:paddingBottom="@dimen/spacing_lg">
+
+    <!-- Drag handle -->
+    <View android:layout_width="@dimen/bottom_sheet_handle_width"
+        android:layout_height="@dimen/bottom_sheet_handle_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_sm"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:background="@drawable/bg_bottom_sheet_handle" />
+
+    <!-- Title -->
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:text="@string/action_change_layout"
+        android:textColor="?attr/colorOnSurface" android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Layout options grid -->
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <!-- Auto layout -->
+        <include android:id="@+id/cardAuto"
+            layout="@layout/item_layout_option" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" />
+
+        <View android:layout_width="@dimen/spacing_md"
+            android:layout_height="0dp" />
+
+        <!-- Tiled layout -->
+        <include android:id="@+id/cardTiled"
+            layout="@layout/item_layout_option" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" />
+
+        <View android:layout_width="@dimen/spacing_md"
+            android:layout_height="0dp" />
+
+        <!-- Spotlight layout -->
+        <include android:id="@+id/cardSpotlight"
+            layout="@layout/item_layout_option" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" />
+
+        <View android:layout_width="@dimen/spacing_md"
+            android:layout_height="0dp" />
+
+        <!-- Sidebar layout -->
+        <include android:id="@+id/cardSidebar"
+            layout="@layout/item_layout_option" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" />
+    </LinearLayout>
+
+</LinearLayout>

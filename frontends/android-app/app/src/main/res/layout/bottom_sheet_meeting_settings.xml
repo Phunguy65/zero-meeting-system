@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurface" android:orientation="vertical"
+    android:paddingBottom="@dimen/spacing_lg">
+
+    <!-- Drag handle -->
+    <View android:layout_width="@dimen/bottom_sheet_handle_width"
+        android:layout_height="@dimen/bottom_sheet_handle_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_sm"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:background="@drawable/bg_bottom_sheet_handle" />
+
+    <!-- Header -->
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:gravity="center_vertical" android:orientation="horizontal">
+
+        <TextView android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="@string/action_meeting_settings"
+            android:textColor="?attr/colorOnSurface" android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progressLoading" android:layout_width="24dp"
+            android:layout_height="24dp" android:indeterminate="true"
+            android:visibility="gone" app:indicatorSize="24dp"
+            app:trackThickness="2dp" />
+    </LinearLayout>
+
+    <!-- Waiting Room -->
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <LinearLayout android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/schedule_waiting_room"
+                android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/schedule_waiting_room_desc"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchWaitingRoom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- Allow Guests -->
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <LinearLayout android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/schedule_allow_guest"
+                android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/schedule_allow_guest_desc"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchAllowGuest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- Enable Chat -->
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <LinearLayout android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/schedule_chat_enabled"
+                android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+        </LinearLayout>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchChatEnabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- Allow Screen Share -->
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <LinearLayout android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/schedule_allow_screen_share"
+                android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+        </LinearLayout>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchAllowScreenShare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginVertical="@dimen/spacing_sm"
+        android:background="?attr/colorOutlineVariant" />
+
+    <!-- Apply Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnApplySettings" android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginTop="@dimen/spacing_sm"
+        android:text="@string/action_apply_settings"
+        android:textAllCaps="false" app:cornerRadius="@dimen/corner_radius_md" />
+
+</LinearLayout>

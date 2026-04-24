@@ -18,7 +18,6 @@ import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -115,16 +114,13 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
         java.time.Instant endTime = (timeRange == null) ? e.getEndTime() : null;
         MeetingSettings settings = new MeetingSettings(
                 AdmissionPolicy.valueOf(e.getSettings().admissionPolicy()),
-                e.getSettings().joinRequestTimeoutSeconds() != null
-                        ? Duration.ofSeconds(e.getSettings().joinRequestTimeoutSeconds())
-                        : null,
                 e.getSettings().allowGuest(),
-                e.getSettings().muteOnEntry(),
                 e.getSettings().maxParticipants(),
-                e.getSettings().recordingEnabled(),
-                e.getSettings().screenShareMode(),
+                e.getSettings().allowScreenShare(),
                 e.getSettings().chatEnabled(),
-                e.getSettings().passwordHash());
+                e.getSettings().allowMicrophone(),
+                e.getSettings().allowVideo(),
+                e.getSettings().password());
         return Meeting.reconstitute(
                 MeetingId.of(e.getId()),
                 UserId.of(e.getHostId()),
@@ -152,14 +148,13 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
                 MeetingStatus.valueOf(e.getStatus()),
                 new MeetingSettingsSummary(
                         e.getSettings().admissionPolicy(),
-                        e.getSettings().joinRequestTimeoutSeconds(),
                         e.getSettings().allowGuest(),
-                        e.getSettings().muteOnEntry(),
                         e.getSettings().maxParticipants(),
-                        e.getSettings().recordingEnabled(),
-                        e.getSettings().screenShareMode(),
+                        e.getSettings().allowScreenShare(),
                         e.getSettings().chatEnabled(),
-                        e.getSettings().passwordHash() != null),
+                        e.getSettings().allowMicrophone(),
+                        e.getSettings().allowVideo(),
+                        e.getSettings().password() != null),
                 e.getCreatedAt());
     }
 
@@ -186,14 +181,13 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
                 MeetingStatus.valueOf(row.getStatus()),
                 new MeetingSettingsSummary(
                         settings.admissionPolicy(),
-                        settings.joinRequestTimeoutSeconds(),
                         settings.allowGuest(),
-                        settings.muteOnEntry(),
                         settings.maxParticipants(),
-                        settings.recordingEnabled(),
-                        settings.screenShareMode(),
+                        settings.allowScreenShare(),
                         settings.chatEnabled(),
-                        settings.passwordHash() != null),
+                        settings.allowMicrophone(),
+                        settings.allowVideo(),
+                        settings.password() != null),
                 row.getCreatedAt(),
                 row.getLastJoinedAt());
     }
@@ -211,16 +205,13 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
                 m.getStatus().name(),
                 new MeetingSettingsJson(
                         m.getSettings().admissionPolicy().name(),
-                        m.getSettings().joinRequestTimeout() != null
-                                ? (int) m.getSettings().joinRequestTimeout().toSeconds()
-                                : null,
                         m.getSettings().allowGuest(),
-                        m.getSettings().muteOnEntry(),
                         m.getSettings().maxParticipants(),
-                        m.getSettings().recordingEnabled(),
-                        m.getSettings().screenShareMode(),
+                        m.getSettings().allowScreenShare(),
                         m.getSettings().chatEnabled(),
-                        m.getSettings().passwordHash()),
+                        m.getSettings().allowMicrophone(),
+                        m.getSettings().allowVideo(),
+                        m.getSettings().password()),
                 m.getCreatedAt());
     }
 }

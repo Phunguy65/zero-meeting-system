@@ -104,13 +104,21 @@ domain/
 UI components: Activities, Fragments, ViewModels, Adapters. Grouped by feature.
 Depends on: `domain/` (uses models, use cases). NEVER imports `data/`.
 
+**Architecture**: Single-Activity pattern with Navigation Component for main app
+flows.
+
+- `MainActivity` hosts bottom navigation (Dashboard, Calendar, Profile) and
+  nested destinations
+- `VideoCallActivity` is a separate task stack for video calls (supports PiP)
+- `AuthActivity` hosts login/register flow
+
 ```
 presentation/
 ├── common/
 │   └── state/
 │       ├── UiState.java                    Sealed interface: Idle | Loading | Success<T> | Error
 │       ├── UiError.java                    Sealed interface: Fail | ServerError | NetworkError | Unknown
-│       └── FieldError.java                 Field-level validation error (field, message, code); 2-arg constructor for client-side (message=null)
+│       └── FieldError.java                 Field-level validation error (field, message, code)
 ├── auth/
 │   ├── AuthActivity.java                   @AndroidEntryPoint — NavHost for auth flow
 │   ├── login/
@@ -119,43 +127,38 @@ presentation/
 │   └── register/
 │       ├── RegisterFragment.java           @AndroidEntryPoint — registration screen
 │       └── RegisterViewModel.java          @HiltViewModel — registration state + validation
-├── dashboard/
-│   ├── DashboardActivity.java              @AndroidEntryPoint — main dashboard with bottom nav
-│   └── DashboardViewModel.java             @HiltViewModel — dashboard state
-├── meeting/
-│   ├── create/
-│   │   ├── CreateMeetingActivity.java      @AndroidEntryPoint — create meeting screen
+├── main/                                   **Main app flow (single-activity + fragments)**
+│   ├── MainActivity.java                   @AndroidEntryPoint — NavHost + BottomNavigationView
+│   ├── dashboard/
+│   │   ├── DashboardFragment.java          @AndroidEntryPoint — quick actions + upcoming meetings
+│   │   └── DashboardViewModel.java         @HiltViewModel — dashboard state
+│   ├── calendar/
+│   │   ├── CalendarFragment.java           @AndroidEntryPoint — calendar view + day events
+│   │   └── CalendarViewModel.java          @HiltViewModel — calendar state
+│   ├── profile/
+│   │   ├── ProfileFragment.java            @AndroidEntryPoint — user profile + settings menu
+│   │   └── ProfileViewModel.java           @HiltViewModel — profile state
+│   ├── schedule/
+│   │   ├── ScheduleFragment.java           @AndroidEntryPoint — schedule meeting form
+│   │   └── ScheduleViewModel.java          @HiltViewModel — schedule state
+│   ├── meeting/
+│   │   ├── CreateMeetingFragment.java      @AndroidEntryPoint — create meeting with AV toggle
 │   │   └── CreateMeetingViewModel.java     @HiltViewModel
-│   ├── room/
-│   │   ├── MeetingRoomActivity.java        @AndroidEntryPoint — active meeting room (video/audio)
-│   │   └── MeetingRoomViewModel.java       @HiltViewModel
-│   ├── join/
-│   │   ├── JoinMeetingActivity.java        @AndroidEntryPoint — join meeting by code
-│   │   └── JoinMeetingViewModel.java       @HiltViewModel
-│   ├── chat/
-│   │   ├── MeetingChatActivity.java        @AndroidEntryPoint — in-meeting chat
-│   │   └── MeetingChatViewModel.java       @HiltViewModel
-│   └── participant/
-│       ├── ParticipantsActivity.java       @AndroidEntryPoint — participant list
-│       ├── ParticipantsViewModel.java      @HiltViewModel
-│       └── ParticipantAdapter.java         RecyclerView adapter for participant items
-├── calendar/
-│   ├── CalendarActivity.java               @AndroidEntryPoint — calendar view
-│   └── CalendarViewModel.java              @HiltViewModel
-├── schedule/
-│   ├── ScheduleActivity.java              @AndroidEntryPoint — schedule view
-│   └── ScheduleViewModel.java             @HiltViewModel
-├── profile/
-│   ├── ProfileActivity.java               @AndroidEntryPoint — user profile
-│   └── ProfileViewModel.java              @HiltViewModel
+│   └── settings/
+│       ├── SettingsFragment.java           @AndroidEntryPoint — language + about settings
+│       └── SettingsViewModel.java          @HiltViewModel
+├── videocall/                              **Video call flow (separate activity stack)**
+│   ├── VideoCallActivity.java              @AndroidEntryPoint — NavHost, singleInstance, PiP support
+│   ├── CallViewModel.java                  @HiltViewModel — shared call state (activity-scoped)
+│   ├── PreJoinFragment.java                @AndroidEntryPoint — meeting code + AV preview
+│   ├── ActiveCallFragment.java             @AndroidEntryPoint — video grid + call controls
+│   ├── ParticipantsBottomSheet.java        BottomSheetDialogFragment — participant list
+│   └── MeetingChatBottomSheet.java         BottomSheetDialogFragment — in-call chat
 ├── splash/
-│   ├── SplashActivity.java                @AndroidEntryPoint — app launch screen (LAUNCHER)
-│   └── SplashViewModel.java               @HiltViewModel
-├── welcome/
-│   └── WelcomeActivity.java               Welcome/onboarding screen → launches AuthActivity
-└── guest/
-    ├── JoinGuestActivity.java             @AndroidEntryPoint — guest join (no account)
-    └── JoinGuestViewModel.java            @HiltViewModel
+│   ├── SplashActivity.java                 @AndroidEntryPoint — app launch screen (LAUNCHER)
+│   └── SplashViewModel.java                @HiltViewModel
+└── welcome/
+    └── WelcomeActivity.java                Welcome/onboarding screen → launches AuthActivity or VideoCallActivity (guest)
 ```
 
 ## res/ — Resources (key files)
@@ -163,27 +166,46 @@ presentation/
 ```
 res/
 ├── layout/
+│   ├── activity_main.xml                   MainActivity NavHost + BottomNavigationView
+│   ├── activity_video_call.xml             VideoCallActivity NavHost
 │   ├── activity_auth.xml                   NavHost container for auth flow
-│   ├── fragment_login.xml                  Login screen (email/pw + Google, no Apple)
-│   ├── fragment_register.xml               Register screen (fullName, username, email, pw, confirm)
-│   └── ...                                 Other activity layouts
+│   ├── fragment_dashboard.xml              Dashboard with quick actions + meetings
+│   ├── fragment_calendar.xml               Calendar strip + day events
+│   ├── fragment_profile.xml                Profile menu items
+│   ├── fragment_schedule.xml               Schedule meeting form
+│   ├── fragment_create_meeting.xml         Create meeting with AV preview
+│   ├── fragment_settings.xml               Language + about settings
+│   ├── fragment_prejoin.xml                Pre-join screen with AV toggle
+│   ├── fragment_active_call.xml            Video grid + call controls
+│   ├── layout_participants_sheet.xml       Participants bottom sheet
+│   ├── layout_meeting_chat_sheet.xml       Chat bottom sheet
+│   ├── layout_empty_dashboard.xml          Empty state for dashboard
+│   ├── layout_empty_calendar.xml           Empty state for calendar
+│   ├── fragment_login.xml                  Login screen (email/pw + Google)
+│   └── fragment_register.xml               Register screen
+├── navigation/
+│   ├── nav_graph_main.xml                  Main app navigation (dashboard/calendar/profile + nested)
+│   ├── nav_graph_call.xml                  Video call navigation (prejoin → active call)
+│   └── nav_graph_auth.xml                  Auth navigation (login ↔ register)
+├── menu/
+│   └── bottom_nav_menu.xml                 Bottom navigation menu items
 ├── values/
-│   ├── strings.xml                         English string resources (app + auth i18n)
+│   ├── strings.xml                         English string resources
 │   ├── colors.xml                          Material 3 color palette (light + dark)
-│   ├── dimens.xml                          Spacing tokens (xs/sm/md/lg/xl), touch targets, corner radii
+│   ├── dimens.xml                          Spacing tokens, touch targets, corner radii
 │   └── themes.xml                          Light theme (Material 3 DayNight)
 ├── values-night/
 │   └── themes.xml                          Dark theme overrides
 ├── values-vi/
-│   └── strings.xml                         Vietnamese translations for auth flow
+│   └── strings.xml                         Vietnamese translations
 ├── drawable/
-│   ├── ic_google_logo.xml                  Google "G" multicolor vector drawable
-│   ├── bg_login_header.xml                 Login header gradient (light)
-│   └── bg_image_placeholder.xml            Circular image placeholder
-├── drawable-night/
-│   └── bg_login_header.xml                 Login header gradient (dark)
-└── navigation/
-    └── nav_graph_auth.xml                  Auth navigation graph (loginFragment ↔ registerFragment)
+│   ├── ic_*.xml                            Material Symbols icons (home, calendar, person, etc.)
+│   ├── bg_circle_*.xml                     Circular button backgrounds (theme-aware via ?attr/)
+│   ├── bg_rounded_gray.xml                 Rounded card backgrounds (theme-aware)
+│   ├── bg_leave_button.xml                 Leave button background (error container)
+│   └── bg_image_placeholder.xml            Avatar/image placeholder
+└── drawable-night/
+    └── bg_login_header.xml                 Login header gradient (dark theme)
 ```
 
 ## util/ — Utilities

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/touch_target_min"
+    android:paddingHorizontal="@dimen/spacing_lg"
+    android:paddingVertical="@dimen/spacing_sm">
+
+    <ImageView android:id="@+id/imgAvatar"
+        android:layout_width="@dimen/avatar_size_md"
+        android:layout_height="@dimen/avatar_size_md"
+        android:background="@drawable/bg_circle_white"
+        android:contentDescription="@null" android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/ic_person_filled" />
+
+    <TextView android:id="@+id/tvDisplayName"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginEnd="@dimen/spacing_sm" android:ellipsize="end"
+        android:maxLines="1" android:textColor="?attr/colorOnSurface"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tvRoleBadge"
+        app:layout_constraintStart_toEndOf="@id/imgAvatar"
+        app:layout_constraintTop_toTopOf="parent" tools:text="John Doe" />
+
+    <TextView android:id="@+id/tvRoleBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_history_badge_neutral"
+        android:paddingHorizontal="@dimen/spacing_sm"
+        android:paddingVertical="@dimen/spacing_xxs"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="11sp" android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" tools:text="HOST" />
+</androidx.constraintlayout.widget.ConstraintLayout>

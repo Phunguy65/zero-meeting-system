@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingVertical="@dimen/spacing_xs">
+
+    <!-- Day Number -->
+    <TextView android:id="@+id/tvDayNumber"
+        android:layout_width="@dimen/avatar_size_sm"
+        android:layout_height="@dimen/avatar_size_sm" android:gravity="center"
+        android:textColor="?attr/colorOnSurface" android:textSize="14sp" />
+
+    <!-- Event Indicator Dot -->
+    <View android:id="@+id/viewEventDot" android:layout_width="4dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="@dimen/spacing_xxs"
+        android:background="@drawable/bg_dot_blue"
+        android:visibility="invisible" />
+</LinearLayout>

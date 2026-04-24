@@ -91,8 +91,7 @@ class MeetingJpaRepositoryTest {
                 Instant.parse("2026-04-01T10:00:00Z"),
                 "SCHEDULED",
                 status,
-                new MeetingSettingsJson(
-                        "ALLOW_ALL", null, true, false, 100, false, "HOST_ONLY", true, null),
+                new MeetingSettingsJson("ALLOW_ALL", true, 100, true, true, true, true, null),
                 createdAt));
     }
 

@@ -5,6 +5,7 @@ import io.github.phunguy65.zms.data.remote.dto.UserManagementForgotPasswordReque
 import io.github.phunguy65.zms.data.remote.dto.UserManagementGoogleLoginRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementLoginRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementLoginResponse;
+import io.github.phunguy65.zms.data.remote.dto.UserManagementRefreshTokenRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementRegisterRequest;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementRegisterResponse;
 import io.github.phunguy65.zms.data.remote.dto.UserManagementResetPasswordRequest;
@@ -155,6 +156,25 @@ public class AuthRepositoryImpl implements AuthRepository {
                         if (!response.isSuccessful()) {
                             throw new IOException("Reset password failed: HTTP " + response.code());
                         }
+                    } catch (Exception e) {
+                        throw new CompletionException(e);
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<LoginResult> refreshToken(String refreshToken) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UserManagementRefreshTokenRequest request =
+                                new UserManagementRefreshTokenRequest();
+                        request.setRefreshToken(refreshToken);
+
+                        Response<UserManagementLoginResponse> response =
+                                authApi.refresh(request).execute();
+                        return mapLoginResponse(response);
                     } catch (Exception e) {
                         throw new CompletionException(e);
                     }

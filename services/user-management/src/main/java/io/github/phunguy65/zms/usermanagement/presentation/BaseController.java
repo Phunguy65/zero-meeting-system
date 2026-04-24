@@ -1,7 +1,10 @@
 package io.github.phunguy65.zms.usermanagement.presentation;
 
+import io.github.phunguy65.zms.shared.infrastructure.web.CommonErrorCode;
 import io.github.phunguy65.zms.shared.infrastructure.web.FailData;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.github.phunguy65.zms.shared.infrastructure.web.Violation;
+import io.github.phunguy65.zms.shared.infrastructure.web.ViolationCode;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import java.util.List;
@@ -67,5 +70,16 @@ abstract class BaseController {
         }
         return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.status(status)
                 .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> validationErrorResponse(
+            String field, String message) {
+        FailData body = new FailData(
+                "Validation failed",
+                CommonErrorCode.VALIDATION_ERROR,
+                List.of(new Violation(field, message, ViolationCode.REQUIRED)));
+        return (ResponseEntity<JsendResponse<T>>)
+                (ResponseEntity<?>) ResponseEntity.badRequest().body(JsendResponse.fail(body));
     }
 }

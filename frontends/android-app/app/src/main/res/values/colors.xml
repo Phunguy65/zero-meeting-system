@@ -6,27 +6,54 @@
     <!-- Material 3 — Light theme -->
     <color name="md_theme_light_primary">#1877F2</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#D4E8FF</color>
+    <color name="md_theme_light_onPrimaryContainer">#00315B</color>
     <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_surfaceVariant">#F5F7FA</color>
     <color name="md_theme_light_onSurface">#1E1E1E</color>
     <color name="md_theme_light_onSurfaceVariant">#666666</color>
     <color name="md_theme_light_error">#B3261E</color>
+    <color name="md_theme_light_errorContainer">#F9DEDC</color>
     <color name="md_theme_light_outline">#E0E0E0</color>
+    <color name="md_theme_light_outlineVariant">#C4C7C5</color>
 
     <!-- Material 3 — Dark theme -->
     <color name="md_theme_dark_primary">#4A90E2</color>
     <color name="md_theme_dark_onPrimary">#FFFFFF</color>
+    <color name="md_theme_dark_primaryContainer">#004785</color>
+    <color name="md_theme_dark_onPrimaryContainer">#D4E8FF</color>
     <color name="md_theme_dark_surface">#121212</color>
+    <color name="md_theme_dark_surfaceVariant">#1E1E1E</color>
     <color name="md_theme_dark_onSurface">#E3E3E3</color>
     <color name="md_theme_dark_onSurfaceVariant">#A0A0A0</color>
     <color name="md_theme_dark_error">#F2B8B5</color>
+    <color name="md_theme_dark_errorContainer">#8C1D18</color>
     <color name="md_theme_dark_outline">#444746</color>
+    <color name="md_theme_dark_outlineVariant">#3D3D3D</color>
 
     <!-- Brand — Google Sign-In button only -->
     <color name="google_blue">#4285F4</color>
 
     <!-- Semantic — success feedback -->
-    <color name="md_theme_success">#2E7D32</color>
+    <color name="md_theme_light_success">#2E7D32</color>
+    <color name="md_theme_light_successContainer">#C8E6C9</color>
+    <color name="md_theme_dark_success">#81C784</color>
+    <color name="md_theme_dark_successContainer">#1B5E20</color>
 
     <!-- Gradient tints (drawable XML cannot use ?attr/) -->
     <color name="md_theme_light_primary_tint">#B3D4FF</color>
+
+    <!-- Overlays / Scrims -->
+    <color name="overlay_scrim">#80000000</color>
+
+    <!-- Video Call Colors -->
+    <color name="video_call_background">#1A1A1A</color>
+    <color name="video_call_surface">#2D2D2D</color>
+    <color name="video_call_text_primary">#FFFFFF</color>
+    <color name="video_call_text_secondary">#B0B0B0</color>
+    <color name="video_call_end_button">#EA4335</color>
+    <color name="video_call_active_speaker">#34A853</color>
+    <color name="video_call_control_background">#404040</color>
+    <color name="video_call_control_active">#1877F2</color>
+    <color name="video_call_muted_badge">#EA4335</color>
 </resources>

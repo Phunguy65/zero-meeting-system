@@ -18,6 +18,17 @@ abstract class BaseController {
 
     @SuppressWarnings("unchecked")
     protected <T> ResponseEntity<JsendResponse<T>> errorResponse(MeetingError error) {
+        if (error instanceof MeetingError.PartialApprovalFailure paf) {
+            return (ResponseEntity<JsendResponse<T>>)
+                    (ResponseEntity<?>) ResponseEntity.status(HttpStatus.MULTI_STATUS)
+                            .body(JsendResponse.fail(new PartialApprovalFailData(
+                                    paf.message(),
+                                    MeetingErrorCode.PARTIAL_APPROVAL_FAILURE,
+                                    List.of(),
+                                    paf.approvedCount(),
+                                    paf.failedIds())));
+        }
+
         HttpStatus status =
                 switch (error) {
                     case MeetingError.MeetingNotFound e -> HttpStatus.NOT_FOUND;
@@ -50,6 +61,7 @@ abstract class BaseController {
                     case MeetingError.CanNotKickSelf e -> HttpStatus.BAD_REQUEST;
                     case MeetingError.UserNotInMeeting e -> HttpStatus.NOT_FOUND;
                     case MeetingError.InvalidKickTarget e -> HttpStatus.BAD_REQUEST;
+                    case MeetingError.PartialApprovalFailure e -> HttpStatus.MULTI_STATUS;
                 };
         MeetingErrorCode code =
                 switch (error) {
@@ -94,6 +106,8 @@ abstract class BaseController {
                     case MeetingError.CanNotKickSelf e -> MeetingErrorCode.CAN_NOT_KICK_SELF;
                     case MeetingError.UserNotInMeeting e -> MeetingErrorCode.USER_NOT_IN_MEETING;
                     case MeetingError.InvalidKickTarget e -> MeetingErrorCode.INVALID_KICK_TARGET;
+                    case MeetingError.PartialApprovalFailure e ->
+                        MeetingErrorCode.PARTIAL_APPROVAL_FAILURE;
                 };
         return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.status(status)
                 .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
