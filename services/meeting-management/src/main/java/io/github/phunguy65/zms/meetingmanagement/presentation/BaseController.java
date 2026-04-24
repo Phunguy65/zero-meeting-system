@@ -48,8 +48,8 @@ abstract class BaseController {
                     case MeetingError.GuestNotAllowed e -> HttpStatus.FORBIDDEN;
                     case MeetingError.ShortCodeExhausted e -> HttpStatus.SERVICE_UNAVAILABLE;
                     case MeetingError.LiveKitUnavailable e -> HttpStatus.SERVICE_UNAVAILABLE;
-                    case MeetingError.LiveKitParticipantNotFound e ->
-                        HttpStatus.SERVICE_UNAVAILABLE;
+                    case MeetingError.LiveKitParticipantNotFound e -> HttpStatus.NOT_FOUND;
+                    case MeetingError.MeetingNotLive e -> HttpStatus.UNPROCESSABLE_ENTITY;
                     case MeetingError.UserServiceUnavailable e -> HttpStatus.SERVICE_UNAVAILABLE;
                     case MeetingError.InviteeNotFound e -> HttpStatus.UNPROCESSABLE_CONTENT;
                     case MeetingError.InvalidMeetingDuration e -> HttpStatus.BAD_REQUEST;
@@ -62,6 +62,8 @@ abstract class BaseController {
                     case MeetingError.UserNotInMeeting e -> HttpStatus.NOT_FOUND;
                     case MeetingError.InvalidKickTarget e -> HttpStatus.BAD_REQUEST;
                     case MeetingError.PartialApprovalFailure e -> HttpStatus.MULTI_STATUS;
+                    case MeetingError.CanNotMuteSelf e -> HttpStatus.UNPROCESSABLE_ENTITY;
+                    case MeetingError.TrackNotFound e -> HttpStatus.UNPROCESSABLE_ENTITY;
                 };
         MeetingErrorCode code =
                 switch (error) {
@@ -82,7 +84,9 @@ abstract class BaseController {
                     case MeetingError.ShortCodeExhausted e -> MeetingErrorCode.SHORT_CODE_EXHAUSTED;
                     case MeetingError.LiveKitUnavailable e -> MeetingErrorCode.LIVEKIT_UNAVAILABLE;
                     case MeetingError.LiveKitParticipantNotFound e ->
-                        MeetingErrorCode.LIVEKIT_UNAVAILABLE;
+                        MeetingErrorCode.PARTICIPANT_NOT_FOUND;
+                    case MeetingError.MeetingNotLive e ->
+                        MeetingErrorCode.INVALID_STATUS_TRANSITION;
                     case MeetingError.UserServiceUnavailable e ->
                         MeetingErrorCode.USER_SERVICE_UNAVAILABLE;
                     case MeetingError.InviteeNotFound e -> MeetingErrorCode.INVITEE_NOT_FOUND;
@@ -108,6 +112,8 @@ abstract class BaseController {
                     case MeetingError.InvalidKickTarget e -> MeetingErrorCode.INVALID_KICK_TARGET;
                     case MeetingError.PartialApprovalFailure e ->
                         MeetingErrorCode.PARTIAL_APPROVAL_FAILURE;
+                    case MeetingError.CanNotMuteSelf e -> MeetingErrorCode.CANNOT_MUTE_SELF;
+                    case MeetingError.TrackNotFound e -> MeetingErrorCode.TRACK_NOT_FOUND;
                 };
         return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.status(status)
                 .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));

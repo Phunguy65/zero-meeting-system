@@ -19,6 +19,7 @@ import io.github.phunguy65.zms.domain.model.VideoParticipant;
 import io.github.phunguy65.zms.domain.repository.JoinRoomRepository;
 import io.github.phunguy65.zms.domain.repository.LiveKitRepository;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
+import io.github.phunguy65.zms.domain.repository.ParticipantRepository;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
 import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
 import io.livekit.android.room.track.LocalVideoTrack;
@@ -42,6 +43,7 @@ public class CallViewModel extends ViewModel {
     private final SessionRepository sessionRepository;
     private final MeetingRepository meetingRepository;
     private final WaitingRoomRepository waitingRoomRepository;
+    private final ParticipantRepository participantRepository;
     private final String liveKitUrl;
     private final ChatDataMessageHandler chatDataMessageHandler;
     private final Executor mainExecutor;
@@ -127,6 +129,7 @@ public class CallViewModel extends ViewModel {
             SessionRepository sessionRepository,
             MeetingRepository meetingRepository,
             WaitingRoomRepository waitingRoomRepository,
+            ParticipantRepository participantRepository,
             @LiveKitUrl String liveKitUrl,
             @MainExecutor Executor mainExecutor) {
         this.liveKitRepository = liveKitRepository;
@@ -135,6 +138,7 @@ public class CallViewModel extends ViewModel {
         this.sessionRepository = sessionRepository;
         this.meetingRepository = meetingRepository;
         this.waitingRoomRepository = waitingRoomRepository;
+        this.participantRepository = participantRepository;
         this.liveKitUrl = liveKitUrl;
         this.mainExecutor = mainExecutor;
 
@@ -688,7 +692,8 @@ public class CallViewModel extends ViewModel {
         Boolean cameraEnabled = _isCameraEnabled.getValue();
 
         liveKitRepository.connect(
-                url, token,
+                url,
+                token,
                 micEnabled != null && micEnabled,
                 cameraEnabled != null && cameraEnabled);
     }
@@ -978,10 +983,52 @@ public class CallViewModel extends ViewModel {
     }
 
     /**
-     * Mutes all participants (host action).
+     * Mutes all participants' microphones (host action).
+     * Executes asynchronously; surfaces errors via {@code _settingsError}.
      */
     public void muteAllParticipants() {
-        // TODO: Implement via LiveKit room API
+        String meetingId = _meetingId.getValue();
+        if (meetingId == null || meetingId.isEmpty()) {
+            return;
+        }
+
+        participantRepository
+                .muteAll(meetingId)
+                .whenCompleteAsync(
+                        (unused, error) -> {
+                            if (error != null) {
+                                Throwable cause =
+                                        error.getCause() != null ? error.getCause() : error;
+                                _settingsError.postValue(cause.getMessage());
+                            }
+                        },
+                        mainExecutor);
+    }
+
+    /**
+     * Mutes a specific participant's track (host action).
+     * Executes asynchronously; surfaces errors via {@code _settingsError}.
+     *
+     * @param identity the LiveKit participant identity
+     * @param source   the track source: {@code "microphone"} or {@code "camera"}
+     */
+    public void muteParticipantTrack(String identity, String source) {
+        String meetingId = _meetingId.getValue();
+        if (meetingId == null || meetingId.isEmpty()) {
+            return;
+        }
+
+        participantRepository
+                .muteTrack(meetingId, identity, source)
+                .whenCompleteAsync(
+                        (unused, error) -> {
+                            if (error != null) {
+                                Throwable cause =
+                                        error.getCause() != null ? error.getCause() : error;
+                                _settingsError.postValue(cause.getMessage());
+                            }
+                        },
+                        mainExecutor);
     }
 
     @Override

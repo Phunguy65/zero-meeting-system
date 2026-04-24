@@ -16,6 +16,7 @@ import io.github.phunguy65.zms.domain.model.MeetingType;
 import io.github.phunguy65.zms.domain.repository.JoinRoomRepository;
 import io.github.phunguy65.zms.domain.repository.LiveKitRepository;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
+import io.github.phunguy65.zms.domain.repository.ParticipantRepository;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
 import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
 import java.time.OffsetDateTime;
@@ -55,6 +56,9 @@ public class CallViewModelTest {
     private WaitingRoomRepository waitingRoomRepository;
 
     @Mock
+    private ParticipantRepository participantRepository;
+
+    @Mock
     private ChatDataMessageHandler chatDataMessageHandler;
 
     private CallViewModel viewModel;
@@ -70,6 +74,7 @@ public class CallViewModelTest {
                 sessionRepository,
                 meetingRepository,
                 waitingRoomRepository,
+                participantRepository,
                 LIVEKIT_URL,
                 immediateExecutor);
     }

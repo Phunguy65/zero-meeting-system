@@ -1,14 +1,19 @@
 package io.github.phunguy65.zms.meetingmanagement.presentation;
 
 import io.github.phunguy65.zms.meetingmanagement.application.command.KickParticipantCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.command.MuteAllParticipantsCommand;
+import io.github.phunguy65.zms.meetingmanagement.application.command.MuteParticipantTrackCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetParticipantsQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.response.ParticipantListItemResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetParticipantsUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.KickParticipantUseCase;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.MuteAllParticipantsUseCase;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.MuteParticipantTrackUseCase;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -26,12 +31,18 @@ public class ParticipantController extends BaseController {
 
     private final GetParticipantsUseCase getParticipantsUseCase;
     private final KickParticipantUseCase kickParticipantUseCase;
+    private final MuteAllParticipantsUseCase muteAllParticipantsUseCase;
+    private final MuteParticipantTrackUseCase muteParticipantTrackUseCase;
 
     public ParticipantController(
             GetParticipantsUseCase getParticipantsUseCase,
-            KickParticipantUseCase kickParticipantUseCase) {
+            KickParticipantUseCase kickParticipantUseCase,
+            MuteAllParticipantsUseCase muteAllParticipantsUseCase,
+            MuteParticipantTrackUseCase muteParticipantTrackUseCase) {
         this.getParticipantsUseCase = getParticipantsUseCase;
         this.kickParticipantUseCase = kickParticipantUseCase;
+        this.muteAllParticipantsUseCase = muteAllParticipantsUseCase;
+        this.muteParticipantTrackUseCase = muteParticipantTrackUseCase;
     }
 
     @Operation(summary = "List participants of a meeting")
@@ -66,6 +77,55 @@ public class ParticipantController extends BaseController {
 
         var command = new KickParticipantCommand(id, requesterId, userId, displayName);
         return switch (kickParticipantUseCase.execute(command)) {
+            case Result.Success<Void, MeetingError> _ ->
+                ResponseEntity.noContent().build();
+            case Result.Failure<Void, MeetingError> f -> errorResponse(f.error());
+        };
+    }
+
+    /**
+     * Mutes the microphone of all active participants in a live meeting.
+     * Only the meeting host can perform this action. HOST and GUEST sessions are excluded.
+     */
+    @Operation(summary = "Mute all participant microphones")
+    @PostMapping(value = "/{version}/meetings/{id}/participants:muteAll", version = "1.0")
+    public ResponseEntity<JsendResponse<Void>> muteAllParticipants(
+            @PathVariable @Parameter(description = "Meeting UUID") UUID id,
+            Authentication authentication) {
+        UUID requesterId = extractUserId(authentication);
+        if (requesterId == null) {
+            return unauthenticated();
+        }
+
+        var command = new MuteAllParticipantsCommand(id, requesterId);
+        return switch (muteAllParticipantsUseCase.execute(command)) {
+            case Result.Success<Void, MeetingError> _ ->
+                ResponseEntity.noContent().build();
+            case Result.Failure<Void, MeetingError> f -> errorResponse(f.error());
+        };
+    }
+
+    /**
+     * Mutes a specific participant's microphone or camera track.
+     * The host cannot mute their own tracks via this endpoint.
+     */
+    @Operation(summary = "Mute a participant's track")
+    @PostMapping(
+            value = "/{version}/meetings/{id}/participants/{identity}:muteTrack",
+            version = "1.0")
+    public ResponseEntity<JsendResponse<Void>> muteParticipantTrack(
+            @PathVariable @Parameter(description = "Meeting UUID") UUID id,
+            @PathVariable @Parameter(description = "LiveKit participant identity") String identity,
+            @RequestParam @Parameter(description = "Track source: microphone or camera")
+                    String source,
+            Authentication authentication) {
+        UUID requesterId = extractUserId(authentication);
+        if (requesterId == null) {
+            return unauthenticated();
+        }
+
+        var command = new MuteParticipantTrackCommand(id, requesterId, identity, source);
+        return switch (muteParticipantTrackUseCase.execute(command)) {
             case Result.Success<Void, MeetingError> _ ->
                 ResponseEntity.noContent().build();
             case Result.Failure<Void, MeetingError> f -> errorResponse(f.error());

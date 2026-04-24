@@ -531,6 +531,58 @@ paths:
       responses:
         '200':
           description: OK
+  /api/v1/meetings/{id}/participants:muteAll:
+    servers:
+      - url: http://localhost:40593
+        description: Generated server url
+    post:
+      tags:
+        - Participants
+      summary: Mute all participant microphones
+      operationId: muteAllParticipants
+      parameters:
+        - name: id
+          in: path
+          description: Meeting UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+  /api/v1/meetings/{id}/participants/{identity}:muteTrack:
+    servers:
+      - url: http://localhost:40593
+        description: Generated server url
+    post:
+      tags:
+        - Participants
+      summary: Mute a participant's track
+      operationId: muteParticipantTrack
+      parameters:
+        - name: id
+          in: path
+          description: Meeting UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: identity
+          in: path
+          description: LiveKit participant identity
+          required: true
+          schema:
+            type: string
+        - name: source
+          in: query
+          description: 'Track source: microphone or camera'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
   /api/v1/meetings/{id}/joinRequests:approveAll:
     servers:
       - url: http://localhost:40593

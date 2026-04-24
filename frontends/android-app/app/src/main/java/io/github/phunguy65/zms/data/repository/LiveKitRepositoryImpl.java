@@ -98,7 +98,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     }
 
     @Override
-    public void connect(String url, String token, boolean initialMicEnabled, boolean initialCameraEnabled) {
+    public void connect(
+            String url, String token, boolean initialMicEnabled, boolean initialCameraEnabled) {
         if (room != null) {
             disconnect();
         }
@@ -163,25 +164,27 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     public void setMicrophoneEnabled(boolean enabled) {
         this.micEnabled = enabled;
         if (room == null) {
-            android.util.Log.w("LiveKitRepo", "setMicrophoneEnabled called before room is available");
+            android.util.Log.w(
+                    "LiveKitRepo", "setMicrophoneEnabled called before room is available");
             return;
         }
 
         LocalParticipant localParticipant = room.getLocalParticipant();
         if (localParticipant == null) {
-            android.util.Log.w("LiveKitRepo", "setMicrophoneEnabled called before localParticipant is available");
+            android.util.Log.w(
+                    "LiveKitRepo",
+                    "setMicrophoneEnabled called before localParticipant is available");
             return;
         }
 
         try {
-            localParticipant.setMicrophoneEnabled(
-                    enabled, new SimpleContinuation<Boolean>() {
-                        @Override
-                        public void onSuccess(Boolean result) {}
+            localParticipant.setMicrophoneEnabled(enabled, new SimpleContinuation<Boolean>() {
+                @Override
+                public void onSuccess(Boolean result) {}
 
-                        @Override
-                        public void onFailure(Throwable t) {}
-                    });
+                @Override
+                public void onFailure(Throwable t) {}
+            });
         } catch (Exception e) {
             // Ignore
         }
@@ -197,7 +200,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
 
         LocalParticipant localParticipant = room.getLocalParticipant();
         if (localParticipant == null) {
-            android.util.Log.w("LiveKitRepo", "setCameraEnabled called before localParticipant is available");
+            android.util.Log.w(
+                    "LiveKitRepo", "setCameraEnabled called before localParticipant is available");
             return;
         }
 
@@ -246,8 +250,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
 
         try {
             java.lang.reflect.Method switchMethod =
-                    localVideoTrack.getClass().getMethod("switchCamera",
-                            Continuation.class);
+                    localVideoTrack.getClass().getMethod("switchCamera", Continuation.class);
             switchMethod.invoke(localVideoTrack, new SimpleContinuation<Unit>() {
                 @Override
                 public void onSuccess(Unit result) {

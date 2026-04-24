@@ -8,6 +8,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKi
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipantGrants;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -101,4 +102,31 @@ public interface LiveKitPort {
      * {@link Result.Failure} with {@link MeetingError.LiveKitUnavailable} on network error
      */
     Result<Void, MeetingError> removeParticipant(LiveKitRoomName roomName, String identity);
+
+    /**
+     * Mutes a single published track for a participant by resolving the track SID server-side.
+     *
+     * @param roomName the LiveKit room containing the participant
+     * @param identity the participant's identity string
+     * @param source   the track source type ({@code "microphone"} or {@code "camera"})
+     * @return {@link Result.Success} on success, or {@link Result.Failure} with
+     * {@link MeetingError.TrackNotFound} if no published track of the given source exists,
+     * {@link MeetingError.LiveKitUnavailable} on network error
+     */
+    Result<Void, MeetingError> muteParticipantTrack(
+            LiveKitRoomName roomName, String identity, String source);
+
+    /**
+     * Mutes the microphone tracks of multiple participants using best-effort semantics.
+     *
+     * <p>Iterates through all identities and attempts to mute each participant's microphone.
+     * Participants who have already left (404) are skipped silently.
+     *
+     * @param roomName   the LiveKit room
+     * @param identities the LiveKit identities to mute
+     * @return {@link Result.Success} if at least one mute succeeded or all were non-fatal skips,
+     * {@link Result.Failure} with {@link MeetingError.LiveKitUnavailable} only if every call fails
+     */
+    Result<Void, MeetingError> muteAllParticipantMicTracks(
+            LiveKitRoomName roomName, List<String> identities);
 }

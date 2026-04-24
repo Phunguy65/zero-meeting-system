@@ -65,6 +65,67 @@ public class ParticipantRepositoryImpl implements ParticipantRepository {
                 ioExecutor);
     }
 
+    @Override
+    public CompletableFuture<Void> muteAll(String meetingId) {
+        UUID meetingUuid;
+        try {
+            meetingUuid = UUID.fromString(meetingId);
+        } catch (IllegalArgumentException e) {
+            CompletableFuture<Void> failed = new CompletableFuture<>();
+            failed.completeExceptionally(
+                    new IllegalArgumentException("Invalid meeting id: " + meetingId, e));
+            return failed;
+        }
+
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        Response<Void> response =
+                                participantsApi.muteAllParticipants(meetingUuid).execute();
+
+                        if (!response.isSuccessful()) {
+                            throw new IOException("Mute all failed: HTTP " + response.code());
+                        }
+
+                        return null;
+                    } catch (Exception e) {
+                        throw new CompletionException(e);
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Void> muteTrack(String meetingId, String identity, String source) {
+        UUID meetingUuid;
+        try {
+            meetingUuid = UUID.fromString(meetingId);
+        } catch (IllegalArgumentException e) {
+            CompletableFuture<Void> failed = new CompletableFuture<>();
+            failed.completeExceptionally(
+                    new IllegalArgumentException("Invalid meeting id: " + meetingId, e));
+            return failed;
+        }
+
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        Response<Void> response = participantsApi
+                                .muteParticipantTrack(meetingUuid, identity, source)
+                                .execute();
+
+                        if (!response.isSuccessful()) {
+                            throw new IOException("Mute track failed: HTTP " + response.code());
+                        }
+
+                        return null;
+                    } catch (Exception e) {
+                        throw new CompletionException(e);
+                    }
+                },
+                ioExecutor);
+    }
+
     private static ParticipantRoleInfo toDomain(MeetingManagementParticipantListItemResponse dto) {
         String userId = dto.getUserId() != null ? dto.getUserId().toString() : null;
         String displayName = dto.getDisplayName() != null ? dto.getDisplayName() : "";

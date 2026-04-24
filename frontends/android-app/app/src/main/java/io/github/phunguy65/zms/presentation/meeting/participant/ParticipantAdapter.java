@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.color.MaterialColors;
 import io.github.phunguy65.zms.domain.model.Participant;
@@ -17,13 +18,24 @@ import java.util.List;
  * RecyclerView adapter for the participants bottom sheet.
  * Displays role badges (Host/Guest), local-participant marker, mic/camera state,
  * and binds against the refactored {@link Participant} model fields.
+ *
+ * <p>When {@code isHost} is {@code true} and a {@link ParticipantMuteListener} is provided,
+ * the mic and camera buttons for remote non-host participants become interactive mute controls.
  */
 public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.ViewHolder> {
 
     private final List<Participant> participantList;
+    private final boolean isHost;
 
-    public ParticipantAdapter(List<Participant> participantList) {
+    @Nullable private final ParticipantMuteListener muteListener;
+
+    public ParticipantAdapter(
+            List<Participant> participantList,
+            boolean isHost,
+            @Nullable ParticipantMuteListener muteListener) {
         this.participantList = participantList;
+        this.isHost = isHost;
+        this.muteListener = muteListener;
     }
 
     @NonNull @Override
@@ -42,6 +54,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         bindRoleBadge(holder, p);
         bindMicState(holder, p);
         bindCameraState(holder, p);
+        bindMuteControls(holder, p);
     }
 
     private void bindLocalIndicator(ViewHolder holder, Participant p) {
@@ -97,6 +110,22 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             holder.btnCamera.setColorFilter(colorOnSurfaceVariant);
             holder.btnCamera.setBackgroundTintList(
                     android.content.res.ColorStateList.valueOf(colorSurfaceVariant));
+        }
+    }
+
+    private void bindMuteControls(ViewHolder holder, Participant p) {
+        boolean canMute = isHost
+                && muteListener != null
+                && !p.isLocal()
+                && p.getRole() != ParticipantRole.HOST;
+
+        if (canMute) {
+            String identity = p.getId();
+            holder.btnMic.setOnClickListener(v -> muteListener.onMuteMic(identity));
+            holder.btnCamera.setOnClickListener(v -> muteListener.onMuteCamera(identity));
+        } else {
+            holder.btnMic.setOnClickListener(null);
+            holder.btnCamera.setOnClickListener(null);
         }
     }
 
