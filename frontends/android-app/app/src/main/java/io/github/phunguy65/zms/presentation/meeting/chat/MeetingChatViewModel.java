@@ -131,9 +131,8 @@ public class MeetingChatViewModel extends ViewModel {
         loadChatHistoryUseCase.execute(roomId).whenComplete((messages, error) -> {
             if (error != null) {
                 Throwable cause = error.getCause() != null ? error.getCause() : error;
-                _uiState.postValue(new ChatUiState.Error(
-                        R.string.chat_failed_to_load,
-                        cause.getMessage()));
+                _uiState.postValue(
+                        new ChatUiState.Error(R.string.chat_failed_to_load, cause.getMessage()));
                 return;
             }
 
@@ -168,8 +167,7 @@ public class MeetingChatViewModel extends ViewModel {
                     if (error != null) {
                         Throwable cause = error.getCause() != null ? error.getCause() : error;
                         String errorMsg = cause.getMessage();
-                        _sendError.postValue(
-                                errorMsg != null ? errorMsg : "send_failed");
+                        _sendError.postValue(errorMsg != null ? errorMsg : "send_failed");
                         return;
                     }
 

@@ -17,8 +17,7 @@ public class DeleteAccountUseCase {
     private final SessionRepository sessionRepository;
 
     @Inject
-    public DeleteAccountUseCase(
-            MeRepository meRepository, SessionRepository sessionRepository) {
+    public DeleteAccountUseCase(MeRepository meRepository, SessionRepository sessionRepository) {
         this.meRepository = meRepository;
         this.sessionRepository = sessionRepository;
     }
@@ -33,8 +32,6 @@ public class DeleteAccountUseCase {
      *     cleanup succeed
      */
     public CompletableFuture<Void> execute() {
-        return meRepository
-                .deleteMe()
-                .thenRun(sessionRepository::clearAllSessionData);
+        return meRepository.deleteMe().thenRun(sessionRepository::clearAllSessionData);
     }
 }

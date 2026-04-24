@@ -68,8 +68,11 @@ public class AccountSettingsViewModelTest {
         when(mockAvatarUri.toString()).thenReturn(MOCK_AVATAR_URI_STRING);
 
         viewModel = new AccountSettingsViewModel(
-                getMeUseCase, updateProfileUseCase, deleteAccountUseCase,
-                sessionRepository, testExecutor);
+                getMeUseCase,
+                updateProfileUseCase,
+                deleteAccountUseCase,
+                sessionRepository,
+                testExecutor);
     }
 
     // ==================== Initial Load Tests ====================
@@ -96,8 +99,11 @@ public class AccountSettingsViewModelTest {
 
         // Create new ViewModel
         viewModel = new AccountSettingsViewModel(
-                getMeUseCase, updateProfileUseCase, deleteAccountUseCase,
-                sessionRepository, testExecutor);
+                getMeUseCase,
+                updateProfileUseCase,
+                deleteAccountUseCase,
+                sessionRepository,
+                testExecutor);
 
         // Assert
         AccountSettingsUiState state = viewModel.getUiState().getValue();
@@ -492,7 +498,8 @@ public class AccountSettingsViewModelTest {
     public void requestDeleteAccount_emitsConfirmingState() {
         viewModel.requestDeleteAccount();
 
-        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        AccountSettingsViewModel.DeleteUiState state =
+                viewModel.getDeleteUiState().getValue();
         assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Confirming);
     }
 
@@ -501,7 +508,8 @@ public class AccountSettingsViewModelTest {
         viewModel.requestDeleteAccount();
         viewModel.cancelDelete();
 
-        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        AccountSettingsViewModel.DeleteUiState state =
+                viewModel.getDeleteUiState().getValue();
         assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Idle);
     }
 
@@ -510,20 +518,21 @@ public class AccountSettingsViewModelTest {
         viewModel.requestDeleteAccount();
         viewModel.confirmDeleteAccount("WRONG");
 
-        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        AccountSettingsViewModel.DeleteUiState state =
+                viewModel.getDeleteUiState().getValue();
         assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Confirming);
         verify(deleteAccountUseCase, never()).execute();
     }
 
     @Test
     public void confirmDeleteAccount_correctText_transitionsToDeletedOnSuccess() {
-        when(deleteAccountUseCase.execute())
-                .thenReturn(CompletableFuture.completedFuture(null));
+        when(deleteAccountUseCase.execute()).thenReturn(CompletableFuture.completedFuture(null));
 
         viewModel.requestDeleteAccount();
         viewModel.confirmDeleteAccount("DELETE");
 
-        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        AccountSettingsViewModel.DeleteUiState state =
+                viewModel.getDeleteUiState().getValue();
         assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Deleted);
     }
 
@@ -536,10 +545,11 @@ public class AccountSettingsViewModelTest {
         viewModel.requestDeleteAccount();
         viewModel.confirmDeleteAccount("DELETE");
 
-        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        AccountSettingsViewModel.DeleteUiState state =
+                viewModel.getDeleteUiState().getValue();
         assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Error);
-        assertEquals("Delete failed",
-                ((AccountSettingsViewModel.DeleteUiState.Error) state).message());
+        assertEquals(
+                "Delete failed", ((AccountSettingsViewModel.DeleteUiState.Error) state).message());
     }
 
     @Test
@@ -547,7 +557,8 @@ public class AccountSettingsViewModelTest {
         viewModel.requestDeleteAccount();
         viewModel.confirmDeleteAccount("delete");
 
-        AccountSettingsViewModel.DeleteUiState state = viewModel.getDeleteUiState().getValue();
+        AccountSettingsViewModel.DeleteUiState state =
+                viewModel.getDeleteUiState().getValue();
         assertTrue(state instanceof AccountSettingsViewModel.DeleteUiState.Confirming);
         verify(deleteAccountUseCase, never()).execute();
     }

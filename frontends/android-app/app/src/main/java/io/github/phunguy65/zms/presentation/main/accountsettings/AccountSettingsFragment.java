@@ -383,9 +383,9 @@ public class AccountSettingsFragment extends Fragment {
         switch (state) {
             case AccountSettingsViewModel.DeleteUiState.Idle idle -> dismissDeleteDialog();
             case AccountSettingsViewModel.DeleteUiState.Confirming confirming ->
-                    showDeleteConfirmationDialog();
+                showDeleteConfirmationDialog();
             case AccountSettingsViewModel.DeleteUiState.Deleting deleting ->
-                    updateDeleteDialogDeleting();
+                updateDeleteDialogDeleting();
             case AccountSettingsViewModel.DeleteUiState.Error error -> {
                 dismissDeleteDialog();
                 Snackbar.make(
@@ -409,8 +409,8 @@ public class AccountSettingsFragment extends Fragment {
             return;
         }
 
-        View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_delete_account, null);
+        View dialogView =
+                LayoutInflater.from(requireContext()).inflate(R.layout.dialog_delete_account, null);
 
         TextInputEditText etConfirm = dialogView.findViewById(R.id.etDeleteConfirm);
 
@@ -419,7 +419,8 @@ public class AccountSettingsFragment extends Fragment {
                 .setMessage(R.string.account_settings_delete_dialog_message)
                 .setView(dialogView)
                 .setPositiveButton(R.string.account_settings_delete_confirm_button, null)
-                .setNegativeButton(R.string.account_settings_delete_cancel_button,
+                .setNegativeButton(
+                        R.string.account_settings_delete_cancel_button,
                         (dialog, which) -> viewModel.cancelDelete())
                 .setOnCancelListener(dialog -> viewModel.cancelDelete())
                 .create();
@@ -443,8 +444,7 @@ public class AccountSettingsFragment extends Fragment {
             }
         });
 
-        positiveButton.setOnClickListener(
-                v -> viewModel.confirmDeleteAccount(lastConfirmText));
+        positiveButton.setOnClickListener(v -> viewModel.confirmDeleteAccount(lastConfirmText));
     }
 
     private void updateDeleteDialogDeleting() {

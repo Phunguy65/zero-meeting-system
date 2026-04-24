@@ -113,13 +113,11 @@ public class AccountSettingsViewModel extends ViewModel {
         deleteAccountUseCase
                 .execute()
                 .thenRunAsync(
-                        () -> deleteUiState.setValue(new DeleteUiState.Deleted()),
-                        mainExecutor)
+                        () -> deleteUiState.setValue(new DeleteUiState.Deleted()), mainExecutor)
                 .exceptionally(error -> {
                     mainExecutor.execute(() -> {
                         Throwable cause = error.getCause() != null ? error.getCause() : error;
-                        deleteUiState.setValue(
-                                new DeleteUiState.Error(cause.getMessage()));
+                        deleteUiState.setValue(new DeleteUiState.Error(cause.getMessage()));
                     });
                     return null;
                 });

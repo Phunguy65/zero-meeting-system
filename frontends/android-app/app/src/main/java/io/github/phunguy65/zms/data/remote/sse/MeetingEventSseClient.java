@@ -97,7 +97,8 @@ public class MeetingEventSseClient {
             if (!cancelled && currentListener != null) {
                 mainHandler.post(() -> {
                     if (currentListener != null) {
-                        currentListener.onError("Connection failed after " + MAX_RETRIES + " retries");
+                        currentListener.onError(
+                                "Connection failed after " + MAX_RETRIES + " retries");
                     }
                 });
             }
@@ -107,12 +108,14 @@ public class MeetingEventSseClient {
         int delayMs = BASE_RETRY_DELAY_MS * (1 << retryCount);
         retryCount++;
 
-        mainHandler.postDelayed(() -> {
-            if (!cancelled && savedListener != null) {
-                currentListener = savedListener;
-                openEventSource(savedMeetingId, savedAuthToken);
-            }
-        }, delayMs);
+        mainHandler.postDelayed(
+                () -> {
+                    if (!cancelled && savedListener != null) {
+                        currentListener = savedListener;
+                        openEventSource(savedMeetingId, savedAuthToken);
+                    }
+                },
+                delayMs);
     }
 
     private class SseEventListener extends EventSourceListener {

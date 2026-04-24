@@ -98,7 +98,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     }
 
     @Override
-    public void connect(String url, String token) {
+    public void connect(String url, String token, boolean initialMicEnabled, boolean initialCameraEnabled) {
         if (room != null) {
             disconnect();
         }
@@ -116,6 +116,10 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
                                     notifyConnectionStateChanged(RoomConnectionState.CONNECTED);
                                     registerDataReceivedHandler();
                                     startStatePolling();
+
+                                    setMicrophoneEnabled(initialMicEnabled);
+                                    setCameraEnabled(initialCameraEnabled);
+
                                     notifyParticipantsUpdated();
                                     LocalVideoTrack track = getLocalVideoTrack();
                                     if (track != null && listener != null) {
@@ -158,59 +162,112 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     @Override
     public void setMicrophoneEnabled(boolean enabled) {
         this.micEnabled = enabled;
-        if (room != null) {
-            LocalParticipant localParticipant = room.getLocalParticipant();
-            if (localParticipant != null) {
-                try {
-                    localParticipant.setMicrophoneEnabled(
-                            enabled, new SimpleContinuation<Boolean>() {
-                                @Override
-                                public void onSuccess(Boolean result) {}
+        if (room == null) {
+            android.util.Log.w("LiveKitRepo", "setMicrophoneEnabled called before room is available");
+            return;
+        }
 
-                                @Override
-                                public void onFailure(Throwable t) {}
-                            });
-                } catch (Exception e) {
-                    // Ignore publish exceptions - camera/mic state change will be reflected in UI
-                }
-            }
+        LocalParticipant localParticipant = room.getLocalParticipant();
+        if (localParticipant == null) {
+            android.util.Log.w("LiveKitRepo", "setMicrophoneEnabled called before localParticipant is available");
+            return;
+        }
+
+        try {
+            localParticipant.setMicrophoneEnabled(
+                    enabled, new SimpleContinuation<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean result) {}
+
+                        @Override
+                        public void onFailure(Throwable t) {}
+                    });
+        } catch (Exception e) {
+            // Ignore
         }
     }
 
     @Override
     public void setCameraEnabled(boolean enabled) {
         this.cameraEnabled = enabled;
-        if (room != null) {
-            LocalParticipant localParticipant = room.getLocalParticipant();
-            if (localParticipant != null) {
-                try {
-                    localParticipant.setCameraEnabled(enabled, new SimpleContinuation<Boolean>() {
-                        @Override
-                        public void onSuccess(Boolean result) {
-                            if (enabled) {
-                                mainHandler.postDelayed(
-                                        () -> {
-                                            LocalVideoTrack track = getLocalVideoTrack();
-                                            if (track != null && listener != null) {
-                                                listener.onLocalVideoTrackAvailable(track);
-                                            }
-                                        },
-                                        500);
-                            }
-                        }
+        if (room == null) {
+            android.util.Log.w("LiveKitRepo", "setCameraEnabled called before room is available");
+            return;
+        }
 
-                        @Override
-                        public void onFailure(Throwable t) {}
-                    });
-                } catch (Exception e) {
-                    // Ignore publish exceptions - camera/mic state change will be reflected in UI
+        LocalParticipant localParticipant = room.getLocalParticipant();
+        if (localParticipant == null) {
+            android.util.Log.w("LiveKitRepo", "setCameraEnabled called before localParticipant is available");
+            return;
+        }
+
+        try {
+            localParticipant.setCameraEnabled(enabled, new SimpleContinuation<Boolean>() {
+                @Override
+                public void onSuccess(Boolean result) {
+                    if (enabled) {
+                        mainHandler.postDelayed(
+                                () -> {
+                                    LocalVideoTrack track = getLocalVideoTrack();
+                                    if (track != null && listener != null) {
+                                        listener.onLocalVideoTrackAvailable(track);
+                                    }
+                                },
+                                500);
+                    }
                 }
-            }
+
+                @Override
+                public void onFailure(Throwable t) {}
+            });
+        } catch (Exception e) {
+            // Ignore
         }
     }
 
     @Override
-    public void switchCamera() {}
+    public void switchCamera() {
+        if (room == null) {
+            android.util.Log.w("LiveKitRepo", "switchCamera called but room is null");
+            return;
+        }
+
+        LocalParticipant localParticipant = room.getLocalParticipant();
+        if (localParticipant == null) {
+            android.util.Log.w("LiveKitRepo", "switchCamera called but localParticipant is null");
+            return;
+        }
+
+        LocalVideoTrack localVideoTrack = getLocalVideoTrack();
+        if (localVideoTrack == null) {
+            android.util.Log.w("LiveKitRepo", "switchCamera called but no local video track");
+            return;
+        }
+
+        try {
+            java.lang.reflect.Method switchMethod =
+                    localVideoTrack.getClass().getMethod("switchCamera",
+                            Continuation.class);
+            switchMethod.invoke(localVideoTrack, new SimpleContinuation<Unit>() {
+                @Override
+                public void onSuccess(Unit result) {
+                    mainHandler.post(() -> {
+                        LocalVideoTrack track = getLocalVideoTrack();
+                        if (track != null && listener != null) {
+                            listener.onLocalVideoTrackAvailable(track);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    android.util.Log.w("LiveKitRepo", "switchCamera failed", t);
+                }
+            });
+        } catch (Exception e) {
+            android.util.Log.w("LiveKitRepo", "switchCamera API unavailable", e);
+        }
+    }
 
     @Override
     public LocalVideoTrack getLocalVideoTrack() {

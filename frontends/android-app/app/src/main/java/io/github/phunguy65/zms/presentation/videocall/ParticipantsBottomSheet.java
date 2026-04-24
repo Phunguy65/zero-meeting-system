@@ -16,7 +16,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.meeting.participant.ParticipantAdapter;
@@ -108,11 +107,9 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
     private void setupListeners() {
         btnCloseContainer.setOnClickListener(v -> dismiss());
 
-        btnMuteAll.setOnClickListener(v -> {
-            callViewModel.muteAllParticipants();
-            Snackbar.make(requireView(), R.string.call_muted_all, Snackbar.LENGTH_SHORT)
-                    .show();
-        });
+        // TODO: Enable mute-all when backend muteAllParticipants API is implemented
+        btnMuteAll.setEnabled(false);
+        btnMuteAll.setVisibility(View.GONE);
     }
 
     private void setupObservers() {

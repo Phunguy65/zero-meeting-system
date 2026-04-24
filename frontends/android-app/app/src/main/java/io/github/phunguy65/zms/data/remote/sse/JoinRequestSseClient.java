@@ -103,7 +103,8 @@ public class JoinRequestSseClient {
             if (!terminated && currentListener != null) {
                 mainHandler.post(() -> {
                     if (currentListener != null) {
-                        currentListener.onError("Connection failed after " + MAX_RETRIES + " retries");
+                        currentListener.onError(
+                                "Connection failed after " + MAX_RETRIES + " retries");
                     }
                 });
             }
@@ -113,12 +114,14 @@ public class JoinRequestSseClient {
         int delayMs = BASE_RETRY_DELAY_MS * (1 << retryCount);
         retryCount++;
 
-        mainHandler.postDelayed(() -> {
-            if (!terminated && savedListener != null) {
-                currentListener = savedListener;
-                openEventSource(savedRequestId, savedAuthToken);
-            }
-        }, delayMs);
+        mainHandler.postDelayed(
+                () -> {
+                    if (!terminated && savedListener != null) {
+                        currentListener = savedListener;
+                        openEventSource(savedRequestId, savedAuthToken);
+                    }
+                },
+                delayMs);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

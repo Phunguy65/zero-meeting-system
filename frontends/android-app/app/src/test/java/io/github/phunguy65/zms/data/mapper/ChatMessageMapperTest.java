@@ -5,9 +5,9 @@ import static org.junit.Assert.*;
 import io.github.phunguy65.zms.data.remote.dto.ChatManagementChatMessageResponse;
 import io.github.phunguy65.zms.domain.model.ChatMessage;
 import java.time.OffsetDateTime;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.json.JSONObject;
 
 /**
  * Unit tests for {@link ChatMessageMapper} REST DTO conversion.

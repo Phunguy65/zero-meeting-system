@@ -6,10 +6,10 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import io.github.phunguy65.zms.data.repository.ChatDataMessageHandler;
 import io.github.phunguy65.zms.di.LiveKitUrl;
 import io.github.phunguy65.zms.di.MainExecutor;
 import io.github.phunguy65.zms.domain.model.JoinRequestItem;
-import io.github.phunguy65.zms.data.repository.ChatDataMessageHandler;
 import io.github.phunguy65.zms.domain.model.JoinRoomResult;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.RoomConnectionState;
@@ -24,6 +24,7 @@ import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
 import io.livekit.android.room.track.LocalVideoTrack;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import javax.inject.Inject;
 
@@ -680,15 +681,16 @@ public class CallViewModel extends ViewModel {
 
     /**
      * Connects to a LiveKit room with the given URL and token.
+     * Passes current pre-join mic/cam states to the repository for post-connect application.
      */
     public void connectToRoom(String url, String token) {
         Boolean micEnabled = _isMicEnabled.getValue();
         Boolean cameraEnabled = _isCameraEnabled.getValue();
 
-        liveKitRepository.connect(url, token);
-
-        liveKitRepository.setMicrophoneEnabled(micEnabled != null && micEnabled);
-        liveKitRepository.setCameraEnabled(cameraEnabled != null && cameraEnabled);
+        liveKitRepository.connect(
+                url, token,
+                micEnabled != null && micEnabled,
+                cameraEnabled != null && cameraEnabled);
     }
 
     /**
@@ -838,7 +840,8 @@ public class CallViewModel extends ViewModel {
     }
 
     /**
-     * Fetches the full pending join request list from the API and replaces local state.
+     * Fetches the full pending join request list from the API and merges with local state.
+     * Preserves SSE-added entries and only appends API items not already present locally.
      * Called after successful SSE reconnect to repair any missed events.
      */
     public void syncPendingRequests() {
@@ -850,8 +853,24 @@ public class CallViewModel extends ViewModel {
                 .whenCompleteAsync(
                         (requests, error) -> {
                             if (error != null) return;
-                            _pendingJoinRequests.postValue(requests);
-                            _pendingCount.postValue(requests.size());
+
+                            List<JoinRequestItem> local = _pendingJoinRequests.getValue();
+                            List<JoinRequestItem> merged =
+                                    local != null ? new ArrayList<>(local) : new ArrayList<>();
+
+                            Set<String> existingIds = new java.util.HashSet<>();
+                            for (JoinRequestItem item : merged) {
+                                existingIds.add(item.getId());
+                            }
+
+                            for (JoinRequestItem apiItem : requests) {
+                                if (!existingIds.contains(apiItem.getId())) {
+                                    merged.add(apiItem);
+                                }
+                            }
+
+                            _pendingJoinRequests.postValue(merged);
+                            _pendingCount.postValue(merged.size());
                         },
                         mainExecutor);
     }

@@ -21,9 +21,11 @@ import org.mockito.MockitoAnnotations;
  */
 public class ChatDataMessageHandlerTest {
 
-    @Mock private ChatMessageMapper mapper;
+    @Mock
+    private ChatMessageMapper mapper;
 
-    @Mock private ChatRepositoryImpl chatRepository;
+    @Mock
+    private ChatRepositoryImpl chatRepository;
 
     private ChatDataMessageHandler handler;
 
@@ -113,21 +115,19 @@ public class ChatDataMessageHandlerTest {
 
     @Test
     public void handleDataReceived_validPayload_dispatchesMessage() {
-        String json =
-                "{\"id\":\"m1\",\"seqNum\":1,\"senderId\":\"u1\","
-                        + "\"senderName\":\"Alice\",\"content\":\"hello\","
-                        + "\"type\":\"TEXT\",\"createdAt\":\"2026-04-22T10:00:00+07:00\"}";
+        String json = "{\"id\":\"m1\",\"seqNum\":1,\"senderId\":\"u1\","
+                + "\"senderName\":\"Alice\",\"content\":\"hello\","
+                + "\"type\":\"TEXT\",\"createdAt\":\"2026-04-22T10:00:00+07:00\"}";
         byte[] data = json.getBytes(StandardCharsets.UTF_8);
 
-        ChatMessage message =
-                new ChatMessage(
-                        "m1",
-                        1,
-                        "u1",
-                        "Alice",
-                        "hello",
-                        ChatMessage.MessageType.TEXT,
-                        OffsetDateTime.now());
+        ChatMessage message = new ChatMessage(
+                "m1",
+                1,
+                "u1",
+                "Alice",
+                "hello",
+                ChatMessage.MessageType.TEXT,
+                OffsetDateTime.now());
         when(mapper.fromLiveKitPayload(any())).thenReturn(message);
 
         handler.handleDataReceived(data);

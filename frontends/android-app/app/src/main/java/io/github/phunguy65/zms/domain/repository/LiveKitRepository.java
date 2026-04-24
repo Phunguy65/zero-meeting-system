@@ -13,11 +13,14 @@ public interface LiveKitRepository {
 
     /**
      * Connects to a LiveKit room with the given URL and token.
+     * After successful connection, applies the desired initial mic/cam states.
      *
-     * @param url   the LiveKit server WebSocket URL
-     * @param token the access token for room authentication
+     * @param url              the LiveKit server WebSocket URL
+     * @param token            the access token for room authentication
+     * @param initialMicEnabled  desired microphone state after connection
+     * @param initialCameraEnabled desired camera state after connection
      */
-    void connect(String url, String token);
+    void connect(String url, String token, boolean initialMicEnabled, boolean initialCameraEnabled);
 
     /**
      * Disconnects from the current LiveKit room.

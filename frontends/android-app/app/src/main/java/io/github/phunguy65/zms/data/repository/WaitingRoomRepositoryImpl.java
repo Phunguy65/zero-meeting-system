@@ -131,7 +131,9 @@ public class WaitingRoomRepositoryImpl implements WaitingRoomRepository {
             String meetingId, String authToken, HostEventListener listener) {
         sseClient.subscribe(meetingId, authToken, new MeetingEventSseClient.MeetingEventListener() {
             @Override
-            public void onConnected() {}
+            public void onConnected() {
+                listener.onConnected();
+            }
 
             @Override
             public void onDisconnected() {

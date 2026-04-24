@@ -27,6 +27,8 @@ public interface WaitingRoomRepository {
      */
     interface HostEventListener {
 
+        void onConnected();
+
         void onJoinRequestCreated(String requestId, String meetingId, String displayName);
 
         void onJoinRequestExpired(String requestId);
