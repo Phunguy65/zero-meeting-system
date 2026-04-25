@@ -5,6 +5,8 @@ import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.RecordingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.RecordingRepository;
 import io.github.phunguy65.zms.shared.domain.Result;
 import org.slf4j.Logger;
@@ -19,11 +21,15 @@ public class FinalizeRecordingUseCase {
     private static final Logger log = LoggerFactory.getLogger(FinalizeRecordingUseCase.class);
 
     private final RecordingRepository recordingRepository;
+    private final LiveKitPort liveKitPort;
     private final ApplicationEventPublisher eventPublisher;
 
     public FinalizeRecordingUseCase(
-            RecordingRepository recordingRepository, ApplicationEventPublisher eventPublisher) {
+            RecordingRepository recordingRepository,
+            LiveKitPort liveKitPort,
+            ApplicationEventPublisher eventPublisher) {
         this.recordingRepository = recordingRepository;
+        this.liveKitPort = liveKitPort;
         this.eventPublisher = eventPublisher;
     }
 
@@ -84,5 +90,14 @@ public class FinalizeRecordingUseCase {
                 .map(e -> (PublishableEvent) e)
                 .forEach(eventPublisher::publishEvent);
         saved.clearDomainEvents();
+
+        LiveKitRoomName roomName = LiveKitRoomName.fromMeetingId(saved.getMeetingId());
+        var metadataResult = liveKitPort.updateRoomMetadata(roomName, "{\"recording\":false}");
+        if (metadataResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+            log.warn(
+                    "Failed to clear recording metadata for room '{}': {}",
+                    roomName.value(),
+                    error.message());
+        }
     }
 }

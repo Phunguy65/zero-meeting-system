@@ -91,6 +91,14 @@ public class StartRecordingUseCase {
             throw e;
         }
 
+        var metadataResult = liveKitPort.updateRoomMetadata(roomName, "{\"recording\":true}");
+        if (metadataResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+            log.warn(
+                    "Failed to publish recording metadata for room '{}': {}",
+                    roomName.value(),
+                    error.message());
+        }
+
         saved.getDomainEvents().stream()
                 .filter(e -> e instanceof PublishableEvent)
                 .map(e -> (PublishableEvent) e)

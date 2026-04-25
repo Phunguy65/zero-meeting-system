@@ -105,5 +105,8 @@ public interface LiveKitRepository {
 
         /** Called when a reliable data message is received from a remote participant. */
         default void onDataReceived(byte[] data) {}
+
+        /** Called when room-level metadata changes (e.g. recording state). */
+        default void onRoomMetadataChanged(String metadata) {}
     }
 }

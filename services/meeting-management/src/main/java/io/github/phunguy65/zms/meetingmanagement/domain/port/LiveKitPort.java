@@ -129,4 +129,17 @@ public interface LiveKitPort {
      */
     Result<Void, MeetingError> muteAllParticipantMicTracks(
             LiveKitRoomName roomName, List<String> identities);
+
+    /**
+     * Updates the room-level metadata for a LiveKit room.
+     *
+     * <p>Used to broadcast state signals (e.g. active-recording) to all connected participants
+     * through the room metadata channel.
+     *
+     * @param roomName the LiveKit room whose metadata should be updated
+     * @param metadata the new metadata JSON string to set on the room
+     * @return {@link Result.Success} on success, or {@link Result.Failure} with
+     * {@link MeetingError.LiveKitUnavailable} if the server is unreachable or rejects the update
+     */
+    Result<Void, MeetingError> updateRoomMetadata(LiveKitRoomName roomName, String metadata);
 }

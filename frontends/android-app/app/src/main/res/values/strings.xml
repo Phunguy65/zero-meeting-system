@@ -518,4 +518,11 @@
     <string name="participant_role_host">Host</string>
     <string name="participant_role_guest">Guest</string>
     <string name="participant_me_suffix">(Me)</string>
+
+    <!-- ═══ Recording ═══ -->
+    <string name="recording_indicator_label">REC</string>
+    <string name="cd_start_recording">Start recording</string>
+    <string name="cd_stop_recording">Stop recording</string>
+    <string name="recording_start_error">Failed to start recording</string>
+    <string name="recording_stop_error">Failed to stop recording</string>
 </resources>

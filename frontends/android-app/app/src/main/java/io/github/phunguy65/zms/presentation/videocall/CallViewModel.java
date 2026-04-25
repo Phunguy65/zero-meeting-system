@@ -20,6 +20,7 @@ import io.github.phunguy65.zms.domain.repository.JoinRoomRepository;
 import io.github.phunguy65.zms.domain.repository.LiveKitRepository;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
 import io.github.phunguy65.zms.domain.repository.ParticipantRepository;
+import io.github.phunguy65.zms.domain.repository.RecordingRepository;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
 import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
 import io.livekit.android.room.track.LocalVideoTrack;
@@ -44,6 +45,7 @@ public class CallViewModel extends ViewModel {
     private final MeetingRepository meetingRepository;
     private final WaitingRoomRepository waitingRoomRepository;
     private final ParticipantRepository participantRepository;
+    private final RecordingRepository recordingRepository;
     private final String liveKitUrl;
     private final ChatDataMessageHandler chatDataMessageHandler;
     private final Executor mainExecutor;
@@ -82,6 +84,10 @@ public class CallViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _isWaitingRoomSseConnected =
             new MutableLiveData<>(false);
     private final MutableLiveData<String> _participantKickedEvent = new MutableLiveData<>(null);
+
+    private final MutableLiveData<Boolean> _isRecording = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> _isRecordingLoading = new MutableLiveData<>(false);
+    private final MutableLiveData<String> _recordingError = new MutableLiveData<>(null);
 
     private static final long RECONNECT_INITIAL_DELAY_MS = 1000;
     private static final long RECONNECT_MAX_DELAY_MS = 30000;
@@ -130,6 +136,7 @@ public class CallViewModel extends ViewModel {
             MeetingRepository meetingRepository,
             WaitingRoomRepository waitingRoomRepository,
             ParticipantRepository participantRepository,
+            RecordingRepository recordingRepository,
             @LiveKitUrl String liveKitUrl,
             @MainExecutor Executor mainExecutor) {
         this.liveKitRepository = liveKitRepository;
@@ -139,6 +146,7 @@ public class CallViewModel extends ViewModel {
         this.meetingRepository = meetingRepository;
         this.waitingRoomRepository = waitingRoomRepository;
         this.participantRepository = participantRepository;
+        this.recordingRepository = recordingRepository;
         this.liveKitUrl = liveKitUrl;
         this.mainExecutor = mainExecutor;
 
@@ -251,6 +259,36 @@ public class CallViewModel extends ViewModel {
 
     public void clearParticipantKickedEvent() {
         _participantKickedEvent.setValue(null);
+    }
+
+    /**
+     * LiveData indicating whether the room is actively being recorded,
+     * driven by room metadata changes.
+     */
+    public LiveData<Boolean> isRecording() {
+        return _isRecording;
+    }
+
+    /**
+     * LiveData indicating whether a recording start/stop request is in flight.
+     */
+    public LiveData<Boolean> isRecordingLoading() {
+        return _isRecordingLoading;
+    }
+
+    /**
+     * One-shot LiveData carrying an error message from a failed recording action.
+     * Consumers should clear after displaying.
+     */
+    public LiveData<String> getRecordingError() {
+        return _recordingError;
+    }
+
+    /**
+     * Clears the recording error so it is only consumed once.
+     */
+    public void clearRecordingError() {
+        _recordingError.setValue(null);
     }
 
     public LiveData<Boolean> requiresPassword() {
@@ -741,6 +779,14 @@ public class CallViewModel extends ViewModel {
         waitingRoomRepository.subscribeToHostEvents(
                 meetingId, authToken, new WaitingRoomRepository.HostEventListener() {
                     @Override
+                    public void onConnected() {
+                        mainExecutor.execute(() -> {
+                            _isWaitingRoomSseConnected.setValue(true);
+                            currentReconnectDelay = RECONNECT_INITIAL_DELAY_MS;
+                        });
+                    }
+
+                    @Override
                     public void onJoinRequestCreated(
                             String requestId, String eventMeetingId, String displayName) {
                         mainExecutor.execute(() -> {
@@ -1031,6 +1077,110 @@ public class CallViewModel extends ViewModel {
                         mainExecutor);
     }
 
+    /**
+     * Starts recording for the current meeting.
+     * Sets loading state during the request and maps errors to recording error LiveData.
+     */
+    public void startRecording() {
+        String meetingId = _meetingId.getValue();
+        if (meetingId == null || meetingId.isEmpty()) {
+            return;
+        }
+
+        Boolean loading = _isRecordingLoading.getValue();
+        if (loading != null && loading) {
+            return;
+        }
+
+        _isRecordingLoading.setValue(true);
+        _recordingError.setValue(null);
+
+        recordingRepository
+                .startRecording(meetingId)
+                .whenCompleteAsync(
+                        (unused, error) -> {
+                            _isRecordingLoading.postValue(false);
+
+                            if (error != null) {
+                                Throwable cause =
+                                        error.getCause() != null ? error.getCause() : error;
+                                _recordingError.postValue(cause.getMessage());
+                            }
+                        },
+                        mainExecutor);
+    }
+
+    /**
+     * Stops recording for the current meeting.
+     * Sets loading state during the request. On failure, the control remains
+     * in active recording state so the host can retry.
+     */
+    public void stopRecording() {
+        String meetingId = _meetingId.getValue();
+        if (meetingId == null || meetingId.isEmpty()) {
+            return;
+        }
+
+        Boolean loading = _isRecordingLoading.getValue();
+        if (loading != null && loading) {
+            return;
+        }
+
+        _isRecordingLoading.setValue(true);
+        _recordingError.setValue(null);
+
+        recordingRepository
+                .stopRecording(meetingId)
+                .whenCompleteAsync(
+                        (unused, error) -> {
+                            _isRecordingLoading.postValue(false);
+
+                            if (error != null) {
+                                Throwable cause =
+                                        error.getCause() != null ? error.getCause() : error;
+                                _recordingError.postValue(cause.getMessage());
+                            }
+                        },
+                        mainExecutor);
+    }
+
+    /**
+     * Toggles recording based on current state. Starts if inactive, stops if active.
+     */
+    public void toggleRecording() {
+        Boolean recording = _isRecording.getValue();
+        if (recording != null && recording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    }
+
+    /**
+     * Parses room metadata JSON and updates recording state.
+     * Malformed or empty metadata is treated as recording inactive.
+     *
+     * @param metadata the raw room metadata string
+     */
+    private void handleRoomMetadataChanged(String metadata) {
+        boolean recording = false;
+
+        if (metadata != null && !metadata.isEmpty()) {
+            try {
+                org.json.JSONObject json = new org.json.JSONObject(metadata);
+                recording = json.optBoolean("recording", false);
+            } catch (org.json.JSONException e) {
+                recording = false;
+            }
+        }
+
+        _isRecording.postValue(recording);
+
+        if (!recording) {
+            _isRecordingLoading.postValue(false);
+        }
+    }
+
     @Override
     protected void onCleared() {
         super.onCleared();
@@ -1076,6 +1226,11 @@ public class CallViewModel extends ViewModel {
         @Override
         public void onLocalVideoTrackAvailable(LocalVideoTrack track) {
             _localVideoTrack.postValue(track);
+        }
+
+        @Override
+        public void onRoomMetadataChanged(String metadata) {
+            handleRoomMetadataChanged(metadata);
         }
     }
 }

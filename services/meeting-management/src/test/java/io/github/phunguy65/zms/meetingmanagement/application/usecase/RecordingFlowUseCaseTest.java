@@ -92,6 +92,7 @@ class RecordingFlowUseCaseTest {
                 .thenReturn(Result.success(LiveKitEgressId.of(EGRESS_ID)));
         when(recordingRepository.save(any(Recording.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(liveKitPort.updateRoomMetadata(any(), any())).thenReturn(Result.success());
 
         var result = startRecordingUseCase.execute(new StartRecordingCommand(meetingId, hostId));
 
@@ -112,6 +113,10 @@ class RecordingFlowUseCaseTest {
         assertThat(recordingCaptor.getAllValues().getLast().getStatus())
                 .isEqualTo(RecordingStatus.PENDING);
         verify(eventPublisher).publishEvent(any(PublishableEvent.class));
+        verify(liveKitPort)
+                .updateRoomMetadata(
+                        LiveKitRoomName.fromMeetingId(MeetingId.of(meetingId)),
+                        "{\"recording\":true}");
     }
 
     @Test
@@ -262,6 +267,22 @@ class RecordingFlowUseCaseTest {
         assertThat(result).isInstanceOf(Result.Success.class);
         verify(liveKitPort).stopEgress(LiveKitEgressId.of(EGRESS_ID));
         verify(recordingRepository, never()).save(any(Recording.class));
+    }
+
+    @Test
+    void stopRecording_neverCallsUpdateRoomMetadata() {
+        UUID meetingId = UUID.randomUUID();
+        UUID hostId = UUID.randomUUID();
+        Recording recording = pendingRecording(meetingId, EGRESS_ID);
+        when(meetingRepository.findById(meetingId))
+                .thenReturn(Optional.of(liveMeeting(meetingId, hostId)));
+        when(recordingRepository.findActiveByMeetingId(meetingId))
+                .thenReturn(Optional.of(recording));
+        when(liveKitPort.stopEgress(LiveKitEgressId.of(EGRESS_ID))).thenReturn(Result.success());
+
+        stopRecordingUseCase.execute(new StopRecordingCommand(meetingId, hostId));
+
+        verify(liveKitPort, never()).updateRoomMetadata(any(), any());
     }
 
     @Test

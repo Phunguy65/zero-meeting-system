@@ -556,4 +556,30 @@ public class LiveKitAdapter implements LiveKitPort {
         }
         return null;
     }
+
+    @Override
+    public Result<Void, MeetingError> updateRoomMetadata(
+            LiveKitRoomName roomName, String metadata) {
+        try {
+            Response<LivekitModels.Room> response = roomServiceClient
+                    .updateRoomMetadata(roomName.value(), metadata)
+                    .execute();
+
+            if (!response.isSuccessful()) {
+                String msg = "HTTP %d: %s".formatted(response.code(), response.message());
+                log.warn("Failed to update room metadata for room '{}': {}", roomName.value(), msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            log.info("Updated room metadata for room '{}': {}", roomName.value(), metadata);
+            return Result.success();
+
+        } catch (IOException e) {
+            log.warn(
+                    "Network error updating room metadata for room '{}': {}",
+                    roomName.value(),
+                    e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
+    }
 }

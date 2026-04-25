@@ -56,6 +56,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     private Room.State lastKnownState = null;
     private int lastParticipantCount = 0;
     private Map<String, ParticipantTrackState> lastParticipantStates = new java.util.HashMap<>();
+    private String lastRoomMetadata = null;
 
     /**
      * Tracks the state of a participant's tracks for change detection.
@@ -156,6 +157,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         lastKnownState = null;
         lastParticipantCount = 0;
         lastParticipantStates.clear();
+        lastRoomMetadata = null;
         pendingDataMessages.clear();
         notifyConnectionStateChanged(RoomConnectionState.DISCONNECTED);
     }
@@ -399,6 +401,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
 
         updateActiveSpeakers();
         drainPendingDataMessages();
+        checkRoomMetadataChanges();
     }
 
     /**
@@ -411,6 +414,33 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         byte[] data;
         while ((data = pendingDataMessages.poll()) != null) {
             listener.onDataReceived(data);
+        }
+    }
+
+    /**
+     * Checks whether room-level metadata has changed since the last poll
+     * and notifies the listener when a change is detected.
+     */
+    private void checkRoomMetadataChanges() {
+        if (room == null || listener == null) return;
+
+        String currentMetadata = null;
+        try {
+            currentMetadata = room.getMetadata();
+        } catch (Exception e) {
+            return;
+        }
+
+        boolean changed;
+        if (currentMetadata == null) {
+            changed = lastRoomMetadata != null;
+        } else {
+            changed = !currentMetadata.equals(lastRoomMetadata);
+        }
+
+        if (changed) {
+            lastRoomMetadata = currentMetadata;
+            listener.onRoomMetadataChanged(currentMetadata);
         }
     }
 
