@@ -1,16 +1,35 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form.tsx';
 import { GoogleSignInButton } from './social-button.tsx';
 
-type AuthVariant = 'login' | 'register';
+const loginSchema = z.object({
+    email: z.string().min(1, 'required').email('invalidEmail'),
+    password: z.string().min(1, 'required'),
+});
 
-type FieldErrors = {
-    email?: string;
-    password?: string;
-};
+const registerSchema = z.object({
+    name: z.string().optional(),
+    email: z.string().min(1, 'required').email('invalidEmail'),
+    password: z.string().min(1, 'required'),
+});
+
+type LoginValues = z.infer<typeof loginSchema>;
+type RegisterValues = z.infer<typeof registerSchema>;
+type AuthVariant = 'login' | 'register';
 
 type AuthFormLabels = {
     title: string;
@@ -45,7 +64,7 @@ type AuthFormProps = {
     loading: boolean;
     googleLoading: boolean;
     bannerError: string | null;
-    fieldErrors: FieldErrors;
+    serverFieldErrors: { email?: string; password?: string };
 };
 
 export function AuthForm({
@@ -57,19 +76,25 @@ export function AuthForm({
     loading,
     googleLoading,
     bannerError,
-    fieldErrors,
+    serverFieldErrors,
 }: AuthFormProps) {
     const [passwordHidden, setPasswordHidden] = useState(true);
-    const emailRef = useRef<HTMLInputElement>(null);
-    const passwordRef = useRef<HTMLInputElement>(null);
     const isSubmitting = loading || googleLoading;
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const email = emailRef.current?.value ?? '';
-        const password = passwordRef.current?.value ?? '';
-        void onEmailSubmit(email, password);
+    const schema = variant === 'login' ? loginSchema : registerSchema;
+    const form = useForm<LoginValues | RegisterValues>({
+        resolver: zodResolver(schema),
+        defaultValues: { email: '', password: '' },
+    });
+
+    async function handleSubmit(values: LoginValues | RegisterValues) {
+        await onEmailSubmit(values.email, values.password);
     }
+
+    const emailError =
+        form.formState.errors.email?.message ?? serverFieldErrors.email;
+    const passwordError =
+        form.formState.errors.password?.message ?? serverFieldErrors.password;
 
     return (
         <div className='bg-surface px-6 py-8 sm:px-10 sm:py-12 lg:px-14 lg:py-16'>
@@ -83,150 +108,175 @@ export function AuthForm({
                     </p>
                 </div>
 
-                <form
-                    className='mt-10 flex flex-col gap-7'
-                    onSubmit={handleSubmit}
-                >
-                    {bannerError ? (
-                        <p
-                            className='rounded-xl bg-red-50 px-5 py-4 text-base text-red-700'
-                            role='alert'
-                        >
-                            {bannerError}
-                        </p>
-                    ) : null}
-
-                    {variant === 'register' && labels.nameLabel ? (
-                        <label className='flex flex-col gap-3'>
-                            <span className='text-lg font-medium text-text-primary'>
-                                {labels.nameLabel}
-                            </span>
-                            <input
-                                className='h-16 rounded-full bg-surface-input-alt px-6 text-xl text-text-primary outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-primary'
-                                placeholder={labels.namePlaceholder}
-                                type='text'
-                            />
-                        </label>
-                    ) : null}
-
-                    <label className='flex flex-col gap-3'>
-                        <span className='text-lg font-medium uppercase tracking-[0.05em] text-text-primary'>
-                            {labels.emailLabel}
-                        </span>
-                        <input
-                            ref={emailRef}
-                            className={`h-16 rounded-full bg-surface-input-alt px-6 text-xl text-text-primary outline-none ring-1 transition focus:ring-2 focus:ring-primary ${
-                                fieldErrors.email
-                                    ? 'ring-red-400'
-                                    : 'ring-transparent'
-                            }`}
-                            placeholder={labels.emailPlaceholder}
-                            type='email'
-                        />
-                        {fieldErrors.email ? (
-                            <p
-                                className='px-2 text-sm text-red-600'
-                                role='alert'
-                            >
-                                {fieldErrors.email}
-                            </p>
-                        ) : null}
-                    </label>
-
-                    <label className='flex flex-col gap-3'>
-                        <div className='flex items-center justify-between gap-4'>
-                            <span className='text-lg font-medium uppercase tracking-[0.05em] text-text-primary'>
-                                {labels.passwordLabel}
-                            </span>
-                            {variant === 'login' && labels.forgotPassword ? (
-                                <Link
-                                    className='text-base font-medium text-brand-blue transition-colors hover:text-primary-dark'
-                                    href={`/${locale}/login`}
-                                >
-                                    {labels.forgotPassword}
-                                </Link>
-                            ) : null}
-                        </div>
-                        <div
-                            className={`flex h-16 items-center rounded-full bg-surface-input-alt pr-5 ring-1 transition focus-within:ring-2 focus-within:ring-primary ${
-                                fieldErrors.password
-                                    ? 'ring-red-400'
-                                    : 'ring-transparent'
-                            }`}
-                        >
-                            <input
-                                ref={passwordRef}
-                                className='h-full w-full bg-transparent px-6 text-xl text-text-primary outline-none'
-                                placeholder={labels.passwordPlaceholder}
-                                type={passwordHidden ? 'password' : 'text'}
-                            />
-                            {variant === 'register' ? (
-                                <button
-                                    aria-label={
-                                        passwordHidden
-                                            ? labels.showPassword
-                                            : labels.hidePassword
-                                    }
-                                    className='inline-flex items-center justify-center rounded-full p-2 text-text-subtle transition-colors hover:bg-surface hover:text-brand-blue'
-                                    onClick={() => setPasswordHidden((v) => !v)}
-                                    type='button'
-                                >
-                                    {passwordHidden ? (
-                                        <EyeOff className='h-6 w-6' />
-                                    ) : (
-                                        <Eye className='h-6 w-6' />
-                                    )}
-                                </button>
-                            ) : null}
-                        </div>
-                        {fieldErrors.password ? (
-                            <p
-                                className='px-2 text-sm text-red-600'
-                                role='alert'
-                            >
-                                {fieldErrors.password}
-                            </p>
-                        ) : null}
-                    </label>
-
-                    {variant === 'register' && labels.agreementPrefix ? (
-                        <label className='mt-1 flex items-start gap-4 text-lg leading-9 text-text-secondary'>
-                            <input
-                                className='mt-1 h-6 w-6 rounded-md border border-border-input accent-primary'
-                                type='checkbox'
-                            />
-                            <span>
-                                {labels.agreementPrefix}{' '}
-                                <Link
-                                    className='font-medium text-brand-blue hover:text-primary-dark'
-                                    href={`/${locale}/register`}
-                                >
-                                    {labels.agreementTerms}
-                                </Link>{' '}
-                                {labels.agreementMiddle}{' '}
-                                <Link
-                                    className='font-medium text-brand-blue hover:text-primary-dark'
-                                    href={`/${locale}/register`}
-                                >
-                                    {labels.agreementPrivacy}
-                                </Link>{' '}
-                                {labels.agreementSuffix}
-                            </span>
-                        </label>
-                    ) : null}
-
-                    <button
-                        className='mt-2 flex h-16 items-center justify-center rounded-full bg-[linear-gradient(135deg,_var(--primary)_0%,_var(--primary-hover)_100%)] px-8 text-2xl font-semibold text-white shadow-[0_24px_50px_-26px_rgba(26,115,232,0.95)] transition-all hover:-translate-y-0.5 hover:shadow-[0_28px_55px_-24px_rgba(26,115,232,1)] disabled:opacity-60 disabled:hover:translate-y-0'
-                        disabled={isSubmitting}
-                        type='submit'
+                <Form {...form}>
+                    <form
+                        className='mt-10 flex flex-col gap-7'
+                        onSubmit={form.handleSubmit(handleSubmit)}
                     >
-                        {loading ? (
-                            <Loader2 className='h-5 w-5 animate-spin' />
-                        ) : (
-                            labels.submit
-                        )}
-                    </button>
-                </form>
+                        {bannerError ? (
+                            <p
+                                className='rounded-xl bg-error-subtle px-5 py-4 text-base text-error-dark'
+                                role='alert'
+                            >
+                                {bannerError}
+                            </p>
+                        ) : null}
+
+                        {variant === 'register' && labels.nameLabel ? (
+                            <FormField
+                                control={form.control}
+                                name='name'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className='text-lg font-medium text-text-primary'>
+                                            {labels.nameLabel}
+                                        </FormLabel>
+                                        <FormControl>
+                                            <input
+                                                className='h-16 w-full rounded-full bg-surface-input-alt px-6 text-xl text-text-primary outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-primary'
+                                                placeholder={
+                                                    labels.namePlaceholder
+                                                }
+                                                type='text'
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        ) : null}
+
+                        <div className='flex flex-col gap-3'>
+                            <label
+                                className='text-lg font-medium uppercase tracking-[0.05em] text-text-primary'
+                                htmlFor='auth-email'
+                            >
+                                {labels.emailLabel}
+                            </label>
+                            <input
+                                className={`h-16 rounded-full bg-surface-input-alt px-6 text-xl text-text-primary outline-none ring-1 transition focus:ring-2 focus:ring-primary ${
+                                    emailError
+                                        ? 'ring-error'
+                                        : 'ring-transparent'
+                                }`}
+                                id='auth-email'
+                                placeholder={labels.emailPlaceholder}
+                                type='email'
+                                {...form.register('email')}
+                            />
+                            {emailError ? (
+                                <p
+                                    className='px-2 text-sm text-error-dark'
+                                    role='alert'
+                                >
+                                    {emailError}
+                                </p>
+                            ) : null}
+                        </div>
+
+                        <div className='flex flex-col gap-3'>
+                            <div className='flex items-center justify-between gap-4'>
+                                <label
+                                    className='text-lg font-medium uppercase tracking-[0.05em] text-text-primary'
+                                    htmlFor='auth-password'
+                                >
+                                    {labels.passwordLabel}
+                                </label>
+                                {variant === 'login'
+                                && labels.forgotPassword ? (
+                                    <Link
+                                        className='text-base font-medium text-brand-blue transition-colors hover:text-primary-dark'
+                                        href={`/${locale}/login`}
+                                    >
+                                        {labels.forgotPassword}
+                                    </Link>
+                                ) : null}
+                            </div>
+                            <div
+                                className={`flex h-16 items-center rounded-full bg-surface-input-alt pr-5 ring-1 transition focus-within:ring-2 focus-within:ring-primary ${
+                                    passwordError
+                                        ? 'ring-error'
+                                        : 'ring-transparent'
+                                }`}
+                            >
+                                <input
+                                    className='h-full w-full bg-transparent px-6 text-xl text-text-primary outline-none'
+                                    id='auth-password'
+                                    placeholder={labels.passwordPlaceholder}
+                                    type={passwordHidden ? 'password' : 'text'}
+                                    {...form.register('password')}
+                                />
+                                {variant === 'register' ? (
+                                    <button
+                                        aria-label={
+                                            passwordHidden
+                                                ? labels.showPassword
+                                                : labels.hidePassword
+                                        }
+                                        className='inline-flex items-center justify-center rounded-full p-2 text-text-subtle transition-colors hover:bg-surface hover:text-brand-blue'
+                                        onClick={() =>
+                                            setPasswordHidden((v) => !v)
+                                        }
+                                        type='button'
+                                    >
+                                        {passwordHidden ? (
+                                            <EyeOff className='h-6 w-6' />
+                                        ) : (
+                                            <Eye className='h-6 w-6' />
+                                        )}
+                                    </button>
+                                ) : null}
+                            </div>
+                            {passwordError ? (
+                                <p
+                                    className='px-2 text-sm text-error-dark'
+                                    role='alert'
+                                >
+                                    {passwordError}
+                                </p>
+                            ) : null}
+                        </div>
+
+                        {variant === 'register' && labels.agreementPrefix ? (
+                            <label className='mt-1 flex items-start gap-4 text-lg leading-9 text-text-secondary'>
+                                <input
+                                    className='mt-1 h-6 w-6 rounded-md border border-border-input accent-primary'
+                                    type='checkbox'
+                                />
+                                <span>
+                                    {labels.agreementPrefix}{' '}
+                                    <Link
+                                        className='font-medium text-brand-blue hover:text-primary-dark'
+                                        href={`/${locale}/register`}
+                                    >
+                                        {labels.agreementTerms}
+                                    </Link>{' '}
+                                    {labels.agreementMiddle}{' '}
+                                    <Link
+                                        className='font-medium text-brand-blue hover:text-primary-dark'
+                                        href={`/${locale}/register`}
+                                    >
+                                        {labels.agreementPrivacy}
+                                    </Link>{' '}
+                                    {labels.agreementSuffix}
+                                </span>
+                            </label>
+                        ) : null}
+
+                        <button
+                            className='mt-2 flex h-16 items-center justify-center rounded-full bg-[linear-gradient(135deg,_var(--primary)_0%,_var(--primary-hover)_100%)] px-8 text-2xl font-semibold text-white shadow-[0_24px_50px_-26px_rgba(26,115,232,0.95)] transition-all hover:-translate-y-0.5 hover:shadow-[0_28px_55px_-24px_rgba(26,115,232,1)] disabled:opacity-60 disabled:hover:translate-y-0'
+                            disabled={isSubmitting}
+                            type='submit'
+                        >
+                            {loading ? (
+                                <Loader2 className='h-5 w-5 animate-spin' />
+                            ) : (
+                                labels.submit
+                            )}
+                        </button>
+                    </form>
+                </Form>
 
                 <div className='mt-9'>
                     <div className='flex items-center gap-5 text-base uppercase tracking-[0.18em] text-text-subtle'>

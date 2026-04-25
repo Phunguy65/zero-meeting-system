@@ -35,12 +35,12 @@ export function AuthContainer({ variant }: AuthContainerProps) {
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [bannerError, setBannerError] = useState<string | null>(null);
-    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+    const [serverFieldErrors, setServerFieldErrors] = useState<FieldErrors>({});
     const router = useRouter();
 
     function clearErrors() {
         setBannerError(null);
-        setFieldErrors({});
+        setServerFieldErrors({});
     }
 
     async function handleEmailSubmit(email: string, password: string) {
@@ -74,7 +74,7 @@ export function AuthContainer({ variant }: AuthContainerProps) {
                             newFieldErrors[violation.field] = violation.message;
                         }
                     }
-                    setFieldErrors(newFieldErrors);
+                    setServerFieldErrors(newFieldErrors);
                 }
                 if (error.errors.length === 0) {
                     setBannerError(error.message);
@@ -161,7 +161,7 @@ export function AuthContainer({ variant }: AuthContainerProps) {
 
                         <AuthForm
                             bannerError={bannerError}
-                            fieldErrors={fieldErrors}
+                            serverFieldErrors={serverFieldErrors}
                             googleLoading={googleLoading}
                             labels={{
                                 title: t('title'),

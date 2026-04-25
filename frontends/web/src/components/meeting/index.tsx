@@ -12,11 +12,33 @@ import { ParticipantGrid } from './participant-grid.tsx';
 import { MeetingSidebar } from './sidebar.tsx';
 import { MeetingToolbar } from './toolbar.tsx';
 
+const MEETING_TOKEN_KEY = 'meeting_token';
+const MEETING_ROOM_KEY = 'meeting_room_name';
+
+type SessionCredentials = {
+    token: string;
+    roomName: string;
+} | null;
+
+function consumeSessionCredentials(): SessionCredentials {
+    const token = sessionStorage.getItem(MEETING_TOKEN_KEY);
+    const roomName = sessionStorage.getItem(MEETING_ROOM_KEY);
+    sessionStorage.removeItem(MEETING_TOKEN_KEY);
+    sessionStorage.removeItem(MEETING_ROOM_KEY);
+    if (token && roomName) {
+        return { token, roomName };
+    }
+    return null;
+}
+
 export function MeetingContainer() {
     const locale = useLocale();
     const t = useTranslations('meetingRoom');
     const common = useTranslations('workspace.common');
 
+    const [credentials] = useState<SessionCredentials>(() =>
+        consumeSessionCredentials(),
+    );
     const [micOn, setMicOn] = useState(true);
     const [videoOn, setVideoOn] = useState(true);
     const [messages, setMessages] = useState<MeetingMessage[]>(
@@ -29,6 +51,20 @@ export function MeetingContainer() {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, []);
+
+    if (!credentials) {
+        return (
+            <main className='flex h-screen flex-col items-center justify-center gap-4 bg-meeting-bg text-white'>
+                <p className='text-lg'>{t('noActiveSession')}</p>
+                <a
+                    className='underline opacity-70 hover:opacity-100'
+                    href={`/${locale}/workspace`}
+                >
+                    {t('backToWorkspace')}
+                </a>
+            </main>
+        );
+    }
 
     function handleSendMessage(text: string) {
         const time = new Date().toLocaleTimeString('en-US', {

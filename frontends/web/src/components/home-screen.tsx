@@ -272,7 +272,7 @@ export function HomeScreen() {
                         <div className='mt-10 flex flex-col gap-4 xl:flex-row xl:items-center'>
                             <Link
                                 className='group inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-[linear-gradient(135deg,_#1a73e8_0%,_#0f5ed7_100%)] px-6 text-[1.12rem] font-medium text-white shadow-[0_22px_46px_-24px_rgba(26,115,232,0.95)] ring-1 ring-[#1a73e8]/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_28px_52px_-24px_rgba(26,115,232,0.95)]'
-                                href={`/${locale}/workspace/green-room`}
+                                href={`/${locale}/login`}
                             >
                                 <span className='flex h-9 w-9 items-center justify-center rounded-xl bg-white/18 transition-colors group-hover:bg-white/24'>
                                     <svg
@@ -315,7 +315,7 @@ export function HomeScreen() {
                                         ? 'cursor-pointer bg-[#e8f0fe] text-[#1a73e8] shadow-[0_16px_30px_-24px_rgba(26,115,232,0.85)] hover:bg-[#1a73e8] hover:text-white'
                                         : 'pointer-events-none text-[#9aa0a6]'
                                 }`}
-                                href={`/${locale}/workspace/green-room`}
+                                href={`/${locale}/join/${joinCode.trim()}`}
                             >
                                 {t('join')}
                             </Link>

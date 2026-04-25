@@ -52,7 +52,7 @@ export function JoinForm({
                         ? 'cursor-pointer bg-primary-muted text-primary shadow-[0_16px_30px_-24px_rgba(26,115,232,0.85)] hover:bg-primary hover:text-white'
                         : 'pointer-events-none text-text-disabled'
                 }`}
-                href={`/${locale}/workspace/green-room`}
+                href={`/${locale}/join/${joinCode.trim()}`}
             >
                 {t('join')}
             </Link>

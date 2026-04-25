@@ -5,7 +5,7 @@ import { routing } from "./src/i18n/request";
 const intlMiddleware = createIntlMiddleware(routing);
 
 const PROTECTED_PREFIX = "/workspace";
-const PUBLIC_PATHS = new Set(["/login", "/register", "/home"]);
+const WORKSPACE_PUBLIC_PATHS = new Set(["/workspace/meeting-room"]);
 
 function stripLocale(pathname: string): string {
     for (const locale of routing.locales) {
@@ -31,7 +31,10 @@ export default function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const strippedPath = stripLocale(pathname);
 
-    if (strippedPath.startsWith(PROTECTED_PREFIX)) {
+    if (
+        strippedPath.startsWith(PROTECTED_PREFIX) &&
+        !WORKSPACE_PUBLIC_PATHS.has(strippedPath)
+    ) {
         const accessToken = request.cookies.get("access_token")?.value;
         if (!accessToken) {
             const locale = extractLocale(pathname);

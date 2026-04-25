@@ -201,7 +201,16 @@
             "hostVideoTitle": "Video của chủ trì",
             "hostVideoDescription": "Bật video khi chủ trì tham gia",
             "note": "Bạn có thể cập nhật cài đặt cuộc họp sau khi lên lịch.",
-            "footer": "Tất cả thời gian hiển thị theo múi giờ địa phương của bạn"
+            "footer": "Tất cả thời gian hiển thị theo múi giờ địa phương của bạn",
+            "successTitle": "Đã lên lịch cuộc họp",
+            "successDescription": "'{title}' bắt đầu lúc {startTime}",
+            "meetingCode": "Mã cuộc họp",
+            "successDone": "Xong",
+            "errorServer": "Đã xảy ra lỗi. Vui lòng thử lại sau.",
+            "errorNetwork": "Không có kết nối mạng. Vui lòng kiểm tra mạng và thử lại.",
+            "validation": {
+                "startTimeMustBeFuture": "Thời gian bắt đầu phải là thời gian trong tương lai."
+            }
         },
         "profile": {
             "headline": "Hồ sơ của bạn",
@@ -255,11 +264,97 @@
         "leave": "Rời đi",
         "help": "Trợ giúp",
         "settings": "Cài đặt",
-        "profile": "Hồ sơ"
+        "profile": "Hồ sơ",
+        "noActiveSession": "Không có phiên họp đang hoạt động.",
+        "backToWorkspace": "Quay lại workspace"
     },
     "splash": {
         "title": "Hệ thống Zero Meeting",
         "subtitle": "Cuộc họp tích hợp AI dành cho đội ngũ hiện đại",
         "loading": "Đang khởi động..."
+    },
+    "joinMeeting": {
+        "title": "Tham gia cuộc họp",
+        "eyebrow": "Sẵn sàng tham gia?",
+        "preview": "Xem trước",
+        "mic": "Mic",
+        "video": "Video",
+        "muteMic": "Tắt mic",
+        "unmuteMic": "Bật mic",
+        "stopVideo": "Tắt video",
+        "startVideo": "Bật video",
+        "codeLabel": "Mã cuộc họp",
+        "codePlaceholder": "Nhập mã cuộc họp",
+        "displayNameLabel": "Tên của bạn",
+        "displayNamePlaceholder": "Nhập tên hiển thị",
+        "passwordLabel": "Mật khẩu cuộc họp",
+        "passwordPlaceholder": "Nhập mật khẩu cuộc họp",
+        "passwordRequired": "Cuộc họp này yêu cầu mật khẩu.",
+        "submitPassword": "Xác nhận mật khẩu",
+        "join": "Tham gia cuộc họp",
+        "joining": "Đang tham gia...",
+        "waitingTitle": "Chờ phê duyệt",
+        "waitingDescription": "Yêu cầu tham gia \"{meetingTitle}\" của bạn đã được gửi. Vui lòng chờ chủ phòng phê duyệt.",
+        "cancelWaiting": "Hủy",
+        "expired": "Yêu cầu tham gia của bạn đã hết hạn. Vui lòng thử lại.",
+        "startOver": "Bắt đầu lại",
+        "retry": "Thử lại",
+        "tryAgain": "Thử lại",
+        "validation": {
+            "required": "Trường này là bắt buộc"
+        },
+        "errors": {
+            "invalidPassword": "Mật khẩu không đúng. Vui lòng thử lại.",
+            "guestNotAllowed": "Khách không được phép tham gia cuộc họp này.",
+            "meetingFull": "Cuộc họp đã đạt số lượng người tham gia tối đa.",
+            "meetingNotLive": "Cuộc họp này hiện không hoạt động.",
+            "joinDenied": "Yêu cầu tham gia của bạn đã bị từ chối.",
+            "notFound": "Không tìm thấy cuộc họp. Vui lòng kiểm tra mã và thử lại.",
+            "networkError": "Lỗi kết nối. Vui lòng kiểm tra mạng và thử lại.",
+            "approvalDataUnreadable": "Không thể đọc dữ liệu phê duyệt.",
+            "connectionLost": "Mất kết nối sau nhiều lần thử lại. Vui lòng thử lại.",
+            "unexpectedResponse": "Phản hồi không mong đợi từ máy chủ.",
+            "serverUnreachable": "Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối."
+        }
+    },
+    "meetingSettings": {
+        "title": "Cài đặt cuộc họp",
+        "waitingRoom": "Phòng chờ",
+        "waitingRoomDescription": "Xem xét người tham gia trước khi họ vào",
+        "allowGuest": "Cho phép khách",
+        "allowGuestDescription": "Cho phép người dùng chưa đăng ký tham gia",
+        "screenShare": "Chia sẻ màn hình",
+        "screenShareDescription": "Cho phép người tham gia chia sẻ màn hình",
+        "chat": "Trò chuyện",
+        "chatDescription": "Bật trò chuyện trong cuộc họp",
+        "microphone": "Microphone",
+        "microphoneDescription": "Cho phép người tham gia sử dụng microphone",
+        "video": "Video",
+        "videoDescription": "Cho phép người tham gia bật camera",
+        "maxParticipants": "Số người tối đa",
+        "password": "Mật khẩu cuộc họp",
+        "passwordPlaceholder": "Mật khẩu tùy chọn",
+        "inviteesPlaceholder": "Nhập email và nhấn Enter",
+        "removeInvitee": "Xóa {email} khỏi danh sách mời"
+    },
+    "createMeeting": {
+        "instantTitle": "Bắt đầu cuộc họp ngay",
+        "instantDescription": "Cấu hình và khởi động cuộc họp ngay lập tức.",
+        "titleLabel": "Tiêu đề cuộc họp",
+        "titlePlaceholder": "Tiêu đề tùy chọn",
+        "startMeeting": "Bắt đầu cuộc họp",
+        "creating": "Đang bắt đầu...",
+        "cancel": "Hủy",
+        "retry": "Thử lại",
+        "successTitle": "Cuộc họp đã bắt đầu",
+        "successDescription": "Cuộc họp tức thời của bạn đã sẵn sàng tham gia.",
+        "meetingCode": "Mã cuộc họp",
+        "copyLink": "Sao chép liên kết",
+        "linkCopied": "Đã sao chép",
+        "redirectingMessage": "Đang chuyển hướng đến phòng họp...",
+        "instantMeetingAction": "Cuộc họp tức thời",
+        "instantMeetingActionDescription": "Bắt đầu cuộc họp ngay bây giờ",
+        "scheduleMeetingAction": "Lên lịch sau",
+        "scheduleMeetingActionDescription": "Lên kế hoạch trước cho cuộc họp"
     }
 }

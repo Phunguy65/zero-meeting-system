@@ -201,7 +201,16 @@
             "hostVideoTitle": "Host Video",
             "hostVideoDescription": "Start video when host joins",
             "note": "You can update meeting settings after scheduling.",
-            "footer": "All times are shown in your local timezone"
+            "footer": "All times are shown in your local timezone",
+            "successTitle": "Meeting Scheduled",
+            "successDescription": "'{title}' starts at {startTime}",
+            "meetingCode": "Meeting Code",
+            "successDone": "Done",
+            "errorServer": "Something went wrong. Please try again later.",
+            "errorNetwork": "No internet connection. Please check your network and try again.",
+            "validation": {
+                "startTimeMustBeFuture": "Start time must be in the future."
+            }
         },
         "profile": {
             "headline": "Your Profile",
@@ -255,11 +264,97 @@
         "leave": "Leave",
         "help": "Help",
         "settings": "Settings",
-        "profile": "Profile"
+        "profile": "Profile",
+        "noActiveSession": "No active meeting session.",
+        "backToWorkspace": "Back to workspace"
     },
     "splash": {
         "title": "Zero Meeting System",
         "subtitle": "AI-powered meetings for modern teams",
         "loading": "Starting up..."
+    },
+    "joinMeeting": {
+        "title": "Join Meeting",
+        "eyebrow": "Ready to join?",
+        "preview": "Preview",
+        "mic": "Mic",
+        "video": "Video",
+        "muteMic": "Mute microphone",
+        "unmuteMic": "Unmute microphone",
+        "stopVideo": "Stop video",
+        "startVideo": "Start video",
+        "codeLabel": "Meeting Code",
+        "codePlaceholder": "Enter meeting code",
+        "displayNameLabel": "Your Name",
+        "displayNamePlaceholder": "Enter your display name",
+        "passwordLabel": "Meeting Password",
+        "passwordPlaceholder": "Enter meeting password",
+        "passwordRequired": "This meeting requires a password.",
+        "submitPassword": "Submit Password",
+        "join": "Join Meeting",
+        "joining": "Joining...",
+        "waitingTitle": "Waiting for approval",
+        "waitingDescription": "Your request to join \"{meetingTitle}\" has been submitted. Please wait for the host to approve.",
+        "cancelWaiting": "Cancel",
+        "expired": "Your join request has expired. Please start a new join attempt.",
+        "startOver": "Start Over",
+        "retry": "Try Again",
+        "tryAgain": "Try Again",
+        "validation": {
+            "required": "This field is required"
+        },
+        "errors": {
+            "invalidPassword": "Incorrect password. Please try again.",
+            "guestNotAllowed": "Guests are not allowed to join this meeting.",
+            "meetingFull": "This meeting has reached its participant limit.",
+            "meetingNotLive": "This meeting is not currently active.",
+            "joinDenied": "Your request to join was denied.",
+            "notFound": "Meeting not found. Please check the code and try again.",
+            "networkError": "Connection error. Please check your network and try again.",
+            "approvalDataUnreadable": "Approval data could not be read.",
+            "connectionLost": "Connection lost after multiple retries. Please try again.",
+            "unexpectedResponse": "Unexpected response from server.",
+            "serverUnreachable": "Could not reach the server. Check your connection."
+        }
+    },
+    "meetingSettings": {
+        "title": "Meeting Settings",
+        "waitingRoom": "Waiting Room",
+        "waitingRoomDescription": "Review participants before they join",
+        "allowGuest": "Allow Guests",
+        "allowGuestDescription": "Let non-registered users join",
+        "screenShare": "Screen Sharing",
+        "screenShareDescription": "Allow participants to share their screen",
+        "chat": "Chat",
+        "chatDescription": "Enable in-meeting chat",
+        "microphone": "Microphone",
+        "microphoneDescription": "Allow participants to use their microphone",
+        "video": "Video",
+        "videoDescription": "Allow participants to use their camera",
+        "maxParticipants": "Max Participants",
+        "password": "Meeting Password",
+        "passwordPlaceholder": "Optional password",
+        "inviteesPlaceholder": "Type email and press Enter",
+        "removeInvitee": "Remove {email} from invitees"
+    },
+    "createMeeting": {
+        "instantTitle": "Start Instant Meeting",
+        "instantDescription": "Configure and launch a meeting right now.",
+        "titleLabel": "Meeting Title",
+        "titlePlaceholder": "Optional title",
+        "startMeeting": "Start Meeting",
+        "creating": "Starting...",
+        "cancel": "Cancel",
+        "retry": "Try Again",
+        "successTitle": "Meeting Started",
+        "successDescription": "Your instant meeting is ready to join.",
+        "meetingCode": "Meeting Code",
+        "copyLink": "Copy Link",
+        "linkCopied": "Copied",
+        "redirectingMessage": "Redirecting you to the meeting room...",
+        "instantMeetingAction": "Instant Meeting",
+        "instantMeetingActionDescription": "Start a meeting right now",
+        "scheduleMeetingAction": "Schedule for Later",
+        "scheduleMeetingActionDescription": "Plan a meeting in advance"
     }
 }

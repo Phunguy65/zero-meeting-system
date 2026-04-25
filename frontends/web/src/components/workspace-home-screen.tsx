@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { NewMeetingDropdown } from '@/components/create-meeting/new-meeting-dropdown.tsx';
 import { WorkspaceShell } from '@/components/workspace-shell.tsx';
 
 function NewMeetingIcon() {
@@ -103,12 +104,15 @@ export function WorkspaceHomeScreen() {
                         <p className='mt-4 text-xl leading-8 text-[#475467] sm:text-[1.1rem]'>
                             {t('cards.newMeeting.description')}
                         </p>
-                        <Link
-                            className='mt-auto self-end text-[#1a73e8] transition-transform hover:translate-x-1'
-                            href={`/${locale}/workspace/green-room`}
-                        >
-                            <ArrowIcon />
-                        </Link>
+                        <NewMeetingDropdown>
+                            <button
+                                aria-label={t('cards.newMeeting.title')}
+                                className='mt-auto self-end text-[#1a73e8] transition-transform hover:translate-x-1'
+                                type='button'
+                            >
+                                <ArrowIcon />
+                            </button>
+                        </NewMeetingDropdown>
                     </article>
 
                     <article className='flex min-h-[370px] flex-col rounded-[2rem] bg-[#f3f4f6] p-10 shadow-[0_26px_70px_-38px_rgba(15,23,42,0.18)]'>
@@ -139,7 +143,7 @@ export function WorkspaceHomeScreen() {
                                         ? 'bg-[#1a73e8] text-white shadow-[0_18px_34px_-22px_rgba(26,115,232,0.95)] hover:bg-[#1765cc]'
                                         : 'pointer-events-none bg-[#d6dbe4] text-[#8a94a6]'
                                 }`}
-                                href={`/${locale}/workspace/green-room`}
+                                href={`/${locale}/workspace/green-room?code=${meetingCode.trim()}`}
                             >
                                 {common('join')}
                             </Link>
@@ -209,23 +213,25 @@ export function WorkspaceHomeScreen() {
                     ))}
                 </div>
 
-                <button
-                    aria-label={t('createMeeting')}
-                    className='fixed bottom-8 right-8 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[#1a73e8] text-white shadow-[0_26px_60px_-22px_rgba(26,115,232,0.9)] transition-transform hover:-translate-y-1'
-                    type='button'
-                >
-                    <svg
-                        aria-hidden='true'
-                        className='h-9 w-9'
-                        fill='none'
-                        stroke='currentColor'
-                        strokeLinecap='round'
-                        strokeWidth='2.5'
-                        viewBox='0 0 24 24'
+                <NewMeetingDropdown>
+                    <button
+                        aria-label={t('createMeeting')}
+                        className='fixed bottom-8 right-8 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[#1a73e8] text-white shadow-[0_26px_60px_-22px_rgba(26,115,232,0.9)] transition-transform hover:-translate-y-1'
+                        type='button'
                     >
-                        <path d='M12 5v14M5 12h14' />
-                    </svg>
-                </button>
+                        <svg
+                            aria-hidden='true'
+                            className='h-9 w-9'
+                            fill='none'
+                            stroke='currentColor'
+                            strokeLinecap='round'
+                            strokeWidth='2.5'
+                            viewBox='0 0 24 24'
+                        >
+                            <path d='M12 5v14M5 12h14' />
+                        </svg>
+                    </button>
+                </NewMeetingDropdown>
             </section>
         </WorkspaceShell>
     );
