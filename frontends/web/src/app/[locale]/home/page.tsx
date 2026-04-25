@@ -1,5 +1,5 @@
-import { HomeScreen } from '@/components/home-screen.tsx';
+import { HomeContainer } from '@/components/home/index.tsx';
 
 export default function HomePage() {
-    return <HomeScreen />;
+    return <HomeContainer />;
 }

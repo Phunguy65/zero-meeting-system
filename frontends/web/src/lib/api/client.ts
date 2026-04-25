@@ -4,6 +4,7 @@ import { createJsendMiddleware } from './jsend-middleware.ts';
 import type { ErrorTranslator } from './types.ts';
 
 let authInterceptorId: number | null = null;
+let jsendInterceptorId: number | null = null;
 
 async function attachAuthorizationHeader(request: Request): Promise<Request> {
     const token = await getAccessToken();
@@ -19,10 +20,11 @@ async function attachAuthorizationHeader(request: Request): Promise<Request> {
  * Configures the shared @hey-api client with the JSend unwrap middleware and
  * an Authorization header interceptor that reads the access_token cookie.
  *
- * Call this once at application startup (e.g., in a layout or provider).
+ * Interceptors are registered and ejected symmetrically to guard against
+ * duplicate registration on repeated calls.
  *
- * @param baseUrl    — API gateway base URL (defaults to empty string for relative URLs)
- * @param translator — optional i18n hook for error message translation
+ * @param baseUrl    - API gateway base URL (defaults to empty string for relative URLs)
+ * @param translator - optional i18n hook for error message translation
  */
 export function configureApiClient(baseUrl = '', translator?: ErrorTranslator) {
     client.setConfig({ baseUrl });
@@ -34,7 +36,27 @@ export function configureApiClient(baseUrl = '', translator?: ErrorTranslator) {
         attachAuthorizationHeader,
     );
 
-    client.interceptors.response.use(createJsendMiddleware(translator));
+    if (jsendInterceptorId !== null) {
+        client.interceptors.response.eject(jsendInterceptorId);
+    }
+    jsendInterceptorId = client.interceptors.response.use(
+        createJsendMiddleware(translator),
+    );
+}
+
+/**
+ * Ejects all registered interceptors, restoring the client to its default state.
+ * Call this on provider unmount to prevent stale interceptors after remounts.
+ */
+export function ejectApiClient() {
+    if (authInterceptorId !== null) {
+        client.interceptors.request.eject(authInterceptorId);
+        authInterceptorId = null;
+    }
+    if (jsendInterceptorId !== null) {
+        client.interceptors.response.eject(jsendInterceptorId);
+        jsendInterceptorId = null;
+    }
 }
 
 export { client };
