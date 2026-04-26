@@ -3,30 +3,36 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { AppHeader } from '@/components/shared/app-header.tsx';
+import {
+    MEETING_ID_KEY,
+    MEETING_ROOM_KEY,
+    MEETING_TOKEN_KEY,
+} from '@/lib/meeting-room-handoff.ts';
 import { MEETING_PARTICIPANTS } from '@/lib/mock-data/meeting.ts';
 import {
     INITIAL_MEETING_MESSAGES,
     type MeetingMessage,
 } from '@/lib/mock-data/messages.ts';
+import { MeetingSettingsDialog } from './meeting-settings-dialog.tsx';
 import { ParticipantGrid } from './participant-grid.tsx';
 import { MeetingSidebar } from './sidebar.tsx';
 import { MeetingToolbar } from './toolbar.tsx';
 
-const MEETING_TOKEN_KEY = 'meeting_token';
-const MEETING_ROOM_KEY = 'meeting_room_name';
-
 type SessionCredentials = {
     token: string;
     roomName: string;
+    meetingId: string | null;
 } | null;
 
 function consumeSessionCredentials(): SessionCredentials {
     const token = sessionStorage.getItem(MEETING_TOKEN_KEY);
     const roomName = sessionStorage.getItem(MEETING_ROOM_KEY);
+    const meetingId = sessionStorage.getItem(MEETING_ID_KEY);
     sessionStorage.removeItem(MEETING_TOKEN_KEY);
     sessionStorage.removeItem(MEETING_ROOM_KEY);
+    sessionStorage.removeItem(MEETING_ID_KEY);
     if (token && roomName) {
-        return { token, roomName };
+        return { token, roomName, meetingId };
     }
     return null;
 }
@@ -44,6 +50,7 @@ export function MeetingContainer() {
     const [messages, setMessages] = useState<MeetingMessage[]>(
         INITIAL_MEETING_MESSAGES,
     );
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -78,6 +85,8 @@ export function MeetingContainer() {
         ]);
     }
 
+    const canOpenSettings = Boolean(credentials.meetingId);
+
     return (
         <main className='flex h-screen flex-col overflow-hidden bg-meeting-bg'>
             <AppHeader
@@ -103,9 +112,18 @@ export function MeetingContainer() {
                 locale={locale}
                 micOn={micOn}
                 onOpenChat={() => {}}
+                onOpenSettings={
+                    canOpenSettings ? () => setSettingsOpen(true) : undefined
+                }
                 onToggleMic={() => setMicOn((v) => !v)}
                 onToggleVideo={() => setVideoOn((v) => !v)}
                 videoOn={videoOn}
+            />
+
+            <MeetingSettingsDialog
+                meetingId={credentials.meetingId}
+                onClose={() => setSettingsOpen(false)}
+                open={settingsOpen}
             />
         </main>
     );

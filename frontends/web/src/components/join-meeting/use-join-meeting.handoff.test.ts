@@ -13,11 +13,13 @@ describe('approval handoff behavior', () => {
             type: 'REQUEST_APPROVED',
             token: 'tok-direct',
             roomName: 'town-hall-123',
+            meetingId: 'mid-1',
         });
         expect(next).toEqual({
             phase: 'APPROVED',
             token: 'tok-direct',
             roomName: 'town-hall-123',
+            meetingId: 'mid-1',
         });
     });
 
@@ -32,11 +34,13 @@ describe('approval handoff behavior', () => {
             type: 'SSE_APPROVED',
             token: 'tok-sse-99',
             roomName: 'design-review-room',
+            meetingId: 'mid-1',
         });
         expect(next).toEqual({
             phase: 'APPROVED',
             token: 'tok-sse-99',
             roomName: 'design-review-room',
+            meetingId: 'mid-1',
         });
     });
 
@@ -82,6 +86,7 @@ describe('approval handoff behavior', () => {
             phase: 'APPROVED',
             token: 'tok-any',
             roomName: 'any-room',
+            meetingId: 'mid-any',
         };
         const next = joinReducer(approved, { type: 'RETRY' });
         expect(next).toEqual({ phase: 'IDLE' });
@@ -104,6 +109,7 @@ describe('approval handoff behavior', () => {
             phase: 'APPROVED',
             token: 'tok-abc',
             roomName: 'room-xyz',
+            meetingId: 'mid-xyz',
         };
         const next = joinReducer(approved, {
             type: 'FAKE_ACTION' as never,
@@ -112,6 +118,7 @@ describe('approval handoff behavior', () => {
             phase: 'APPROVED',
             token: 'tok-abc',
             roomName: 'room-xyz',
+            meetingId: 'mid-xyz',
         });
     });
 });

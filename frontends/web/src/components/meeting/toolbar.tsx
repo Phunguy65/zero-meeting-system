@@ -6,6 +6,7 @@ import {
     MicOff,
     Monitor,
     Phone,
+    Settings,
     Video,
     VideoOff,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ type MeetingToolbarProps = {
     onToggleMic: () => void;
     onToggleVideo: () => void;
     onOpenChat: () => void;
+    onOpenSettings?: () => void;
 };
 
 export function MeetingToolbar({
@@ -28,6 +30,7 @@ export function MeetingToolbar({
     onToggleMic,
     onToggleVideo,
     onOpenChat,
+    onOpenSettings,
 }: MeetingToolbarProps) {
     const t = useTranslations('meetingRoom');
 
@@ -108,6 +111,21 @@ export function MeetingToolbar({
                         {t('controlChat')}
                     </span>
                 </button>
+
+                {onOpenSettings && (
+                    <button
+                        className='flex flex-col items-center gap-1.5 rounded-2xl px-4 py-2.5 text-text-secondary transition-colors hover:bg-surface-input'
+                        onClick={onOpenSettings}
+                        type='button'
+                    >
+                        <span className='flex h-11 w-11 items-center justify-center rounded-full bg-surface-input'>
+                            <Settings className='h-6 w-6' />
+                        </span>
+                        <span className='text-[0.76rem] font-medium uppercase tracking-[0.1em]'>
+                            {t('controlSettings')}
+                        </span>
+                    </button>
+                )}
 
                 <div className='mx-2 h-12 w-px bg-border' />
 

@@ -6,12 +6,14 @@ import { useEffect, useState } from 'react';
 import { AppHeader } from '@/components/shared/app-header.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { getMe } from '@/generated/sdk.gen.ts';
+import {
+    MEETING_ID_KEY,
+    MEETING_ROOM_KEY,
+    MEETING_TOKEN_KEY,
+} from '@/lib/meeting-room-handoff.ts';
 import { JoinMeetingForm } from './join-form.tsx';
 import { type JoinMode, useJoinMeeting } from './use-join-meeting.ts';
 import { WaitingDialog } from './waiting-dialog.tsx';
-
-const MEETING_TOKEN_KEY = 'meeting_token';
-const MEETING_ROOM_KEY = 'meeting_room_name';
 
 type JoinMeetingContainerProps = {
     mode: JoinMode;
@@ -58,6 +60,7 @@ export function JoinMeetingContainer({
         if (state.phase === 'APPROVED') {
             sessionStorage.setItem(MEETING_TOKEN_KEY, state.token);
             sessionStorage.setItem(MEETING_ROOM_KEY, state.roomName);
+            sessionStorage.setItem(MEETING_ID_KEY, state.meetingId);
             router.push(`/${locale}/workspace/meeting-room`);
         }
     }, [state, locale, router]);

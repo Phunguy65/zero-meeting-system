@@ -113,6 +113,8 @@ approval.
   `roomName`
 - **THEN** the system SHALL store or pass the approved credentials in a
   web-accessible handoff channel
+- **THEN** the handoff state SHALL also preserve the resolved backend meeting
+  identifier for the approved room
 - **THEN** the system SHALL navigate to `/workspace/meeting-room`
 
 ### Scenario: Pending join request enters waiting approval state
@@ -207,3 +209,34 @@ errors.
 - **THEN** the page title, meeting code label, display-name label, password
   label, join action, waiting-room text, and error messages SHALL come from the
   `joinMeeting` translation namespace in `vi.json`
+
+## Requirement: Web meeting-room handoff preserves the active meeting identifier
+
+The web app SHALL preserve the backend meeting identifier in the same tab-scoped
+handoff state as the meeting-room token and room name so downstream room
+features can target the active meeting resource.
+
+### Scenario: Instant meeting launch stores the created meeting identifier
+
+- **WHEN** the instant meeting flow reaches the ready-to-launch state after
+  creation and start
+- **THEN** the system SHALL save the created meeting identifier in
+  session-scoped room handoff storage alongside the token and room name before
+  navigating to the meeting room
+
+### Scenario: Approved join handoff stores the resolved meeting identifier
+
+- **WHEN** the join-meeting flow resolves a meeting and later receives approval
+  for that join attempt
+- **THEN** the system SHALL save the resolved meeting identifier in
+  session-scoped room handoff storage alongside the approved token and room name
+  before navigating to the meeting room
+
+### Scenario: Meeting room consumes the stored meeting identifier
+
+- **WHEN** the meeting-room page consumes handoff credentials for an approved or
+  instant-launched room
+- **THEN** it SHALL read the stored meeting identifier from the same
+  session-scoped storage
+- **THEN** the room state exposed to downstream components SHALL include that
+  meeting identifier when present

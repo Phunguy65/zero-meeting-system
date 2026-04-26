@@ -150,6 +150,10 @@
             "upcomingTitle": "Upcoming meetings",
             "viewCalendar": "View calendar",
             "createMeeting": "Create meeting",
+            "meetingsLoading": "Loading your meetings...",
+            "meetingsEmpty": "No upcoming meetings",
+            "meetingsError": "Failed to load meetings. Please refresh the page.",
+            "meetingSettings": "Settings",
             "upcomingMeetings": [
                 {
                     "day": "12",
@@ -261,6 +265,7 @@
         "controlVideoOff": "Start Video",
         "controlShare": "Share",
         "controlChat": "Chat",
+        "controlSettings": "Settings",
         "leave": "Leave",
         "help": "Help",
         "settings": "Settings",
@@ -336,6 +341,17 @@
         "passwordPlaceholder": "Optional password",
         "inviteesPlaceholder": "Type email and press Enter",
         "removeInvitee": "Remove {email} from invitees"
+    },
+    "meetingSettingsDialog": {
+        "title": "Meeting Settings",
+        "save": "Save Settings",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "loading": "Loading settings...",
+        "loadError": "Failed to load meeting settings. Please try again.",
+        "saveError": "Failed to save settings. Please try again.",
+        "retry": "Try Again",
+        "passwordHint": "This meeting has a password set. Leave the password field blank to remove it, or enter a new password to replace it."
     },
     "createMeeting": {
         "instantTitle": "Start Instant Meeting",

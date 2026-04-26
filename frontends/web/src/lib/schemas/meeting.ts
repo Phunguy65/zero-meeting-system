@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import type { MeetingManagementMeetingSettingsResponse } from '@/generated/types.gen.ts';
 
-export const ADMISSION_POLICY_WAITING_ROOM = 'WAITING_ROOM';
-export const ADMISSION_POLICY_OPEN = 'OPEN';
+export const ADMISSION_POLICY_WAITING_ROOM = 'MANUAL_APPROVAL';
+export const ADMISSION_POLICY_OPEN = 'ALLOW_ALL';
 
 export const meetingSettingsSchema = z.object({
     waitingRoom: z.boolean(),
@@ -69,5 +70,27 @@ export function mapSettingsToRequest(settings: MeetingSettingsValues) {
         allowMicrophone: settings.allowMicrophone,
         allowVideo: settings.allowVideo,
         ...(settings.password ? { password: settings.password } : {}),
+    };
+}
+
+export function mapResponseToSettings(
+    response: MeetingManagementMeetingSettingsResponse,
+): MeetingSettingsValues {
+    return {
+        waitingRoom: response.admissionPolicy === ADMISSION_POLICY_WAITING_ROOM,
+        allowGuest: response.allowGuest ?? MEETING_SETTINGS_DEFAULTS.allowGuest,
+        maxParticipants:
+            response.maxParticipants
+            ?? MEETING_SETTINGS_DEFAULTS.maxParticipants,
+        allowScreenShare:
+            response.allowScreenShare
+            ?? MEETING_SETTINGS_DEFAULTS.allowScreenShare,
+        chatEnabled:
+            response.chatEnabled ?? MEETING_SETTINGS_DEFAULTS.chatEnabled,
+        allowMicrophone:
+            response.allowMicrophone
+            ?? MEETING_SETTINGS_DEFAULTS.allowMicrophone,
+        allowVideo: response.allowVideo ?? MEETING_SETTINGS_DEFAULTS.allowVideo,
+        password: undefined,
     };
 }

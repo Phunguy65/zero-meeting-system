@@ -150,6 +150,10 @@
             "upcomingTitle": "Cuộc họp sắp tới",
             "viewCalendar": "Xem lịch",
             "createMeeting": "Tạo cuộc họp",
+            "meetingsLoading": "Đang tải cuộc họp của bạn...",
+            "meetingsEmpty": "Không có cuộc họp sắp tới",
+            "meetingsError": "Không thể tải cuộc họp. Vui lòng làm mới trang.",
+            "meetingSettings": "Cài đặt",
             "upcomingMeetings": [
                 {
                     "day": "12",
@@ -261,6 +265,7 @@
         "controlVideoOff": "Bật video",
         "controlShare": "Chia sẻ",
         "controlChat": "Trò chuyện",
+        "controlSettings": "Cài đặt",
         "leave": "Rời đi",
         "help": "Trợ giúp",
         "settings": "Cài đặt",
@@ -336,6 +341,17 @@
         "passwordPlaceholder": "Mật khẩu tùy chọn",
         "inviteesPlaceholder": "Nhập email và nhấn Enter",
         "removeInvitee": "Xóa {email} khỏi danh sách mời"
+    },
+    "meetingSettingsDialog": {
+        "title": "Cài đặt cuộc họp",
+        "save": "Lưu cài đặt",
+        "saving": "Đang lưu...",
+        "cancel": "Hủy",
+        "loading": "Đang tải cài đặt...",
+        "loadError": "Không thể tải cài đặt cuộc họp. Vui lòng thử lại.",
+        "saveError": "Không thể lưu cài đặt. Vui lòng thử lại.",
+        "retry": "Thử lại",
+        "passwordHint": "Cuộc họp này đang có mật khẩu. Để trống ô mật khẩu để xóa, hoặc nhập mật khẩu mới để thay thế."
     },
     "createMeeting": {
         "instantTitle": "Bắt đầu cuộc họp ngay",

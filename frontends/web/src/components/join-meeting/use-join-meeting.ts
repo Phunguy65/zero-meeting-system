@@ -30,7 +30,7 @@ export type JoinState =
           requestId: string;
           title: string;
       }
-    | { phase: 'APPROVED'; token: string; roomName: string }
+    | { phase: 'APPROVED'; token: string; roomName: string; meetingId: string }
     | { phase: 'DENIED'; reason: DenialReason }
     | { phase: 'EXPIRED' }
     | { phase: 'ERROR'; message: string; retryable: boolean };
@@ -41,11 +41,21 @@ type JoinAction =
     | { type: 'LOOKUP_READY'; meetingId: string; title: string }
     | { type: 'LOOKUP_FAILED'; message: string; retryable: boolean }
     | { type: 'REQUEST_STARTED' }
-    | { type: 'REQUEST_APPROVED'; token: string; roomName: string }
+    | {
+          type: 'REQUEST_APPROVED';
+          token: string;
+          roomName: string;
+          meetingId: string;
+      }
     | { type: 'REQUEST_PENDING'; requestId: string }
     | { type: 'REQUEST_DENIED'; reason: DenialReason }
     | { type: 'REQUEST_FAILED'; message: string; retryable: boolean }
-    | { type: 'SSE_APPROVED'; token: string; roomName: string }
+    | {
+          type: 'SSE_APPROVED';
+          token: string;
+          roomName: string;
+          meetingId: string;
+      }
     | { type: 'SSE_DENIED'; reason: DenialReason }
     | { type: 'SSE_EXPIRED' }
     | { type: 'SSE_FAILED'; message: string; retryable: boolean }
@@ -121,6 +131,7 @@ export function joinReducer(state: JoinState, action: JoinAction): JoinState {
                 phase: 'APPROVED',
                 token: action.token,
                 roomName: action.roomName,
+                meetingId: action.meetingId,
             };
 
         case 'REQUEST_PENDING': {
@@ -161,6 +172,7 @@ export function joinReducer(state: JoinState, action: JoinAction): JoinState {
                 phase: 'APPROVED',
                 token: action.token,
                 roomName: action.roomName,
+                meetingId: action.meetingId,
             };
 
         case 'SSE_DENIED':
@@ -227,6 +239,7 @@ export function useJoinMeeting({
     const sseRef = useRef<EventSource | null>(null);
     const sseRequestIdRef = useRef<string | null>(null);
     const sseRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const sseMeetingIdRef = useRef<string | null>(null);
 
     const closeSse = useCallback(() => {
         if (sseRetryTimerRef.current !== null) {
@@ -260,6 +273,7 @@ export function useJoinMeeting({
                             type: 'SSE_APPROVED',
                             token: data.token,
                             roomName: data.roomName,
+                            meetingId: sseMeetingIdRef.current ?? '',
                         });
                     } catch {
                         dispatch({
@@ -318,20 +332,24 @@ export function useJoinMeeting({
 
     const activeRequestId =
         state.phase === 'WAITING_APPROVAL' ? state.requestId : null;
+    const activeMeetingId =
+        state.phase === 'WAITING_APPROVAL' ? state.meetingId : null;
 
     useEffect(() => {
         if (activeRequestId) {
             sseRequestIdRef.current = activeRequestId;
+            sseMeetingIdRef.current = activeMeetingId;
             openSse(activeRequestId, 0);
         } else {
             sseRequestIdRef.current = null;
+            sseMeetingIdRef.current = null;
             closeSse();
         }
 
         return () => {
             closeSse();
         };
-    }, [activeRequestId, openSse, closeSse]);
+    }, [activeRequestId, activeMeetingId, openSse, closeSse]);
 
     const submitJoinRequest = useCallback(
         async (meetingId: string, displayName: string, password?: string) => {
@@ -356,6 +374,7 @@ export function useJoinMeeting({
                         type: 'REQUEST_APPROVED',
                         token: data.token,
                         roomName: data.roomName,
+                        meetingId,
                     });
                 } else if (status === 'PENDING' && data?.requestId) {
                     dispatch({

@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NewMeetingDropdown } from '@/components/create-meeting/new-meeting-dropdown.tsx';
+import { MeetingSettingsDialog } from '@/components/meeting/meeting-settings-dialog.tsx';
 import { WorkspaceShell } from '@/components/workspace-shell.tsx';
+import { listHostMeetings } from '@/generated/sdk.gen.ts';
+import type { MeetingManagementMeetingResponse } from '@/generated/types.gen.ts';
 
 function NewMeetingIcon() {
     return (
@@ -65,21 +68,65 @@ function ArrowIcon() {
     );
 }
 
-type MeetingItem = {
-    day: string;
-    month: string;
-    title: string;
-    time: string;
-    team: string;
-};
+function SettingsIcon() {
+    return (
+        <svg
+            aria-hidden='true'
+            className='h-4 w-4'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            viewBox='0 0 24 24'
+        >
+            <path d='M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z' />
+            <path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z' />
+        </svg>
+    );
+}
+
+type HostMeetingListState =
+    | { phase: 'LOADING' }
+    | { phase: 'SUCCESS'; meetings: MeetingManagementMeetingResponse[] }
+    | { phase: 'EMPTY' }
+    | { phase: 'ERROR' };
+
+function formatMeetingStartTime(startTime: string | undefined): string {
+    if (!startTime) return '';
+    const date = new Date(startTime);
+    return date.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+}
 
 export function WorkspaceHomeScreen() {
     const t = useTranslations('workspace.home');
     const common = useTranslations('workspace.common');
     const locale = useLocale();
     const [meetingCode, setMeetingCode] = useState('');
+    const [hostMeetings, setHostMeetings] = useState<HostMeetingListState>({
+        phase: 'LOADING',
+    });
+    const [settingsMeetingId, setSettingsMeetingId] = useState<string | null>(
+        null,
+    );
 
-    const meetings = t.raw('upcomingMeetings') as MeetingItem[];
+    useEffect(() => {
+        listHostMeetings()
+            .then(({ data }) => {
+                const meetings = data?.content ?? [];
+                if (meetings.length === 0) {
+                    setHostMeetings({ phase: 'EMPTY' });
+                } else {
+                    setHostMeetings({ phase: 'SUCCESS', meetings });
+                }
+            })
+            .catch(() => {
+                setHostMeetings({ phase: 'ERROR' });
+            });
+    }, []);
 
     return (
         <WorkspaceShell activeTab='home'>
@@ -184,33 +231,63 @@ export function WorkspaceHomeScreen() {
                 </div>
 
                 <div className='mt-8 space-y-4'>
-                    {meetings.map((meeting) => (
-                        <article
-                            className='flex flex-col gap-6 rounded-[1.8rem] bg-white px-7 py-7 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.2)] sm:flex-row sm:items-center sm:gap-8'
-                            key={`${meeting.title}-${meeting.time}`}
-                        >
-                            <div className='flex min-w-[120px] items-center gap-6'>
-                                <div className='text-center'>
-                                    <p className='text-lg font-semibold uppercase tracking-[0.16em] text-[#1a73e8]'>
-                                        {meeting.month}
-                                    </p>
-                                    <p className='mt-1 text-[2.4rem] font-semibold leading-none text-[#111827]'>
-                                        {meeting.day}
+                    {hostMeetings.phase === 'LOADING' && (
+                        <p className='text-lg text-[#475467]'>
+                            {t('meetingsLoading')}
+                        </p>
+                    )}
+
+                    {hostMeetings.phase === 'EMPTY' && (
+                        <p className='text-lg text-[#475467]'>
+                            {t('meetingsEmpty')}
+                        </p>
+                    )}
+
+                    {hostMeetings.phase === 'ERROR' && (
+                        <p className='text-lg text-[#d93025]'>
+                            {t('meetingsError')}
+                        </p>
+                    )}
+
+                    {hostMeetings.phase === 'SUCCESS'
+                        && hostMeetings.meetings.map((meeting) => (
+                            <article
+                                className='flex flex-col gap-6 rounded-[1.8rem] bg-white px-7 py-7 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.2)] sm:flex-row sm:items-center sm:gap-8'
+                                key={meeting.id}
+                            >
+                                <div className='min-w-0 flex-1'>
+                                    <h3 className='text-[2rem] font-semibold tracking-tight text-[#15191f]'>
+                                        {meeting.title ?? ''}
+                                    </h3>
+                                    <p className='mt-2 text-xl text-[#475467] sm:text-[1.08rem]'>
+                                        {formatMeetingStartTime(
+                                            meeting.startTime,
+                                        )}{' '}
+                                        {meeting.status && (
+                                            <span className='ml-2 rounded-full bg-[#e8f0fe] px-3 py-0.5 text-sm font-medium text-[#1a73e8]'>
+                                                {meeting.status}
+                                            </span>
+                                        )}
                                     </p>
                                 </div>
-                                <div className='h-16 w-px bg-[#e4e9f2]' />
-                            </div>
 
-                            <div className='min-w-0'>
-                                <h3 className='text-[2rem] font-semibold tracking-tight text-[#15191f]'>
-                                    {meeting.title}
-                                </h3>
-                                <p className='mt-2 text-xl text-[#475467] sm:text-[1.08rem]'>
-                                    {meeting.time} • {meeting.team}
-                                </p>
-                            </div>
-                        </article>
-                    ))}
+                                {meeting.id && (
+                                    <button
+                                        aria-label={t('meetingSettings')}
+                                        className='flex items-center gap-2 rounded-xl border border-[#e4e9f2] bg-white px-4 py-2 text-sm font-medium text-[#475467] transition-colors hover:bg-[#f3f4f6]'
+                                        onClick={() =>
+                                            setSettingsMeetingId(
+                                                meeting.id ?? null,
+                                            )
+                                        }
+                                        type='button'
+                                    >
+                                        <SettingsIcon />
+                                        {t('meetingSettings')}
+                                    </button>
+                                )}
+                            </article>
+                        ))}
                 </div>
 
                 <NewMeetingDropdown>
@@ -233,6 +310,12 @@ export function WorkspaceHomeScreen() {
                     </button>
                 </NewMeetingDropdown>
             </section>
+
+            <MeetingSettingsDialog
+                meetingId={settingsMeetingId}
+                onClose={() => setSettingsMeetingId(null)}
+                open={Boolean(settingsMeetingId)}
+            />
         </WorkspaceShell>
     );
 }

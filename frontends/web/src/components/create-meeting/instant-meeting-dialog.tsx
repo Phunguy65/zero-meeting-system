@@ -16,6 +16,11 @@ import {
 } from '@/components/ui/dialog.tsx';
 import { Form } from '@/components/ui/form.tsx';
 import {
+    MEETING_ID_KEY,
+    MEETING_ROOM_KEY,
+    MEETING_TOKEN_KEY,
+} from '@/lib/meeting-room-handoff.ts';
+import {
     type InstantMeetingValues,
     instantMeetingSchema,
     MEETING_SETTINGS_DEFAULTS,
@@ -23,9 +28,6 @@ import {
 import { MeetingSettingsForm } from './meeting-settings-form.tsx';
 import { SuccessDialog } from './success-dialog.tsx';
 import { useCreateMeeting } from './use-create-meeting.ts';
-
-const MEETING_TOKEN_KEY = 'meeting_token';
-const MEETING_ROOM_KEY = 'meeting_room_name';
 
 type InstantMeetingDialogProps = {
     open: boolean;
@@ -57,6 +59,7 @@ export function InstantMeetingDialog({
         if (state.phase === 'READY') {
             sessionStorage.setItem(MEETING_TOKEN_KEY, state.token);
             sessionStorage.setItem(MEETING_ROOM_KEY, state.roomName);
+            sessionStorage.setItem(MEETING_ID_KEY, state.meetingId);
         }
         router.push(`/${locale}/workspace/meeting-room`);
     }

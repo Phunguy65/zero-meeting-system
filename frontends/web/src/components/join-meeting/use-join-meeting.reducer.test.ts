@@ -104,11 +104,13 @@ describe('joinReducer', () => {
                 type: 'REQUEST_APPROVED',
                 token: 'tok-abc',
                 roomName: 'daily-standup',
+                meetingId: 'mid-1',
             });
             expect(next).toEqual({
                 phase: 'APPROVED',
                 token: 'tok-abc',
                 roomName: 'daily-standup',
+                meetingId: 'mid-1',
             });
         });
     });
@@ -189,11 +191,13 @@ describe('joinReducer', () => {
                 type: 'SSE_APPROVED',
                 token: 'tok-sse',
                 roomName: 'all-hands',
+                meetingId: 'mid-1',
             });
             expect(next).toEqual({
                 phase: 'APPROVED',
                 token: 'tok-sse',
                 roomName: 'all-hands',
+                meetingId: 'mid-1',
             });
         });
     });
