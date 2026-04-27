@@ -1,12 +1,10 @@
 # Context
 
 The affected code lives in `frontends/web`, a Next.js app using `next-intl` for
-localisation and app-router locale segments under `src/app/[locale]`. The user
-confirmed that the missing i18n namespaces have already been added to both
-`en.json` and `vi.json`, including `home`, `workspace.*`, `greenRoom`,
-`meetingRoom`, and `splash`, with Vietnamese diacritics corrected. The remaining
-work is therefore limited to wiring those translations into UI components and
-addressing a focused accessibility and UX audit in the web frontend.
+localisation and app-router locale segments under `src/app/[locale]`. The scope
+covers wiring translations into UI components, correcting a small set of
+message-file issues uncovered during verification, and addressing a focused
+accessibility and UX audit in the web frontend.
 
 Most of the changes are in presentational components under `src/components/`,
 with one routing change in `src/app/[locale]/page.tsx`. No API contracts, auth
@@ -32,8 +30,7 @@ flows, or backend-facing logic need to change for this spec.
 - No new authentication, API, middleware, or state-management work.
 - No visual redesign beyond the specified audit fixes.
 - No changes outside `frontends/web/src/components/`,
-  `frontends/web/src/app/[locale]/page.tsx`, and the already-existing web
-  message files.
+  `frontends/web/src/app/[locale]/page.tsx`, and the affected web message files.
 - No introduction of new dependencies or design system primitives.
 
 ## Decisions

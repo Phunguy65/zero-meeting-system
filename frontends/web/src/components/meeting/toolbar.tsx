@@ -1,142 +1,229 @@
 'use client';
 
+import { useLocalParticipant } from '@livekit/components-react';
 import {
-    MessageSquare,
     Mic,
     MicOff,
-    Monitor,
+    MoreHorizontal,
     Phone,
     Settings,
+    Square,
+    Users,
     Video,
     VideoOff,
 } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button.tsx';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu.tsx';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip.tsx';
+import type { MeetingLayoutMode } from '@/hooks/use-meeting-layout.ts';
+import { LayoutPicker } from './layout-picker.tsx';
 
 type MeetingToolbarProps = {
-    locale: string;
-    micOn: boolean;
-    videoOn: boolean;
+    isHost: boolean;
+    isRecording: boolean;
+    hasWaitingRoom: boolean;
+    pendingWaitingCount: number;
+    currentLayout: MeetingLayoutMode;
+    canOpenSettings: boolean;
     onToggleMic: () => void;
     onToggleVideo: () => void;
-    onOpenChat: () => void;
     onOpenSettings?: () => void;
+    onOpenChat: () => void;
+    onOpenWaitingRoom: () => void;
+    onToggleRecording: () => void;
+    onLayoutChange: (mode: MeetingLayoutMode) => void;
+    onRequestLeave: () => void;
 };
 
+type ToolbarButtonProps = {
+    label: string;
+    onClick?: () => void;
+    active?: boolean;
+    destructive?: boolean;
+    children: React.ReactNode;
+};
+
+function ToolbarIconButton({
+    label,
+    onClick,
+    active = false,
+    children,
+}: ToolbarButtonProps) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <button
+                    aria-label={label}
+                    className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
+                        active
+                            ? 'bg-error-subtle text-error hover:bg-error-subtle/80'
+                            : 'bg-surface-input text-text-secondary hover:bg-surface-input/80 hover:text-primary'
+                    }`}
+                    onClick={onClick}
+                    type='button'
+                >
+                    {children}
+                </button>
+            </TooltipTrigger>
+            <TooltipContent side='top'>
+                <p>{label}</p>
+            </TooltipContent>
+        </Tooltip>
+    );
+}
+
+/**
+ * Floating pill toolbar centered at the bottom of the meeting room.
+ * Exposes mic, video, layout, more-actions, and leave controls.
+ * Host-only actions (waiting room, recording) are conditionally rendered.
+ */
 export function MeetingToolbar({
-    locale,
-    micOn,
-    videoOn,
+    isHost,
+    isRecording,
+    hasWaitingRoom,
+    pendingWaitingCount,
+    currentLayout,
+    canOpenSettings,
     onToggleMic,
     onToggleVideo,
-    onOpenChat,
     onOpenSettings,
+    onOpenChat,
+    onOpenWaitingRoom,
+    onToggleRecording,
+    onLayoutChange,
+    onRequestLeave,
 }: MeetingToolbarProps) {
     const t = useTranslations('meetingRoom');
+    const { isMicrophoneEnabled, isCameraEnabled } = useLocalParticipant();
+
+    const showHostSeparator = isHost;
 
     return (
-        <footer className='shrink-0 border-t border-border bg-surface px-6 py-5'>
-            <div className='flex items-center justify-center gap-3 sm:gap-5'>
-                <button
-                    className={`flex flex-col items-center gap-1.5 rounded-2xl px-4 py-2.5 transition-colors ${
-                        micOn
-                            ? 'text-text-secondary hover:bg-surface-input'
-                            : 'text-error hover:bg-error-subtle'
-                    }`}
-                    onClick={onToggleMic}
-                    type='button'
-                >
-                    <span
-                        className={`flex h-11 w-11 items-center justify-center rounded-full ${
-                            micOn ? 'bg-surface-input' : 'bg-error-subtle'
-                        }`}
+        <TooltipProvider>
+            <footer className='pointer-events-none absolute inset-x-0 bottom-6 z-20 flex justify-center'>
+                <div className='pointer-events-auto flex items-center gap-2 rounded-full border border-border/60 bg-surface px-4 py-3 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.25)] backdrop-blur-sm'>
+                    <ToolbarIconButton
+                        active={!isMicrophoneEnabled}
+                        label={
+                            isMicrophoneEnabled
+                                ? t('controlMic')
+                                : t('controlMicOff')
+                        }
+                        onClick={onToggleMic}
                     >
-                        {micOn ? (
-                            <Mic className='h-6 w-6' />
+                        {isMicrophoneEnabled ? (
+                            <Mic className='h-5 w-5' />
                         ) : (
-                            <MicOff className='h-6 w-6' />
+                            <MicOff className='h-5 w-5' />
                         )}
-                    </span>
-                    <span className='text-[0.76rem] font-medium uppercase tracking-[0.1em]'>
-                        {micOn ? t('controlMic') : t('controlMicOff')}
-                    </span>
-                </button>
+                    </ToolbarIconButton>
 
-                <button
-                    className={`flex flex-col items-center gap-1.5 rounded-2xl px-4 py-2.5 transition-colors ${
-                        videoOn
-                            ? 'text-text-secondary hover:bg-surface-input'
-                            : 'text-error hover:bg-error-subtle'
-                    }`}
-                    onClick={onToggleVideo}
-                    type='button'
-                >
-                    <span
-                        className={`flex h-11 w-11 items-center justify-center rounded-full ${
-                            videoOn ? 'bg-surface-input' : 'bg-error-subtle'
-                        }`}
+                    <ToolbarIconButton
+                        active={!isCameraEnabled}
+                        label={
+                            isCameraEnabled
+                                ? t('controlVideo')
+                                : t('controlVideoOff')
+                        }
+                        onClick={onToggleVideo}
                     >
-                        {videoOn ? (
-                            <Video className='h-6 w-6' />
+                        {isCameraEnabled ? (
+                            <Video className='h-5 w-5' />
                         ) : (
-                            <VideoOff className='h-6 w-6' />
+                            <VideoOff className='h-5 w-5' />
                         )}
-                    </span>
-                    <span className='text-[0.76rem] font-medium uppercase tracking-[0.1em]'>
-                        {videoOn ? t('controlVideo') : t('controlVideoOff')}
-                    </span>
-                </button>
+                    </ToolbarIconButton>
 
-                <button
-                    className='flex flex-col items-center gap-1.5 rounded-2xl px-4 py-2.5 text-text-secondary transition-colors hover:bg-surface-input'
-                    type='button'
-                >
-                    <span className='flex h-11 w-11 items-center justify-center rounded-full bg-surface-input'>
-                        <Monitor className='h-6 w-6' />
-                    </span>
-                    <span className='text-[0.76rem] font-medium uppercase tracking-[0.1em]'>
-                        {t('controlShare')}
-                    </span>
-                </button>
+                    <LayoutPicker
+                        currentMode={currentLayout}
+                        onSelect={onLayoutChange}
+                    />
 
-                <button
-                    className='flex flex-col items-center gap-1.5 rounded-2xl px-4 py-2.5 text-primary transition-colors hover:bg-primary-subtle'
-                    onClick={onOpenChat}
-                    type='button'
-                >
-                    <span className='flex h-11 w-11 items-center justify-center rounded-full bg-primary-muted'>
-                        <MessageSquare className='h-6 w-6' />
-                    </span>
-                    <span className='text-[0.76rem] font-medium uppercase tracking-[0.1em]'>
-                        {t('controlChat')}
-                    </span>
-                </button>
+                    <DropdownMenu>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        aria-label={t('controlMore')}
+                                        className='flex h-11 w-11 items-center justify-center rounded-full bg-surface-input text-text-secondary transition-colors hover:bg-surface-input/80 hover:text-primary'
+                                        type='button'
+                                    >
+                                        <MoreHorizontal className='h-5 w-5' />
+                                    </button>
+                                </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent side='top'>
+                                <p>{t('controlMore')}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <DropdownMenuContent align='center' side='top'>
+                            <DropdownMenuItem onClick={onOpenChat}>
+                                {t('controlChat')}
+                            </DropdownMenuItem>
+                            {canOpenSettings && onOpenSettings && (
+                                <DropdownMenuItem onClick={onOpenSettings}>
+                                    <Settings className='mr-2 h-4 w-4' />
+                                    {t('controlSettings')}
+                                </DropdownMenuItem>
+                            )}
+                            {showHostSeparator && <DropdownMenuSeparator />}
+                            {isHost && hasWaitingRoom && (
+                                <DropdownMenuItem onClick={onOpenWaitingRoom}>
+                                    <Users className='mr-2 h-4 w-4' />
+                                    {pendingWaitingCount > 0
+                                        ? t('waitingRoomWithCount', {
+                                              count: pendingWaitingCount,
+                                          })
+                                        : t('waitingRoomManage')}
+                                </DropdownMenuItem>
+                            )}
+                            {isHost && (
+                                <DropdownMenuItem onClick={onToggleRecording}>
+                                    <Square
+                                        className={`mr-2 h-4 w-4 ${isRecording ? 'fill-error text-error' : ''}`}
+                                    />
+                                    {isRecording
+                                        ? t('controlStopRecording')
+                                        : t('controlStartRecording')}
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
-                {onOpenSettings && (
-                    <button
-                        className='flex flex-col items-center gap-1.5 rounded-2xl px-4 py-2.5 text-text-secondary transition-colors hover:bg-surface-input'
-                        onClick={onOpenSettings}
-                        type='button'
-                    >
-                        <span className='flex h-11 w-11 items-center justify-center rounded-full bg-surface-input'>
-                            <Settings className='h-6 w-6' />
-                        </span>
-                        <span className='text-[0.76rem] font-medium uppercase tracking-[0.1em]'>
-                            {t('controlSettings')}
-                        </span>
-                    </button>
-                )}
+                    <div className='mx-1 h-8 w-px bg-border' />
 
-                <div className='mx-2 h-12 w-px bg-border' />
-
-                <Link
-                    className='flex h-14 items-center gap-3 rounded-full bg-error px-7 text-[1.08rem] font-semibold text-white shadow-[0_18px_40px_-20px_rgba(220,38,38,0.85)] transition-all hover:-translate-y-0.5 hover:bg-error-dark hover:shadow-[0_24px_46px_-20px_rgba(220,38,38,0.9)]'
-                    href={`/${locale}/workspace`}
-                >
-                    <Phone className='h-5 w-5 rotate-[135deg]' />
-                    {t('leave')}
-                </Link>
-            </div>
-        </footer>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                className='h-11 rounded-full bg-error px-5 text-white shadow-[0_8px_24px_-8px_rgba(220,38,38,0.7)] hover:bg-error/90'
+                                onClick={onRequestLeave}
+                                type='button'
+                                variant='destructive'
+                            >
+                                <Phone className='h-4 w-4 rotate-[135deg]' />
+                                <span className='ml-1.5 text-sm font-medium'>
+                                    {t('leave')}
+                                </span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side='top'>
+                            <p>{t('leaveDialogTitle')}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
+            </footer>
+        </TooltipProvider>
     );
 }

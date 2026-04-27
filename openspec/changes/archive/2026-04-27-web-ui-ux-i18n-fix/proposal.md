@@ -1,9 +1,11 @@
 # Why
 
-The web app already has the required i18n namespaces added to `en.json` and
+The web app already has most required i18n namespaces added to `en.json` and
 `vi.json`, but several frontend screens still ship with hardcoded brand text,
 incomplete accessibility semantics, and UI controls that do not match their
-intended behavior. These inconsistencies weaken localisation coverage, create
+intended behavior. This change also finalizes a small set of missing or
+corrected message keys needed by the audited UI, including shared brand and
+copyright strings. These inconsistencies weaken localisation coverage, create
 keyboard and screen-reader friction, and leave parts of the app feeling
 unfinished despite the translation groundwork already being in place.
 
@@ -59,8 +61,8 @@ unfinished despite the translation groundwork already being in place.
   `frontends/web/src/components/workspace-shell.tsx`,
   `frontends/web/src/app/[locale]/page.tsx`.
 - **Message files**: `frontends/web/src/messages/en.json` and
-  `frontends/web/src/messages/vi.json` already contain the required missing
-  namespaces; this change adds the remaining UI/a11y-specific keys and updates
-  any strings that need ICU or parameterised formatting.
+  `frontends/web/src/messages/vi.json` are updated as part of this change to add
+  the remaining UI/a11y-specific keys, restore any audited keys required by the
+  affected screens, and parameterize strings such as copyright where needed.
 - **No backend changes required**.
 - **No new runtime dependencies required**.
