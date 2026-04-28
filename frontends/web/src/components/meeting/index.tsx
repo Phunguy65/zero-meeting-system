@@ -287,6 +287,8 @@ function MeetingRoomContent({
             />
 
             <LeaveDialog
+                isHost={isHost}
+                meetingId={meetingId}
                 onOpenChange={setLeaveDialogOpen}
                 open={leaveDialogOpen}
             />

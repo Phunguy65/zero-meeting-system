@@ -159,7 +159,7 @@ describe('MeetingSidebar People tab moderation', () => {
     });
 
     describe('mute action callbacks', () => {
-        it('calls onMuteMic with the participant identity when the mic button is clicked', () => {
+        it('calls onMuteMic with the participant identity when the mic button is clicked', async () => {
             const onMuteMic = vi.fn().mockResolvedValue(undefined);
             renderSidebar({
                 isHost: true,
@@ -173,13 +173,13 @@ describe('MeetingSidebar People tab moderation', () => {
                 onMuteMic,
             });
             openPeopleTab();
-            act(() => {
+            await act(async () => {
                 fireEvent.click(screen.getByTitle('Mute microphone'));
             });
             expect(onMuteMic).toHaveBeenCalledWith('alice-123');
         });
 
-        it('calls onMuteCamera with the participant identity when the camera button is clicked', () => {
+        it('calls onMuteCamera with the participant identity when the camera button is clicked', async () => {
             const onMuteCamera = vi.fn().mockResolvedValue(undefined);
             renderSidebar({
                 isHost: true,
@@ -193,7 +193,7 @@ describe('MeetingSidebar People tab moderation', () => {
                 onMuteCamera,
             });
             openPeopleTab();
-            act(() => {
+            await act(async () => {
                 fireEvent.click(screen.getByTitle('Mute camera'));
             });
             expect(onMuteCamera).toHaveBeenCalledWith('bob-456');
@@ -207,14 +207,12 @@ describe('MeetingSidebar People tab moderation', () => {
                 onMuteMic,
             });
             openPeopleTab();
-            act(() => {
+            await act(async () => {
                 fireEvent.click(screen.getByTitle('Mute microphone'));
             });
-            await vi.waitFor(() => {
-                expect(screen.getByRole('alert')).toHaveTextContent(
-                    'Failed to mute participant. Please try again.',
-                );
-            });
+            expect(screen.getByRole('alert')).toHaveTextContent(
+                'Failed to mute participant. Please try again.',
+            );
         });
 
         it('surfaces an error message when onMuteAll throws', async () => {
@@ -225,18 +223,16 @@ describe('MeetingSidebar People tab moderation', () => {
                 onMuteAll,
             });
             openPeopleTab();
-            act(() => {
+            await act(async () => {
                 fireEvent.click(
                     screen.getByRole('button', {
                         name: 'Mute All Microphones',
                     }),
                 );
             });
-            await vi.waitFor(() => {
-                expect(screen.getByRole('alert')).toHaveTextContent(
-                    'Failed to mute all participants. Please try again.',
-                );
-            });
+            expect(screen.getByRole('alert')).toHaveTextContent(
+                'Failed to mute all participants. Please try again.',
+            );
         });
     });
 });
