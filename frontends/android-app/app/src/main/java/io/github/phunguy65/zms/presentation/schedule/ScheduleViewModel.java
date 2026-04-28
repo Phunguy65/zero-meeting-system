@@ -11,6 +11,9 @@ import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingSettingsInput;
 import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
+import io.github.phunguy65.zms.domain.model.MeetingStatus;
+import io.github.phunguy65.zms.domain.model.SessionInfo;
+import io.github.phunguy65.zms.domain.usecase.meeting.CancelMeetingUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.GetMeetingDetailUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.ScheduleMeetingUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.UpdateMeetingSettingsUseCase;
@@ -43,6 +46,7 @@ public class ScheduleViewModel extends ViewModel {
     private final ScheduleMeetingUseCase scheduleMeetingUseCase;
     private final GetMeetingDetailUseCase getMeetingDetailUseCase;
     private final UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase;
+    private final CancelMeetingUseCase cancelMeetingUseCase;
     private final SessionRepository sessionRepository;
     private final Executor mainExecutor;
 
@@ -98,6 +102,15 @@ public class ScheduleViewModel extends ViewModel {
     private final SingleLiveEvent<MeetingSettings> _updateSuccess = new SingleLiveEvent<>();
     public LiveData<MeetingSettings> updateSuccess = _updateSuccess;
 
+    private final MutableLiveData<Boolean> _isCancelling = new MutableLiveData<>(false);
+    public LiveData<Boolean> isCancelling = _isCancelling;
+
+    private final SingleLiveEvent<Void> _cancelSuccess = new SingleLiveEvent<>();
+    public LiveData<Void> cancelSuccess = _cancelSuccess;
+
+    private final SingleLiveEvent<String> _cancelError = new SingleLiveEvent<>();
+    public LiveData<String> cancelError = _cancelError;
+
     @Nullable private String editMeetingId = null;
 
     @Inject
@@ -105,11 +118,13 @@ public class ScheduleViewModel extends ViewModel {
             ScheduleMeetingUseCase scheduleMeetingUseCase,
             GetMeetingDetailUseCase getMeetingDetailUseCase,
             UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase,
+            CancelMeetingUseCase cancelMeetingUseCase,
             SessionRepository sessionRepository,
             @MainExecutor Executor mainExecutor) {
         this.scheduleMeetingUseCase = scheduleMeetingUseCase;
         this.getMeetingDetailUseCase = getMeetingDetailUseCase;
         this.updateMeetingSettingsUseCase = updateMeetingSettingsUseCase;
+        this.cancelMeetingUseCase = cancelMeetingUseCase;
         this.sessionRepository = sessionRepository;
         this.mainExecutor = mainExecutor;
     }
@@ -263,6 +278,53 @@ public class ScheduleViewModel extends ViewModel {
                                 _scheduleError.setValue(errorMessage);
                             } else {
                                 _updateSuccess.setValue(result);
+                            }
+                        },
+                        mainExecutor);
+    }
+
+    /**
+     * Returns the current session user ID, or null if no session exists.
+     */
+    @Nullable
+    public String getCurrentUserId() {
+        SessionInfo session = sessionRepository.getSession();
+        return session != null ? session.userId() : null;
+    }
+
+    /**
+     * Cancels the currently loaded scheduled meeting.
+     *
+     * <p>Only executes when in edit mode, with a valid meeting ID, and when the meeting's
+     * current status is {@link MeetingStatus#SCHEDULED}. Both conditions are enforced here
+     * and in the backend.
+     */
+    public void cancelMeeting() {
+        Boolean isEditMode = _isEditMode.getValue();
+        if (editMeetingId == null || !Boolean.TRUE.equals(isEditMode)) {
+            return;
+        }
+
+        MeetingDetail detail = _meetingDetail.getValue();
+        if (detail == null || detail.status() != MeetingStatus.SCHEDULED) {
+            return;
+        }
+
+        _isCancelling.setValue(true);
+
+        cancelMeetingUseCase
+                .execute(editMeetingId)
+                .whenCompleteAsync(
+                        (unused, error) -> {
+                            _isCancelling.setValue(false);
+
+                            if (error != null) {
+                                String errorMessage = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _cancelError.setValue(errorMessage);
+                            } else {
+                                _cancelSuccess.call();
                             }
                         },
                         mainExecutor);

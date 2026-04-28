@@ -93,4 +93,15 @@ public interface MeetingRepository {
      *         or completes exceptionally if not found or network error
      */
     CompletableFuture<MeetingDetail> getMeetingByShortCode(String shortCode);
+
+    /**
+     * Ends a live meeting for all participants.
+     *
+     * <p>Host-only action. Only LIVE meetings can be ended.
+     *
+     * @param meetingId the meeting UUID
+     * @return a CompletableFuture that completes when the meeting is ended,
+     *         or completes exceptionally with a localized error message
+     */
+    CompletableFuture<Void> endMeeting(String meetingId);
 }

@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
@@ -27,6 +28,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.domain.model.MeetingDetail;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
+import io.github.phunguy65.zms.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel.ValidationResult;
@@ -75,6 +77,7 @@ public class ScheduleFragment extends Fragment {
 
     // Submit
     private MaterialButton btnScheduleMeeting;
+    private MaterialButton btnCancelMeeting;
     private CircularProgressIndicator progressLoading;
 
     private boolean advancedExpanded = false;
@@ -138,6 +141,7 @@ public class ScheduleFragment extends Fragment {
 
         // Submit
         btnScheduleMeeting = view.findViewById(R.id.btnScheduleMeeting);
+        btnCancelMeeting = view.findViewById(R.id.btnCancelMeeting);
         progressLoading = view.findViewById(R.id.progressLoading);
     }
 
@@ -217,6 +221,8 @@ public class ScheduleFragment extends Fragment {
                 viewModel.scheduleMeeting(topic, date, time, duration, isWaitingRoom, password);
             }
         });
+
+        btnCancelMeeting.setOnClickListener(v -> showCancelConfirmation());
     }
 
     private void setupBlurValidation() {
@@ -439,7 +445,10 @@ public class ScheduleFragment extends Fragment {
             }
         });
 
-        viewModel.meetingDetail.observe(getViewLifecycleOwner(), this::populateEditModeFields);
+        viewModel.meetingDetail.observe(getViewLifecycleOwner(), detail -> {
+            populateEditModeFields(detail);
+            updateCancelButtonVisibility(detail);
+        });
 
         viewModel.loadDetailError.observe(getViewLifecycleOwner(), errorMessage -> {
             if (errorMessage != null) {
@@ -456,6 +465,28 @@ public class ScheduleFragment extends Fragment {
                                 Snackbar.LENGTH_SHORT)
                         .show();
                 Navigation.findNavController(requireView()).popBackStack();
+            }
+        });
+
+        viewModel.isCancelling.observe(getViewLifecycleOwner(), isCancelling -> {
+            if (isCancelling != null) {
+                btnCancelMeeting.setEnabled(!isCancelling);
+                btnScheduleMeeting.setEnabled(!isCancelling);
+                progressLoading.setVisibility(isCancelling ? View.VISIBLE : View.GONE);
+            }
+        });
+
+        viewModel.cancelSuccess.observe(getViewLifecycleOwner(), unused -> {
+            Snackbar.make(requireView(), R.string.schedule_cancel_success, Snackbar.LENGTH_SHORT)
+                    .show();
+            Navigation.findNavController(requireView()).popBackStack();
+        });
+
+        viewModel.cancelError.observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null) {
+                Snackbar.make(requireView(), errorMessage, Snackbar.LENGTH_LONG).show();
+                btnCancelMeeting.setEnabled(true);
+                btnScheduleMeeting.setEnabled(true);
             }
         });
     }
@@ -589,5 +620,38 @@ public class ScheduleFragment extends Fragment {
             double hours = minutes / 60.0;
             return String.format(Locale.ROOT, "%.1f hours", hours);
         }
+    }
+
+    /**
+     * Shows or hides the cancel meeting button based on edit mode, host identity,
+     * and meeting status. Only visible for the host on a SCHEDULED meeting in edit mode.
+     */
+    private void updateCancelButtonVisibility(@Nullable MeetingDetail detail) {
+        if (detail == null) {
+            btnCancelMeeting.setVisibility(View.GONE);
+            return;
+        }
+
+        Boolean isEditMode = viewModel.isEditMode.getValue();
+        String currentUserId = viewModel.getCurrentUserId();
+        boolean isHost = currentUserId != null && currentUserId.equals(detail.hostId());
+        boolean isScheduled = detail.status() == MeetingStatus.SCHEDULED;
+
+        boolean shouldShow = Boolean.TRUE.equals(isEditMode) && isHost && isScheduled;
+        btnCancelMeeting.setVisibility(shouldShow ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Shows a destructive confirmation dialog before cancelling the meeting.
+     */
+    private void showCancelConfirmation() {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.schedule_cancel_title)
+                .setMessage(R.string.schedule_cancel_message)
+                .setPositiveButton(R.string.schedule_cancel_confirm, (dialog, which) -> {
+                    viewModel.cancelMeeting();
+                })
+                .setNegativeButton(R.string.schedule_cancel_dismiss, null)
+                .show();
     }
 }

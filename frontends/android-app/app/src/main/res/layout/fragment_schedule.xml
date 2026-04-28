@@ -532,6 +532,18 @@
                     app:trackThickness="3dp" app:indicatorColor="?attr/colorOnPrimary" />
             </FrameLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelMeeting"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height_lg"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:text="@string/schedule_cancel_meeting"
+                android:textAllCaps="false" android:textSize="16sp"
+                android:textStyle="bold" android:visibility="gone"
+                app:cornerRadius="@dimen/corner_radius_xl"
+                app:strokeColor="?attr/colorError" app:iconTint="?attr/colorError" />
+
         </LinearLayout>
     </ScrollView>
 

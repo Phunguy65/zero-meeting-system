@@ -23,6 +23,7 @@ import io.github.phunguy65.zms.domain.repository.ParticipantRepository;
 import io.github.phunguy65.zms.domain.repository.RecordingRepository;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
 import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
+import io.github.phunguy65.zms.domain.usecase.meeting.EndMeetingUseCase;
 import io.livekit.android.room.track.LocalVideoTrack;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class CallViewModel extends ViewModel {
     private final WaitingRoomRepository waitingRoomRepository;
     private final ParticipantRepository participantRepository;
     private final RecordingRepository recordingRepository;
+    private final EndMeetingUseCase endMeetingUseCase;
     private final String liveKitUrl;
     private final ChatDataMessageHandler chatDataMessageHandler;
     private final Executor mainExecutor;
@@ -89,8 +91,31 @@ public class CallViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _isRecordingLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> _recordingError = new MutableLiveData<>(null);
 
+    private final MutableLiveData<Boolean> _isEndingMeeting = new MutableLiveData<>(false);
+    private final MutableLiveData<String> _endMeetingError = new MutableLiveData<>(null);
+    private final MutableLiveData<Boolean> _meetingEndedForAll = new MutableLiveData<>(false);
+
     private static final long RECONNECT_INITIAL_DELAY_MS = 1000;
     private static final long RECONNECT_MAX_DELAY_MS = 30000;
+
+    /**
+     * Error code emitted when ending a meeting fails due to a missing meeting ID.
+     * Fragment maps this to {@code R.string.call_end_meeting_error}.
+     */
+    public static final String ERROR_END_MEETING_NO_ID = "END_MEETING_NO_ID";
+
+    /**
+     * Error code emitted when ending a meeting is attempted by a non-host user.
+     * Fragment maps this to {@code R.string.call_end_meeting_error}.
+     */
+    public static final String ERROR_END_MEETING_NOT_HOST = "END_MEETING_NOT_HOST";
+
+    /**
+     * Error code emitted when the backend rejects or fails the end-meeting request.
+     * Fragment maps this to {@code R.string.call_end_meeting_error}.
+     */
+    public static final String ERROR_END_MEETING_FAILED = "END_MEETING_FAILED";
+
     private long currentReconnectDelay = RECONNECT_INITIAL_DELAY_MS;
     private Handler reconnectHandler;
     private Runnable reconnectRunnable;
@@ -137,6 +162,7 @@ public class CallViewModel extends ViewModel {
             WaitingRoomRepository waitingRoomRepository,
             ParticipantRepository participantRepository,
             RecordingRepository recordingRepository,
+            EndMeetingUseCase endMeetingUseCase,
             @LiveKitUrl String liveKitUrl,
             @MainExecutor Executor mainExecutor) {
         this.liveKitRepository = liveKitRepository;
@@ -147,6 +173,7 @@ public class CallViewModel extends ViewModel {
         this.waitingRoomRepository = waitingRoomRepository;
         this.participantRepository = participantRepository;
         this.recordingRepository = recordingRepository;
+        this.endMeetingUseCase = endMeetingUseCase;
         this.liveKitUrl = liveKitUrl;
         this.mainExecutor = mainExecutor;
 
@@ -289,6 +316,36 @@ public class CallViewModel extends ViewModel {
      */
     public void clearRecordingError() {
         _recordingError.setValue(null);
+    }
+
+    /**
+     * LiveData indicating whether an end-meeting-for-all request is in flight.
+     */
+    public LiveData<Boolean> isEndingMeeting() {
+        return _isEndingMeeting;
+    }
+
+    /**
+     * One-shot LiveData carrying an error message from a failed end-meeting action.
+     * Consumers should clear after displaying.
+     */
+    public LiveData<String> getEndMeetingError() {
+        return _endMeetingError;
+    }
+
+    /**
+     * Clears the end-meeting error so it is only consumed once.
+     */
+    public void clearEndMeetingError() {
+        _endMeetingError.setValue(null);
+    }
+
+    /**
+     * One-shot LiveData signalling that the meeting was successfully ended for all participants.
+     * Observers should finish the activity on receipt.
+     */
+    public LiveData<Boolean> getMeetingEndedForAll() {
+        return _meetingEndedForAll;
     }
 
     public LiveData<Boolean> requiresPassword() {
@@ -1154,6 +1211,47 @@ public class CallViewModel extends ViewModel {
         } else {
             startRecording();
         }
+    }
+
+    /**
+     * Ends the meeting for all participants (host-only action).
+     *
+     * <p>Validates that the current user is the host and that a meeting ID is available before
+     * invoking the backend end-meeting endpoint. On success, tears down the local room connection.
+     * On failure, posts a recoverable error code and keeps the user inside the call.
+     */
+    public void endMeetingForAll() {
+        String meetingId = _meetingId.getValue();
+        Boolean isHost = _isHost.getValue();
+
+        if (meetingId == null || meetingId.isEmpty()) {
+            _endMeetingError.setValue(ERROR_END_MEETING_NO_ID);
+            return;
+        }
+
+        if (isHost == null || !isHost) {
+            _endMeetingError.setValue(ERROR_END_MEETING_NOT_HOST);
+            return;
+        }
+
+        _isEndingMeeting.setValue(true);
+        _endMeetingError.setValue(null);
+
+        endMeetingUseCase
+                .execute(meetingId)
+                .whenCompleteAsync(
+                        (unused, error) -> {
+                            _isEndingMeeting.postValue(false);
+
+                            if (error != null) {
+                                _endMeetingError.postValue(ERROR_END_MEETING_FAILED);
+                                return;
+                            }
+
+                            endCall();
+                            _meetingEndedForAll.postValue(true);
+                        },
+                        mainExecutor);
     }
 
     /**

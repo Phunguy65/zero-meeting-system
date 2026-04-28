@@ -20,6 +20,7 @@ import io.github.phunguy65.zms.domain.repository.ParticipantRepository;
 import io.github.phunguy65.zms.domain.repository.RecordingRepository;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
 import io.github.phunguy65.zms.domain.repository.WaitingRoomRepository;
+import io.github.phunguy65.zms.domain.usecase.meeting.EndMeetingUseCase;
 import java.time.OffsetDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -64,6 +65,9 @@ public class CallViewModelTest {
     private RecordingRepository recordingRepository;
 
     @Mock
+    private EndMeetingUseCase endMeetingUseCase;
+
+    @Mock
     private ChatDataMessageHandler chatDataMessageHandler;
 
     private CallViewModel viewModel;
@@ -82,6 +86,7 @@ public class CallViewModelTest {
                 waitingRoomRepository,
                 participantRepository,
                 recordingRepository,
+                endMeetingUseCase,
                 LIVEKIT_URL,
                 immediateExecutor);
 
@@ -419,5 +424,57 @@ public class CallViewModelTest {
         capturedRoomEventListener.onRoomMetadataChanged(null);
 
         assertFalse(viewModel.isRecording().getValue());
+    }
+
+    @Test
+    public void endMeetingForAll_noMeetingId_setsErrorAndDoesNotCallUseCase() {
+        viewModel.endMeetingForAll();
+
+        assertEquals(CallViewModel.ERROR_END_MEETING_NO_ID, viewModel.getEndMeetingError().getValue());
+        assertFalse(viewModel.isEndingMeeting().getValue());
+        verify(endMeetingUseCase, never()).execute(anyString());
+    }
+
+    @Test
+    public void endMeetingForAll_notHost_setsErrorAndDoesNotCallUseCase() {
+        viewModel.setMeetingId("meeting-uuid-123");
+        viewModel.setIsHost(false);
+
+        viewModel.endMeetingForAll();
+
+        assertEquals(CallViewModel.ERROR_END_MEETING_NOT_HOST, viewModel.getEndMeetingError().getValue());
+        assertFalse(viewModel.isEndingMeeting().getValue());
+        verify(endMeetingUseCase, never()).execute(anyString());
+    }
+
+    @Test
+    public void endMeetingForAll_success_clearsLoadingAndSignalsEnded() {
+        viewModel.setMeetingId("meeting-uuid-123");
+        viewModel.setIsHost(true);
+
+        when(endMeetingUseCase.execute("meeting-uuid-123"))
+                .thenReturn(CompletableFuture.completedFuture(null));
+
+        viewModel.endMeetingForAll();
+
+        assertFalse(viewModel.isEndingMeeting().getValue());
+        assertNull(viewModel.getEndMeetingError().getValue());
+        assertTrue(viewModel.getMeetingEndedForAll().getValue());
+    }
+
+    @Test
+    public void endMeetingForAll_failure_setsErrorCodeAndKeepsUserInCall() {
+        viewModel.setMeetingId("meeting-uuid-123");
+        viewModel.setIsHost(true);
+
+        CompletableFuture<Void> failedFuture = new CompletableFuture<>();
+        failedFuture.completeExceptionally(new RuntimeException("HTTP 503"));
+        when(endMeetingUseCase.execute("meeting-uuid-123")).thenReturn(failedFuture);
+
+        viewModel.endMeetingForAll();
+
+        assertFalse(viewModel.isEndingMeeting().getValue());
+        assertEquals(CallViewModel.ERROR_END_MEETING_FAILED, viewModel.getEndMeetingError().getValue());
+        assertFalse(Boolean.TRUE.equals(viewModel.getMeetingEndedForAll().getValue()));
     }
 }

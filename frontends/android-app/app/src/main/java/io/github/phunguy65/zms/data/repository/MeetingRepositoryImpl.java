@@ -217,6 +217,26 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     }
 
     @Override
+    public CompletableFuture<Void> endMeeting(String meetingId) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID id = UUID.fromString(meetingId);
+                        Response<Void> response = meetingsApi.endMeeting(id).execute();
+
+                        if (!response.isSuccessful()) {
+                            throw new IOException("End meeting failed: HTTP " + response.code());
+                        }
+
+                        return null;
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
     public CompletableFuture<MeetingDetail> getMeetingByShortCode(String shortCode) {
         return CompletableFuture.supplyAsync(
                 () -> {

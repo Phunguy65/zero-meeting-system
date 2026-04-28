@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.domain.model.RoomConnectionState;
@@ -327,6 +328,29 @@ public class ActiveCallFragment extends Fragment
                 viewModel.clearRecordingError();
             }
         });
+
+        viewModel.isEndingMeeting().observe(getViewLifecycleOwner(), isEnding -> {
+            if (isEnding != null) {
+                btnEndCallContainer.setEnabled(!isEnding);
+            }
+        });
+
+        viewModel.getEndMeetingError().observe(getViewLifecycleOwner(), errorCode -> {
+            if (errorCode != null && !errorCode.isEmpty()) {
+                Snackbar.make(
+                                requireView(),
+                                R.string.call_end_meeting_error,
+                                Snackbar.LENGTH_LONG)
+                        .show();
+                viewModel.clearEndMeetingError();
+            }
+        });
+
+        viewModel.getMeetingEndedForAll().observe(getViewLifecycleOwner(), ended -> {
+            if (Boolean.TRUE.equals(ended)) {
+                requireActivity().finish();
+            }
+        });
     }
 
     private void setupAutoHide() {
@@ -540,15 +564,32 @@ public class ActiveCallFragment extends Fragment
     }
 
     private void showLeaveDialog() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle(R.string.call_leave_title)
-                .setMessage(R.string.call_leave_message)
-                .setPositiveButton(R.string.call_leave_confirm, (dialog, which) -> {
-                    viewModel.endCall();
-                    requireActivity().finish();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+        Boolean isHost = viewModel.isHost().getValue();
+
+        if (Boolean.TRUE.equals(isHost)) {
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.call_host_leave_title)
+                    .setMessage(R.string.call_host_leave_message)
+                    .setPositiveButton(R.string.call_host_leave_local, (dialog, which) -> {
+                        viewModel.endCall();
+                        requireActivity().finish();
+                    })
+                    .setNeutralButton(R.string.call_host_end_for_all, (dialog, which) -> {
+                        viewModel.endMeetingForAll();
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        } else {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.call_leave_title)
+                    .setMessage(R.string.call_leave_message)
+                    .setPositiveButton(R.string.call_leave_confirm, (dialog, which) -> {
+                        viewModel.endCall();
+                        requireActivity().finish();
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        }
     }
 
     @Override

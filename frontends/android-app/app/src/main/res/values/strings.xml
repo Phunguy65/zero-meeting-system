@@ -264,6 +264,12 @@
     <string name="call_leave_title">Leave Meeting</string>
     <string name="call_leave_message">Are you sure you want to leave this meeting?</string>
     <string name="call_leave_confirm">Leave</string>
+    <string name="call_host_leave_title">Leave or End Meeting</string>
+    <string name="call_host_leave_message">You are the host. You can leave and let the meeting
+        continue, or end it for everyone.</string>
+    <string name="call_host_leave_local">Leave Meeting</string>
+    <string name="call_host_end_for_all">End Meeting for All</string>
+    <string name="call_end_meeting_error">Failed to end meeting. Please try again.</string>
     <string name="call_participants">Participants</string>
     <string name="call_participants_count">Participants (%1$d)</string>
     <string name="call_chat">Chat</string>
@@ -310,6 +316,14 @@
     <string name="schedule_error_max_participants_range">Must be between 2 and 1000</string>
     <string name="schedule_error_max_participants_invalid">Enter a valid number</string>
     <string name="schedule_success">Meeting Scheduled!</string>
+    <string name="schedule_cancel_meeting">Cancel Meeting</string>
+    <string name="schedule_cancel_title">Cancel Meeting?</string>
+    <string name="schedule_cancel_message">This will permanently cancel the meeting and notify
+        all participants. This action cannot be undone.</string>
+    <string name="schedule_cancel_confirm">Cancel Meeting</string>
+    <string name="schedule_cancel_dismiss">Keep Meeting</string>
+    <string name="schedule_cancel_success">Meeting cancelled successfully</string>
+    <string name="schedule_cancel_error">Could not cancel meeting. Please try again.</string>
     <string-array name="schedule_durations">
         <item>30 minutes</item>
         <item>45 minutes</item>
