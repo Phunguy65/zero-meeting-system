@@ -24,4 +24,10 @@ pluginManagement {
     }
 }
 
+includeBuild("../proto") {
+    dependencySubstitution {
+        substitute(module("io.github.phunguy65.zms.services:proto"))
+            .using(project(":"))
+    }
+}
 includeBuild("../shared")

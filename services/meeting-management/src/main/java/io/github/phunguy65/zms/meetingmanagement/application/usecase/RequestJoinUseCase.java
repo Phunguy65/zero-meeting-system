@@ -78,7 +78,7 @@ public class RequestJoinUseCase {
             String rawPassword = command.password();
             if (rawPassword == null
                     || rawPassword.isBlank()
-                    || !passwordHasher.verify(rawPassword, meeting.getSettings().passwordHash())) {
+                    || !passwordHasher.verify(rawPassword, meeting.getSettings().password())) {
                 return Result.failure(
                         new MeetingError.InvalidPassword(meeting.getId().value()));
             }
@@ -113,7 +113,8 @@ public class RequestJoinUseCase {
                     command.displayName(),
                     role,
                     new ParticipantAttributes(
-                            participantAvatarResolver.resolveAvatar(command.userId()), role)));
+                            participantAvatarResolver.resolveAvatar(command.userId()), role),
+                    meeting.getSettings()));
             if (tokenResult instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
                 return Result.failure(error);
             }
@@ -138,9 +139,8 @@ public class RequestJoinUseCase {
                     new RequestJoinResponse(req.getId().value(), req.getStatus(), null, null));
         }
 
-        Duration ttl = meeting.getSettings().joinRequestTimeout() != null
-                ? meeting.getSettings().joinRequestTimeout()
-                : Duration.ofMinutes(5);
+        // Use fixed TTL of 5 minutes for join requests
+        Duration ttl = Duration.ofMinutes(5);
 
         JoinRequest joinRequest = JoinRequest.create(
                 meeting.getId(),

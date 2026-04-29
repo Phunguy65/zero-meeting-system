@@ -1,0 +1,208 @@
+{
+  "hello": "Xin chào",
+  "welcome": "Chào mừng đến Hệ thống Họp Zero",
+  "description": "Một nền tảng quản lý cuộc họp hiện đại",
+  "splash": {
+    "title": "Chào mừng đến với ZeroMeeting",
+    "subtitle": "Không gian làm việc gọn gàng để lên lịch, tổ chức và theo dõi mọi cuộc họp quan trọng của bạn.",
+    "loading": "Đang chuẩn bị không gian làm việc..."
+  },
+  "home": {
+    "brand": "Zero Meet",
+    "headline": "Cuộc gọi video và cuộc họp cao cấp dành cho mọi người",
+    "description": "Zero Meet, giải pháp hội nghị truyền hình an toàn và chất lượng cao, chia sẻ màn hình trực tuyến, hoàn toàn miễn phí.",
+    "newMeeting": "Cuộc họp mới",
+    "joinPlaceholder": "Nhập mã hoặc đường link",
+    "join": "Tham gia",
+    "learnMore": "Tìm hiểu thêm về Zero Meet",
+    "previewCaption": "Kết nối, cộng tác và ăn mừng mọi lúc mọi nơi",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "featureSecurityTitle": "Bảo mật mặc định",
+    "featureSecurityBody": "Cuộc họp của bạn được bảo vệ bằng nhiều lớp bảo mật, bao gồm các biện pháp chống lạm dụng.",
+    "featureDeviceTitle": "Sử dụng trên mọi thiết bị",
+    "featureDeviceBody": "Tham gia từ trình duyệt hoặc ứng dụng. Hoạt động hoàn hảo trên điện thoại, máy tính bảng hoặc máy tính.",
+    "featureScaleTitle": "Cuộc họp quy mô lớn",
+    "featureScaleBody": "Tổ chức các cuộc họp với tối đa 100 người tham gia miễn phí. Không cần thẻ tín dụng để bắt đầu.",
+    "footerAbout": "Tìm hiểu thêm",
+    "footerPrivacy": "Quyền riêng tư",
+    "footerTerms": "Điều khoản",
+    "footerHelp": "Trợ giúp",
+    "footerSecurity": "Bảo mật",
+    "copyright": "© 2024 Zero Meet. Một phần của hệ sinh thái EtherealMeet."
+  },
+  "auth": {
+    "common": {
+      "copyright": "© 2024 Zero Meet Inc. Đã đăng ký bản quyền.",
+      "privacy": "Chính sách bảo mật",
+      "terms": "Điều khoản dịch vụ",
+      "security": "Bảo mật",
+      "contact": "Liên hệ"
+    },
+    "login": {
+      "eyebrow": "The Ethereal Office",
+      "brand": "Zero Meet",
+      "heroDescription": "Bước vào không gian làm việc chuyên nghiệp, nơi sự rõ ràng và hiệu suất gặp nhau.",
+      "title": "Chào mừng trở lại",
+      "subtitle": "Vui lòng nhập thông tin để truy cập vào workspace.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Quên mật khẩu?",
+      "submit": "Đăng nhập",
+      "divider": "Hoặc tiếp tục với",
+      "google": "Google",
+      "switchPrefix": "Chưa có tài khoản?",
+      "switchAction": "Đăng ký miễn phí"
+    },
+    "register": {
+      "heroLineOne": "Kiến tạo không gian",
+      "heroLineTwo": "làm việc số",
+      "heroLineThree": "của bạn.",
+      "heroDescription": "Trải nghiệm môi trường họp trực tuyến tinh tế, nơi sự rõ ràng và hiệu suất được đặt lên hàng đầu.",
+      "securityCardTitle": "Bảo mật cấp cao",
+      "securityCardDescription": "Mã hóa đầu cuối cho mọi cuộc hội thoại.",
+      "title": "Bắt đầu hành trình",
+      "subtitle": "Nhập thông tin chi tiết để tạo tài khoản mới.",
+      "nameLabel": "Họ tên",
+      "namePlaceholder": "Nguyễn Văn A",
+      "emailLabel": "Email",
+      "emailPlaceholder": "email@vi-du.com",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "••••••••",
+      "agreementPrefix": "Tôi đồng ý với",
+      "agreementTerms": "Điều khoản dịch vụ",
+      "agreementMiddle": "và",
+      "agreementPrivacy": "Chính sách bảo mật",
+      "agreementSuffix": "của Zero Meet.",
+      "submit": "Tạo tài khoản",
+      "divider": "Hoặc",
+      "google": "Đăng ký nhanh với Google",
+      "switchPrefix": "Đã có tài khoản?",
+      "switchAction": "Đăng nhập ngay"
+    }
+  },
+  "workspace": {
+    "common": {
+      "brand": "Zero Meeting",
+      "navHome": "Trang chủ",
+      "navSchedule": "Lịch trình",
+      "navProfile": "Hồ sơ",
+      "searchPlaceholder": "Tìm kiếm...",
+      "join": "Tham gia"
+    },
+    "home": {
+      "headline": "Không gian làm việc linh hoạt",
+      "description": "Cộng tác không rào cản. Trung tâm liền mạch cho các cuộc họp ảo và giao tiếp tập trung cao.",
+      "cards": {
+        "newMeeting": {
+          "title": "Cuộc họp mới",
+          "description": "Bắt đầu ngay một phiên họp tức thì với nhóm của bạn."
+        },
+        "joinMeeting": {
+          "title": "Tham gia cuộc họp",
+          "description": "Nhập mã hoặc đường link để tham gia.",
+          "placeholder": "Mã cuộc họp"
+        },
+        "schedule": {
+          "title": "Lên lịch",
+          "description": "Lên kế hoạch cho một cuộc họp tương lai và mời người tham gia."
+        }
+      },
+      "upcomingTitle": "Cuộc họp sắp tới",
+      "viewCalendar": "Xem lịch",
+      "upcomingMeetings": [
+        {
+          "day": "12",
+          "month": "Thg 10",
+          "title": "Họp thiết kế hàng tuần",
+          "time": "10:00 Sáng — 11:30 Sáng",
+          "team": "Dự án Phoenix"
+        },
+        {
+          "day": "12",
+          "month": "Thg 10",
+          "title": "Đánh giá lộ trình Q4",
+          "time": "02:00 Chiều — 03:00 Chiều",
+          "team": "Ban điều hành"
+        },
+        {
+          "day": "13",
+          "month": "Thg 10",
+          "title": "Chuẩn bị Sprint Marketing",
+          "time": "09:15 Sáng — 10:00 Sáng",
+          "team": "Phòng Marketing"
+        }
+      ]
+    },
+    "schedule": {
+      "headline": "Lên lịch cuộc họp",
+      "description": "Tập trung vào cuộc trò chuyện. Chúng tôi xử lý phần điều phối cho không gian làm việc của bạn.",
+      "topicLabel": "Chủ đề cuộc họp",
+      "topicPlaceholder": "VD: Họp thiết kế hàng tuần",
+      "dateLabel": "Ngày",
+      "datePlaceholder": "dd/mm/yyyy",
+      "timeLabel": "Thời gian bắt đầu",
+      "timePlaceholder": "--:-- --",
+      "durationLabel": "Thời lượng",
+      "durationValue": "30 phút",
+      "inviteesLabel": "Người được mời",
+      "inviteesPlaceholder": "Thêm email ngăn cách bởi dấu phẩy",
+      "submit": "Lên lịch cuộc họp",
+      "visualCaption": "Tạo không gian cho sự tập trung và cộng tác.",
+      "settingsTitle": "Cài đặt cuộc họp",
+      "waitingRoomTitle": "Phòng chờ",
+      "waitingRoomDescription": "Phê duyệt khách thủ công",
+      "hostVideoTitle": "Bật video chủ phòng",
+      "hostVideoDescription": "Bắt đầu với camera được bật",
+      "note": "Lời mời sẽ được gửi đến người tham gia một khi bạn xác nhận lịch trình. Bạn có thể chỉnh sửa các chi tiết này sau trong bảng điều khiển.",
+      "footer": "© 2024 Zero Meeting. Đã đăng ký bản quyền."
+    },
+    "profile": {
+      "headline": "Hồ sơ",
+      "description": "Quản lý thông tin cá nhân, lịch sử cuộc họp và các tùy chọn hỗ trợ trong cùng một không gian liền mạch.",
+      "name": "An Nguyen",
+      "email": "an.nguyen@zeromeeting.app",
+      "statusLabel": "Trạng thái Workspace",
+      "statusTitle": "Thành viên Pro",
+      "statusDescription": "Tài khoản của bạn đã sẵn sàng cho các cuộc họp chất lượng cao, lịch trình nâng cao và cộng tác liền mạch.",
+      "accountSettingsTitle": "Cài đặt tài khoản",
+      "accountSettingsDescription": "Cập nhật thông tin hồ sơ, bảo mật tài khoản và các tùy chọn thông báo cá nhân.",
+      "meetingHistoryTitle": "Lịch sử cuộc họp",
+      "meetingHistoryDescription": "Xem lại các phiên gần đây, thời lượng cuộc họp và hoạt động cộng tác trước đó.",
+      "helpSupportTitle": "Trợ giúp và Hỗ trợ",
+      "helpSupportDescription": "Tìm tài liệu hướng dẫn, gửi yêu cầu hỗ trợ hoặc liên hệ với đội ngũ Zero Meeting.",
+      "logoutTitle": "Đăng xuất",
+      "logoutDescription": "Đăng xuất khỏi workspace hiện tại và quay lại màn hình truy cập."
+    }
+  },
+  "greenRoom": {
+    "preview": "Xem trước",
+    "mic": "Mic",
+    "video": "Video",
+    "check": "Kiểm tra",
+    "ready": "Sẵn sàng tham gia?",
+    "meetingTitle": "Họp thiết kế hàng tuần",
+    "alreadyInMeeting": "Đã có trong cuộc họp ({count})",
+    "joinNow": "Tham gia ngay",
+    "otherJoinOptions": "Các lựa chọn tham gia khác:",
+    "phoneAudio": "Âm thanh điện thoại"
+  },
+  "meetingRoom": {
+    "meetingName": "Họp thiết kế hàng tuần",
+    "meetingDetails": "Chi tiết cuộc họp",
+    "activeSession": "Đang hoạt động",
+    "participants": "Người tham gia",
+    "tabChat": "Chat",
+    "tabPeople": "Thành viên",
+    "host": "Chủ phòng",
+    "you": "Bạn",
+    "controlMic": "Mic",
+    "controlVideo": "Video",
+    "controlShare": "Chia sẻ",
+    "controlChat": "Chat",
+    "leave": "Rời phòng",
+    "messagePlaceholder": "Gửi tin nhắn..."
+  }
+}

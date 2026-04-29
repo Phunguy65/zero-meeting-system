@@ -30,39 +30,30 @@ class UserUpdateProfileTest {
     }
 
     @Test
-    void updateProfile_fullNameOnly_updatesFullNameAndRegistersEvent() {
+    void replaceProfile_updatesAllFieldsAndRegistersEvent() {
         var user = buildUser(null);
 
-        user.updateProfile(FullName.of("New Name"), new AvatarUpdate.Keep(), (Username) null);
+        user.replaceProfile(
+                FullName.of("New Name"),
+                new AvatarUpdate.Set("https://example.com/avatar.png"),
+                Username.of("new_name"));
 
         assertThat(user.getFullName().value()).isEqualTo("New Name");
-        assertThat(user.getAvatarUrl()).isEmpty();
+        assertThat(user.getAvatarUrl()).contains("https://example.com/avatar.png");
+        assertThat(user.getUsername()).contains(Username.of("new_name"));
         assertThat(user.getDomainEvents()).hasSize(1);
         assertThat(user.getDomainEvents().get(0)).isInstanceOf(UserUpdatedEvent.class);
         var event = (UserUpdatedEvent) user.getDomainEvents().get(0);
         assertThat(event.fullName()).isEqualTo("New Name");
-        assertThat(event.avatarUrl()).isNull();
-    }
-
-    @Test
-    void updateProfile_avatarUrlOnly_updatesAvatarAndRegistersEvent() {
-        var user = buildUser(null);
-
-        user.updateProfile(
-                null, new AvatarUpdate.Set("https://example.com/avatar.png"), (Username) null);
-
-        assertThat(user.getFullName().value()).isEqualTo("Alice");
-        assertThat(user.getAvatarUrl()).contains("https://example.com/avatar.png");
-        assertThat(user.getDomainEvents()).hasSize(1);
-        var event = (UserUpdatedEvent) user.getDomainEvents().get(0);
         assertThat(event.avatarUrl()).isEqualTo("https://example.com/avatar.png");
+        assertThat(event.username()).isEqualTo("new_name");
     }
 
     @Test
-    void updateProfile_clearAvatarUrl_setsNullAndRegistersEvent() {
+    void replaceProfile_clearAvatarUrl_setsNullAndRegistersEvent() {
         var user = buildUser("https://example.com/old.png");
 
-        user.updateProfile(null, new AvatarUpdate.Clear(), null);
+        user.replaceProfile(FullName.of("Alice"), new AvatarUpdate.Clear(), Username.of("alice"));
 
         assertThat(user.getAvatarUrl()).isEmpty();
         assertThat(user.getDomainEvents()).hasSize(1);
@@ -71,30 +62,22 @@ class UserUpdateProfileTest {
     }
 
     @Test
-    void updateProfile_keepAvatar_doesNotChangeAvatar() {
-        var user = buildUser("https://example.com/existing.png");
-
-        user.updateProfile(null, new AvatarUpdate.Keep(), null);
-
-        assertThat(user.getAvatarUrl()).contains("https://example.com/existing.png");
-    }
-
-    @Test
-    void updateProfile_updatesUpdatedAt() throws InterruptedException {
+    void replaceProfile_updatesUpdatedAt() throws InterruptedException {
         var user = buildUser(null);
         Instant before = user.getUpdatedAt();
         Thread.sleep(1);
 
-        user.updateProfile(FullName.of("Updated"), new AvatarUpdate.Keep(), (Username) null);
+        user.replaceProfile(
+                FullName.of("Updated"), new AvatarUpdate.Clear(), Username.of("updated"));
 
         assertThat(user.getUpdatedAt()).isAfter(before);
     }
 
     @Test
-    void updateProfile_eventCarriesCorrectAuthProvider() {
+    void replaceProfile_eventCarriesCorrectAuthProvider() {
         var user = buildUser(null);
 
-        user.updateProfile(FullName.of("Alice"), new AvatarUpdate.Keep(), (Username) null);
+        user.replaceProfile(FullName.of("Alice"), new AvatarUpdate.Clear(), Username.of("alice"));
 
         var event = (UserUpdatedEvent) user.getDomainEvents().get(0);
         assertThat(event.authProvider()).isEqualTo("EMAIL");

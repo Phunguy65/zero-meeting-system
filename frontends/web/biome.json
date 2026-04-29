@@ -1,35 +1,66 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
-  "vcs": {
-    "enabled": false
-  },
-  "files": {
-    "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "suspicious": {
-        "noUnknownAtRules": "off"
-      }
+    "$schema": "https://biomejs.dev/schemas/latest/schema.json",
+    "files": {
+        "includes": ["src/**/*.{ts,tsx,js,jsx,json,css}", "!src/generated/**/*"]
     },
-    "domains": {
-      "next": "recommended",
-      "react": "recommended"
+    "vcs": {
+        "enabled": false
+    },
+    "formatter": {
+        "indentStyle": "space",
+        "lineWidth": 80,
+        "lineEnding": "lf",
+        "bracketSpacing": true,
+        "indentWidth": 4,
+        "bracketSameLine": false
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": true,
+            "correctness": {
+                "useImportExtensions": {
+                    "level": "error",
+                    "options": {
+                        "extensionMappings": {
+                            "ts": "ts",
+                            "tsx": "tsx"
+                        }
+                    }
+                },
+                "noUnusedVariables": "error",
+                "noUnusedImports": "error"
+            }
+        }
+    },
+    "javascript": {
+        "parser": {
+            "unsafeParameterDecoratorsEnabled": true
+        },
+        "formatter": {
+            "arrowParentheses": "always",
+            "jsxQuoteStyle": "single",
+            "quoteStyle": "single",
+            "quoteProperties": "preserve",
+            "trailingCommas": "all",
+            "operatorLinebreak": "before"
+        }
+    },
+    "json": {
+        "formatter": {
+            "bracketSpacing": true,
+            "trailingCommas": "none"
+        },
+        "parser": {
+            "allowTrailingCommas": false
+        }
+    },
+    "css": {
+        "formatter": {
+            "quoteStyle": "single"
+        },
+        "parser": {
+            "tailwindDirectives": true
+        }
     }
-  },
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  }
 }

@@ -1,7 +1,10 @@
 package io.github.phunguy65.zms.usermanagement.presentation;
 
+import io.github.phunguy65.zms.shared.infrastructure.web.CommonErrorCode;
 import io.github.phunguy65.zms.shared.infrastructure.web.FailData;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.github.phunguy65.zms.shared.infrastructure.web.Violation;
+import io.github.phunguy65.zms.shared.infrastructure.web.ViolationCode;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
 import io.github.phunguy65.zms.usermanagement.domain.AuthErrorCode;
 import java.util.List;
@@ -14,7 +17,8 @@ import org.springframework.http.ResponseEntity;
  */
 abstract class BaseController {
 
-    protected ResponseEntity<JsendResponse<?>> errorResponse(AuthError error) {
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> errorResponse(AuthError error) {
         HttpStatus status =
                 switch (error) {
                     case AuthError.UserNotFound e -> HttpStatus.NOT_FOUND;
@@ -30,6 +34,12 @@ abstract class BaseController {
                     case AuthError.FirebaseAuthError e -> HttpStatus.SERVICE_UNAVAILABLE;
                     case AuthError.PreferencesSerializationError e ->
                         HttpStatus.INTERNAL_SERVER_ERROR;
+                    case AuthError.OtpExpired e -> HttpStatus.BAD_REQUEST;
+                    case AuthError.OtpInvalid e -> HttpStatus.BAD_REQUEST;
+                    case AuthError.OtpAlreadyUsed e -> HttpStatus.BAD_REQUEST;
+                    case AuthError.OtpLocked e -> HttpStatus.BAD_REQUEST;
+                    case AuthError.RateLimitExceeded e -> HttpStatus.TOO_MANY_REQUESTS;
+                    case AuthError.GoogleOnlyAccount e -> HttpStatus.BAD_REQUEST;
                 };
         AuthErrorCode code =
                 switch (error) {
@@ -47,10 +57,29 @@ abstract class BaseController {
                     case AuthError.FirebaseAuthError e -> AuthErrorCode.FIREBASE_AUTH_ERROR;
                     case AuthError.PreferencesSerializationError e ->
                         AuthErrorCode.PREFERENCES_SERIALIZATION_ERROR;
+                    case AuthError.OtpExpired e -> AuthErrorCode.OTP_EXPIRED;
+                    case AuthError.OtpInvalid e -> AuthErrorCode.OTP_INVALID;
+                    case AuthError.OtpAlreadyUsed e -> AuthErrorCode.OTP_ALREADY_USED;
+                    case AuthError.OtpLocked e -> AuthErrorCode.OTP_LOCKED;
+                    case AuthError.RateLimitExceeded e -> AuthErrorCode.RATE_LIMIT_EXCEEDED;
+                    case AuthError.GoogleOnlyAccount e -> AuthErrorCode.GOOGLE_ONLY_ACCOUNT;
                 };
-        return status == HttpStatus.INTERNAL_SERVER_ERROR
-                ? ResponseEntity.status(status).body(JsendResponse.error(error.message()))
-                : ResponseEntity.status(status)
-                        .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
+        if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
+            return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>)
+                    ResponseEntity.status(status).body(JsendResponse.error(error.message()));
+        }
+        return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.status(status)
+                .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> validationErrorResponse(
+            String field, String message) {
+        FailData body = new FailData(
+                "Validation failed",
+                CommonErrorCode.VALIDATION_ERROR,
+                List.of(new Violation(field, message, ViolationCode.REQUIRED)));
+        return (ResponseEntity<JsendResponse<T>>)
+                (ResponseEntity<?>) ResponseEntity.badRequest().body(JsendResponse.fail(body));
     }
 }

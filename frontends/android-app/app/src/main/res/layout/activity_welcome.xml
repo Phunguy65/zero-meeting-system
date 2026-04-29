@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:padding="@dimen/spacing_lg">
+
+    <!-- Language selector button (top-end) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLanguage"
+        style="@style/Widget.Material3.Button.TextButton.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/touch_target_min" android:text="EN"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        app:icon="@drawable/ic_language" app:iconPadding="@dimen/spacing_sm"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView android:id="@+id/imgWelcome"
+        android:layout_width="0dp" android:layout_height="0dp"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:background="@drawable/bg_image_placeholder"
+        android:importantForAccessibility="no" android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.35"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnLanguage" />
+
+    <TextView android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xl"
+        android:text="@string/welcome_title"
+        android:textAppearance="?attr/textAppearanceHeadlineMedium"
+        android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imgWelcome" />
+
+    <TextView android:id="@+id/tvSubtitle"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:lineSpacingExtra="4dp" android:text="@string/welcome_subtitle"
+        android:textAlignment="center"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSignIn" android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="@dimen/spacing_xl"
+        android:text="@string/welcome_sign_in" android:textAllCaps="false"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textStyle="bold" app:backgroundTint="?attr/colorPrimary"
+        app:cornerRadius="@dimen/corner_radius_lg"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCreateAccount"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent" android:layout_height="60dp"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:text="@string/welcome_create_account"
+        android:textAllCaps="false"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSecondaryContainer"
+        android:textStyle="bold" app:cornerRadius="@dimen/corner_radius_lg"
+        app:layout_constraintTop_toBottomOf="@id/btnSignIn" />
+
+    <TextView android:id="@+id/tvJoinGuest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_md" android:clickable="true"
+        android:focusable="true" android:minHeight="@dimen/touch_target_min"
+        android:gravity="center" android:padding="@dimen/spacing_sm"
+        android:text="@string/welcome_join_guest"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnCreateAccount" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

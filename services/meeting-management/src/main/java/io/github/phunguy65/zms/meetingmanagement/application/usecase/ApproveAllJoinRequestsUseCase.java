@@ -40,8 +40,10 @@ public class ApproveAllJoinRequestsUseCase {
                     command.approvedBy(), meeting.getHostId().value()));
         }
 
-        int approvedCount = pendingJoinRequestApprover.approveAll(meeting, command.approvedBy());
-
-        return Result.success(new ApproveAllResponse(approvedCount));
+        return switch (pendingJoinRequestApprover.approveAll(meeting, command.approvedBy())) {
+            case Result.Success<Integer, MeetingError> s ->
+                Result.success(new ApproveAllResponse(s.value()));
+            case Result.Failure<Integer, MeetingError> f -> Result.failure(f.error());
+        };
     }
 }

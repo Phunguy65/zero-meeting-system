@@ -1,3 +1,4 @@
+import com.diffplug.spotless.extra.wtp.EclipseWtpFormatterStep
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.kotlin.dsl.the
 
@@ -13,7 +14,7 @@ val libs = the<LibrariesForLibs>()
 spotless {
     java {
         target("**/src/**/*.java")
-        targetExclude("**/build/**", "**/generated/**", "**/third-party/**")
+        targetExclude("**/build/**", "**/generated/**")
         palantirJavaFormat(libs.versions.palantirJavaFormat.get()).style("AOSP")
         formatAnnotations()
         trimTrailingWhitespace()
@@ -23,9 +24,17 @@ spotless {
     }
     kotlinGradle {
         target("**/*.gradle.kts")
-        targetExclude("**/build/**", "**/generated/**", "**/gradle/**", "**/bin/**", "**/third-party/**")
+        targetExclude("**/build/**", "**/generated/**", "**/gradle/**", "**/bin/**")
         ktlint(libs.versions.ktlint.get())
         trimTrailingWhitespace()
+        endWithNewline()
+    }
+    format("xml") {
+        target("**/*.xml")
+        targetExclude("**/build/**", "**/generated/**", "**/bin/**", "**/.idea/**", "**/.gradle/**")
+        eclipseWtp(EclipseWtpFormatterStep.XML)
+        trimTrailingWhitespace()
+        leadingTabsToSpaces(4)
         endWithNewline()
     }
 }

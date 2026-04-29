@@ -11,11 +11,10 @@ import org.jspecify.annotations.Nullable;
  */
 public record MeetingSettingsJson(
         String admissionPolicy,
-        @Nullable Integer joinRequestTimeoutSeconds,
         boolean allowGuest,
-        boolean muteOnEntry,
         int maxParticipants,
-        boolean recordingEnabled,
-        String screenShareMode,
+        boolean allowScreenShare,
         boolean chatEnabled,
-        @Nullable String passwordHash) {}
+        boolean allowMicrophone,
+        boolean allowVideo,
+        @Nullable String password) {}

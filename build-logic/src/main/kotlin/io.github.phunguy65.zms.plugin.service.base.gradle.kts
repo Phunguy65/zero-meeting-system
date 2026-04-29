@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.spring.boot.starter.log4j2)
     implementation(libs.log4j.layout.template.json)
+    implementation(libs.springdoc.openapi.starter.webmvc.api)
     modules {
         module(
             libs.spring.boot.starter.logging
@@ -103,6 +104,15 @@ protobuf {
             }
         }
     }
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootBuildImage>("bootBuildImage") {
+    imageName.set("ghcr.io/phunguy65/zms/${project.name}:${project.version}")
+    environment.set(
+        mapOf(
+            "BP_JVM_VERSION" to "25",
+        ),
+    )
 }
 
 tasks.withType<Test> {

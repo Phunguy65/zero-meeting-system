@@ -1,13 +1,30 @@
 apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+    name: combined
+    namespace: kafka
+    labels:
+        strimzi.io/cluster: zms-kafka
+spec:
+    replicas: 1
+    roles:
+        - controller
+        - broker
+    storage:
+        type: ephemeral
+---
+apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
     name: zms-kafka
     namespace: kafka
+    annotations:
+        strimzi.io/kraft: enabled
+        strimzi.io/node-pools: enabled
 spec:
     kafka:
         version: 3.9.0
-        # dev: 1 broker; prod: change to 3
-        replicas: 1
+        metadataVersion: 3.9-IV0
         listeners:
             - name: plain
               port: 9092
@@ -23,12 +40,6 @@ spec:
             transaction.state.log.min.isr: 1
             default.replication.factor: 1
             min.insync.replicas: 1
-        # KRaft mode — no ZooKeeper
-        storage:
-            type: ephemeral
-    # KRaft controller (replaces ZooKeeper)
-    zookeeper:
-        replicas: 0
     entityOperator:
         topicOperator: {}
         userOperator: {}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_call"
+    app:startDestination="@id/preJoinFragment">
+
+    <fragment android:id="@+id/preJoinFragment"
+        android:name="io.github.phunguy65.zms.presentation.videocall.PreJoinFragment"
+        android:label="@string/prejoin_meeting_code"
+        tools:layout="@layout/fragment_prejoin">
+
+        <action android:id="@+id/action_prejoin_to_activeCall"
+            app:destination="@id/activeCallFragment"
+            app:popUpTo="@id/preJoinFragment" app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment android:id="@+id/activeCallFragment"
+        android:name="io.github.phunguy65.zms.presentation.videocall.ActiveCallFragment"
+        android:label="@string/call_end"
+        tools:layout="@layout/fragment_active_call" />
+
+</navigation>

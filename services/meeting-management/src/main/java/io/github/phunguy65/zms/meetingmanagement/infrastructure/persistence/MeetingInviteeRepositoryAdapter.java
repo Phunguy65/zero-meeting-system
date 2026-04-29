@@ -6,6 +6,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.Invite
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviteeId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviterId;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingInviteeRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.InviteeSummary;
 import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
@@ -51,6 +52,11 @@ public class MeetingInviteeRepositoryAdapter implements MeetingInviteeRepository
     public long countActiveByMeetingId(UUID meetingId) {
         return jpa.countByMeetingIdAndStatusIn(
                 meetingId, List.of(InviteeStatus.PENDING.name(), InviteeStatus.ACCEPTED.name()));
+    }
+
+    @Override
+    public List<InviteeSummary> findSummariesByMeetingId(UUID meetingId) {
+        return jpa.findSummariesByMeetingId(meetingId);
     }
 
     private MeetingInvitee toDomain(MeetingInviteeJpaEntity e) {

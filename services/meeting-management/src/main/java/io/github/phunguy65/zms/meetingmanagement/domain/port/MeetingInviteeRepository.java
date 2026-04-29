@@ -2,6 +2,7 @@ package io.github.phunguy65.zms.meetingmanagement.domain.port;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingInvitee;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviteeId;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.InviteeSummary;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,4 +36,6 @@ public interface MeetingInviteeRepository {
      * Returns the count of active (PENDING or ACCEPTED) invitees for the given meeting.
      */
     long countActiveByMeetingId(UUID meetingId);
+
+    List<InviteeSummary> findSummariesByMeetingId(UUID meetingId);
 }

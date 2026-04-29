@@ -61,4 +61,23 @@ public interface ParticipationLogJpaRepository
             + "ORDER BY p.joinedAt DESC, p.id DESC")
     List<ParticipantSummary> findParticipantSummariesByMeetingId(
             @Param("meetingId") UUID meetingId);
+
+    boolean existsByMeetingIdAndUserId(UUID meetingId, UUID userId);
+
+    @Query(
+            value = "SELECT * FROM ("
+                    + "  SELECT DISTINCT ON (p.user_id) p.* FROM participation_logs p "
+                    + "  WHERE p.meeting_id = CAST(:meetingId AS uuid) AND p.user_id IS NOT NULL "
+                    + "  ORDER BY p.user_id, p.joined_at DESC, p.id DESC"
+                    + ") registered "
+                    + "UNION ALL "
+                    + "SELECT * FROM ("
+                    + "  SELECT DISTINCT ON (p.display_name) p.* FROM participation_logs p "
+                    + "  WHERE p.meeting_id = CAST(:meetingId AS uuid) AND p.user_id IS NULL "
+                    + "  ORDER BY p.display_name, p.joined_at DESC, p.id DESC"
+                    + ") guests "
+                    + "ORDER BY joined_at DESC, id DESC",
+            nativeQuery = true)
+    List<ParticipationLogJpaEntity> findDistinctSessionsByMeetingId(
+            @Param("meetingId") UUID meetingId);
 }

@@ -2,11 +2,16 @@ package io.github.phunguy65.zms.meetingmanagement.domain.event;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import java.time.Instant;
 import java.util.UUID;
 
 /**
  * Published when a meeting's settings are updated by the host.
+ *
+ * <p>Carries both the previous ({@code oldSettings}) and new ({@code newSettings}) settings
+ * snapshots to enable downstream handlers to detect permission-relevant changes without
+ * requiring a separate repository lookup.
  */
 public record MeetingSettingsUpdatedEvent(
         UUID eventId,
@@ -14,6 +19,8 @@ public record MeetingSettingsUpdatedEvent(
         UUID hostId,
         UUID updatedBy,
         MeetingStatus meetingStatus,
+        MeetingSettings oldSettings,
+        MeetingSettings newSettings,
         Instant updatedAt)
         implements PublishableEvent {
 
@@ -24,12 +31,12 @@ public record MeetingSettingsUpdatedEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.settings_updated.v1";
+        return "io.github.phunguy65.zms.meeting.settings.updated.v1";
     }
 
     @Override
     public String topic() {
-        return "meeting-management.meeting.settings_updated";
+        return "meeting-management.meeting.settings.updated";
     }
 
     @Override

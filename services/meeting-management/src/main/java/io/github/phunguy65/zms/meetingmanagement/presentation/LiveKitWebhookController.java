@@ -10,8 +10,15 @@ import io.github.phunguy65.zms.meetingmanagement.application.usecase.AssignSidUs
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.CloseStaleMeetingLogsUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.FinalizeRecordingUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.LeaveMeetingUseCase;
+import io.github.phunguy65.zms.meetingmanagement.domain.event.ParticipantJoinedEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.event.ParticipantLeftEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitIdentity;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.EventPublisher;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.ParticipationLogRepository;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.config.LiveKitProperties;
 import io.livekit.server.WebhookReceiver;
+import io.swagger.v3.oas.annotations.Hidden;
+import java.time.Instant;
 import java.util.UUID;
 import livekit.LivekitWebhook;
 import org.slf4j.Logger;
@@ -51,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
  *       metadata.</li>
  * </ul>
  */
+@Hidden
 @RestController
 public class LiveKitWebhookController {
 
@@ -64,6 +72,8 @@ public class LiveKitWebhookController {
     private final CloseStaleMeetingLogsUseCase closeStaleMeetingLogsUseCase;
     private final ActivateRecordingUseCase activateRecordingUseCase;
     private final FinalizeRecordingUseCase finalizeRecordingUseCase;
+    private final EventPublisher eventPublisher;
+    private final ParticipationLogRepository participationLogRepository;
 
     public LiveKitWebhookController(
             LiveKitProperties liveKitProperties,
@@ -71,7 +81,9 @@ public class LiveKitWebhookController {
             LeaveMeetingUseCase leaveMeetingUseCase,
             CloseStaleMeetingLogsUseCase closeStaleMeetingLogsUseCase,
             ActivateRecordingUseCase activateRecordingUseCase,
-            FinalizeRecordingUseCase finalizeRecordingUseCase) {
+            FinalizeRecordingUseCase finalizeRecordingUseCase,
+            EventPublisher eventPublisher,
+            ParticipationLogRepository participationLogRepository) {
         this.webhookReceiver = new WebhookReceiver(
                 liveKitProperties.getApiKey(), liveKitProperties.getApiSecret());
         this.assignSidUseCase = assignSidUseCase;
@@ -79,6 +91,8 @@ public class LiveKitWebhookController {
         this.closeStaleMeetingLogsUseCase = closeStaleMeetingLogsUseCase;
         this.activateRecordingUseCase = activateRecordingUseCase;
         this.finalizeRecordingUseCase = finalizeRecordingUseCase;
+        this.eventPublisher = eventPublisher;
+        this.participationLogRepository = participationLogRepository;
     }
 
     /**
@@ -90,7 +104,8 @@ public class LiveKitWebhookController {
      * would break signature verification.
      */
     @PostMapping(
-            value = "/webhook/livekit",
+            value = "/{version}/webhook/livekit",
+            version = "1.0",
             consumes = {"application/webhook+json", "application/json"})
     public ResponseEntity<Void> handleWebhook(
             @RequestBody String rawBody,
@@ -134,6 +149,21 @@ public class LiveKitWebhookController {
         var participant = event.getParticipant();
         assignSidUseCase.execute(
                 new AssignSidCommand(meetingId, participant.getIdentity(), participant.getSid()));
+
+        // Look up the participation log to get userId and displayName.
+        var identity = LiveKitIdentity.of(participant.getIdentity());
+        var logOpt =
+                participationLogRepository.findActiveByMeetingIdAndIdentity(meetingId, identity);
+        if (logOpt.isPresent()) {
+            var log = logOpt.get();
+            var joinedEvent = new ParticipantJoinedEvent(
+                    UUID.randomUUID(),
+                    meetingId,
+                    log.getUserId().orElse(null),
+                    log.getDisplayName(),
+                    Instant.now());
+            eventPublisher.publish(joinedEvent);
+        }
     }
 
     private void handleParticipantLeft(LivekitWebhook.WebhookEvent event) {
@@ -141,6 +171,22 @@ public class LiveKitWebhookController {
         if (meetingId == null) return;
 
         var sid = event.getParticipant().getSid();
+        // Look up the participation log BEFORE calling the use case (use case returns Result
+        // without exposing the domain object) so we have displayName for the event.
+        var found =
+                participationLogRepository.findActiveBySid(io.github.phunguy65.zms.meetingmanagement
+                        .domain.model.valueobject.LiveKitParticipantSid.of(sid));
+        if (found.isPresent()) {
+            var log = found.get();
+            var leftEvent = new ParticipantLeftEvent(
+                    UUID.randomUUID(),
+                    meetingId,
+                    log.getUserId().orElse(null),
+                    log.getDisplayName(),
+                    Instant.now());
+            eventPublisher.publish(leftEvent);
+        }
+
         leaveMeetingUseCase.execute(new LeaveMeetingCommand(meetingId, sid));
     }
 

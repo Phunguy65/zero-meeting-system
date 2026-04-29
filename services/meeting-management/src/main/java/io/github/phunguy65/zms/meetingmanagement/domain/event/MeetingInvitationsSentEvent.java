@@ -39,12 +39,12 @@ public record MeetingInvitationsSentEvent(
 
     @Override
     public String eventType() {
-        return "io.github.phunguy65.zms.meeting.invitations-sent.v1";
+        return "io.github.phunguy65.zms.meeting.invitations.sent.v1";
     }
 
     @Override
     public String topic() {
-        return "meeting-management.meeting.invitations-sent";
+        return "meeting-management.meeting.invitations.sent";
     }
 
     @Override

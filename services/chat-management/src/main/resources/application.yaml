@@ -1,0 +1,40 @@
+spring:
+    application:
+        name: chat-management
+    mvc:
+        apiversion:
+            use:
+                path-segment: 1
+            default: 1.0
+            supported: 1.0
+    data:
+        mongodb:
+            uri: mongodb://localhost:27017/chat_management
+    kafka:
+        bootstrap-servers: localhost:9092
+
+server:
+    port: 8080
+
+app:
+    livekit:
+        url: http://localhost:7880
+        api-key: ${LIVEKIT_API_KEY:}
+        api-secret: ${LIVEKIT_API_SECRET:}
+    chat:
+        jwt-secret: ${CHAT_JWT_SECRET:changeme}
+        limits:
+            max-message-length: 4000
+
+logging:
+    level:
+        io.github.phunguy65.zms.chatmanagement: DEBUG
+
+springdoc:
+    api-docs:
+        enabled: true
+    swagger-ui:
+        enabled: false
+    servers:
+        - url: ${GATEWAY_URL:http://localhost:8080}
+          description: API Gateway

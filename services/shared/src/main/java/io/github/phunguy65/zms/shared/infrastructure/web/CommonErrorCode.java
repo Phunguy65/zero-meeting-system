@@ -17,5 +17,7 @@ public enum CommonErrorCode implements ErrorCode {
      * one or more request fields fail {@code @Valid} constraints. Individual field details are
      * carried in the {@code errors} list as {@link Violation} records.
      */
-    VALIDATION_ERROR
+    VALIDATION_ERROR,
+
+    METHOD_NOT_ALLOWED
 }

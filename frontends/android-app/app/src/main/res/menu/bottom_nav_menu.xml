@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- IDs must match nav_graph_main.xml destination IDs for NavigationUI
+        to work -->
+    <item android:id="@+id/dashboardFragment"
+        android:icon="@drawable/ic_home_selector"
+        android:title="@string/nav_home" />
+    <item android:id="@+id/calendarFragment"
+        android:icon="@drawable/ic_calendar_selector"
+        android:title="@string/nav_calendar" />
+    <item android:id="@+id/profileFragment"
+        android:icon="@drawable/ic_person_selector"
+        android:title="@string/nav_profile" />
+</menu>

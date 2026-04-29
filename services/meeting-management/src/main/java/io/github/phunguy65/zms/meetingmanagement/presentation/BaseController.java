@@ -16,7 +16,19 @@ import org.springframework.security.core.Authentication;
  */
 abstract class BaseController {
 
-    protected ResponseEntity<JsendResponse<?>> errorResponse(MeetingError error) {
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> errorResponse(MeetingError error) {
+        if (error instanceof MeetingError.PartialApprovalFailure paf) {
+            return (ResponseEntity<JsendResponse<T>>)
+                    (ResponseEntity<?>) ResponseEntity.status(HttpStatus.MULTI_STATUS)
+                            .body(JsendResponse.fail(new PartialApprovalFailData(
+                                    paf.message(),
+                                    MeetingErrorCode.PARTIAL_APPROVAL_FAILURE,
+                                    List.of(),
+                                    paf.approvedCount(),
+                                    paf.failedIds())));
+        }
+
         HttpStatus status =
                 switch (error) {
                     case MeetingError.MeetingNotFound e -> HttpStatus.NOT_FOUND;
@@ -31,6 +43,8 @@ abstract class BaseController {
                     case MeetingError.MeetingFull e -> HttpStatus.CONFLICT;
                     case MeetingError.InvalidJoinRequestTransition e -> HttpStatus.CONFLICT;
                     case MeetingError.NotAuthorized e -> HttpStatus.FORBIDDEN;
+                    case MeetingError.NotOwner e -> HttpStatus.FORBIDDEN;
+                    case MeetingError.NotParticipant e -> HttpStatus.FORBIDDEN;
                     case MeetingError.GuestNotAllowed e -> HttpStatus.FORBIDDEN;
                     case MeetingError.ShortCodeExhausted e -> HttpStatus.SERVICE_UNAVAILABLE;
                     case MeetingError.LiveKitUnavailable e -> HttpStatus.SERVICE_UNAVAILABLE;
@@ -47,6 +61,7 @@ abstract class BaseController {
                     case MeetingError.CanNotKickSelf e -> HttpStatus.BAD_REQUEST;
                     case MeetingError.UserNotInMeeting e -> HttpStatus.NOT_FOUND;
                     case MeetingError.InvalidKickTarget e -> HttpStatus.BAD_REQUEST;
+                    case MeetingError.PartialApprovalFailure e -> HttpStatus.MULTI_STATUS;
                 };
         MeetingErrorCode code =
                 switch (error) {
@@ -79,6 +94,8 @@ abstract class BaseController {
                     case MeetingError.InvalidPassword e -> MeetingErrorCode.INVALID_PASSWORD;
                     case MeetingError.GuestNotAllowed e -> MeetingErrorCode.GUEST_NOT_ALLOWED;
                     case MeetingError.NotAuthorized e -> MeetingErrorCode.NOT_AUTHORIZED;
+                    case MeetingError.NotOwner e -> MeetingErrorCode.NOT_OWNER;
+                    case MeetingError.NotParticipant e -> MeetingErrorCode.NOT_PARTICIPANT;
                     case MeetingError.JoinRequestNotFound e ->
                         MeetingErrorCode.JOIN_REQUEST_NOT_FOUND;
                     case MeetingError.JoinRequestExpired e -> MeetingErrorCode.JOIN_REQUEST_EXPIRED;
@@ -89,8 +106,10 @@ abstract class BaseController {
                     case MeetingError.CanNotKickSelf e -> MeetingErrorCode.CAN_NOT_KICK_SELF;
                     case MeetingError.UserNotInMeeting e -> MeetingErrorCode.USER_NOT_IN_MEETING;
                     case MeetingError.InvalidKickTarget e -> MeetingErrorCode.INVALID_KICK_TARGET;
+                    case MeetingError.PartialApprovalFailure e ->
+                        MeetingErrorCode.PARTIAL_APPROVAL_FAILURE;
                 };
-        return ResponseEntity.status(status)
+        return (ResponseEntity<JsendResponse<T>>) (ResponseEntity<?>) ResponseEntity.status(status)
                 .body(JsendResponse.fail(new FailData(error.message(), code, List.of())));
     }
 
@@ -105,8 +124,10 @@ abstract class BaseController {
         }
     }
 
-    protected ResponseEntity<JsendResponse<?>> unauthenticated() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(JsendResponse.error("Authentication required"));
+    @SuppressWarnings("unchecked")
+    protected <T> ResponseEntity<JsendResponse<T>> unauthenticated() {
+        return (ResponseEntity<JsendResponse<T>>)
+                (ResponseEntity<?>) ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(JsendResponse.error("Authentication required"));
     }
 }
