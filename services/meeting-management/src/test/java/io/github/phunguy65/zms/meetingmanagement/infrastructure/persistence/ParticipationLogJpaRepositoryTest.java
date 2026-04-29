@@ -35,8 +35,7 @@ class ParticipationLogJpaRepositoryTest {
                 Instant.parse("2026-04-01T10:00:00Z"),
                 "SCHEDULED",
                 "LIVE",
-                new MeetingSettingsJson(
-                        "ALLOW_ALL", null, true, false, 100, false, "HOST_ONLY", true, null),
+                new MeetingSettingsJson("ALLOW_ALL", true, 100, true, true, true, true, null),
                 Instant.parse("2026-04-01T08:00:00Z")));
     }
 

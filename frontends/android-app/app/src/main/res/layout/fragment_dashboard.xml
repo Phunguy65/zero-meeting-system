@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurfaceVariant">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" android:fillViewport="true">
+
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical"
+            android:padding="@dimen/spacing_md">
+
+            <!-- Header -->
+            <RelativeLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView android:id="@+id/imgAvatar"
+                    android:layout_width="@dimen/avatar_size_sm"
+                    android:layout_height="@dimen/avatar_size_sm"
+                    android:background="@drawable/bg_image_placeholder"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:contentDescription="@string/cd_avatar" />
+
+                <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name" android:textSize="20sp"
+                    android:textStyle="bold" android:textColor="?attr/colorOnSurface"
+                    android:layout_centerInParent="true" />
+
+                <FrameLayout android:id="@+id/btnSettingsWrapper"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless">
+
+                    <ImageView android:id="@+id/btnSettings"
+                        android:layout_width="@dimen/icon_size_md"
+                        android:layout_height="@dimen/icon_size_md"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_settings"
+                        app:tint="?attr/colorOnSurface"
+                        android:contentDescription="@string/cd_settings" />
+                </FrameLayout>
+            </RelativeLayout>
+
+            <!-- Quick Actions (Join and Schedule only - New Meeting moved to FAB) -->
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" android:baselineAligned="false"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/spacing_lg">
+
+                <!-- Join Meeting -->
+                <LinearLayout android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:orientation="vertical" android:gravity="center">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardJoinMeeting"
+                        android:layout_width="@dimen/quick_action_size"
+                        android:layout_height="@dimen/quick_action_size"
+                        app:cardBackgroundColor="?attr/colorSurface"
+                        app:cardCornerRadius="@dimen/corner_radius_xl"
+                        app:cardElevation="2dp" android:clickable="true"
+                        android:focusable="true"
+                        android:contentDescription="@string/cd_join_meeting">
+
+                        <ImageView android:layout_width="@dimen/icon_size_lg"
+                            android:layout_height="@dimen/icon_size_lg"
+                            android:src="@drawable/ic_add" app:tint="?attr/colorPrimary"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_join_meeting"
+                        android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:layout_marginTop="@dimen/spacing_sm" />
+
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_join_meeting_subtitle"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- Schedule -->
+                <LinearLayout android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:orientation="vertical" android:gravity="center">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardSchedule"
+                        android:layout_width="@dimen/quick_action_size"
+                        android:layout_height="@dimen/quick_action_size"
+                        app:cardBackgroundColor="?attr/colorSurface"
+                        app:cardCornerRadius="@dimen/corner_radius_xl"
+                        app:cardElevation="2dp" android:clickable="true"
+                        android:focusable="true"
+                        android:contentDescription="@string/cd_schedule_meeting">
+
+                        <ImageView android:layout_width="@dimen/icon_size_lg"
+                            android:layout_height="@dimen/icon_size_lg"
+                            android:src="@drawable/ic_calendar_outlined"
+                            app:tint="?attr/colorPrimary" android:layout_gravity="center"
+                            android:importantForAccessibility="no" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_schedule"
+                        android:textColor="?attr/colorOnSurface" android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:layout_marginTop="@dimen/spacing_sm" />
+
+                    <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_schedule_subtitle"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Upcoming Meetings Section -->
+            <RelativeLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xl">
+
+                <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/section_upcoming_meetings"
+                    android:textColor="?attr/colorOnSurface" android:textSize="20sp"
+                    android:textStyle="bold" android:layout_alignParentStart="true"
+                    android:accessibilityHeading="true" />
+
+                <TextView android:id="@+id/tvSeeAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:gravity="center_vertical"
+                    android:text="@string/action_see_all"
+                    android:textColor="?attr/colorPrimary" android:textSize="14sp"
+                    android:textStyle="bold" android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+            </RelativeLayout>
+
+            <!-- Empty state (hidden by default) -->
+            <include android:id="@+id/layoutEmptyState"
+                layout="@layout/layout_empty_dashboard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:visibility="gone" />
+
+            <!-- Meetings RecyclerView (shown when there are meetings) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvUpcomingMeetings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:paddingBottom="88dp"
+                android:clipToPadding="false" android:visibility="gone" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Floating Action Button for new meeting -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabNewMeeting" android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/spacing_md"
+        android:src="@drawable/ic_videocam"
+        android:contentDescription="@string/cd_fab_new_meeting"
+        app:tint="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

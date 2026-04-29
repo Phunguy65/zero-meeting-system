@@ -32,9 +32,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  *   <li>{@code guestEmittersByRequest} — request-scoped emitters for guests waiting on approval
  * </ul>
  *
- * <p>Consumes CloudEvents from four Kafka topics using a unique consumer group per instance
+ * <p>Consumes CloudEvents from five Kafka topics using a unique consumer group per instance
  * (configured in {@link io.github.phunguy65.zms.meetingmanagement.infrastructure.config.KafkaConfig})
  * to ensure all instances receive all events for SSE fan-out.
+ * Participant joined/left events are intentionally handled by chat-management, which turns them
+ * into system messages instead of pushing them over meeting SSE.
  *
  * <p>Thread-safe: uses {@link ConcurrentHashMap} + {@link CopyOnWriteArrayList} for emitter
  * storage.
@@ -128,7 +130,7 @@ public class MeetingSseManager {
      * Handles {@code join_request.created} events: notifies all connected hosts for the meeting.
      */
     @KafkaListener(
-            topics = "meeting-management.join_request.created",
+            topics = "meeting-management.join-request.created",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onJoinRequestCreated(CloudEvent cloudEvent) {
         JoinRequestCreatedEvent event = deserialize(cloudEvent, JoinRequestCreatedEvent.class);
@@ -146,7 +148,7 @@ public class MeetingSseManager {
      * stream and closes the stream.
      */
     @KafkaListener(
-            topics = "meeting-management.join_request.approved",
+            topics = "meeting-management.join-request.approved",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onJoinRequestApproved(CloudEvent cloudEvent) {
 
@@ -166,7 +168,7 @@ public class MeetingSseManager {
      * Handles {@code join_request.denied} events: notifies the guest and closes the stream.
      */
     @KafkaListener(
-            topics = "meeting-management.join_request.denied",
+            topics = "meeting-management.join-request.denied",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onJoinRequestDenied(CloudEvent cloudEvent) {
         final String eventName = "join_request_denied";
@@ -186,7 +188,7 @@ public class MeetingSseManager {
      * (request-level), then closes the guest stream.
      */
     @KafkaListener(
-            topics = "meeting-management.join_request.expired",
+            topics = "meeting-management.join-request.expired",
             containerFactory = "cloudEventKafkaListenerContainerFactory")
     public void onJoinRequestExpired(CloudEvent cloudEvent) {
         final String eventName = "join_request_expired";

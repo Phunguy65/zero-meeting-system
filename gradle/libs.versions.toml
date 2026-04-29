@@ -6,6 +6,7 @@ java = "25"
 springBoot = "4.0.3"
 springGrpc = "1.0.2"
 springDependencyManagement = "1.1.7"
+flyway = "11.14.1"
 hibernateOrm = "7.2.1.Final"
 graalvmNative = "0.11.4"
 spotless = "8.2.1"
@@ -18,19 +19,28 @@ resend = "4.12.0"
 palantirJavaFormat = "2.88.0"
 testcontainers = "1.21.4"
 archunit = "1.4.1"
+springdocOpenapi = "3.0.2"
+openapiGenerator = "7.20.0"
 protobuf = "0.9.6"
 protoc = "4.34.0"
 protocGenGrpcJava = "1.79.0"
 buildBuf = "0.11.0"
+swaggerAnnotations = "2.2.28"
+jsr305 = "3.0.2"
+gson = "2.12.1"
+gsonFire = "1.9.0"
+javaxAnnotation = "1.3.2"
+jacksonDatabindNullable = "0.2.10"
+jacksonDatabind = "2.15.2"
+jacksonJsr310 = "2.15.2"
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 agp = "9.0.0"
 androidCompileSdk = "36"
-androidMinSdk = "24"
+androidMinSdk = "26"
 androidTargetSdk = "36"
 androidxActivity = "1.12.4"
 androidxAppcompat = "1.7.1"
 androidxConstraintlayout = "2.2.1"
-androidxCore = "1.17.0"
 androidxEspresso = "3.7.0"
 androidxLifecycle = "2.9.6"
 androidxTestExt = "1.3.0"
@@ -40,9 +50,24 @@ kotlin = "2.3.10"
 ksp = "2.3.4"
 material = "1.13.0"
 livekit = "0.12.1"
-okhttp = "5.3.2"
-retrofit = "3.0.0"
-runtime = "1.10.3"
+livekitAndroid = "2.24.1"
+okhttp = "4.12.0"
+retrofit = "2.12.0"
+androidxNavigation = "2.9.7"
+androidxSecurityCrypto = "1.1.0"
+androidxCredentials = "1.6.0"
+firebaseBom = "34.12.0"
+googleServices = "4.4.4"
+googleId = "1.2.0"
+glide = "5.0.5"
+lottie = "6.7.1"
+androidVeil = "1.1.4"
+media3 = "1.8.0"
+androidxSwipeRefreshLayout = "1.1.0"
+mockito = "5.23.0"
+mockitoInline = "5.2.0"
+androidxArchCoreTesting = "2.2.0"
+kizitonwoseCalendar = "2.10.1"
 # Utilities
 ktlint = "1.8.0"
 
@@ -60,10 +85,17 @@ grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "protocGenGrpcJava" }
 grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "protocGenGrpcJava" }
 
 # jjwt dependencies (version managed by jjwt BOM)
-jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable" }
+jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jacksonDatabindNullable" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonDatabind" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jacksonJsr310" }
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version.ref = "swaggerAnnotations" }
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+gson-fire = { module = "io.gsonfire:gson-fire", version.ref = "gsonFire" }
+javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javaxAnnotation" }
 
 # Jspecify
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
@@ -74,6 +106,7 @@ uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuidC
 # Flyway
 flyway-core = { module = "org.flywaydb:flyway-core" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
+flyway-database-mongodb = { module = "org.flywaydb:flyway-database-nc-mongodb", version.ref = "flyway" }
 
 # Spring Kafka (version managed by Spring Boot BOM)
 spring-kafka = { module = "org.springframework.kafka:spring-kafka" }
@@ -89,6 +122,7 @@ spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boo
 shared = { module = "io.github.phunguy65.zms.services:shared" }
 proto = { module = "io.github.phunguy65.zms.services:proto" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 spring-boot-starter-integration = { module = "org.springframework.boot:spring-boot-starter-integration" }
@@ -121,6 +155,7 @@ bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "boun
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-webmvc-test = { module = "org.springframework.boot:spring-boot-webmvc-test" }
+spring-boot-data-mongodb-test = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
 spring-boot-data-jpa-test = { module = "org.springframework.boot:spring-boot-data-jpa-test" }
 spring-boot-jdbc-test = { module = "org.springframework.boot:spring-boot-jdbc-test" }
 spring-boot-starter-security-test = { module = "org.springframework.security:spring-security-test" }
@@ -130,24 +165,28 @@ spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-te
 spring-boot-grpc-test = { module = "org.springframework.grpc:spring-grpc-test" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "testcontainers" }
 
 # ArchUnit
 archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 
+# springdoc OpenAPI
+springdoc-openapi-starter-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdocOpenapi" }
+
 # ─── Frontend – AndroidX ─────────────────────────────────────────────────────
-androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExt" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidxActivity" }
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
-androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
-androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
-
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidxLifecycle" }
+androidx-lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata", version.ref = "androidxLifecycle" }
 # ─── Frontend – Material & Test ───────────────────────────────────────────────
 material = { module = "com.google.android.material:material", version.ref = "material" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInline" }
+androidx-arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "androidxArchCoreTesting" }
 
 # ─── Frontend – Hilt ─────────────────────────────────────────────────────────
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
@@ -155,15 +194,48 @@ hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", ve
 
 # ─── Backend – LiveKit ───────────────────────────────────────────────────────
 livekit-server = { module = "io.livekit:livekit-server", version.ref = "livekit" }
+livekit-android = { module = "io.livekit:livekit-android", version.ref = "livekitAndroid" }
 
 # ─── Frontend – OkHttp ───────────────────────────────────────────────────────
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
-okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
+okhttp = { module = "com.squareup.okhttp3:okhttp" }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor" }
+okhttp-sse = { module = "com.squareup.okhttp3:okhttp-sse" }
 
 # ─── Frontend – Retrofit ─────────────────────────────────────────────────────
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+retrofit-converter-jackson = { module = "com.squareup.retrofit2:converter-jackson", version.ref = "retrofit" }
+retrofit-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
+
+# ─── Frontend – Navigation ───────────────────────────────────────────────────
+androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment", version.ref = "androidxNavigation" }
+androidx-navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "androidxNavigation" }
+androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "androidxNavigation" }
+
+# ─── Frontend – Firebase ─────────────────────────────────────────────────────
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
+
+# ─── Frontend – Credentials / Google Sign-In ─────────────────────────────────
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidxCredentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidxCredentials" }
+google-id = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleId" }
+
+# ─── Frontend – Security ─────────────────────────────────────────────────────
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidxSecurityCrypto" }
+
+# ─── Frontend – Image & Animation ────────────────────────────────────────────
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
+androidveil = { module = "com.github.skydoves:androidveil", version.ref = "androidVeil" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
+androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
+androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "androidxSwipeRefreshLayout" }
+
+# ─── Frontend – Calendar ─────────────────────────────────────────────────────
+kizitonwose-calendar-view = { module = "com.kizitonwose.calendar:view", version.ref = "kizitonwoseCalendar" }
 
 [plugins]
 # ─── Backend ─────────────────────────────────────────────────────────────────
@@ -179,7 +251,10 @@ buildBuf = { id = "build.buf", version.ref = "buildBuf" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+navigation-safe-args = { id = "androidx.navigation.safeargs", version.ref = "androidxNavigation" }
 
 # ─── Custom Plugin ─────────────────────────────────────────────────────────────
+springdocOpenapi = { id = "org.springdoc.openapi-gradle-plugin", version = "1.9.0" }
+openapiGenerator = { id = "org.openapi.generator", version.ref = "openapiGenerator" }
 spotlessConvention = { id = "io.github.phunguy65.zms.plugin.spotless" }

@@ -8,6 +8,7 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import jakarta.persistence.Entity;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
@@ -221,6 +222,23 @@ public abstract class CleanArchitectureTest {
             .allowEmptyShould(true)
             .because("@Entity is a JPA concern; domain models must be persistence-ignorant."
                     + " JPA entities belong in infrastructure.persistence");
+
+    /**
+     * Naming guide for @Document classes: if a @Document class appears in
+     * infrastructure.persistence, it should be named *Document to distinguish it from domain
+     * models. This is informational only — @Document is permitted in the domain layer.
+     */
+    @ArchTest
+    static final ArchRule document_naming_guide = classes()
+            .that()
+            .areAnnotatedWith(Document.class)
+            .and()
+            .resideInAPackage("..infrastructure.persistence..")
+            .should()
+            .haveSimpleNameEndingWith("Document")
+            .allowEmptyShould(true)
+            .because("Naming guide: @Document classes in infrastructure.persistence should be named"
+                    + " *Document. This is informational; @Document is allowed in domain.");
 
     /** Domain classes must not carry Spring stereotype annotations. */
     @ArchTest

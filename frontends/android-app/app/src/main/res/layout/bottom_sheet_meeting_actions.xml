@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurface" android:orientation="vertical"
+    android:paddingBottom="@dimen/spacing_lg">
+
+    <!-- Drag handle -->
+    <View android:layout_width="@dimen/bottom_sheet_handle_width"
+        android:layout_height="@dimen/bottom_sheet_handle_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_sm"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:background="@drawable/bg_bottom_sheet_handle" />
+
+    <!-- Screen Share Row -->
+    <LinearLayout android:id="@+id/rowScreenShare"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true" android:focusable="true"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <ImageView
+            android:layout_width="@dimen/bottom_sheet_icon_size"
+            android:layout_height="@dimen/bottom_sheet_icon_size"
+            android:contentDescription="@string/cd_screen_share"
+            android:src="@drawable/ic_screen_share"
+            app:tint="?attr/colorOnSurface" />
+
+        <TextView android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_weight="1" android:text="@string/action_screen_share"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Chat Row with Badge -->
+    <LinearLayout android:id="@+id/rowChat"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true" android:focusable="true"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <ImageView
+            android:layout_width="@dimen/bottom_sheet_icon_size"
+            android:layout_height="@dimen/bottom_sheet_icon_size"
+            android:contentDescription="@string/cd_open_chat"
+            android:src="@drawable/ic_chat" app:tint="?attr/colorOnSurface" />
+
+        <TextView android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_weight="1" android:text="@string/call_chat"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Participants Row with Count -->
+    <LinearLayout android:id="@+id/rowParticipants"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true" android:focusable="true"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <ImageView
+            android:layout_width="@dimen/bottom_sheet_icon_size"
+            android:layout_height="@dimen/bottom_sheet_icon_size"
+            android:contentDescription="@string/call_participants"
+            android:src="@drawable/ic_person_filled"
+            app:tint="?attr/colorOnSurface" />
+
+        <TextView android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_weight="1" android:text="@string/call_participants"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+
+        <!-- Participant count -->
+        <TextView android:id="@+id/tvParticipantCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp" tools:text="4" />
+    </LinearLayout>
+
+    <!-- Change Layout Row -->
+    <LinearLayout android:id="@+id/rowChangeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true" android:focusable="true"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <ImageView
+            android:layout_width="@dimen/bottom_sheet_icon_size"
+            android:layout_height="@dimen/bottom_sheet_icon_size"
+            android:contentDescription="@string/action_change_layout"
+            android:src="@drawable/ic_grid_view" app:tint="?attr/colorOnSurface" />
+
+        <TextView android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_weight="1" android:text="@string/action_change_layout"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+
+        <!-- Current layout label -->
+        <TextView android:id="@+id/tvCurrentLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp" tools:text="Auto" />
+    </LinearLayout>
+
+    <!-- Divider (before host-only settings) -->
+    <View android:id="@+id/dividerSettings"
+        android:layout_width="match_parent" android:layout_height="1dp"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginVertical="@dimen/spacing_sm"
+        android:background="?attr/colorOutlineVariant"
+        android:visibility="gone" tools:visibility="visible" />
+
+    <!-- Meeting Settings Row (Host only) -->
+    <LinearLayout android:id="@+id/rowMeetingSettings"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_row_height"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true" android:focusable="true"
+        android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:visibility="gone" tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="@dimen/bottom_sheet_icon_size"
+            android:layout_height="@dimen/bottom_sheet_icon_size"
+            android:contentDescription="@string/action_meeting_settings"
+            android:src="@drawable/ic_settings" app:tint="?attr/colorOnSurface" />
+
+        <TextView android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_weight="1"
+            android:text="@string/action_meeting_settings"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -2,7 +2,6 @@ package io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
 import io.github.phunguy65.zms.shared.domain.ValueObject;
-import java.time.Duration;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -16,47 +15,45 @@ import org.jspecify.annotations.Nullable;
  *   <li>{@code MeetingSettingsRequest} — API input</li>
  *   <li>{@code MeetingSettingsResponse} — API output</li>
  * </ul>
+ *
+ * <p>Simplified field set: {@code admissionPolicy}, {@code allowGuest},
+ * {@code maxParticipants}, {@code allowScreenShare}, {@code chatEnabled},
+ * {@code allowMicrophone}, {@code allowVideo}, and nullable {@code password}.
  */
 public record MeetingSettings(
         AdmissionPolicy admissionPolicy,
-        @Nullable Duration joinRequestTimeout,
         boolean allowGuest,
-        boolean muteOnEntry,
         int maxParticipants,
-        boolean recordingEnabled,
-        String screenShareMode,
+        boolean allowScreenShare,
         boolean chatEnabled,
-        @Nullable String passwordHash)
+        boolean allowMicrophone,
+        boolean allowVideo,
+        @Nullable String password)
         implements ValueObject {
-
-    /**
-     * Allowed values for {@code screenShareMode}.
-     */
-    public static final String SCREEN_SHARE_ALL = "ALL";
-
-    public static final String SCREEN_SHARE_HOST_ONLY = "HOST_ONLY";
-    public static final String SCREEN_SHARE_DISABLED = "DISABLED";
 
     /**
      * Returns {@code true} if this meeting requires a password to join.
      */
     public boolean isPasswordProtected() {
-        return passwordHash != null && !passwordHash.isBlank();
+        return password != null && !password.isBlank();
     }
 
     /**
      * Default settings (no password).
+     *
+     * <p>Defaults: {@code allowScreenShare=true}, {@code allowMicrophone=true},
+     * {@code allowVideo=true}, {@code chatEnabled=true}, {@code maxParticipants=100},
+     * {@code allowGuest=true}.
      */
     public static MeetingSettings defaults() {
         return new MeetingSettings(
                 AdmissionPolicy.MANUAL_APPROVAL,
-                Duration.ofMinutes(5),
-                true,
-                false,
-                100,
-                false,
-                SCREEN_SHARE_ALL,
-                true,
-                null);
+                true, // allowGuest
+                100, // maxParticipants
+                true, // allowScreenShare
+                true, // chatEnabled
+                true, // allowMicrophone
+                true, // allowVideo
+                null); // password
     }
 }

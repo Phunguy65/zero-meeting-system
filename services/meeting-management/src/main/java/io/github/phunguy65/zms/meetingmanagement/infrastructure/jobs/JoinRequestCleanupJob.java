@@ -9,6 +9,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Runs every 60 seconds, scans all {@code join_request:*} sorted sets for entries with score
  * (expiresAt) less than current time, marks them as {@code EXPIRED}, publishes
  * {@link JoinRequestExpiredEvent} via the Outbox pattern, and removes from queue.
+ *
+ * <p>Uses {@code SCAN} instead of {@code KEYS} to avoid blocking the Redis event loop on large
+ * key spaces. Empty ZSETs are deleted after processing to prevent orphan key accumulation.
  *
  * <p>Annotated with {@code @Transactional} to create the required transaction context for
  * {@code OutboxEventListener} ({@code @TransactionalEventListener(AFTER_COMMIT)}) to capture
@@ -48,49 +53,61 @@ public class JoinRequestCleanupJob {
     public void cleanupExpiredRequests() {
         long now = Instant.now().toEpochMilli();
 
-        Set<String> queueKeys = redisTemplate.keys("join_request:*");
-        if (queueKeys == null || queueKeys.isEmpty()) {
-            return;
-        }
+        ScanOptions scanOptions =
+                ScanOptions.scanOptions().match("join_request:*").count(100).build();
 
         int expiredCount = 0;
-        for (String queueKey : queueKeys) {
-            if (queueKey.contains("_meta:") || queueKey.contains("_device:")) {
-                continue;
-            }
+        try (Cursor<String> cursor = redisTemplate.scan(scanOptions)) {
+            while (cursor.hasNext()) {
+                String queueKey = cursor.next();
 
-            String meetingIdStr = queueKey.substring("join_request:".length());
-            UUID meetingId;
-            try {
-                meetingId = UUID.fromString(meetingIdStr);
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid meetingId in queue key: {}", queueKey);
-                continue;
-            }
+                if (queueKey.contains("_meta:") || queueKey.contains("_device:")) {
+                    continue;
+                }
 
-            Set<String> expiredRequestIds =
-                    redisTemplate.opsForZSet().rangeByScore(queueKey, 0, now);
-            if (expiredRequestIds == null || expiredRequestIds.isEmpty()) {
-                continue;
-            }
+                String meetingIdStr = queueKey.substring("join_request:".length());
+                UUID meetingId;
+                try {
+                    meetingId = UUID.fromString(meetingIdStr);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid meetingId in queue key: {}", queueKey);
+                    continue;
+                }
 
-            for (String requestIdStr : expiredRequestIds) {
-                UUID requestId = UUID.fromString(requestIdStr);
+                Set<String> expiredRequestIds =
+                        redisTemplate.opsForZSet().rangeByScore(queueKey, 0, now);
+                if (expiredRequestIds == null || expiredRequestIds.isEmpty()) {
+                    cleanupEmptyZset(queueKey);
+                    continue;
+                }
 
-                joinRequestRepository.updateStatus(requestId, JoinRequestStatus.EXPIRED);
+                for (String requestIdStr : expiredRequestIds) {
+                    UUID requestId = UUID.fromString(requestIdStr);
 
-                var expiredEvent = new JoinRequestExpiredEvent(
-                        UUID.randomUUID(), meetingId, requestId, Instant.now());
-                applicationEventPublisher.publishEvent(expiredEvent);
+                    joinRequestRepository.updateStatus(requestId, JoinRequestStatus.EXPIRED);
 
-                joinRequestRepository.removeFromQueue(meetingId, requestId);
+                    var expiredEvent = new JoinRequestExpiredEvent(
+                            UUID.randomUUID(), meetingId, requestId, Instant.now());
+                    applicationEventPublisher.publishEvent(expiredEvent);
 
-                expiredCount++;
+                    joinRequestRepository.removeFromQueue(meetingId, requestId);
+
+                    expiredCount++;
+                }
+
+                cleanupEmptyZset(queueKey);
             }
         }
 
         if (expiredCount > 0) {
             log.info("Expired {} join requests", expiredCount);
+        }
+    }
+
+    private void cleanupEmptyZset(String queueKey) {
+        Long size = redisTemplate.opsForZSet().zCard(queueKey);
+        if (size != null && size == 0) {
+            redisTemplate.delete(queueKey);
         }
     }
 }

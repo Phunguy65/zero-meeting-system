@@ -1,4 +1,5 @@
 import org.gradle.accessors.dm.LibrariesForLibs
+import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.the
 
 plugins {
@@ -18,7 +19,6 @@ dependencies {
     implementation(libs.uuid.creator)
     implementation(libs.spring.boot.starter.flyway)
     implementation(libs.cloudevents.kafka)
-    implementation(libs.jackson.databind.nullable)
     implementation(libs.firebase.admin)
     runtimeOnly(libs.flyway.database.postgresql)
     testImplementation(testFixtures(libs.shared))
@@ -33,4 +33,19 @@ hibernate {
             "io.github.phunguy65.zms.usermanagement.infrastructure.persistence.OutboxEventJpaEntity",
         )
     }
+}
+
+val testTask = tasks.named<Test>("test")
+
+tasks.register<Test>("generateOpenApiDocsFromTests") {
+    group = "openapi"
+    description = "Generate the user-management OpenAPI spec via SpringBootTest"
+    testClassesDirs = testTask.get().testClassesDirs
+    classpath = testTask.get().classpath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("*OpenApiGenerationTest")
+    }
+    outputs.file(layout.buildDirectory.file("openapi/openapi.yaml"))
+    shouldRunAfter(testTask)
 }

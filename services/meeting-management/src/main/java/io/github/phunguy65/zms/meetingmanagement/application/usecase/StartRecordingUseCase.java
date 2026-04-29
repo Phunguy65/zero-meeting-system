@@ -59,7 +59,6 @@ public class StartRecordingUseCase {
                     new MeetingError.InvalidStatusTransition(m.getStatus(), MeetingStatus.LIVE));
         }
 
-        // Check no active (PENDING or RECORDING) recording already exists
         if (recordingRepository.findActiveByMeetingId(command.meetingId()).isPresent()) {
             return Result.failure(new MeetingError.RecordingAlreadyActive(command.meetingId()));
         }

@@ -1,5 +1,6 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
+import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Meeting;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
@@ -7,29 +8,33 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingType;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTimeRange;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTitle;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ParticipatedMeetingCursor;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ShortCode;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.projection.MeetingSettingsSummary;
 import io.github.phunguy65.zms.meetingmanagement.domain.projection.MeetingSummary;
+import io.github.phunguy65.zms.meetingmanagement.domain.projection.ParticipatedMeetingSummary;
 import io.github.phunguy65.zms.shared.domain.CursorPageResponse;
 import io.github.phunguy65.zms.shared.domain.ScrollCursor;
-import io.github.phunguy65.zms.shared.domain.ScrollParams;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Repository;
+import tools.jackson.databind.ObjectMapper;
 
 @Repository
 public class MeetingRepositoryAdapter implements MeetingRepository {
 
     private final MeetingJpaRepository jpa;
+    private final ObjectMapper objectMapper;
 
-    public MeetingRepositoryAdapter(MeetingJpaRepository jpa) {
+    public MeetingRepositoryAdapter(MeetingJpaRepository jpa, ObjectMapper objectMapper) {
         this.jpa = jpa;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -60,32 +65,6 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
     }
 
     @Override
-    public CursorPageResponse<Meeting> findByHostId(UUID hostId, ScrollParams params) {
-        int fetchLimit = params.pageSize() + 1;
-
-        ScrollCursor cursor = params.pageToken()
-                .flatMap(token -> {
-                    // Cursor decoding is handled by the application layer via CursorTokenEncoder.
-                    // The adapter receives a pre-decoded cursor via a dedicated overload if needed.
-                    // For now, null cursor = first page.
-                    return Optional.<ScrollCursor>empty();
-                })
-                .orElse(null);
-
-        var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
-        var cursorId = cursor != null ? cursor.id().toString() : null;
-
-        List<MeetingJpaEntity> rows =
-                jpa.findByHostIdKeyset(hostId.toString(), cursorCreatedAt, cursorId, fetchLimit);
-
-        boolean hasNext = rows.size() > params.pageSize();
-        List<Meeting> items =
-                rows.stream().limit(params.pageSize()).map(this::toDomain).toList();
-
-        return CursorPageResponse.of(items, params.pageSize(), hasNext);
-    }
-
-    @Override
     public CursorPageResponse<MeetingSummary> findSummariesByHostId(
             UUID hostId, @Nullable ScrollCursor cursor, int pageSize) {
         int fetchLimit = pageSize + 1;
@@ -101,20 +80,29 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
         return CursorPageResponse.of(items, pageSize, hasNext);
     }
 
-    /**
-     * Overload accepting a pre-decoded cursor — used by application layer use cases.
-     */
-    public CursorPageResponse<Meeting> findByHostId(
-            UUID hostId, ScrollCursor cursor, int pageSize) {
+    @Override
+    public CursorPageResponse<ParticipatedMeetingSummary> findParticipatedSummariesByUserId(
+            UUID userId,
+            Set<MeetingStatus> statuses,
+            @Nullable ParticipatedMeetingCursor cursor,
+            int pageSize) {
         int fetchLimit = pageSize + 1;
-        var cursorCreatedAt = cursor != null ? cursor.createdAt() : null;
-        var cursorId = cursor != null ? cursor.id().toString() : null;
+        var cursorJoinedAt = cursor != null ? cursor.lastJoinedAt() : null;
+        var cursorMeetingId = cursor != null ? cursor.meetingId().toString() : null;
 
-        List<MeetingJpaEntity> rows =
-                jpa.findByHostIdKeyset(hostId.toString(), cursorCreatedAt, cursorId, fetchLimit);
+        List<ParticipatedMeetingRow> rows = statuses.isEmpty()
+                ? jpa.findParticipatedMeetingsKeyset(
+                        userId.toString(), cursorJoinedAt, cursorMeetingId, fetchLimit)
+                : jpa.findParticipatedMeetingsKeysetByStatuses(
+                        userId.toString(),
+                        statuses.stream().map(MeetingStatus::name).toList(),
+                        cursorJoinedAt,
+                        cursorMeetingId,
+                        fetchLimit);
 
         boolean hasNext = rows.size() > pageSize;
-        List<Meeting> items = rows.stream().limit(pageSize).map(this::toDomain).toList();
+        List<ParticipatedMeetingSummary> items =
+                rows.stream().limit(pageSize).map(this::toParticipatedSummary).toList();
         return CursorPageResponse.of(items, pageSize, hasNext);
     }
 
@@ -126,16 +114,13 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
         java.time.Instant endTime = (timeRange == null) ? e.getEndTime() : null;
         MeetingSettings settings = new MeetingSettings(
                 AdmissionPolicy.valueOf(e.getSettings().admissionPolicy()),
-                e.getSettings().joinRequestTimeoutSeconds() != null
-                        ? Duration.ofSeconds(e.getSettings().joinRequestTimeoutSeconds())
-                        : null,
                 e.getSettings().allowGuest(),
-                e.getSettings().muteOnEntry(),
                 e.getSettings().maxParticipants(),
-                e.getSettings().recordingEnabled(),
-                e.getSettings().screenShareMode(),
+                e.getSettings().allowScreenShare(),
                 e.getSettings().chatEnabled(),
-                e.getSettings().passwordHash());
+                e.getSettings().allowMicrophone(),
+                e.getSettings().allowVideo(),
+                e.getSettings().password());
         return Meeting.reconstitute(
                 MeetingId.of(e.getId()),
                 UserId.of(e.getHostId()),
@@ -163,15 +148,48 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
                 MeetingStatus.valueOf(e.getStatus()),
                 new MeetingSettingsSummary(
                         e.getSettings().admissionPolicy(),
-                        e.getSettings().joinRequestTimeoutSeconds(),
                         e.getSettings().allowGuest(),
-                        e.getSettings().muteOnEntry(),
                         e.getSettings().maxParticipants(),
-                        e.getSettings().recordingEnabled(),
-                        e.getSettings().screenShareMode(),
+                        e.getSettings().allowScreenShare(),
                         e.getSettings().chatEnabled(),
-                        e.getSettings().passwordHash() != null),
+                        e.getSettings().allowMicrophone(),
+                        e.getSettings().allowVideo(),
+                        e.getSettings().password() != null),
                 e.getCreatedAt());
+    }
+
+    private ParticipatedMeetingSummary toParticipatedSummary(ParticipatedMeetingRow row) {
+        MeetingSettingsJson settings;
+        try {
+            settings = objectMapper.readValue(row.getSettings(), MeetingSettingsJson.class);
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    new MeetingError.InvalidSettings("Failed to decode meeting settings JSON")
+                            .message(),
+                    e);
+        }
+
+        return new ParticipatedMeetingSummary(
+                row.getId(),
+                row.getHostId(),
+                row.getShortCode(),
+                row.getTitle(),
+                row.getDescription(),
+                row.getStartTime(),
+                row.getEndTime(),
+                MeetingType.valueOf(row.getType()),
+                MeetingStatus.valueOf(row.getStatus()),
+                new MeetingSettingsSummary(
+                        settings.admissionPolicy(),
+                        settings.allowGuest(),
+                        settings.maxParticipants(),
+                        settings.allowScreenShare(),
+                        settings.chatEnabled(),
+                        settings.allowMicrophone(),
+                        settings.allowVideo(),
+                        settings.password() != null),
+                row.getCreatedAt(),
+                row.getLastJoinedAt());
     }
 
     private MeetingJpaEntity toEntity(Meeting m) {
@@ -187,16 +205,13 @@ public class MeetingRepositoryAdapter implements MeetingRepository {
                 m.getStatus().name(),
                 new MeetingSettingsJson(
                         m.getSettings().admissionPolicy().name(),
-                        m.getSettings().joinRequestTimeout() != null
-                                ? (int) m.getSettings().joinRequestTimeout().toSeconds()
-                                : null,
                         m.getSettings().allowGuest(),
-                        m.getSettings().muteOnEntry(),
                         m.getSettings().maxParticipants(),
-                        m.getSettings().recordingEnabled(),
-                        m.getSettings().screenShareMode(),
+                        m.getSettings().allowScreenShare(),
                         m.getSettings().chatEnabled(),
-                        m.getSettings().passwordHash()),
+                        m.getSettings().allowMicrophone(),
+                        m.getSettings().allowVideo(),
+                        m.getSettings().password()),
                 m.getCreatedAt());
     }
 }

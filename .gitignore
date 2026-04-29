@@ -50,3 +50,7 @@ dist/
 
 # opencode
 .opencode/
+
+# hprof
+*.hprof
+.gitnexus

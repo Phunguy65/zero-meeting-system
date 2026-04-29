@@ -5,14 +5,12 @@ import static org.mockito.Mockito.when;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.shared.domain.Result;
-import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.usermanagement.application.helper.UserPreferencesParser;
 import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.domain.model.User;
-import io.github.phunguy65.zms.usermanagement.domain.model.valueobject.FullName;
 import io.github.phunguy65.zms.usermanagement.domain.port.UserRepository;
+import io.github.phunguy65.zms.usermanagement.domain.projection.UserSummary;
 import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,25 +35,23 @@ class GetUserUseCaseTest {
         useCase = new GetUserUseCase(userRepository, new UserPreferencesParser(new ObjectMapper()));
     }
 
-    private User buildUser() {
-        return User.reconstitute(
-                USER_ID,
-                Email.of("alice@example.com"),
-                null,
-                FullName.of("Alice"),
+    private UserSummary buildUser() {
+        Instant now = Instant.now();
+        return new UserSummary(
+                USER_ID.value(),
+                "alice@example.com",
+                "Alice",
                 null,
                 "https://example.com/avatar.png",
-                null,
                 "EMAIL",
                 null,
-                Instant.now(),
-                Instant.now(),
-                null);
+                now,
+                now);
     }
 
     @Test
     void execute_userFound_returnsUserResponse() {
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.of(buildUser()));
+        when(userRepository.findSummaryActiveById(USER_ID)).thenReturn(Optional.of(buildUser()));
 
         var result = useCase.execute(USER_ID);
 
@@ -72,7 +68,7 @@ class GetUserUseCaseTest {
 
     @Test
     void execute_userNotFound_returnsFailure() {
-        when(userRepository.findActiveById(USER_ID)).thenReturn(Optional.empty());
+        when(userRepository.findSummaryActiveById(USER_ID)).thenReturn(Optional.empty());
 
         var result = useCase.execute(USER_ID);
 

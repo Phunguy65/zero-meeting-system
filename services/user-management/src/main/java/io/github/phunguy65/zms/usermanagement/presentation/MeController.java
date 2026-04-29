@@ -3,109 +3,123 @@ package io.github.phunguy65.zms.usermanagement.presentation;
 import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.github.phunguy65.zms.usermanagement.application.command.PutPreferencesCommand;
+import io.github.phunguy65.zms.usermanagement.application.response.DeleteAccountResponse;
+import io.github.phunguy65.zms.usermanagement.application.response.UserPreferencesResponse;
+import io.github.phunguy65.zms.usermanagement.application.response.UserResponse;
 import io.github.phunguy65.zms.usermanagement.application.usecase.DeleteAccountUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserPreferencesUseCase;
 import io.github.phunguy65.zms.usermanagement.application.usecase.GetUserUseCase;
-import io.github.phunguy65.zms.usermanagement.application.usecase.PatchUpdatePreferencesUseCase;
-import io.github.phunguy65.zms.usermanagement.application.usecase.PatchUpdateUserUseCase;
+import io.github.phunguy65.zms.usermanagement.application.usecase.PutUpdatePreferencesUseCase;
+import io.github.phunguy65.zms.usermanagement.application.usecase.UpdateUserUseCase;
 import io.github.phunguy65.zms.usermanagement.domain.AuthError;
-import io.github.phunguy65.zms.usermanagement.presentation.request.PatchPreferencesRequest;
-import io.github.phunguy65.zms.usermanagement.presentation.request.PatchUserRequest;
+import io.github.phunguy65.zms.usermanagement.presentation.request.PutUserRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
-import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Tag(name = "Me", description = "Current user profile and preferences")
 public class MeController extends BaseController {
 
     private final GetUserUseCase getUserUseCase;
-    private final PatchUpdateUserUseCase patchUpdateUserUseCase;
+    private final UpdateUserUseCase updateUserUseCase;
     private final GetUserPreferencesUseCase getPreferencesUseCase;
-    private final PatchUpdatePreferencesUseCase patchUpdatePreferencesUseCase;
+    private final PutUpdatePreferencesUseCase putUpdatePreferencesUseCase;
     private final DeleteAccountUseCase deleteAccountUseCase;
 
     public MeController(
             GetUserUseCase getUserUseCase,
-            PatchUpdateUserUseCase patchUpdateUserUseCase,
+            UpdateUserUseCase updateUserUseCase,
             GetUserPreferencesUseCase getPreferencesUseCase,
-            PatchUpdatePreferencesUseCase patchUpdatePreferencesUseCase,
+            PutUpdatePreferencesUseCase putUpdatePreferencesUseCase,
             DeleteAccountUseCase deleteAccountUseCase) {
         this.getUserUseCase = getUserUseCase;
-        this.patchUpdateUserUseCase = patchUpdateUserUseCase;
+        this.updateUserUseCase = updateUserUseCase;
         this.getPreferencesUseCase = getPreferencesUseCase;
-        this.patchUpdatePreferencesUseCase = patchUpdatePreferencesUseCase;
+        this.putUpdatePreferencesUseCase = putUpdatePreferencesUseCase;
         this.deleteAccountUseCase = deleteAccountUseCase;
     }
 
+    @Operation(summary = "Get current user profile")
     @GetMapping(value = "/{version}/me", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> getMe(Authentication auth) {
+    public ResponseEntity<JsendResponse<UserResponse>> getMe(Authentication auth) {
         UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
         return switch (getUserUseCase.execute(userId)) {
-            case Result.Success<?, AuthError> s ->
+            case Result.Success<UserResponse, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, AuthError> f -> errorResponse(f.error());
+            case Result.Failure<UserResponse, AuthError> f -> errorResponse(f.error());
         };
     }
 
-    @PatchMapping(value = "/{version}/me", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> patchMe(
-            @Valid @RequestBody PatchUserRequest dto, Authentication auth) {
+    @Operation(summary = "Replace current user profile")
+    @PutMapping(value = "/{version}/me", version = "1.0")
+    public ResponseEntity<JsendResponse<UserResponse>> putMe(
+            @Valid @RequestBody PutUserRequest dto, Authentication auth) {
         UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
-        return switch (patchUpdateUserUseCase.execute(userId, dto.toCommand())) {
-            case Result.Success<?, AuthError> s ->
+        return switch (updateUserUseCase.execute(userId, dto.toCommand())) {
+            case Result.Success<UserResponse, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, AuthError> f -> errorResponse(f.error());
+            case Result.Failure<UserResponse, AuthError> f -> errorResponse(f.error());
         };
     }
 
+    @Operation(summary = "Get current user preferences")
     @GetMapping(value = "/{version}/me/preferences", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> getPreferences(Authentication auth) {
+    public ResponseEntity<JsendResponse<UserPreferencesResponse>> getPreferences(
+            Authentication auth) {
         UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
         return switch (getPreferencesUseCase.execute(userId)) {
-            case Result.Success<?, AuthError> s ->
+            case Result.Success<UserPreferencesResponse, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, AuthError> f -> errorResponse(f.error());
+            case Result.Failure<UserPreferencesResponse, AuthError> f -> errorResponse(f.error());
         };
     }
 
-    @PatchMapping(value = "/{version}/me/preferences", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> patchPreferences(
-            @Valid @RequestBody Map<String, Object> body, Authentication auth) {
+    @Operation(summary = "Replace current user preferences")
+    @PutMapping(value = "/{version}/me/preferences", version = "1.0")
+    public ResponseEntity<JsendResponse<UserPreferencesResponse>> putPreferences(
+            @RequestBody(required = false) Map<String, Object> settings, Authentication auth) {
         UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
-        var dto = new PatchPreferencesRequest(JsonNullable.of(body));
-        return switch (patchUpdatePreferencesUseCase.execute(userId, dto.toCommand())) {
-            case Result.Success<?, AuthError> s ->
+        if (settings == null) {
+            return validationErrorResponse("body", "Request body must not be null");
+        }
+        return switch (putUpdatePreferencesUseCase.execute(
+                userId, new PutPreferencesCommand(settings))) {
+            case Result.Success<UserPreferencesResponse, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, AuthError> f -> errorResponse(f.error());
+            case Result.Failure<UserPreferencesResponse, AuthError> f -> errorResponse(f.error());
         };
     }
 
+    @Operation(summary = "Delete current user account")
     @DeleteMapping(value = "/{version}/me", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> deleteMe(Authentication auth) {
+    public ResponseEntity<JsendResponse<DeleteAccountResponse>> deleteMe(Authentication auth) {
         UserId userId = extractUserId(auth);
         if (userId == null) {
             return errorResponse(new AuthError.InvalidCredentials());
         }
         return switch (deleteAccountUseCase.execute(userId)) {
-            case Result.Success<?, AuthError> s ->
+            case Result.Success<DeleteAccountResponse, AuthError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, AuthError> f -> errorResponse(f.error());
+            case Result.Failure<DeleteAccountResponse, AuthError> f -> errorResponse(f.error());
         };
     }
 

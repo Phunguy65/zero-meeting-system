@@ -1,14 +1,16 @@
 package io.github.phunguy65.zms.meetingmanagement.domain.projection;
 
-import org.jspecify.annotations.Nullable;
-
+/**
+ * Read-only projection of meeting settings for summaries.
+ *
+ * <p>Simplified field set matching the refactored {@code MeetingSettings}.
+ */
 public record MeetingSettingsSummary(
         String admissionPolicy,
-        @Nullable Integer joinRequestTimeoutSeconds,
         boolean allowGuest,
-        boolean muteOnEntry,
         int maxParticipants,
-        boolean recordingEnabled,
-        String screenShareMode,
+        boolean allowScreenShare,
         boolean chatEnabled,
+        boolean allowMicrophone,
+        boolean allowVideo,
         boolean passwordProtected) {}

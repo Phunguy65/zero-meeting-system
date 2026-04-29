@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.Test
+
 plugins {
     id("io.github.phunguy65.zms.plugin.spotless")
     id("io.github.phunguy65.zms.plugin.jvm.base")
@@ -13,7 +15,6 @@ dependencies {
     implementation(libs.uuid.creator)
     implementation(libs.spring.boot.starter.flyway)
     implementation(libs.cloudevents.kafka)
-    implementation(libs.jackson.databind.nullable)
     implementation(libs.livekit.server)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.bouncycastle)
@@ -22,4 +23,19 @@ dependencies {
     testImplementation(libs.spring.boot.data.jpa.test)
     testImplementation(libs.spring.boot.jdbc.test)
     testImplementation(testFixtures(libs.shared))
+}
+
+val testTask = tasks.named<Test>("test")
+
+tasks.register<Test>("generateOpenApiDocsFromTests") {
+    group = "openapi"
+    description = "Generate the meeting-management OpenAPI spec via SpringBootTest"
+    testClassesDirs = testTask.get().testClassesDirs
+    classpath = testTask.get().classpath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("*OpenApiGenerationTest")
+    }
+    outputs.file(layout.buildDirectory.file("openapi/openapi.yaml"))
+    shouldRunAfter(testTask)
 }

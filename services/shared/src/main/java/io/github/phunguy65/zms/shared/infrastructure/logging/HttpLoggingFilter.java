@@ -9,13 +9,18 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Servlet filter that logs inbound HTTP requests ({@code -->}) and outbound responses ({@code
  * <--}) at INFO level. Sets {@code correlationId} in MDC from the {@code X-Correlation-ID} request
  * header, or generates a UUID v4 if absent. Clears MDC after the response is written.
+ *
+ * <p>Only active when running in a SERVLET container (not Netty/WebFlux).
  */
+@ConditionalOnWebApplication(type = Type.SERVLET)
 public class HttpLoggingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(HttpLoggingFilter.class);

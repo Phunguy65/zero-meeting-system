@@ -5,12 +5,14 @@
 
         <!-- ── local/default profile: human-readable console output ─────────── -->
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout
+                pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
 
         <!-- ── k8s profile: structured ECS JSON output ───────────────────────── -->
         <Console name="ConsoleJson" target="SYSTEM_OUT">
-            <JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
+            <JsonTemplateLayout
+                eventTemplateUri="classpath:EcsLayout.json" />
         </Console>
 
     </Appenders>
@@ -18,20 +20,22 @@
     <Loggers>
 
         <SpringProfile name="local | default">
-            <Logger name="io.github.phunguy65.zms" level="DEBUG" additivity="false">
-                <AppenderRef ref="Console"/>
+            <Logger name="io.github.phunguy65.zms" level="DEBUG"
+                additivity="false">
+                <AppenderRef ref="Console" />
             </Logger>
             <Root level="INFO">
-                <AppenderRef ref="Console"/>
+                <AppenderRef ref="Console" />
             </Root>
         </SpringProfile>
 
         <SpringProfile name="k8s">
-            <Logger name="io.github.phunguy65.zms" level="DEBUG" additivity="false">
-                <AppenderRef ref="ConsoleJson"/>
+            <Logger name="io.github.phunguy65.zms" level="DEBUG"
+                additivity="false">
+                <AppenderRef ref="ConsoleJson" />
             </Logger>
             <Root level="INFO">
-                <AppenderRef ref="ConsoleJson"/>
+                <AppenderRef ref="ConsoleJson" />
             </Root>
         </SpringProfile>
 

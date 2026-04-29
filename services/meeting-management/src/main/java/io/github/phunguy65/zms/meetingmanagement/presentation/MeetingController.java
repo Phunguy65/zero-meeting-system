@@ -6,11 +6,13 @@ import io.github.phunguy65.zms.meetingmanagement.application.command.StartMeetin
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetHostMeetingsQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetMeetingByShortCodeQuery;
 import io.github.phunguy65.zms.meetingmanagement.application.query.GetMeetingQuery;
+import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingResponse;
+import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingSettingsResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.*;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.CreateInstantMeetingRequest;
+import io.github.phunguy65.zms.meetingmanagement.presentation.request.MeetingSettingsRequest;
 import io.github.phunguy65.zms.meetingmanagement.presentation.request.ScheduleMeetingRequest;
-import io.github.phunguy65.zms.meetingmanagement.presentation.request.UpdateMeetingSettingsRequest;
 import io.github.phunguy65.zms.shared.domain.CursorErrorCode;
 import io.github.phunguy65.zms.shared.domain.CursorTokenEncoder;
 import io.github.phunguy65.zms.shared.domain.Result;
@@ -18,6 +20,8 @@ import io.github.phunguy65.zms.shared.domain.ScrollCursor;
 import io.github.phunguy65.zms.shared.infrastructure.web.CursorScrollResponse;
 import io.github.phunguy65.zms.shared.infrastructure.web.FailData;
 import io.github.phunguy65.zms.shared.infrastructure.web.JsendResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +32,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Tag(name = "Meetings", description = "Meeting lifecycle management")
 public class MeetingController extends BaseController {
 
     private final ScheduleMeetingUseCase scheduleMeetingUseCase;
@@ -38,7 +43,7 @@ public class MeetingController extends BaseController {
     private final StartMeetingUseCase startMeetingUseCase;
     private final EndMeetingUseCase endMeetingUseCase;
     private final CancelMeetingUseCase cancelMeetingUseCase;
-    private final UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase;
+    private final PutMeetingSettingsUseCase putMeetingSettingsUseCase;
     private final CursorTokenEncoder cursorTokenEncoder;
 
     public MeetingController(
@@ -50,7 +55,7 @@ public class MeetingController extends BaseController {
             StartMeetingUseCase startMeetingUseCase,
             EndMeetingUseCase endMeetingUseCase,
             CancelMeetingUseCase cancelMeetingUseCase,
-            UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase,
+            PutMeetingSettingsUseCase putMeetingSettingsUseCase,
             CursorTokenEncoder cursorTokenEncoder) {
         this.scheduleMeetingUseCase = scheduleMeetingUseCase;
         this.createInstantMeetingUseCase = createInstantMeetingUseCase;
@@ -60,54 +65,61 @@ public class MeetingController extends BaseController {
         this.startMeetingUseCase = startMeetingUseCase;
         this.endMeetingUseCase = endMeetingUseCase;
         this.cancelMeetingUseCase = cancelMeetingUseCase;
-        this.updateMeetingSettingsUseCase = updateMeetingSettingsUseCase;
+        this.putMeetingSettingsUseCase = putMeetingSettingsUseCase;
         this.cursorTokenEncoder = cursorTokenEncoder;
     }
 
+    @Operation(summary = "Schedule a future meeting")
     @PostMapping(value = "/{version}/meetings:schedule", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> scheduleMeeting(
+    public ResponseEntity<JsendResponse<MeetingResponse>> scheduleMeeting(
             @Valid @RequestBody ScheduleMeetingRequest request, Authentication auth) {
         UUID hostId = extractUserId(auth);
         if (hostId == null) return unauthenticated();
         return switch (scheduleMeetingUseCase.execute(request.toCommand(hostId))) {
-            case Result.Success<?, MeetingError> s ->
+            case Result.Success<MeetingResponse, MeetingError> s ->
                 ResponseEntity.status(HttpStatus.CREATED).body(JsendResponse.success(s.value()));
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Failure<MeetingResponse, MeetingError> f -> errorResponse(f.error());
         };
     }
 
+    @Operation(summary = "Create an instant meeting")
     @PostMapping(value = "/{version}/meetings:instant", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> createInstantMeeting(
+    public ResponseEntity<JsendResponse<MeetingResponse>> createInstantMeeting(
             @Valid @RequestBody CreateInstantMeetingRequest request, Authentication auth) {
         UUID hostId = extractUserId(auth);
         if (hostId == null) return unauthenticated();
         return switch (createInstantMeetingUseCase.execute(request.toCommand(hostId))) {
-            case Result.Success<?, MeetingError> s ->
+            case Result.Success<MeetingResponse, MeetingError> s ->
                 ResponseEntity.status(HttpStatus.CREATED).body(JsendResponse.success(s.value()));
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Failure<MeetingResponse, MeetingError> f -> errorResponse(f.error());
         };
     }
 
+    @Operation(summary = "Get meeting detail by ID")
     @GetMapping(value = "/{version}/meetings/{id}", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> getMeeting(@PathVariable UUID id) {
+    public ResponseEntity<JsendResponse<MeetingResponse>> getMeeting(@PathVariable UUID id) {
         return switch (getMeetingUseCase.execute(new GetMeetingQuery(id))) {
-            case Result.Success<?, MeetingError> s ->
+            case Result.Success<MeetingResponse, MeetingError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Failure<MeetingResponse, MeetingError> f -> errorResponse(f.error());
         };
     }
 
+    @Operation(summary = "Get meeting by short code")
     @GetMapping(value = "/{version}/meetings:byShortCode", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> getMeetingByShortCode(@RequestParam String code) {
+    public ResponseEntity<JsendResponse<MeetingResponse>> getMeetingByShortCode(
+            @RequestParam String code) {
         return switch (getMeetingByShortCodeUseCase.execute(new GetMeetingByShortCodeQuery(code))) {
-            case Result.Success<?, MeetingError> s ->
+            case Result.Success<MeetingResponse, MeetingError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Failure<MeetingResponse, MeetingError> f -> errorResponse(f.error());
         };
     }
 
+    @Operation(summary = "List host meetings with cursor pagination")
+    @SuppressWarnings("unchecked")
     @GetMapping(value = "/{version}/meetings", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> listHostMeetings(
+    public ResponseEntity<JsendResponse<CursorScrollResponse<MeetingResponse>>> listHostMeetings(
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) @Nullable String pageToken,
             Authentication auth) {
@@ -120,15 +132,17 @@ public class MeetingController extends BaseController {
         var decodeResult = cursorTokenEncoder.decode(pageToken);
         return switch (decodeResult) {
             case Result.Failure<ScrollCursor, CursorErrorCode> f ->
-                ResponseEntity.badRequest()
-                        .body(JsendResponse.fail(
-                                new FailData(f.error().name(), f.error(), List.of())));
+                (ResponseEntity<JsendResponse<CursorScrollResponse<MeetingResponse>>>)
+                        (ResponseEntity<?>) ResponseEntity.badRequest()
+                                .body(JsendResponse.fail(
+                                        new FailData(f.error().name(), f.error(), List.of())));
             case Result.Success<ScrollCursor, CursorErrorCode> s ->
                 executeGetMeetings(new GetHostMeetingsQuery(hostId, pageSize, s.value()));
         };
     }
 
-    private ResponseEntity<JsendResponse<?>> executeGetMeetings(GetHostMeetingsQuery query) {
+    private ResponseEntity<JsendResponse<CursorScrollResponse<MeetingResponse>>> executeGetMeetings(
+            GetHostMeetingsQuery query) {
         var pageResult = getHostMeetingsUseCase.execute(query);
         String nextPageToken = null;
         if (pageResult.hasNext() && !pageResult.items().isEmpty()) {
@@ -140,49 +154,55 @@ public class MeetingController extends BaseController {
         return ResponseEntity.ok(JsendResponse.success(response));
     }
 
+    @Operation(summary = "Start a meeting")
     @PostMapping(value = "/{version}/meetings/{id}:start", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> startMeeting(
+    public ResponseEntity<JsendResponse<Void>> startMeeting(
             @PathVariable UUID id, Authentication auth) {
         UUID requesterId = extractUserId(auth);
         if (requesterId == null) return unauthenticated();
         return switch (startMeetingUseCase.execute(new StartMeetingCommand(id, requesterId))) {
-            case Result.Success<?, MeetingError> s -> ResponseEntity.ok(JsendResponse.success());
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Success<Void, MeetingError> _ -> ResponseEntity.ok(JsendResponse.success());
+            case Result.Failure<Void, MeetingError> f -> errorResponse(f.error());
         };
     }
 
+    @Operation(summary = "End a meeting")
     @PostMapping(value = "/{version}/meetings/{id}:end", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> endMeeting(@PathVariable UUID id, Authentication auth) {
+    public ResponseEntity<JsendResponse<Void>> endMeeting(
+            @PathVariable UUID id, Authentication auth) {
         UUID requesterId = extractUserId(auth);
         if (requesterId == null) return unauthenticated();
         return switch (endMeetingUseCase.execute(new EndMeetingCommand(id, requesterId))) {
-            case Result.Success<?, MeetingError> s -> ResponseEntity.ok(JsendResponse.success());
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Success<Void, MeetingError> _ -> ResponseEntity.ok(JsendResponse.success());
+            case Result.Failure<Void, MeetingError> f -> errorResponse(f.error());
         };
     }
 
+    @Operation(summary = "Cancel a meeting")
     @PostMapping(value = "/{version}/meetings/{id}:cancel", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> cancelMeeting(
+    public ResponseEntity<JsendResponse<Void>> cancelMeeting(
             @PathVariable UUID id, Authentication auth) {
         UUID requesterId = extractUserId(auth);
         if (requesterId == null) return unauthenticated();
         return switch (cancelMeetingUseCase.execute(new CancelMeetingCommand(id, requesterId))) {
-            case Result.Success<?, MeetingError> s -> ResponseEntity.ok(JsendResponse.success());
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Success<Void, MeetingError> _ -> ResponseEntity.ok(JsendResponse.success());
+            case Result.Failure<Void, MeetingError> f -> errorResponse(f.error());
         };
     }
 
-    @PatchMapping(value = "/{version}/meetings/{id}/settings", version = "1.0")
-    public ResponseEntity<JsendResponse<?>> updateMeetingSettings(
+    @Operation(summary = "Replace meeting settings")
+    @PutMapping(value = "/{version}/meetings/{id}/settings", version = "1.0")
+    public ResponseEntity<JsendResponse<MeetingSettingsResponse>> putMeetingSettings(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateMeetingSettingsRequest request,
+            @Valid @RequestBody MeetingSettingsRequest request,
             Authentication auth) {
         UUID requesterId = extractUserId(auth);
         if (requesterId == null) return unauthenticated();
-        return switch (updateMeetingSettingsUseCase.execute(request.toCommand(id, requesterId))) {
-            case Result.Success<?, MeetingError> s ->
+        return switch (putMeetingSettingsUseCase.execute(request.toCommand(id, requesterId))) {
+            case Result.Success<MeetingSettingsResponse, MeetingError> s ->
                 ResponseEntity.ok(JsendResponse.success(s.value()));
-            case Result.Failure<?, MeetingError> f -> errorResponse(f.error());
+            case Result.Failure<MeetingSettingsResponse, MeetingError> f ->
+                errorResponse(f.error());
         };
     }
 }

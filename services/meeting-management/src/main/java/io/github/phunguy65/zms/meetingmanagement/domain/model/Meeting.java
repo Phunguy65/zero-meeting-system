@@ -9,6 +9,7 @@ import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -204,7 +205,7 @@ public class Meeting extends AggregateRoot<MeetingId> {
 
     /**
      * Updates meeting settings when status is SCHEDULED or LIVE.
-     * Registers {@code MeetingSettingsUpdatedEvent}.
+     * Registers {@code MeetingSettingsUpdatedEvent} with both old and new settings snapshots.
      *
      * @param newSettings the new settings to apply
      * @param updatedBy   the user ID performing the update
@@ -215,10 +216,18 @@ public class Meeting extends AggregateRoot<MeetingId> {
             return Result.failure(
                     new MeetingError.InvalidStatusTransition(status, MeetingStatus.SCHEDULED));
         }
+        MeetingSettings oldSettings = this.settings;
         this.settings = newSettings;
         Instant now = Instant.now();
         registerEvent(new MeetingSettingsUpdatedEvent(
-                UUID.randomUUID(), id.value(), hostId.value(), updatedBy, status, now));
+                UUID.randomUUID(),
+                id.value(),
+                hostId.value(),
+                updatedBy,
+                status,
+                oldSettings,
+                newSettings,
+                now));
         return Result.success();
     }
 
@@ -226,14 +235,36 @@ public class Meeting extends AggregateRoot<MeetingId> {
      * Transitions SCHEDULED → CANCELLED. Registers {@code MeetingCancelledEvent}.
      */
     public Result<Void, MeetingError> cancel() {
+        return cancel(
+                title != null ? title.value() : null,
+                shortCode.value(),
+                timeRange != null ? timeRange.start() : null,
+                List.of());
+    }
+
+    /**
+     * Transitions SCHEDULED → CANCELLED and includes notification payload for invitees.
+     */
+    public Result<Void, MeetingError> cancel(
+            @Nullable String meetingTitle,
+            String meetingShortCode,
+            @Nullable Instant startTime,
+            List<MeetingCancelledEvent.InviteeInfo> invitees) {
         if (!status.canTransitionTo(MeetingStatus.CANCELLED)) {
             return Result.failure(
                     new MeetingError.InvalidStatusTransition(status, MeetingStatus.CANCELLED));
         }
         status = MeetingStatus.CANCELLED;
         Instant now = Instant.now();
-        registerEvent(
-                new MeetingCancelledEvent(UUID.randomUUID(), id.value(), hostId.value(), now));
+        registerEvent(new MeetingCancelledEvent(
+                UUID.randomUUID(),
+                id.value(),
+                hostId.value(),
+                meetingTitle,
+                meetingShortCode,
+                startTime,
+                List.copyOf(invitees),
+                now));
         return Result.success();
     }
 

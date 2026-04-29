@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="@dimen/spacing_lg"
+    android:paddingVertical="@dimen/spacing_sm"
+    android:background="?attr/selectableItemBackground">
+
+    <RelativeLayout android:id="@+id/layoutAvatar"
+        android:layout_width="@dimen/avatar_size_md"
+        android:layout_height="@dimen/avatar_size_md"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView android:id="@+id/imgAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_circle_white"
+            android:scaleType="centerCrop" android:importantForAccessibility="no" />
+
+        <View android:id="@+id/indicatorRed" android:layout_width="12dp"
+            android:layout_height="12dp" android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/bg_badge_red" android:visibility="gone" />
+    </RelativeLayout>
+
+    <LinearLayout android:id="@+id/layoutTitle"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toEndOf="@id/layoutAvatar"
+        app:layout_constraintEnd_toStartOf="@id/btnMicContainer"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="John Doe"
+            android:textColor="?attr/colorOnSurface" android:textSize="16sp" />
+
+        <TextView android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:text="@string/participant_me_suffix"
+            android:textColor="?attr/colorPrimary" android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView android:id="@+id/tvRoleBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:background="@drawable/bg_role_badge"
+            android:paddingHorizontal="@dimen/spacing_sm"
+            android:paddingVertical="2dp"
+            android:textColor="?attr/colorOnPrimaryContainer"
+            android:textSize="10sp" android:textStyle="bold"
+            android:visibility="gone" tools:text="Host"
+            tools:visibility="visible" />
+    </LinearLayout>
+
+    <!-- Mic button with 48dp touch target -->
+    <FrameLayout android:id="@+id/btnMicContainer"
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
+        android:layout_marginEnd="@dimen/spacing_xs" android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintEnd_toStartOf="@id/btnCameraContainer"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView android:id="@+id/btnMic"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_circle_white"
+            android:padding="@dimen/spacing_sm" android:src="@drawable/ic_mic"
+            app:tint="?attr/colorOnSurface"
+            android:contentDescription="@string/cd_mute_mic" />
+    </FrameLayout>
+
+    <!-- Camera button with 48dp touch target -->
+    <FrameLayout android:id="@+id/btnCameraContainer"
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
+        android:clickable="true" android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView android:id="@+id/btnCamera"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_circle_white"
+            android:padding="@dimen/spacing_sm"
+            android:src="@drawable/ic_videocam" app:tint="?attr/colorOnSurface"
+            android:contentDescription="@string/cd_disable_camera" />
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

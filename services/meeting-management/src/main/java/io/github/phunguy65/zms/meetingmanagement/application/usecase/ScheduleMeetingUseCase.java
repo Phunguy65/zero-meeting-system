@@ -2,6 +2,7 @@ package io.github.phunguy65.zms.meetingmanagement.application.usecase;
 
 import io.github.phunguy65.zms.meetingmanagement.application.command.ScheduleMeetingCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.command.ScheduleMeetingCommand.InviteeInput;
+import io.github.phunguy65.zms.meetingmanagement.application.helper.MeetingSettingsPasswordResolver;
 import io.github.phunguy65.zms.meetingmanagement.application.helper.ShortCodeGenerator;
 import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingSettingsResponse;
@@ -73,21 +74,13 @@ public class ScheduleMeetingUseCase {
                             + limitsConfig.getMaxParticipantsCeiling()));
         }
 
-        String rawPassword = command.rawPassword();
+        String rawPassword =
+                MeetingSettingsPasswordResolver.normalizeRawPassword(command.rawPassword());
         String invitationRawPassword = null;
-        if (rawPassword != null && !rawPassword.isBlank()) {
+        if (rawPassword != null) {
             invitationRawPassword = rawPassword;
-            String hash = passwordHasher.hash(rawPassword);
-            settings = new MeetingSettings(
-                    settings.admissionPolicy(),
-                    settings.joinRequestTimeout(),
-                    settings.allowGuest(),
-                    settings.muteOnEntry(),
-                    settings.maxParticipants(),
-                    settings.recordingEnabled(),
-                    settings.screenShareMode(),
-                    settings.chatEnabled(),
-                    hash);
+            settings = MeetingSettingsPasswordResolver.withRawPassword(
+                    settings, rawPassword, passwordHasher);
         }
 
         List<InviteeInput> inviteeInputs =
