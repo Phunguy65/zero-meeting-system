@@ -434,8 +434,14 @@
             "approvalDataUnreadable": "Không thể đọc dữ liệu phê duyệt.",
             "connectionLost": "Mất kết nối sau nhiều lần thử lại. Vui lòng thử lại.",
             "unexpectedResponse": "Phản hồi không mong đợi từ máy chủ.",
-            "serverUnreachable": "Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối."
-        }
+            "serverUnreachable": "Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối.",
+            "tokenInvalid": "Liên kết mời này không hợp lệ. Vui lòng liên hệ chủ phòng họp.",
+            "tokenExpired": "Liên kết mời này đã hết hạn. Vui lòng yêu cầu một lời mời mới.",
+            "tokenRevoked": "Liên kết mời này đã bị thu hồi. Vui lòng liên hệ chủ phòng họp.",
+            "tokenUsed": "Liên kết mời này đã được sử dụng. Vui lòng tham gia thủ công.",
+            "tokenError": "Không thể xác thực liên kết mời. Bạn vẫn có thể tham gia thủ công."
+        },
+        "tokenValidating": "Đang xác thực liên kết mời của bạn..."
     },
     "meetingSettings": {
         "title": "Cài đặt cuộc họp",
@@ -487,5 +493,39 @@
         "instantMeetingActionDescription": "Bắt đầu cuộc họp ngay bây giờ",
         "scheduleMeetingAction": "Lên lịch sau",
         "scheduleMeetingActionDescription": "Lên kế hoạch trước cho cuộc họp"
+    },
+    "inviteManagement": {
+        "sectionTitle": "Người được mời",
+        "emptyState": "Chưa có người được mời.",
+        "errorState": "Không thể tải danh sách người được mời. Vui lòng thử lại.",
+        "status": {
+            "pending": "Chờ xác nhận",
+            "accepted": "Đã chấp nhận",
+            "declined": "Đã từ chối"
+        },
+        "tokenStatus": {
+            "pending": "Token đang chờ",
+            "used": "Đã dùng",
+            "revoked": "Đã thu hồi",
+            "expired": "Đã hết hạn"
+        },
+        "actions": {
+            "resend": "Gửi lại",
+            "revoke": "Thu hồi",
+            "addInvitee": "Thêm người mời"
+        },
+        "addForm": {
+            "placeholder": "Nhập địa chỉ email",
+            "button": "Thêm"
+        },
+        "capReached": "Đã đạt tối đa 10 người được mời.",
+        "validation": {
+            "invalidEmail": "Vui lòng nhập địa chỉ email hợp lệ."
+        },
+        "errors": {
+            "addFailed": "Không thể thêm người được mời. Vui lòng thử lại.",
+            "resendFailed": "Không thể gửi lại lời mời. Vui lòng thử lại.",
+            "revokeFailed": "Không thể thu hồi lời mời. Vui lòng thử lại."
+        }
     }
 }

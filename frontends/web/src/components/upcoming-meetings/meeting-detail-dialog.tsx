@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dialog.tsx';
 import type { MeetingManagementMeetingResponse } from '@/generated/types.gen.ts';
 import { ADMISSION_POLICY_WAITING_ROOM } from '@/lib/schemas/meeting.ts';
+import { InviteManagementSection } from './invite-management-section.tsx';
+import { useInviteManagement } from './use-invite-management.ts';
 
 type MeetingDetailDialogProps = {
     meeting: MeetingManagementMeetingResponse | null;
@@ -92,6 +94,8 @@ export function MeetingDetailDialog({
     const t = useTranslations('workspace.home');
     const locale = useLocale();
     const router = useRouter();
+
+    const inviteManagement = useInviteManagement(meeting?.id ?? '');
 
     if (!meeting) return null;
 
@@ -252,6 +256,17 @@ export function MeetingDetailDialog({
                                 />
                             </div>
                         </div>
+                    )}
+
+                    {meeting.id && (
+                        <InviteManagementSection
+                            addState={inviteManagement.addState}
+                            listState={inviteManagement.listState}
+                            onAddInvitee={inviteManagement.handleAddInvitee}
+                            onResend={inviteManagement.handleResend}
+                            onRevoke={inviteManagement.handleRevoke}
+                            rowStates={inviteManagement.rowStates}
+                        />
                     )}
 
                     <div className='flex flex-wrap gap-2 pt-2'>

@@ -1,8 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useReducer, useRef } from 'react';
-import { getMeetingByShortCode, requestJoin } from '@/generated/sdk.gen.ts';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import {
+    getMeetingByShortCode,
+    requestJoin,
+    validateToken,
+} from '@/generated/sdk.gen.ts';
 import { ApiError, ApiFailError } from '@/lib/api/types.ts';
 
 export type JoinMode = 'guest' | 'authenticated';
@@ -210,6 +214,7 @@ export function joinReducer(state: JoinState, action: JoinAction): JoinState {
 type UseJoinMeetingOptions = {
     mode: JoinMode;
     authenticatedDisplayName?: string;
+    inviteToken?: string;
 };
 
 type LookupAndJoinParams = {
@@ -225,17 +230,26 @@ type SubmitPasswordParams = {
 
 export type UseJoinMeetingReturn = {
     state: JoinState;
+    isValidatingToken: boolean;
+    tokenError: string | null;
+    resolvedCode: string | null;
     lookupAndJoin: (params: LookupAndJoinParams) => Promise<void>;
     submitPassword: (params: SubmitPasswordParams) => Promise<void>;
     retry: () => void;
+    clearTokenError: () => void;
 };
 
 export function useJoinMeeting({
     mode,
     authenticatedDisplayName,
+    inviteToken,
 }: UseJoinMeetingOptions): UseJoinMeetingReturn {
     const t = useTranslations('joinMeeting');
     const [state, dispatch] = useReducer(joinReducer, INITIAL_STATE);
+    const [isValidatingToken, setIsValidatingToken] = useState(false);
+    const [tokenError, setTokenError] = useState<string | null>(null);
+    const [resolvedCode, setResolvedCode] = useState<string | null>(null);
+    const [preApproved, setPreApproved] = useState(false);
     const sseRef = useRef<EventSource | null>(null);
     const sseRequestIdRef = useRef<string | null>(null);
     const sseRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -350,6 +364,49 @@ export function useJoinMeeting({
             closeSse();
         };
     }, [activeRequestId, activeMeetingId, openSse, closeSse]);
+
+    useEffect(() => {
+        if (!inviteToken) return;
+
+        setIsValidatingToken(true);
+
+        validateToken({ body: { token: inviteToken }, throwOnError: true })
+            .then(({ data }) => {
+                const code = data?.shortCode;
+                const approved = data?.preApproved ?? false;
+                if (code) {
+                    setResolvedCode(code);
+                    setPreApproved(approved);
+                }
+                setIsValidatingToken(false);
+            })
+            .catch((error) => {
+                setIsValidatingToken(false);
+                if (error instanceof ApiFailError) {
+                    const code = error.code;
+                    if (code === 'EXPIRED_TOKEN' || code === 'TOKEN_EXPIRED') {
+                        setTokenError(t('errors.tokenExpired'));
+                    } else if (
+                        code === 'REVOKED_TOKEN'
+                        || code === 'TOKEN_REVOKED'
+                    ) {
+                        setTokenError(t('errors.tokenRevoked'));
+                    } else if (
+                        code === 'USED_TOKEN'
+                        || code === 'TOKEN_USED'
+                        || code === 'TOKEN_ALREADY_USED'
+                    ) {
+                        setTokenError(t('errors.tokenUsed'));
+                    } else {
+                        setTokenError(t('errors.tokenInvalid'));
+                    }
+                } else {
+                    setTokenError(t('errors.tokenError'));
+                }
+            });
+    }, [inviteToken, t]);
+
+    const autoSubmitRef = useRef(false);
 
     const submitJoinRequest = useCallback(
         async (meetingId: string, displayName: string, password?: string) => {
@@ -493,6 +550,26 @@ export function useJoinMeeting({
         [mode, authenticatedDisplayName, submitJoinRequest, t],
     );
 
+    useEffect(() => {
+        if (!resolvedCode) return;
+        if (!preApproved) return;
+        if (autoSubmitRef.current) return;
+        if (state.phase !== 'IDLE') return;
+        if (!authenticatedDisplayName) return;
+
+        autoSubmitRef.current = true;
+        void lookupAndJoin({
+            code: resolvedCode,
+            displayName: authenticatedDisplayName,
+        });
+    }, [
+        resolvedCode,
+        preApproved,
+        state.phase,
+        authenticatedDisplayName,
+        lookupAndJoin,
+    ]);
+
     const submitPassword = useCallback(
         async ({ displayName, password }: SubmitPasswordParams) => {
             if (state.phase !== 'NEEDS_PASSWORD') return;
@@ -514,5 +591,18 @@ export function useJoinMeeting({
         dispatch({ type: 'RETRY' });
     }, []);
 
-    return { state, lookupAndJoin, submitPassword, retry };
+    const clearTokenError = useCallback(() => {
+        setTokenError(null);
+    }, []);
+
+    return {
+        state,
+        isValidatingToken,
+        tokenError,
+        resolvedCode,
+        lookupAndJoin,
+        submitPassword,
+        retry,
+        clearTokenError,
+    };
 }

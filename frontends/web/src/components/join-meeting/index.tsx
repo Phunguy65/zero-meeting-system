@@ -19,12 +19,14 @@ type JoinMeetingContainerProps = {
     mode: JoinMode;
     initialCode?: string;
     authenticatedDisplayName?: string;
+    inviteToken?: string;
 };
 
 export function JoinMeetingContainer({
     mode,
     initialCode,
     authenticatedDisplayName,
+    inviteToken,
 }: JoinMeetingContainerProps) {
     const t = useTranslations('joinMeeting');
     const common = useTranslations('workspace.common');
@@ -51,9 +53,19 @@ export function JoinMeetingContainer({
             });
     }, [mode, resolvedDisplayName]);
 
-    const { state, lookupAndJoin, submitPassword, retry } = useJoinMeeting({
+    const {
+        state,
+        isValidatingToken,
+        tokenError,
+        resolvedCode,
+        lookupAndJoin,
+        submitPassword,
+        retry,
+        clearTokenError,
+    } = useJoinMeeting({
         mode,
         authenticatedDisplayName: resolvedDisplayName,
+        inviteToken,
     });
 
     useEffect(() => {
@@ -87,6 +99,8 @@ export function JoinMeetingContainer({
         }
     })();
 
+    const effectiveInitialCode = resolvedCode ?? initialCode;
+
     return (
         <main className='min-h-screen bg-surface-pale text-text-dark'>
             <AppHeader
@@ -102,12 +116,15 @@ export function JoinMeetingContainer({
                 <section className='flex items-center'>
                     <div className='w-full'>
                         <JoinMeetingForm
-                            initialCode={initialCode}
+                            initialCode={effectiveInitialCode}
                             initialDisplayName={resolvedDisplayName}
+                            isValidatingToken={isValidatingToken}
                             mode={mode}
+                            onCodeChange={clearTokenError}
                             onSubmit={lookupAndJoin}
                             onSubmitPassword={submitPassword}
                             state={state}
+                            tokenError={tokenError}
                         />
                     </div>
                 </section>

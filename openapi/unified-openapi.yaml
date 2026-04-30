@@ -39,7 +39,7 @@ tags:
 paths:
   /api/v1/me:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     get:
       tags:
@@ -85,7 +85,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_DeleteAccountResponse'
   /api/v1/me/preferences:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     get:
       tags:
@@ -119,7 +119,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_UserPreferencesResponse'
   /api/v1/auth/reset-password:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     post:
       tags:
@@ -137,7 +137,7 @@ paths:
           description: OK
   /api/v1/auth/register:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     post:
       tags:
@@ -159,7 +159,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_RegisterResponse'
   /api/v1/auth/refresh:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     post:
       tags:
@@ -181,7 +181,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_LoginResponse'
   /api/v1/auth/logout:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     post:
       tags:
@@ -199,7 +199,7 @@ paths:
           description: OK
   /api/v1/auth/login:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     post:
       tags:
@@ -221,7 +221,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_LoginResponse'
   /api/v1/auth/google-login:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     post:
       tags:
@@ -243,7 +243,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_LoginResponse'
   /api/v1/auth/forgot-password:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     post:
       tags:
@@ -261,7 +261,7 @@ paths:
           description: OK
   /api/v1/users:search:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     get:
       tags:
@@ -284,7 +284,7 @@ paths:
                   #/components/schemas/UserManagement_CursorScrollResponseUserResponse
   /api/v1/users/{id}:
     servers:
-      - url: http://localhost:44131
+      - url: http://localhost:37129
         description: Generated server url
     get:
       tags:
@@ -307,7 +307,7 @@ paths:
                 $ref: '#/components/schemas/UserManagement_UserResponse'
   /api/v1/meetings/{id}/settings:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     put:
       tags:
@@ -336,7 +336,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingSettingsResponse'
   /api/v1/meetings:schedule:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -358,7 +358,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings:instant:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -381,7 +381,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{meetingId}/invitees:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -431,7 +431,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_InviteeListResponse'
   /api/v1/meetings/{meetingId}/invitees/{inviteeId}/resend:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -462,7 +462,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_InviteeListResponse'
   /api/v1/meetings/{id}:start:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -481,7 +481,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}:requestJoin:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -510,7 +510,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_RequestJoinResponse'
   /api/v1/meetings/{id}:end:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -529,7 +529,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}:cancel:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -548,7 +548,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/recordings:stop:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -567,7 +567,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/recordings:start:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -590,7 +590,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_RecordingResponse'
   /api/v1/meetings/{id}/participants:muteAll:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -610,7 +610,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/participants:kick:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -640,7 +640,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/participants/{identity}:muteTrack:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -672,7 +672,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/joinRequests:approveAll:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -695,7 +695,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_ApproveAllResponse'
   /api/v1/meetings/{id}/joinRequests/{requestId}:deny:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -720,7 +720,7 @@ paths:
           description: OK
   /api/v1/meetings/{id}/joinRequests/{requestId}:approve:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -745,7 +745,7 @@ paths:
           description: OK
   /api/v1/meetings/invite-tokens:validate:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     post:
       tags:
@@ -773,7 +773,7 @@ paths:
                   #/components/schemas/MeetingManagement_ValidateInviteTokenResponse
   /api/v1/users/{userId}/meetings:filter:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -814,7 +814,7 @@ paths:
                   #/components/schemas/MeetingManagement_CursorScrollResponseMeetingResponse
   /api/v1/users/{userId}/meetings/{meetingId}:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -843,7 +843,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingDetailResponse'
   /api/v1/recordings/{id}:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -866,7 +866,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_RecordingResponse'
   /api/v1/meetings:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -896,7 +896,7 @@ paths:
                   #/components/schemas/MeetingManagement_CursorScrollResponseMeetingResponse
   /api/v1/meetings:byShortCode:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -918,7 +918,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{id}:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -941,7 +941,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_MeetingResponse'
   /api/v1/meetings/{id}/recordings:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -977,7 +977,7 @@ paths:
                   #/components/schemas/MeetingManagement_CursorScrollResponseRecordingResponse
   /api/v1/meetings/{id}/participants:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -1003,7 +1003,7 @@ paths:
                     #/components/schemas/MeetingManagement_ParticipantListItemResponse
   /api/v1/meetings/{id}/joinRequests:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -1041,7 +1041,7 @@ paths:
                   #/components/schemas/MeetingManagement_OffsetScrollResponseJoinRequestResponse
   /api/v1/meetings/{id}/events:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -1064,7 +1064,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_SseEmitter'
   /api/v1/joinRequests/{requestId}/events:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     get:
       tags:
@@ -1087,7 +1087,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_SseEmitter'
   /api/v1/meetings/{meetingId}/invitees/{inviteeId}:
     servers:
-      - url: http://localhost:37499
+      - url: http://localhost:39483
         description: Generated server url
     delete:
       tags:
@@ -1116,7 +1116,7 @@ paths:
                 $ref: '#/components/schemas/MeetingManagement_InviteeListResponse'
   /api/v1/chat/rooms/{roomId}/messages:
     servers:
-      - url: http://localhost:44859
+      - url: http://localhost:35231
         description: Generated server url
     get:
       tags:
@@ -1176,7 +1176,7 @@ paths:
                 $ref: '#/components/schemas/ChatManagement_ChatMessageResponse'
   /api/v1/chat/rooms/{roomId}:
     servers:
-      - url: http://localhost:44859
+      - url: http://localhost:35231
         description: Generated server url
     get:
       tags:

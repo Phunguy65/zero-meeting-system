@@ -38,6 +38,9 @@ type JoinFormProps = {
     initialCode?: string;
     initialDisplayName?: string;
     state: JoinState;
+    isValidatingToken?: boolean;
+    tokenError?: string | null;
+    onCodeChange?: () => void;
     onSubmit: (params: {
         code: string;
         displayName: string;
@@ -54,6 +57,9 @@ export function JoinMeetingForm({
     initialCode = '',
     initialDisplayName = '',
     state,
+    isValidatingToken = false,
+    tokenError = null,
+    onCodeChange,
     onSubmit,
     onSubmitPassword,
 }: JoinFormProps) {
@@ -63,7 +69,9 @@ export function JoinMeetingForm({
 
     const isNeedsPassword = state.phase === 'NEEDS_PASSWORD';
     const isLoading =
-        state.phase === 'LOOKING_UP' || state.phase === 'REQUESTING';
+        state.phase === 'LOOKING_UP'
+        || state.phase === 'REQUESTING'
+        || isValidatingToken;
 
     const initialStepSchema = useMemo(
         () => buildInitialStepSchema(t('validation.required')),
@@ -97,6 +105,12 @@ export function JoinMeetingForm({
             passwordForm.setValue('displayName', initialDisplayName);
         }
     }, [initialDisplayName, initialForm, passwordForm]);
+
+    useEffect(() => {
+        if (initialCode) {
+            initialForm.setValue('code', initialCode);
+        }
+    }, [initialCode, initialForm]);
 
     const passwordError =
         state.phase === 'NEEDS_PASSWORD' && state.error === 'INVALID_PASSWORD'
@@ -231,13 +245,26 @@ export function JoinMeetingForm({
                         </label>
                         <input
                             autoComplete='off'
-                            className='h-12 w-full rounded-xl border border-border-input bg-surface px-4 text-text-darkest outline-none ring-transparent transition focus:ring-2 focus:ring-primary'
+                            className='h-12 w-full rounded-xl border border-border-input bg-surface px-4 text-text-darkest outline-none ring-transparent transition focus:ring-2 focus:ring-primary disabled:opacity-50'
+                            disabled={isValidatingToken}
                             id='join-code'
                             placeholder={t('codePlaceholder')}
                             type='text'
-                            {...initialForm.register('code')}
+                            {...initialForm.register('code', {
+                                onChange: () => onCodeChange?.(),
+                            })}
                         />
-                        {initialForm.formState.errors.code && (
+                        {isValidatingToken && (
+                            <p className='text-xs text-[#9ca3af]'>
+                                {t('tokenValidating')}
+                            </p>
+                        )}
+                        {tokenError && (
+                            <p className='text-sm text-error-dark' role='alert'>
+                                {tokenError}
+                            </p>
+                        )}
+                        {!tokenError && initialForm.formState.errors.code && (
                             <p className='text-sm text-error-dark' role='alert'>
                                 {initialForm.formState.errors.code.message}
                             </p>

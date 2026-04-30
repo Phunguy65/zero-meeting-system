@@ -434,8 +434,14 @@
             "approvalDataUnreadable": "Approval data could not be read.",
             "connectionLost": "Connection lost after multiple retries. Please try again.",
             "unexpectedResponse": "Unexpected response from server.",
-            "serverUnreachable": "Could not reach the server. Check your connection."
-        }
+            "serverUnreachable": "Could not reach the server. Check your connection.",
+            "tokenInvalid": "This invite link is invalid. Please contact the meeting host.",
+            "tokenExpired": "This invite link has expired. Please request a new invite.",
+            "tokenRevoked": "This invite link has been revoked. Please contact the meeting host.",
+            "tokenUsed": "This invite link has already been used. Please join manually.",
+            "tokenError": "Could not validate the invite link. You can still join manually."
+        },
+        "tokenValidating": "Validating your invite link..."
     },
     "meetingSettings": {
         "title": "Meeting Settings",
@@ -487,5 +493,39 @@
         "instantMeetingActionDescription": "Start a meeting right now",
         "scheduleMeetingAction": "Schedule for Later",
         "scheduleMeetingActionDescription": "Plan a meeting in advance"
+    },
+    "inviteManagement": {
+        "sectionTitle": "Invitees",
+        "emptyState": "No invitees yet.",
+        "errorState": "Failed to load invitees. Please try again.",
+        "status": {
+            "pending": "Pending",
+            "accepted": "Accepted",
+            "declined": "Declined"
+        },
+        "tokenStatus": {
+            "pending": "Token Pending",
+            "used": "Used",
+            "revoked": "Revoked",
+            "expired": "Expired"
+        },
+        "actions": {
+            "resend": "Resend",
+            "revoke": "Revoke",
+            "addInvitee": "Add Invitee"
+        },
+        "addForm": {
+            "placeholder": "Enter email address",
+            "button": "Add"
+        },
+        "capReached": "Maximum of 10 invitees reached.",
+        "validation": {
+            "invalidEmail": "Please enter a valid email address."
+        },
+        "errors": {
+            "addFailed": "Failed to add invitee. Please try again.",
+            "resendFailed": "Failed to resend invite. Please try again.",
+            "revokeFailed": "Failed to revoke invite. Please try again."
+        }
     }
 }
