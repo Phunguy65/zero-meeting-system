@@ -386,7 +386,14 @@
         "moderationMuteCamera": "Tắt camera của {name}",
         "moderationMuteMicTooltip": "Tắt tiếng",
         "moderationMuteCameraTooltip": "Tắt camera",
-        "moderationMuteError": "Không thể tắt tiếng người tham gia. Vui lòng thử lại."
+        "moderationMuteError": "Không thể tắt tiếng người tham gia. Vui lòng thử lại.",
+        "chatLoading": "Đang tải tin nhắn...",
+        "chatEmpty": "Chưa có tin nhắn nào. Hãy chào mọi người!",
+        "chatError": "Không thể tải tin nhắn.",
+        "chatRetry": "Thử lại",
+        "chatSendError": "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        "systemMessageJoined": "{name} đã tham gia cuộc họp",
+        "systemMessageLeft": "{name} đã rời cuộc họp"
     },
     "splash": {
         "title": "Hệ thống Zero Meeting",

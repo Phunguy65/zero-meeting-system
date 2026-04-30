@@ -1,61 +1,158 @@
 'use client';
 
-import { Send } from 'lucide-react';
+import { Loader2, MessageSquare, Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
-import type { MeetingMessage } from '@/lib/mock-data/messages.ts';
+import { useEffect, useRef, useState } from 'react';
+import type { ChatMessage } from '@/types/chat.ts';
 
 type MeetingChatProps = {
-    messages: MeetingMessage[];
-    onSendMessage: (text: string) => void;
+    messages: ChatMessage[];
+    loading: boolean;
+    error: boolean;
+    sendError: boolean;
+    userId: string;
+    onRetry: () => void;
+    onSend: (content: string) => void;
 };
 
-export function MeetingChat({ messages, onSendMessage }: MeetingChatProps) {
+type SystemMessageRowProps = {
+    message: ChatMessage;
+};
+
+type OutgoingMessageRowProps = {
+    message: ChatMessage;
+};
+
+type IncomingMessageRowProps = {
+    message: ChatMessage;
+};
+
+function SystemMessageRow({ message }: SystemMessageRowProps) {
+    return (
+        <div className='flex justify-center py-1'>
+            <span className='text-center text-[0.82rem] italic text-text-muted'>
+                {message.content}
+            </span>
+        </div>
+    );
+}
+
+function OutgoingMessageRow({ message }: OutgoingMessageRowProps) {
+    return (
+        <div className='flex flex-col items-end gap-1'>
+            <div className='max-w-[80%] rounded-[1rem] bg-primary px-4 py-3 text-[0.97rem] leading-7 text-white'>
+                {message.content}
+            </div>
+        </div>
+    );
+}
+
+function IncomingMessageRow({ message }: IncomingMessageRowProps) {
+    return (
+        <div className='flex flex-col items-start gap-1'>
+            <span className='px-1 text-[0.82rem] font-semibold text-text-secondary'>
+                {message.senderName}
+            </span>
+            <div className='max-w-[80%] rounded-[1rem] bg-surface-input px-4 py-3 text-[0.97rem] leading-7 text-text-primary'>
+                {message.content}
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Chat panel rendered inside the meeting sidebar. Displays three distinct
+ * message styles (outgoing, incoming, system), plus loading, empty, and error
+ * states. Auto-scrolls to the bottom whenever the message list grows.
+ * Shows a brief inline error banner when a send operation fails.
+ */
+export function MeetingChat({
+    messages,
+    loading,
+    error,
+    sendError,
+    userId,
+    onRetry,
+    onSend,
+}: MeetingChatProps) {
     const t = useTranslations('meetingRoom');
     const [inputValue, setInputValue] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: scroll fires on message list growth
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages.length]);
+
     function handleSend() {
         const text = inputValue.trim();
         if (!text) return;
-        onSendMessage(text);
+        onSend(text);
         setInputValue('');
     }
 
     return (
         <>
             <div
-                className='flex-1 space-y-5 overflow-y-auto px-5 py-5'
+                className='flex-1 space-y-3 overflow-y-auto px-5 py-5'
                 ref={scrollRef}
             >
-                {messages.map((msg) => (
-                    <div key={msg.id}>
-                        <div className='mb-2 flex items-center justify-between gap-3'>
-                            <span
-                                className={`text-[1.02rem] font-semibold ${
-                                    msg.isYou
-                                        ? 'text-primary'
-                                        : 'text-text-dark'
-                                }`}
-                            >
-                                {msg.isYou ? t('you') : msg.sender}
-                            </span>
-                            <span className='shrink-0 text-[0.78rem] text-text-message-time'>
-                                {msg.time}
-                            </span>
-                        </div>
-                        <div
-                            className={`rounded-[1rem] px-4 py-3 text-[0.97rem] leading-7 ${
-                                msg.isYou
-                                    ? 'bg-primary-muted text-text-message-own'
-                                    : 'bg-surface-input text-text-primary'
-                            }`}
-                        >
-                            {msg.text}
-                        </div>
+                {loading && (
+                    <div className='flex items-center justify-center gap-2 py-8'>
+                        <Loader2 className='h-4 w-4 animate-spin text-text-muted' />
+                        <span className='text-[0.9rem] text-text-muted'>
+                            {t('chatLoading')}
+                        </span>
                     </div>
-                ))}
+                )}
+
+                {error && !loading && (
+                    <div className='flex flex-col items-center gap-3 py-8'>
+                        <p className='text-[0.9rem] text-error'>
+                            {t('chatError')}
+                        </p>
+                        <button
+                            className='rounded-lg bg-surface-input px-4 py-2 text-sm font-medium text-text-dark transition-colors hover:bg-surface-person-item'
+                            onClick={onRetry}
+                            type='button'
+                        >
+                            {t('chatRetry')}
+                        </button>
+                    </div>
+                )}
+
+                {!loading && !error && messages.length === 0 && (
+                    <div className='flex flex-col items-center gap-3 py-8'>
+                        <MessageSquare className='h-10 w-10 text-text-muted opacity-40' />
+                        <p className='text-[0.9rem] text-text-muted'>
+                            {t('chatEmpty')}
+                        </p>
+                    </div>
+                )}
+
+                {!loading
+                    && messages.map((msg) =>
+                        msg.type === 'SYSTEM' ? (
+                            <SystemMessageRow key={msg.id} message={msg} />
+                        ) : msg.senderId === userId ? (
+                            <OutgoingMessageRow key={msg.id} message={msg} />
+                        ) : (
+                            <IncomingMessageRow key={msg.id} message={msg} />
+                        ),
+                    )}
             </div>
+
+            {sendError && (
+                <div
+                    aria-live='polite'
+                    className='shrink-0 px-5 py-2 text-center text-sm text-error'
+                    role='alert'
+                >
+                    {t('chatSendError')}
+                </div>
+            )}
 
             <div className='shrink-0 border-t border-border p-4'>
                 <div className='flex items-center gap-3 rounded-full bg-surface-input px-5 py-3 ring-1 ring-transparent transition focus-within:ring-2 focus-within:ring-primary'>

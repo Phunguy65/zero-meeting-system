@@ -35,6 +35,7 @@ type MeetingToolbarProps = {
     isRecording: boolean;
     hasWaitingRoom: boolean;
     pendingWaitingCount: number;
+    unreadCount: number;
     currentLayout: MeetingLayoutMode;
     canOpenSettings: boolean;
     onToggleMic: () => void;
@@ -88,12 +89,14 @@ function ToolbarIconButton({
  * Floating pill toolbar centered at the bottom of the meeting room.
  * Exposes mic, video, layout, more-actions, and leave controls.
  * Host-only actions (waiting room, recording) are conditionally rendered.
+ * Shows an unread badge on the chat menu item when unreadCount > 0.
  */
 export function MeetingToolbar({
     isHost,
     isRecording,
     hasWaitingRoom,
     pendingWaitingCount,
+    unreadCount,
     currentLayout,
     canOpenSettings,
     onToggleMic,
@@ -170,7 +173,14 @@ export function MeetingToolbar({
                         </Tooltip>
                         <DropdownMenuContent align='center' side='top'>
                             <DropdownMenuItem onClick={onOpenChat}>
-                                {t('controlChat')}
+                                <span className='flex items-center gap-2'>
+                                    {t('controlChat')}
+                                    {unreadCount > 0 && (
+                                        <span className='flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[0.7rem] font-semibold text-white'>
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </span>
                             </DropdownMenuItem>
                             {canOpenSettings && onOpenSettings && (
                                 <DropdownMenuItem onClick={onOpenSettings}>

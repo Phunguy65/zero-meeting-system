@@ -11,9 +11,9 @@ import {
     X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import type { MeetingMessage } from '@/lib/mock-data/messages.ts';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils.ts';
+import type { ChatMessage } from '@/types/chat.ts';
 import { MeetingChat } from './chat.tsx';
 import type { ParticipantViewModel } from './types.ts';
 
@@ -23,12 +23,18 @@ type MuteAllState = 'idle' | 'loading' | 'success';
 
 type MeetingSidebarProps = {
     participants: ParticipantViewModel[];
-    messages: MeetingMessage[];
+    messages: ChatMessage[];
+    loading: boolean;
+    error: boolean;
+    sendError: boolean;
     isOpen: boolean;
     isHost: boolean;
     meetingId: string | null;
+    userId: string;
     onClose: () => void;
-    onSendMessage: (text: string) => void;
+    onSendMessage: (content: string) => void;
+    onRetry: () => void;
+    onLoadHistory: () => void;
     onMuteAll: () => Promise<void>;
     onMuteMic: (identity: string) => Promise<void>;
     onMuteCamera: (identity: string) => Promise<void>;
@@ -227,15 +233,24 @@ function MuteAllBanner({ onMuteAll, onError }: MuteAllBannerProps) {
  * When `isHost` is true and `meetingId` is set, the People tab exposes
  * per-participant mute controls and a sticky mute-all banner for moderable
  * rows. Non-host users see a read-only participant list.
+ *
+ * History load is triggered once when the chat tab becomes active for the
+ * first time.
  */
 export function MeetingSidebar({
     participants,
     messages,
+    loading,
+    error,
+    sendError,
     isOpen,
     isHost,
     meetingId,
+    userId,
     onClose,
     onSendMessage,
+    onRetry,
+    onLoadHistory,
     onMuteAll,
     onMuteMic,
     onMuteCamera,
@@ -243,12 +258,32 @@ export function MeetingSidebar({
     const t = useTranslations('meetingRoom');
     const [activeTab, setActiveTab] = useState<SidebarTab>('chat');
     const [moderationError, setModerationError] = useState<string | null>(null);
+    const chatHistoryTriggeredRef = useRef(false);
 
     const hostCanModerate = isHost && Boolean(meetingId);
 
     function clearError() {
         setModerationError(null);
     }
+
+    function handleChatTabActivate() {
+        setActiveTab('chat');
+        if (!chatHistoryTriggeredRef.current) {
+            chatHistoryTriggeredRef.current = true;
+            onLoadHistory();
+        }
+    }
+
+    useEffect(() => {
+        if (
+            isOpen
+            && activeTab === 'chat'
+            && !chatHistoryTriggeredRef.current
+        ) {
+            chatHistoryTriggeredRef.current = true;
+            onLoadHistory();
+        }
+    }, [isOpen, activeTab, onLoadHistory]);
 
     return (
         <>
@@ -295,7 +330,7 @@ export function MeetingSidebar({
                                 ? 'border-primary text-primary'
                                 : 'border-transparent text-text-subtle hover:text-text-secondary'
                         }`}
-                        onClick={() => setActiveTab('chat')}
+                        onClick={handleChatTabActivate}
                         type='button'
                     >
                         <MessageSquare className='h-6 w-6' />
@@ -320,8 +355,13 @@ export function MeetingSidebar({
 
                 {activeTab === 'chat' ? (
                     <MeetingChat
+                        error={error}
+                        loading={loading}
                         messages={messages}
-                        onSendMessage={onSendMessage}
+                        onRetry={onRetry}
+                        onSend={onSendMessage}
+                        sendError={sendError}
+                        userId={userId}
                     />
                 ) : (
                     <div className='flex flex-1 flex-col overflow-hidden'>

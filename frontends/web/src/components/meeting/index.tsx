@@ -18,6 +18,7 @@ import {
     stopRecording,
 } from '@/generated/sdk.gen.ts';
 import { useCallTimer } from '@/hooks/use-call-timer.ts';
+import { useMeetingChat } from '@/hooks/use-meeting-chat.ts';
 import { useMeetingLayout } from '@/hooks/use-meeting-layout.ts';
 import { useWaitingRoom } from '@/hooks/use-waiting-room.ts';
 import {
@@ -25,10 +26,6 @@ import {
     MEETING_ROOM_KEY,
     MEETING_TOKEN_KEY,
 } from '@/lib/meeting-room-handoff.ts';
-import {
-    INITIAL_MEETING_MESSAGES,
-    type MeetingMessage,
-} from '@/lib/mock-data/messages.ts';
 import { ADMISSION_POLICY_WAITING_ROOM } from '@/lib/schemas/meeting.ts';
 import { ConnectionIndicator } from './connection-indicator.tsx';
 import { LeaveDialog } from './leave-dialog.tsx';
@@ -105,10 +102,8 @@ function MeetingRoomContent({
     } = useMeetingLayout();
     const { formattedDuration } = useCallTimer();
 
-    const [messages, setMessages] = useState<MeetingMessage[]>(
-        INITIAL_MEETING_MESSAGES,
-    );
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'chat' | 'people'>('chat');
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
     const [waitingRoomOpen, setWaitingRoomOpen] = useState(false);
@@ -117,6 +112,10 @@ function MeetingRoomContent({
     const isHost = Boolean(userId && hostId && userId === hostId);
     const connectionStatus = mapConnectionStatus(connectionState);
     const isReconnecting = connectionStatus === 'reconnecting';
+
+    const isChatVisible = sidebarOpen && activeTab === 'chat';
+
+    const chat = useMeetingChat(meetingId ?? '', userId ?? '', isChatVisible);
 
     const waitingRoom = useWaitingRoom(
         isHost && hasWaitingRoom ? meetingId : null,
@@ -146,18 +145,6 @@ function MeetingRoomContent({
             livekitParticipant: p,
         })),
     ];
-
-    function handleSendMessage(text: string) {
-        const time = new Date().toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true,
-        });
-        setMessages((prev) => [
-            ...prev,
-            { id: Date.now(), sender: t('you'), time, text, isYou: true },
-        ]);
-    }
 
     async function handleToggleMic() {
         await localParticipant.setMicrophoneEnabled(
@@ -209,6 +196,20 @@ function MeetingRoomContent({
         [meetingId],
     );
 
+    const handleSend = useCallback(
+        (content: string) => {
+            const senderName =
+                localParticipant.name ?? localParticipant.identity;
+            void chat.send(content, senderName);
+        },
+        [chat, localParticipant],
+    );
+
+    function handleOpenChat() {
+        setSidebarOpen(true);
+        setActiveTab('chat');
+    }
+
     const canOpenSettings = Boolean(meetingId);
 
     const headerActions = (
@@ -254,16 +255,22 @@ function MeetingRoomContent({
                     pinnedIdentity={pinnedIdentity}
                 />
                 <MeetingSidebar
+                    error={chat.error}
                     isHost={isHost}
                     isOpen={sidebarOpen}
+                    loading={chat.loading}
                     meetingId={meetingId}
-                    messages={messages}
+                    messages={chat.messages}
                     onClose={() => setSidebarOpen(false)}
+                    onLoadHistory={chat.loadHistory}
                     onMuteAll={handleMuteAll}
                     onMuteCamera={handleMuteCamera}
                     onMuteMic={handleMuteMic}
-                    onSendMessage={handleSendMessage}
+                    onRetry={chat.loadHistory}
+                    onSendMessage={handleSend}
                     participants={sidebarParticipants}
+                    sendError={chat.sendError}
+                    userId={userId ?? ''}
                 />
             </div>
 
@@ -274,7 +281,7 @@ function MeetingRoomContent({
                 isHost={isHost}
                 isRecording={isRecording}
                 onLayoutChange={setLayoutMode}
-                onOpenChat={() => setSidebarOpen(true)}
+                onOpenChat={handleOpenChat}
                 onOpenSettings={
                     canOpenSettings ? () => setSettingsOpen(true) : undefined
                 }
@@ -284,6 +291,7 @@ function MeetingRoomContent({
                 onToggleRecording={() => void handleToggleRecording()}
                 onToggleVideo={() => void handleToggleVideo()}
                 pendingWaitingCount={waitingRoom.pendingCount}
+                unreadCount={chat.unreadCount}
             />
 
             <LeaveDialog

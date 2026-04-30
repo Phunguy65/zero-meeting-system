@@ -386,7 +386,14 @@
         "moderationMuteCamera": "Mute {name}'s camera",
         "moderationMuteMicTooltip": "Mute microphone",
         "moderationMuteCameraTooltip": "Mute camera",
-        "moderationMuteError": "Failed to mute participant. Please try again."
+        "moderationMuteError": "Failed to mute participant. Please try again.",
+        "chatLoading": "Loading messages...",
+        "chatEmpty": "No messages yet. Say hello!",
+        "chatError": "Failed to load messages.",
+        "chatRetry": "Try Again",
+        "chatSendError": "Failed to send message. Please try again.",
+        "systemMessageJoined": "{name} joined the meeting",
+        "systemMessageLeft": "{name} left the meeting"
     },
     "splash": {
         "title": "Zero Meeting System",
