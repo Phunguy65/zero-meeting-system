@@ -8,18 +8,17 @@ import {
 } from '@livekit/components-react';
 import { ConnectionState } from 'livekit-client';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppHeader } from '@/components/shared/app-header.tsx';
 import {
     getMeeting,
     muteAllParticipants,
     muteParticipantTrack,
-    startRecording,
-    stopRecording,
 } from '@/generated/sdk.gen.ts';
 import { useCallTimer } from '@/hooks/use-call-timer.ts';
 import { useMeetingChat } from '@/hooks/use-meeting-chat.ts';
 import { useMeetingLayout } from '@/hooks/use-meeting-layout.ts';
+import { useRecordingState } from '@/hooks/use-recording-state.ts';
 import { useWaitingRoom } from '@/hooks/use-waiting-room.ts';
 import {
     MEETING_ID_KEY,
@@ -31,6 +30,9 @@ import { ConnectionIndicator } from './connection-indicator.tsx';
 import { LeaveDialog } from './leave-dialog.tsx';
 import { MeetingSettingsDialog } from './meeting-settings-dialog.tsx';
 import { ParticipantGrid } from './participant-grid.tsx';
+import { RecordingBanner } from './recording-banner.tsx';
+import { RecordingConfirmDialog } from './recording-confirm-dialog.tsx';
+import { RecordingIndicator } from './recording-indicator.tsx';
 import { MeetingSidebar } from './sidebar.tsx';
 import { MeetingToolbar } from './toolbar.tsx';
 import type { ParticipantRole, ParticipantViewModel } from './types.ts';
@@ -74,6 +76,8 @@ function mapConnectionStatus(
     return 'disconnected';
 }
 
+type BannerType = 'started' | 'stopped' | null;
+
 type MeetingRoomContentProps = {
     meetingId: string | null;
     userId: string | null;
@@ -107,7 +111,8 @@ function MeetingRoomContent({
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
     const [waitingRoomOpen, setWaitingRoomOpen] = useState(false);
-    const [isRecording, setIsRecording] = useState(false);
+    const [recordingConfirmOpen, setRecordingConfirmOpen] = useState(false);
+    const [bannerType, setBannerType] = useState<BannerType>(null);
 
     const isHost = Boolean(userId && hostId && userId === hostId);
     const connectionStatus = mapConnectionStatus(connectionState);
@@ -120,6 +125,35 @@ function MeetingRoomContent({
     const waitingRoom = useWaitingRoom(
         isHost && hasWaitingRoom ? meetingId : null,
     );
+
+    const {
+        recordingState,
+        error: recordingError,
+        startRecording,
+        stopRecording,
+        clearError: clearRecordingError,
+    } = useRecordingState(meetingId);
+
+    const prevRecordingStateRef = useRef(recordingState);
+    const isFirstRenderRef = useRef(true);
+
+    useEffect(() => {
+        if (isFirstRenderRef.current) {
+            isFirstRenderRef.current = false;
+            prevRecordingStateRef.current = recordingState;
+            return;
+        }
+
+        const prev = prevRecordingStateRef.current;
+        prevRecordingStateRef.current = recordingState;
+
+        if (recordingState === 'recording' && prev !== 'recording') {
+            setRecordingConfirmOpen(false);
+            setBannerType('started');
+        } else if (prev === 'recording' && recordingState !== 'recording') {
+            setBannerType('stopped');
+        }
+    }, [recordingState]);
 
     function resolveRole(identity: string): ParticipantRole {
         return identity === hostId ? 'HOST' : 'PARTICIPANT';
@@ -157,17 +191,6 @@ function MeetingRoomContent({
             !localParticipant.isCameraEnabled,
         );
     }
-
-    const handleToggleRecording = useCallback(async () => {
-        if (!meetingId) return;
-        if (isRecording) {
-            await stopRecording({ path: { id: meetingId } });
-            setIsRecording(false);
-        } else {
-            await startRecording({ path: { id: meetingId } });
-            setIsRecording(true);
-        }
-    }, [meetingId, isRecording]);
 
     const handleMuteAll = useCallback(async () => {
         if (!meetingId) return;
@@ -210,10 +233,19 @@ function MeetingRoomContent({
         setActiveTab('chat');
     }
 
+    function handleToolbarStartRecording() {
+        setRecordingConfirmOpen(true);
+    }
+
+    function handleToolbarStopRecording() {
+        void stopRecording();
+    }
+
     const canOpenSettings = Boolean(meetingId);
 
     const headerActions = (
         <div className='flex items-center gap-3'>
+            <RecordingIndicator isVisible={recordingState === 'recording'} />
             <ConnectionIndicator
                 connectedLabel={t('statusConnected')}
                 disconnectedLabel={t('statusDisconnected')}
@@ -249,6 +281,11 @@ function MeetingRoomContent({
                 </div>
             )}
 
+            <RecordingBanner
+                onDismiss={() => setBannerType(null)}
+                type={bannerType}
+            />
+
             <div className='flex flex-1 overflow-hidden'>
                 <ParticipantGrid
                     layoutMode={layoutMode}
@@ -274,12 +311,42 @@ function MeetingRoomContent({
                 />
             </div>
 
+            {recordingError !== null && recordingState === 'recording' && (
+                <div
+                    aria-live='assertive'
+                    className='shrink-0 border border-error/40 bg-error-subtle px-6 py-2'
+                    role='alert'
+                >
+                    <div className='flex items-center justify-between gap-4'>
+                        <p className='text-sm font-medium text-error-dark'>
+                            {recordingError}
+                        </p>
+                        <div className='flex shrink-0 items-center gap-2'>
+                            <button
+                                className='text-sm font-medium text-error-dark underline hover:no-underline'
+                                onClick={() => void stopRecording()}
+                                type='button'
+                            >
+                                {t('recordingRetry')}
+                            </button>
+                            <button
+                                aria-label={t('dismissRecordingBanner')}
+                                className='text-sm font-medium text-error-dark underline hover:no-underline'
+                                onClick={clearRecordingError}
+                                type='button'
+                            >
+                                {t('recordingConfirmCancel')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <MeetingToolbar
                 canOpenSettings={canOpenSettings}
                 currentLayout={layoutMode}
                 hasWaitingRoom={hasWaitingRoom}
                 isHost={isHost}
-                isRecording={isRecording}
                 onLayoutChange={setLayoutMode}
                 onOpenChat={handleOpenChat}
                 onOpenSettings={
@@ -287,10 +354,12 @@ function MeetingRoomContent({
                 }
                 onOpenWaitingRoom={() => setWaitingRoomOpen(true)}
                 onRequestLeave={() => setLeaveDialogOpen(true)}
+                onStartRecording={handleToolbarStartRecording}
+                onStopRecording={handleToolbarStopRecording}
                 onToggleMic={() => void handleToggleMic()}
-                onToggleRecording={() => void handleToggleRecording()}
                 onToggleVideo={() => void handleToggleVideo()}
                 pendingWaitingCount={waitingRoom.pendingCount}
+                recordingState={recordingState}
                 unreadCount={chat.unreadCount}
             />
 
@@ -300,6 +369,16 @@ function MeetingRoomContent({
                 onOpenChange={setLeaveDialogOpen}
                 open={leaveDialogOpen}
             />
+
+            {isHost && (
+                <RecordingConfirmDialog
+                    error={recordingError}
+                    onConfirm={startRecording}
+                    onOpenChange={setRecordingConfirmOpen}
+                    open={recordingConfirmOpen}
+                    recordingState={recordingState}
+                />
+            )}
 
             <MeetingSettingsDialog
                 meetingId={meetingId}

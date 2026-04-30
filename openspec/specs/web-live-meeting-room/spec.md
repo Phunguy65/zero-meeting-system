@@ -113,22 +113,24 @@ understand connectivity and elapsed call time while remaining accessible.
 The system SHALL provide a floating control bar for in-call actions, preserve
 host-only actions, require confirmation before leaving the meeting, expose a
 host-only option to end the meeting for all participants from the leave dialog,
-and expose host-only participant moderation actions from the People tab.
+expose host-only participant moderation actions from the People tab, and expose
+host-only recording controls from a dedicated toolbar button.
 
 ### Scenario: Toolbar presents floating primary controls
 
 - WHEN the user is in the live meeting room
 - THEN the system SHALL render a floating centered toolbar with icon-only
-  controls, hover tooltips, a distinct end-call action, and a layout-picker
-  entry point
+  controls, hover tooltips, a distinct end-call action, a layout-picker entry
+  point, and a recording control button (visible only to hosts)
 
 ### Scenario: Host-only actions are conditionally available
 
 - WHEN the current user is recognized as the host in the meeting room
-- THEN the system SHALL expose host-only actions such as recording controls,
-  waiting-room management, participant moderation actions, and the option to end
-  the meeting for all participants, and SHALL hide those host-only actions from
-  non-host participants
+- THEN the system SHALL expose host-only actions such as recording controls (a
+  dedicated toolbar button with four visual states), waiting-room management,
+  participant moderation actions, and the option to end the meeting for all
+  participants, and SHALL hide those host-only actions from non-host
+  participants
 
 ### Scenario: Non-host leave action requires confirmation and disconnects media
 

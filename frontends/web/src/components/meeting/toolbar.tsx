@@ -2,12 +2,13 @@
 
 import { useLocalParticipant } from '@livekit/components-react';
 import {
+    Circle,
+    Loader2,
     Mic,
     MicOff,
     MoreHorizontal,
     Phone,
     Settings,
-    Square,
     Users,
     Video,
     VideoOff,
@@ -28,11 +29,12 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx';
 import type { MeetingLayoutMode } from '@/hooks/use-meeting-layout.ts';
+import type { RecordingState } from '@/hooks/use-recording-state.ts';
 import { LayoutPicker } from './layout-picker.tsx';
 
 type MeetingToolbarProps = {
     isHost: boolean;
-    isRecording: boolean;
+    recordingState: RecordingState;
     hasWaitingRoom: boolean;
     pendingWaitingCount: number;
     unreadCount: number;
@@ -43,7 +45,8 @@ type MeetingToolbarProps = {
     onOpenSettings?: () => void;
     onOpenChat: () => void;
     onOpenWaitingRoom: () => void;
-    onToggleRecording: () => void;
+    onStartRecording: () => void;
+    onStopRecording: () => void;
     onLayoutChange: (mode: MeetingLayoutMode) => void;
     onRequestLeave: () => void;
 };
@@ -53,25 +56,33 @@ type ToolbarButtonProps = {
     onClick?: () => void;
     active?: boolean;
     destructive?: boolean;
+    disabled?: boolean;
     children: React.ReactNode;
+    className?: string;
 };
 
 function ToolbarIconButton({
     label,
     onClick,
     active = false,
+    disabled = false,
     children,
+    className,
 }: ToolbarButtonProps) {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
                 <button
                     aria-label={label}
-                    className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
-                        active
-                            ? 'bg-error-subtle text-error hover:bg-error-subtle/80'
-                            : 'bg-surface-input text-text-secondary hover:bg-surface-input/80 hover:text-primary'
-                    }`}
+                    className={
+                        className
+                        ?? `flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
+                            active
+                                ? 'bg-error-subtle text-error hover:bg-error-subtle/80'
+                                : 'bg-surface-input text-text-secondary hover:bg-surface-input/80 hover:text-primary'
+                        } disabled:cursor-not-allowed disabled:opacity-60`
+                    }
+                    disabled={disabled}
                     onClick={onClick}
                     type='button'
                 >
@@ -85,15 +96,79 @@ function ToolbarIconButton({
     );
 }
 
+function RecordingButton({
+    recordingState,
+    onStart,
+    onStop,
+    labelIdle,
+    labelStarting,
+    labelRecording,
+    labelStopping,
+}: {
+    recordingState: RecordingState;
+    onStart: () => void;
+    onStop: () => void;
+    labelIdle: string;
+    labelStarting: string;
+    labelRecording: string;
+    labelStopping: string;
+}) {
+    const isDisabled =
+        recordingState === 'starting' || recordingState === 'stopping';
+    const isRecording = recordingState === 'recording';
+    const isStopping = recordingState === 'stopping';
+
+    const label = {
+        idle: labelIdle,
+        starting: labelStarting,
+        recording: labelRecording,
+        stopping: labelStopping,
+    }[recordingState];
+
+    const buttonClassName =
+        isRecording || isStopping
+            ? `flex h-11 w-11 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                  isStopping
+                      ? 'bg-error/70 text-white'
+                      : 'bg-error text-white shadow-[0_0_12px_rgba(220,38,38,0.5)]'
+              }`
+            : 'flex h-11 w-11 items-center justify-center rounded-full bg-surface-input text-text-secondary transition-colors hover:bg-surface-input/80 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60';
+
+    function handleClick() {
+        if (isRecording) {
+            onStop();
+        } else if (recordingState === 'idle') {
+            onStart();
+        }
+    }
+
+    return (
+        <ToolbarIconButton
+            className={buttonClassName}
+            disabled={isDisabled}
+            label={label}
+            onClick={handleClick}
+        >
+            {isDisabled ? (
+                <Loader2 className='h-5 w-5 animate-spin' />
+            ) : isRecording ? (
+                <Circle className='h-5 w-5 fill-white text-white' />
+            ) : (
+                <Circle className='h-5 w-5' />
+            )}
+        </ToolbarIconButton>
+    );
+}
+
 /**
  * Floating pill toolbar centered at the bottom of the meeting room.
  * Exposes mic, video, layout, more-actions, and leave controls.
- * Host-only actions (waiting room, recording) are conditionally rendered.
+ * Host-only actions (waiting room, recording button) are conditionally rendered.
  * Shows an unread badge on the chat menu item when unreadCount > 0.
  */
 export function MeetingToolbar({
     isHost,
-    isRecording,
+    recordingState,
     hasWaitingRoom,
     pendingWaitingCount,
     unreadCount,
@@ -104,14 +179,15 @@ export function MeetingToolbar({
     onOpenSettings,
     onOpenChat,
     onOpenWaitingRoom,
-    onToggleRecording,
+    onStartRecording,
+    onStopRecording,
     onLayoutChange,
     onRequestLeave,
 }: MeetingToolbarProps) {
     const t = useTranslations('meetingRoom');
     const { isMicrophoneEnabled, isCameraEnabled } = useLocalParticipant();
 
-    const showHostSeparator = isHost;
+    const showHostSeparator = isHost && hasWaitingRoom;
 
     return (
         <TooltipProvider>
@@ -153,6 +229,18 @@ export function MeetingToolbar({
                         currentMode={currentLayout}
                         onSelect={onLayoutChange}
                     />
+
+                    {isHost && (
+                        <RecordingButton
+                            labelIdle={t('controlStartRecording')}
+                            labelRecording={t('controlStopRecording')}
+                            labelStarting={t('recordingStarting')}
+                            labelStopping={t('recordingStopping')}
+                            onStart={onStartRecording}
+                            onStop={onStopRecording}
+                            recordingState={recordingState}
+                        />
+                    )}
 
                     <DropdownMenu>
                         <Tooltip>
@@ -197,16 +285,6 @@ export function MeetingToolbar({
                                               count: pendingWaitingCount,
                                           })
                                         : t('waitingRoomManage')}
-                                </DropdownMenuItem>
-                            )}
-                            {isHost && (
-                                <DropdownMenuItem onClick={onToggleRecording}>
-                                    <Square
-                                        className={`mr-2 h-4 w-4 ${isRecording ? 'fill-error text-error' : ''}`}
-                                    />
-                                    {isRecording
-                                        ? t('controlStopRecording')
-                                        : t('controlStartRecording')}
                                 </DropdownMenuItem>
                             )}
                         </DropdownMenuContent>
