@@ -2,17 +2,28 @@ package io.github.phunguy65.zms.notification.infrastructure.messaging;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Kafka message contract for the {@code meeting-management.meeting.invitations.sent} topic.
+ *
+ * <p>{@code rawPassword} has been removed from this contract. The notification service now
+ * uses per-invitee invite tokens from {@code inviteeTokens} (userId → raw token) to build
+ * the join link via {@link io.github.phunguy65.zms.notification.infrastructure.email.MeetingInvitationLinkFactory}.
+ *
+ * <p>During migration, producers may send events without the {@code inviteeTokens} field.
+ * The link factory will fall back to a legacy short-code URL when no token is present.
+ */
 public record MeetingInvitationsSentMessage(
         UUID eventId,
         UUID aggregateId,
         @Nullable String meetingTitle,
         String meetingShortCode,
         @Nullable Instant startTime,
-        @Nullable String rawPassword,
         List<InviteeInfo> invitees,
+        @Nullable Map<UUID, String> inviteeTokens,
         Instant occurredAt) {
 
     public record InviteeInfo(

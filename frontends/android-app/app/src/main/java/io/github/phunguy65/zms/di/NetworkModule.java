@@ -12,6 +12,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.components.SingletonComponent;
 import io.github.phunguy65.zms.data.remote.api.AuthApi;
 import io.github.phunguy65.zms.data.remote.api.ChatApi;
+import io.github.phunguy65.zms.data.remote.api.InviteManagementApi;
+import io.github.phunguy65.zms.data.remote.api.InviteTokensApi;
 import io.github.phunguy65.zms.data.remote.api.JoinRequestsApi;
 import io.github.phunguy65.zms.data.remote.api.MeApi;
 import io.github.phunguy65.zms.data.remote.api.MeetingsApi;
@@ -163,6 +165,18 @@ public final class NetworkModule {
     @Singleton
     ChatApi provideChatApi(Retrofit retrofit) {
         return retrofit.create(ChatApi.class);
+    }
+
+    @Provides
+    @Singleton
+    InviteTokensApi provideInviteTokensApi(Retrofit retrofit) {
+        return retrofit.create(InviteTokensApi.class);
+    }
+
+    @Provides
+    @Singleton
+    InviteManagementApi provideInviteManagementApi(Retrofit retrofit) {
+        return retrofit.create(InviteManagementApi.class);
     }
 
     /**

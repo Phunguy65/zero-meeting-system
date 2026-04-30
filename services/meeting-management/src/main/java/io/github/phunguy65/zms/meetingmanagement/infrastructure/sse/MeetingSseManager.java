@@ -1,6 +1,5 @@
 package io.github.phunguy65.zms.meetingmanagement.infrastructure.sse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestApprovedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.JoinRequestCreatedEvent;
@@ -20,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Manages SSE connections for meeting hosts and guests, broadcasting join request lifecycle events.
@@ -282,7 +283,7 @@ public class MeetingSseManager {
         try {
             byte[] data = cloudEvent.getData().toBytes();
             return objectMapper.readValue(data, type);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             log.error(
                     "Failed to deserialize CloudEvent {} to {}: {}",
                     cloudEvent.getId(),

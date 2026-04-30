@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.domain.usecase.meeting;
 
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
+import io.github.phunguy65.zms.domain.model.UpdateSettingsResult;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
@@ -10,6 +11,8 @@ import javax.inject.Inject;
  *
  * <p>Replaces meeting settings for SCHEDULED or LIVE meetings.
  * Used for host-only live meeting settings and pre-meeting settings edits.
+ * Returns an {@link UpdateSettingsResult} that includes the updated settings and any
+ * invite-token invalidation metadata caused by a password change.
  */
 public class UpdateMeetingSettingsUseCase {
 
@@ -25,9 +28,10 @@ public class UpdateMeetingSettingsUseCase {
      *
      * @param meetingId the meeting UUID
      * @param settings the new meeting settings to apply
-     * @return a CompletableFuture that completes with the updated settings from server
+     * @return a CompletableFuture that completes with the settings update result
      */
-    public CompletableFuture<MeetingSettings> execute(String meetingId, MeetingSettings settings) {
+    public CompletableFuture<UpdateSettingsResult> execute(
+            String meetingId, MeetingSettings settings) {
         return meetingRepository.updateMeetingSettings(meetingId, settings);
     }
 }

@@ -4,6 +4,7 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.InviteeAcceptedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.InviteeDeclinedEvent;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviteTokenId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviteeDisplayName;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviteeId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviterId;
@@ -37,6 +38,7 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
     private InviteeStatus status;
     private final Instant invitedAt;
     private @Nullable Instant respondedAt;
+    private @Nullable InviteTokenId inviteTokenId;
 
     private MeetingInvitee(
             InviteeId id,
@@ -47,7 +49,8 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
             @Nullable InviteeDisplayName displayName,
             InviteeStatus status,
             Instant invitedAt,
-            @Nullable Instant respondedAt) {
+            @Nullable Instant respondedAt,
+            @Nullable InviteTokenId inviteTokenId) {
         this.id = id;
         this.meetingId = meetingId;
         this.inviterId = inviterId;
@@ -57,10 +60,12 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
         this.status = status;
         this.invitedAt = invitedAt;
         this.respondedAt = respondedAt;
+        this.inviteTokenId = inviteTokenId;
     }
 
     /**
-     * Factory method — creates a new PENDING invitation.
+     * Factory method — creates a new PENDING invitation without an invite token.
+     * Call {@link #assignInviteToken(InviteTokenId)} after token creation.
      */
     public static MeetingInvitee create(
             MeetingId meetingId,
@@ -77,6 +82,7 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
                 displayName,
                 InviteeStatus.PENDING,
                 Instant.now(),
+                null,
                 null);
     }
 
@@ -92,7 +98,8 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
             @Nullable InviteeDisplayName displayName,
             InviteeStatus status,
             Instant invitedAt,
-            @Nullable Instant respondedAt) {
+            @Nullable Instant respondedAt,
+            @Nullable InviteTokenId inviteTokenId) {
         return new MeetingInvitee(
                 id,
                 meetingId,
@@ -102,7 +109,15 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
                 displayName,
                 status,
                 invitedAt,
-                respondedAt);
+                respondedAt,
+                inviteTokenId);
+    }
+
+    /**
+     * Associates an invite token with this invitee. Should be called once, right after token creation.
+     */
+    public void assignInviteToken(InviteTokenId tokenId) {
+        this.inviteTokenId = tokenId;
     }
 
     /**
@@ -176,5 +191,12 @@ public class MeetingInvitee extends AggregateRoot<InviteeId> {
 
     public Optional<Instant> getRespondedAt() {
         return Optional.ofNullable(respondedAt);
+    }
+
+    /**
+     * Returns the associated invite token ID, if one has been assigned.
+     */
+    public Optional<InviteTokenId> getInviteTokenId() {
+        return Optional.ofNullable(inviteTokenId);
     }
 }

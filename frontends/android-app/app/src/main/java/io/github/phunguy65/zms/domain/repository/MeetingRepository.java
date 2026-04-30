@@ -1,18 +1,21 @@
 package io.github.phunguy65.zms.domain.repository;
 
 import io.github.phunguy65.zms.domain.model.InstantMeetingSettings;
+import io.github.phunguy65.zms.domain.model.InviteTokenValidationResult;
+import io.github.phunguy65.zms.domain.model.InviteeInfo;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
 import io.github.phunguy65.zms.domain.model.MeetingDetail;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
 import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
+import io.github.phunguy65.zms.domain.model.UpdateSettingsResult;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Repository interface for meeting room operations.
  * Handles instant and scheduled meeting creation, settings management,
- * and upcoming meeting actions.
+ * upcoming meeting actions, and invite token operations.
  */
 public interface MeetingRepository {
 
@@ -62,12 +65,16 @@ public interface MeetingRepository {
      * <p>Replaces the meeting settings via PUT /api/v1/meetings/{id}/settings.
      * Supports host-only live meeting settings and pre-meeting settings edits.
      *
+     * <p>When a password change causes invite tokens to be revoked, the returned result
+     * carries {@code resendInvitesRecommended=true} and the count of invalidated invitees,
+     * so the caller can prompt the host to resend invites.
+     *
      * @param meetingId the meeting UUID
      * @param settings the new meeting settings to apply
-     * @return a CompletableFuture that completes with the updated settings from server response,
+     * @return a CompletableFuture that completes with the settings update result,
      *         or completes exceptionally with a localized error message
      */
-    CompletableFuture<MeetingSettings> updateMeetingSettings(
+    CompletableFuture<UpdateSettingsResult> updateMeetingSettings(
             String meetingId, MeetingSettings settings);
 
     /**
@@ -104,4 +111,49 @@ public interface MeetingRepository {
      *         or completes exceptionally with a localized error message
      */
     CompletableFuture<Void> endMeeting(String meetingId);
+
+    /**
+     * Validates a per-invitee invite token from a meeting invite link.
+     *
+     * <p>On success, the token is marked as USED server-side and cannot be reused.
+     * Returns the meeting ID and short code needed to continue the join flow,
+     * along with the pre-approval flag that indicates whether the waiting room is skipped.
+     *
+     * @param token the raw invite token string extracted from the join link URL
+     * @return a CompletableFuture that completes with the validation result,
+     *         or completes exceptionally if the token is invalid, expired, or revoked
+     */
+    CompletableFuture<InviteTokenValidationResult> validateInviteToken(String token);
+
+    /**
+     * Retrieves all invitees for a meeting along with their invite token status.
+     *
+     * <p>Host-only operation for the invite management screen.
+     *
+     * @param meetingId the meeting UUID
+     * @return a CompletableFuture that completes with the list of invitees
+     */
+    CompletableFuture<List<InviteeInfo>> getInvitees(String meetingId);
+
+    /**
+     * Resends an invite to an existing invitee by revoking the old token and issuing a new one.
+     *
+     * <p>Host-only operation. The old token is revoked and a fresh invite email is sent.
+     *
+     * @param meetingId the meeting UUID
+     * @param inviteeId the invitee UUID
+     * @return a CompletableFuture that completes with the updated invitee info
+     */
+    CompletableFuture<InviteeInfo> resendInvite(String meetingId, String inviteeId);
+
+    /**
+     * Revokes an invitee and their pending invite token.
+     *
+     * <p>Host-only operation. The invitee's token status is set to REVOKED.
+     *
+     * @param meetingId the meeting UUID
+     * @param inviteeId the invitee UUID
+     * @return a CompletableFuture that completes with the updated invitee info
+     */
+    CompletableFuture<InviteeInfo> revokeInvite(String meetingId, String inviteeId);
 }

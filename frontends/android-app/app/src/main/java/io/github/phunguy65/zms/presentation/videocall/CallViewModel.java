@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import javax.inject.Inject;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Shared ViewModel for video call flow, scoped to VideoCallActivity.
@@ -94,6 +95,12 @@ public class CallViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _isEndingMeeting = new MutableLiveData<>(false);
     private final MutableLiveData<String> _endMeetingError = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> _meetingEndedForAll = new MutableLiveData<>(false);
+
+    private final MutableLiveData<Boolean> _isValidatingToken = new MutableLiveData<>(false);
+    private final MutableLiveData<String> _tokenError = new MutableLiveData<>(null);
+    private final MutableLiveData<Boolean> _tokenPreApproved = new MutableLiveData<>(null);
+
+    @Nullable private String pendingInviteToken = null;
 
     private static final long RECONNECT_INITIAL_DELAY_MS = 1000;
     private static final long RECONNECT_MAX_DELAY_MS = 30000;
@@ -447,6 +454,93 @@ public class CallViewModel extends ViewModel {
     }
 
     /**
+     * Sets a raw invite token to be validated when the join screen initialises.
+     *
+     * <p>When set, the token is validated via {@code POST /meetings/invite-tokens:validate}.
+     * On success, {@code _meetingCode} is populated with the returned short code, and
+     * {@code _tokenPreApproved} is set so the pre-join screen can skip the waiting room prompt.
+     * On failure, {@code _tokenError} is set with an error code for the UI to display.
+     *
+     * @param token the raw invite token string from the deep link URL
+     */
+    public void setInviteToken(String token) {
+        this.pendingInviteToken = token;
+        validateInviteToken(token);
+    }
+
+    /**
+     * Observes whether the invite token has been pre-approved (waiting room skip).
+     * Null means no token flow is active; true/false reflects the server response.
+     */
+    public LiveData<Boolean> getTokenPreApproved() {
+        return _tokenPreApproved;
+    }
+
+    /**
+     * Observes token validation errors.
+     * Values: "TOKEN_EXPIRED", "TOKEN_REVOKED", "TOKEN_INVALID", "TOKEN_NETWORK_ERROR".
+     */
+    public LiveData<String> getTokenError() {
+        return _tokenError;
+    }
+
+    /**
+     * Returns true while a token validation request is in flight.
+     */
+    public LiveData<Boolean> isValidatingToken() {
+        return _isValidatingToken;
+    }
+
+    /**
+     * Validates an invite token and on success populates the meeting code and pre-approval flag.
+     */
+    private void validateInviteToken(String token) {
+        _isValidatingToken.setValue(true);
+        _tokenError.setValue(null);
+
+        meetingRepository
+                .validateInviteToken(token)
+                .whenCompleteAsync(
+                        (result, error) -> {
+                            _isValidatingToken.postValue(false);
+
+                            if (error != null) {
+                                String cause = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _tokenError.postValue(resolveTokenError(cause));
+                                return;
+                            }
+
+                            if (result.getShortCode() != null) {
+                                _meetingCode.postValue(result.getShortCode());
+                            }
+                            if (result.getMeetingId() != null) {
+                                meetingUuid = result.getMeetingId();
+                            }
+                            _tokenPreApproved.postValue(result.isPreApproved());
+                        },
+                        mainExecutor);
+    }
+
+    private String resolveTokenError(String message) {
+        if (message == null) {
+            return "TOKEN_INVALID";
+        }
+        String upper = message.toUpperCase();
+        if (upper.contains("EXPIRED")) {
+            return "TOKEN_EXPIRED";
+        }
+        if (upper.contains("REVOKED")) {
+            return "TOKEN_REVOKED";
+        }
+        if (upper.contains("NETWORK") || upper.contains("TIMEOUT") || upper.contains("HOST")) {
+            return "TOKEN_NETWORK_ERROR";
+        }
+        return "TOKEN_INVALID";
+    }
+
+    /**
      * Sets the current video layout mode.
      * Notifies observers to update the participant grid arrangement.
      */
@@ -518,7 +612,7 @@ public class CallViewModel extends ViewModel {
         meetingRepository
                 .updateMeetingSettings(meetingId, settings)
                 .whenCompleteAsync(
-                        (updatedSettings, error) -> {
+                        (result, error) -> {
                             _isSettingsLoading.postValue(false);
 
                             if (error != null) {
@@ -529,7 +623,7 @@ public class CallViewModel extends ViewModel {
                                 return;
                             }
 
-                            _meetingSettings.postValue(updatedSettings);
+                            _meetingSettings.postValue(result.getSettings());
                             _settingsUpdateSuccess.postValue(true);
                         },
                         mainExecutor);

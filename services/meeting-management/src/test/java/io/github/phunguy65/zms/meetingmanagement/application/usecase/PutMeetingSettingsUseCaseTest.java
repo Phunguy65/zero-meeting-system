@@ -3,6 +3,7 @@ package io.github.phunguy65.zms.meetingmanagement.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -12,20 +13,27 @@ import io.github.phunguy65.zms.meetingmanagement.application.command.PutMeetingS
 import io.github.phunguy65.zms.meetingmanagement.application.helper.PendingJoinRequestApprover;
 import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingSettingsResponse;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
+import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingInviteTokensInvalidatedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingSettingsUpdatedEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.AdmissionPolicy;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Meeting;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingInvitee;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingType;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviterId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ShortCode;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.InviteTokenRepository;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingInviteeRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingLimitsPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.PasswordHasher;
 import io.github.phunguy65.zms.shared.domain.Result;
+import io.github.phunguy65.zms.shared.domain.valueobject.Email;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +62,12 @@ class PutMeetingSettingsUseCaseTest {
     @Mock
     PasswordHasher passwordHasher;
 
+    @Mock
+    InviteTokenRepository inviteTokenRepository;
+
+    @Mock
+    MeetingInviteeRepository meetingInviteeRepository;
+
     PutMeetingSettingsUseCase useCase;
 
     @BeforeEach
@@ -63,7 +77,9 @@ class PutMeetingSettingsUseCaseTest {
                 limitsConfig,
                 pendingJoinRequestApprover,
                 eventPublisher,
-                passwordHasher);
+                passwordHasher,
+                inviteTokenRepository,
+                meetingInviteeRepository);
     }
 
     @Test
@@ -87,6 +103,7 @@ class PutMeetingSettingsUseCaseTest {
         when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
         when(meetingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(passwordHasher.hash("secret-pass")).thenReturn("hashed-secret");
+        when(meetingInviteeRepository.findByMeetingId(meetingId)).thenReturn(List.of());
 
         var result = useCase.execute(new PutMeetingSettingsCommand(
                 meetingId,
@@ -119,22 +136,26 @@ class PutMeetingSettingsUseCaseTest {
                                 && saved.getSettings().allowGuest()
                                 && saved.getSettings().maxParticipants() == 40
                                 && !saved.getSettings().allowScreenShare()));
-        ArgumentCaptor<MeetingSettingsUpdatedEvent> eventCaptor =
-                ArgumentCaptor.forClass(MeetingSettingsUpdatedEvent.class);
-        verify(eventPublisher).publishEvent(eventCaptor.capture());
-        assertThat(eventCaptor.getValue().aggregateId()).isEqualTo(meetingId);
-        assertThat(eventCaptor.getValue().hostId()).isEqualTo(hostId);
-        assertThat(eventCaptor.getValue().updatedBy()).isEqualTo(hostId);
-        assertThat(eventCaptor.getValue().meetingStatus()).isEqualTo(MeetingStatus.SCHEDULED);
-        // Verify old/new settings snapshots
-        assertThat(eventCaptor.getValue().oldSettings().allowGuest()).isFalse();
-        assertThat(eventCaptor.getValue().oldSettings().maxParticipants()).isEqualTo(30);
-        assertThat(eventCaptor.getValue().oldSettings().allowScreenShare()).isTrue();
-        assertThat(eventCaptor.getValue().oldSettings().chatEnabled()).isFalse();
-        assertThat(eventCaptor.getValue().newSettings().allowGuest()).isTrue();
-        assertThat(eventCaptor.getValue().newSettings().maxParticipants()).isEqualTo(40);
-        assertThat(eventCaptor.getValue().newSettings().allowScreenShare()).isFalse();
-        assertThat(eventCaptor.getValue().newSettings().chatEnabled()).isTrue();
+
+        ArgumentCaptor<Object> rawEventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(eventPublisher, atLeast(1)).publishEvent(rawEventCaptor.capture());
+        MeetingSettingsUpdatedEvent settingsEvent = rawEventCaptor.getAllValues().stream()
+                .filter(MeetingSettingsUpdatedEvent.class::isInstance)
+                .map(MeetingSettingsUpdatedEvent.class::cast)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Expected MeetingSettingsUpdatedEvent"));
+        assertThat(settingsEvent.aggregateId()).isEqualTo(meetingId);
+        assertThat(settingsEvent.hostId()).isEqualTo(hostId);
+        assertThat(settingsEvent.updatedBy()).isEqualTo(hostId);
+        assertThat(settingsEvent.meetingStatus()).isEqualTo(MeetingStatus.SCHEDULED);
+        assertThat(settingsEvent.oldSettings().allowGuest()).isFalse();
+        assertThat(settingsEvent.oldSettings().maxParticipants()).isEqualTo(30);
+        assertThat(settingsEvent.oldSettings().allowScreenShare()).isTrue();
+        assertThat(settingsEvent.oldSettings().chatEnabled()).isFalse();
+        assertThat(settingsEvent.newSettings().allowGuest()).isTrue();
+        assertThat(settingsEvent.newSettings().maxParticipants()).isEqualTo(40);
+        assertThat(settingsEvent.newSettings().allowScreenShare()).isFalse();
+        assertThat(settingsEvent.newSettings().chatEnabled()).isTrue();
         verify(pendingJoinRequestApprover, never()).approveAll(any(), any());
     }
 
@@ -158,6 +179,7 @@ class PutMeetingSettingsUseCaseTest {
         when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
         when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
         when(meetingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(meetingInviteeRepository.findByMeetingId(meetingId)).thenReturn(List.of());
 
         var result = useCase.execute(new PutMeetingSettingsCommand(
                 meetingId,
@@ -504,6 +526,133 @@ class PutMeetingSettingsUseCaseTest {
                 .isEqualTo(new MeetingError.InvalidStatusTransition(
                         MeetingStatus.CANCELLED, MeetingStatus.SCHEDULED));
         verifyNoInteractions(passwordHasher, pendingJoinRequestApprover, eventPublisher);
+    }
+
+    @Test
+    void execute_scheduledPasswordChange_revokesTokensAndPublishesInvalidationEvent() {
+        UUID meetingId = UUID.randomUUID();
+        UUID hostId = UUID.randomUUID();
+        UUID inviteeUserId = UUID.randomUUID();
+        MeetingInvitee invitee = MeetingInvitee.create(
+                MeetingId.of(meetingId),
+                InviterId.of(hostId),
+                UserId.of(inviteeUserId),
+                Email.of("alice@example.com"),
+                null);
+        Meeting meeting = meetingWithStatus(
+                meetingId,
+                hostId,
+                MeetingStatus.SCHEDULED,
+                settings(
+                        AdmissionPolicy.MANUAL_APPROVAL,
+                        false,
+                        30,
+                        true,
+                        true,
+                        true,
+                        true,
+                        "old-hash"));
+        when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
+        when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
+        when(meetingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(passwordHasher.hash("new-pass")).thenReturn("new-hash");
+        when(inviteTokenRepository.revokeAllPendingByMeetingId(meetingId)).thenReturn(1);
+        when(meetingInviteeRepository.findByMeetingId(meetingId)).thenReturn(List.of(invitee));
+
+        var result = useCase.execute(new PutMeetingSettingsCommand(
+                meetingId,
+                hostId,
+                settings(AdmissionPolicy.MANUAL_APPROVAL, false, 30, true, true, true, true, null),
+                "new-pass"));
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        var response = (MeetingSettingsResponse) ((Result.Success<?, ?>) result).value();
+        assertThat(response.resendInvitesRecommended()).isTrue();
+
+        verify(inviteTokenRepository).revokeAllPendingByMeetingId(meetingId);
+        verify(meetingInviteeRepository).findByMeetingId(meetingId);
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(eventPublisher, atLeast(1)).publishEvent(eventCaptor.capture());
+        MeetingInviteTokensInvalidatedEvent invalidationEvent = eventCaptor.getAllValues().stream()
+                .filter(MeetingInviteTokensInvalidatedEvent.class::isInstance)
+                .map(MeetingInviteTokensInvalidatedEvent.class::cast)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "Expected MeetingInviteTokensInvalidatedEvent to be published"));
+        assertThat(invalidationEvent.aggregateId()).isEqualTo(meetingId);
+        assertThat(invalidationEvent.hostId()).isEqualTo(hostId);
+        assertThat(invalidationEvent.affectedInvitees()).hasSize(1);
+        assertThat(invalidationEvent.affectedInvitees().getFirst().email())
+                .isEqualTo("alice@example.com");
+        assertThat(invalidationEvent.affectedInvitees().getFirst().userId())
+                .isEqualTo(inviteeUserId);
+    }
+
+    @Test
+    void execute_scheduledNoPasswordChange_doesNotRevokeTokens() {
+        UUID meetingId = UUID.randomUUID();
+        UUID hostId = UUID.randomUUID();
+        Meeting meeting = meetingWithStatus(
+                meetingId,
+                hostId,
+                MeetingStatus.SCHEDULED,
+                settings(
+                        AdmissionPolicy.MANUAL_APPROVAL,
+                        false,
+                        30,
+                        true,
+                        true,
+                        true,
+                        true,
+                        "same-hash"));
+        when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
+        when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
+        when(meetingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(passwordHasher.hash("current-pass")).thenReturn("same-hash");
+
+        var result = useCase.execute(new PutMeetingSettingsCommand(
+                meetingId,
+                hostId,
+                settings(AdmissionPolicy.MANUAL_APPROVAL, true, 30, true, true, true, true, null),
+                "current-pass"));
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        verifyNoInteractions(inviteTokenRepository);
+        verifyNoInteractions(meetingInviteeRepository);
+    }
+
+    @Test
+    void execute_liveMeetingPasswordChange_doesNotRevokeTokens() {
+        UUID meetingId = UUID.randomUUID();
+        UUID hostId = UUID.randomUUID();
+        Meeting meeting = meetingWithStatus(
+                meetingId,
+                hostId,
+                MeetingStatus.LIVE,
+                settings(
+                        AdmissionPolicy.MANUAL_APPROVAL,
+                        false,
+                        30,
+                        true,
+                        true,
+                        true,
+                        true,
+                        "old-hash"));
+        when(limitsConfig.getMaxParticipantsCeiling()).thenReturn(300);
+        when(meetingRepository.findByIdWithLock(meetingId)).thenReturn(Optional.of(meeting));
+        when(meetingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(passwordHasher.hash("new-pass")).thenReturn("new-hash");
+
+        var result = useCase.execute(new PutMeetingSettingsCommand(
+                meetingId,
+                hostId,
+                settings(AdmissionPolicy.MANUAL_APPROVAL, false, 30, true, true, true, true, null),
+                "new-pass"));
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+        verifyNoInteractions(inviteTokenRepository);
+        verifyNoInteractions(meetingInviteeRepository);
     }
 
     private static Meeting meetingWithStatus(

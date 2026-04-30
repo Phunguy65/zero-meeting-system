@@ -4,46 +4,67 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class MeetingInvitationsSentEventTest {
 
     @Test
-    void toStringRedactsRawPasswordWhenPresent() {
+    void toStringExposesShortCodeAndTitle() {
         MeetingInvitationsSentEvent event = new MeetingInvitationsSentEvent(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 "Planning Session",
                 "ABC1234567",
                 Instant.parse("2026-04-02T10:15:30Z"),
-                "s3cr3t!",
                 List.of(new MeetingInvitationsSentEvent.InviteeInfo(
                         UUID.randomUUID(), "alice@example.com", "Alice")),
+                Map.of(),
                 Instant.parse("2026-04-02T09:00:00Z"));
 
-        assertThat(event.toString())
+        String str = event.toString();
+        assertThat(str)
                 .contains("meetingShortCode=ABC1234567")
-                .contains("rawPassword=<redacted:true>")
-                .doesNotContain("s3cr3t!");
+                .contains("Planning Session")
+                .doesNotContain("rawPassword");
     }
 
     @Test
-    void toStringHandlesNullableFieldsWithoutExposingPassword() {
+    void toStringHandlesNullableFields() {
         MeetingInvitationsSentEvent event = new MeetingInvitationsSentEvent(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 null,
                 "XYZ7654321",
                 null,
-                null,
                 List.of(new MeetingInvitationsSentEvent.InviteeInfo(
                         null, "guest@example.com", null)),
+                Map.of(),
                 Instant.parse("2026-04-02T09:00:00Z"));
 
-        assertThat(event.toString())
+        String str = event.toString();
+        assertThat(str)
                 .contains("meetingTitle=null")
                 .contains("startTime=null")
-                .contains("rawPassword=<redacted:false>");
+                .contains("inviteeTokenCount=0");
+    }
+
+    @Test
+    void eventTopicAndTypeAreCorrect() {
+        MeetingInvitationsSentEvent event = new MeetingInvitationsSentEvent(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "Test Meeting",
+                "TESTCODE12",
+                Instant.now(),
+                List.of(),
+                Map.of(),
+                Instant.now());
+
+        assertThat(event.topic()).isEqualTo("meeting-management.meeting.invitations.sent");
+        assertThat(event.eventType())
+                .isEqualTo("io.github.phunguy65.zms.meeting.invitations.sent.v1");
+        assertThat(event.aggregateType()).isEqualTo("meeting");
     }
 }

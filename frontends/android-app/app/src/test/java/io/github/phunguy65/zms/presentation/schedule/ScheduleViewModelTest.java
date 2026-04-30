@@ -1,7 +1,9 @@
 package io.github.phunguy65.zms.presentation.schedule;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
@@ -9,9 +11,13 @@ import io.github.phunguy65.zms.domain.model.MeetingDetail;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.domain.model.MeetingType;
+import io.github.phunguy65.zms.domain.model.UpdateSettingsResult;
 import io.github.phunguy65.zms.domain.repository.SessionRepository;
 import io.github.phunguy65.zms.domain.usecase.meeting.CancelMeetingUseCase;
+import io.github.phunguy65.zms.domain.usecase.meeting.GetInviteesUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.GetMeetingDetailUseCase;
+import io.github.phunguy65.zms.domain.usecase.meeting.ResendInviteUseCase;
+import io.github.phunguy65.zms.domain.usecase.meeting.RevokeInviteUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.ScheduleMeetingUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.UpdateMeetingSettingsUseCase;
 import java.time.OffsetDateTime;
@@ -25,8 +31,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Unit tests for {@link ScheduleViewModel#cancelMeeting()}.
- * Covers guard conditions and success/failure paths.
+ * Unit tests for {@link ScheduleViewModel}.
+ * Covers cancel-meeting guard conditions and success/failure paths,
+ * plus updateMeetingSettings resend-invite prompt flows.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ScheduleViewModelTest {
@@ -47,6 +54,15 @@ public class ScheduleViewModelTest {
     private CancelMeetingUseCase cancelMeetingUseCase;
 
     @Mock
+    private GetInviteesUseCase getInviteesUseCase;
+
+    @Mock
+    private ResendInviteUseCase resendInviteUseCase;
+
+    @Mock
+    private RevokeInviteUseCase revokeInviteUseCase;
+
+    @Mock
     private SessionRepository sessionRepository;
 
     private ScheduleViewModel viewModel;
@@ -60,6 +76,9 @@ public class ScheduleViewModelTest {
                 getMeetingDetailUseCase,
                 updateMeetingSettingsUseCase,
                 cancelMeetingUseCase,
+                getInviteesUseCase,
+                resendInviteUseCase,
+                revokeInviteUseCase,
                 sessionRepository,
                 immediateExecutor);
     }
@@ -164,5 +183,57 @@ public class ScheduleViewModelTest {
         assertFalse(Boolean.TRUE.equals(viewModel.isCancelling.getValue()));
         assertNotNull(viewModel.cancelError.getValue());
         assertTrue(viewModel.cancelError.getValue().contains("Network error"));
+    }
+
+    @Test
+    public void
+            updateMeetingSettings_whenResendRecommended_emitsInvalidatedCountViaResendInvitesPrompt() {
+        when(getMeetingDetailUseCase.execute(MEETING_ID))
+                .thenReturn(CompletableFuture.completedFuture(buildScheduledDetail()));
+        viewModel.initEditMode(MEETING_ID);
+
+        MeetingSettings updatedSettings = new MeetingSettings.Builder()
+                .requirePassword(true)
+                .waitingRoomEnabled(false)
+                .allowGuest(true)
+                .maxParticipants(100)
+                .build();
+        UpdateSettingsResult result = new UpdateSettingsResult(updatedSettings, 3, true);
+        when(updateMeetingSettingsUseCase.execute(eq(MEETING_ID), any(MeetingSettings.class)))
+                .thenReturn(CompletableFuture.completedFuture(result));
+
+        int[] promptedCount = {-1};
+        viewModel.resendInvitesPrompt.observeForever(count -> promptedCount[0] = count);
+
+        viewModel.updateMeetingSettings(false, "new-password");
+
+        assertFalse(Boolean.TRUE.equals(viewModel.isLoading.getValue()));
+        assertEquals(3, promptedCount[0]);
+        assertNotNull(viewModel.updateSuccess.getValue());
+    }
+
+    @Test
+    public void updateMeetingSettings_whenResendNotRecommended_doesNotEmitResendInvitesPrompt() {
+        when(getMeetingDetailUseCase.execute(MEETING_ID))
+                .thenReturn(CompletableFuture.completedFuture(buildScheduledDetail()));
+        viewModel.initEditMode(MEETING_ID);
+
+        MeetingSettings updatedSettings = new MeetingSettings.Builder()
+                .requirePassword(false)
+                .waitingRoomEnabled(true)
+                .allowGuest(true)
+                .maxParticipants(100)
+                .build();
+        UpdateSettingsResult result = UpdateSettingsResult.noInvalidation(updatedSettings);
+        when(updateMeetingSettingsUseCase.execute(eq(MEETING_ID), any(MeetingSettings.class)))
+                .thenReturn(CompletableFuture.completedFuture(result));
+
+        boolean[] promptFired = {false};
+        viewModel.resendInvitesPrompt.observeForever(count -> promptFired[0] = true);
+
+        viewModel.updateMeetingSettings(true, null);
+
+        assertFalse(promptFired[0]);
+        assertNotNull(viewModel.updateSuccess.getValue());
     }
 }

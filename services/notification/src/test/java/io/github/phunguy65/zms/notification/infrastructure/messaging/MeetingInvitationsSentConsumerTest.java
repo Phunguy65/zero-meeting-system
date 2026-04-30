@@ -13,18 +13,23 @@ import io.cloudevents.CloudEventData;
 import io.github.phunguy65.zms.notification.application.usecase.SendMeetingInvitationEmailUseCase;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.system.CapturedOutput;
-import org.springframework.boot.test.system.OutputCaptureExtension;
 import tools.jackson.databind.ObjectMapper;
 
-@ExtendWith(OutputCaptureExtension.class)
 @ExtendWith(MockitoExtension.class)
 class MeetingInvitationsSentConsumerTest {
 
@@ -55,12 +60,12 @@ class MeetingInvitationsSentConsumerTest {
                 "Planning Session",
                 "ABC1234567",
                 Instant.parse("2026-04-03T10:00:00Z"),
-                null,
                 List.of(
                         new MeetingInvitationsSentMessage.InviteeInfo(
                                 UUID.randomUUID(), "alice@example.com", "Alice"),
                         new MeetingInvitationsSentMessage.InviteeInfo(
                                 UUID.randomUUID(), "bob@example.com", "Bob")),
+                Map.of(),
                 Instant.parse("2026-04-02T09:00:00Z"));
         when(cloudEvent.getData()).thenReturn(cloudEventData);
         when(cloudEventData.toBytes()).thenReturn("{}".getBytes(StandardCharsets.UTF_8));
@@ -80,8 +85,8 @@ class MeetingInvitationsSentConsumerTest {
                 "Planning Session",
                 "ABC1234567",
                 Instant.parse("2026-04-03T10:00:00Z"),
-                null,
                 List.of(),
+                null,
                 Instant.parse("2026-04-02T09:00:00Z"));
         when(cloudEvent.getData()).thenReturn(cloudEventData);
         when(cloudEventData.toBytes()).thenReturn("{}".getBytes(StandardCharsets.UTF_8));
@@ -124,12 +129,12 @@ class MeetingInvitationsSentConsumerTest {
                 "Planning Session",
                 "ABC1234567",
                 Instant.parse("2026-04-03T10:00:00Z"),
-                null,
                 List.of(
                         new MeetingInvitationsSentMessage.InviteeInfo(
                                 UUID.randomUUID(), "alice@example.com", "Alice"),
                         new MeetingInvitationsSentMessage.InviteeInfo(
                                 UUID.randomUUID(), "bob@example.com", "Bob")),
+                Map.of(),
                 Instant.parse("2026-04-02T09:00:00Z"));
         when(cloudEvent.getData()).thenReturn(cloudEventData);
         when(cloudEventData.toBytes()).thenReturn("{}".getBytes(StandardCharsets.UTF_8));
@@ -145,16 +150,35 @@ class MeetingInvitationsSentConsumerTest {
     }
 
     @Test
-    void logsWithoutExposingRawPassword(CapturedOutput output) {
+    void logsEventIdWithoutExposingInviteTokens() {
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        List<String> capturedMessages = new ArrayList<>();
+        AbstractAppender capturingAppender =
+                new AbstractAppender("test-capture", null, null, true, Property.EMPTY_ARRAY) {
+                    @Override
+                    public void append(LogEvent event) {
+                        capturedMessages.add(event.getMessage().getFormattedMessage());
+                    }
+                };
+        capturingAppender.start();
+        org.apache.logging.log4j.core.Logger log4jLogger =
+                context.getLogger(MeetingInvitationsSentConsumer.class.getName());
+        log4jLogger.addAppender(capturingAppender);
+        log4jLogger.setLevel(Level.INFO);
+        log4jLogger.setAdditive(true);
+
+        UUID inviteeRecordId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        assertThat(inviteeRecordId).isNotEqualTo(userId);
         MeetingInvitationsSentMessage message = new MeetingInvitationsSentMessage(
                 UUID.fromString("00000000-0000-0000-0000-000000000111"),
                 UUID.randomUUID(),
                 "Planning Session",
                 "ABC1234567",
                 Instant.parse("2026-04-03T10:00:00Z"),
-                "secret123",
                 List.of(new MeetingInvitationsSentMessage.InviteeInfo(
-                        UUID.randomUUID(), "alice@example.com", "Alice")),
+                        userId, "alice@example.com", "Alice")),
+                Map.of(userId, "secret-raw-token"),
                 Instant.parse("2026-04-02T09:00:00Z"));
         when(cloudEvent.getData()).thenReturn(cloudEventData);
         when(cloudEventData.toBytes()).thenReturn("{}".getBytes(StandardCharsets.UTF_8));
@@ -162,9 +186,12 @@ class MeetingInvitationsSentConsumerTest {
 
         consumer.onMeetingInvitationsSent(cloudEvent);
 
-        assertThat(output.getOut())
+        log4jLogger.removeAppender(capturingAppender);
+
+        String allLogMessages = String.join(" ", capturedMessages);
+        assertThat(allLogMessages)
                 .contains("00000000-0000-0000-0000-000000000111")
-                .doesNotContain("secret123")
-                .doesNotContain("password=");
+                .doesNotContain("password=")
+                .doesNotContain("secret-raw-token");
     }
 }

@@ -249,6 +249,20 @@ public sealed interface MeetingError extends DomainError {
     }
 
     /**
+     * The provided invite token is invalid (malformed, expired, or signature mismatch).
+     *
+     * @param errorCode machine-readable reason code (e.g. INVITE_TOKEN_INVALID,
+     *                  INVITE_TOKEN_EXPIRED, INVITE_TOKEN_REVOKED, MEETING_NOT_FOUND,
+     *                  MEETING_UNAVAILABLE)
+     */
+    record InvalidInviteToken(String errorCode) implements MeetingError {
+        @Override
+        public String message() {
+            return "Invite token validation failed: " + errorCode;
+        }
+    }
+
+    /**
      * Some join requests failed during bulk approval while others succeeded.
      *
      * @param approvedCount number of requests that were successfully approved

@@ -290,6 +290,14 @@
     <string name="schedule_date">Date</string>
     <string name="schedule_start_time">Start Time</string>
     <string name="schedule_duration">Duration</string>
+    <string name="schedule_invite_attendees">Invite Attendees</string>
+    <string name="schedule_invitee_email_hint">Enter email address</string>
+    <string name="schedule_add_invitee">Add</string>
+    <string name="schedule_invitee_count">%1$d / 10 invitees</string>
+    <string name="schedule_invitee_error_invalid_email">Enter a valid email address</string>
+    <string name="schedule_invitee_error_duplicate">This email has already been added</string>
+    <string name="schedule_invitee_error_max_reached">Maximum of 10 invitees allowed</string>
+    <string name="cd_remove_invitee">Remove %1$s from invitees</string>
     <string name="schedule_meeting_settings">Meeting Settings</string>
     <string name="schedule_waiting_room">Waiting Room</string>
     <string name="schedule_waiting_room_desc">Admit guests manually before they join</string>
@@ -324,6 +332,42 @@
     <string name="schedule_cancel_dismiss">Keep Meeting</string>
     <string name="schedule_cancel_success">Meeting cancelled successfully</string>
     <string name="schedule_cancel_error">Could not cancel meeting. Please try again.</string>
+
+    <!-- ═══ Invitee management (edit mode) ═══ -->
+    <string name="schedule_manage_invitees">Manage Invitees</string>
+    <string name="schedule_no_invitees">No invitees for this meeting</string>
+    <string name="schedule_invitee_status_pending">Pending</string>
+    <string name="schedule_invitee_status_used">Joined</string>
+    <string name="schedule_invitee_status_revoked">Revoked</string>
+    <string name="schedule_invitee_status_expired">Expired</string>
+    <string name="schedule_invitee_action_resend">Resend</string>
+    <string name="schedule_invitee_action_revoke">Revoke</string>
+    <string name="schedule_invitee_resend_success">Invite resent to %1$s</string>
+    <string name="schedule_invitee_revoke_success">Invite revoked for %1$s</string>
+    <string name="schedule_invitee_action_error">Action failed. Please try again.</string>
+    <string name="cd_invitee_status">Invite status: %1$s</string>
+    <string name="cd_resend_invite">Resend invite to %1$s</string>
+    <string name="cd_revoke_invite">Revoke invite for %1$s</string>
+
+    <!-- ═══ Invite token resend prompt ═══ -->
+    <string name="invite_resend_title">Password Changed</string>
+    <string name="invite_resend_message">%1$d invite link(s) were invalidated. Resend
+        invites to affected attendees?</string>
+    <string name="invite_resend_confirm">Resend Invites</string>
+    <string name="invite_resend_dismiss">Skip</string>
+    <string name="invite_resend_not_supported">Resend invites is not yet available in this
+        version.</string>
+
+    <!-- ═══ Invite token error states ═══ -->
+    <string name="invite_token_error_title">Invalid Invite Link</string>
+    <string name="invite_token_error_expired">This invite link has expired. Please ask the host
+        to resend your invite.</string>
+    <string name="invite_token_error_revoked">This invite link has been revoked. Please ask the
+        host to resend your invite.</string>
+    <string name="invite_token_error_invalid">This invite link is not valid. Please check the
+        link and try again.</string>
+    <string name="invite_token_error_network">Could not verify the invite link. Please check your
+        connection and try again.</string>
     <string-array name="schedule_durations">
         <item>30 minutes</item>
         <item>45 minutes</item>

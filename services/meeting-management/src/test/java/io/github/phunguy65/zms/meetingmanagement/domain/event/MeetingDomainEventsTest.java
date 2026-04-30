@@ -7,6 +7,7 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -176,9 +177,9 @@ class MeetingDomainEventsTest {
                 "Planning Session",
                 "ABC1234567",
                 Instant.parse("2026-04-02T10:15:30Z"),
-                "secret",
                 List.of(new MeetingInvitationsSentEvent.InviteeInfo(
                         UUID.randomUUID(), "alice@example.com", "Alice")),
+                Map.of(),
                 Instant.parse("2026-04-02T09:00:00Z"));
 
         assertThat(event.aggregateType()).isEqualTo("meeting");

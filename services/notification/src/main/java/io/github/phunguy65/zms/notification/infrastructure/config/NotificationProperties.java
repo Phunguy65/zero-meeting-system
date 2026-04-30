@@ -56,6 +56,9 @@ public class NotificationProperties {
         Assert.hasText(
                 kafka.invitationConsumerGroup,
                 "app.notification.kafka.invitation-consumer-group must not be blank");
+        Assert.hasText(
+                kafka.inviteInvalidatedConsumerGroup,
+                "app.notification.kafka.invite-invalidated-consumer-group must not be blank");
     }
 
     @PostConstruct
@@ -113,12 +116,22 @@ public class NotificationProperties {
 
         @NotBlank private String invitationConsumerGroup = "notification-meeting-invitations";
 
+        @NotBlank private String inviteInvalidatedConsumerGroup = "notification-meeting-invite-invalidated";
+
         public String getInvitationConsumerGroup() {
             return invitationConsumerGroup;
         }
 
         public void setInvitationConsumerGroup(String invitationConsumerGroup) {
             this.invitationConsumerGroup = invitationConsumerGroup;
+        }
+
+        public String getInviteInvalidatedConsumerGroup() {
+            return inviteInvalidatedConsumerGroup;
+        }
+
+        public void setInviteInvalidatedConsumerGroup(String inviteInvalidatedConsumerGroup) {
+            this.inviteInvalidatedConsumerGroup = inviteInvalidatedConsumerGroup;
         }
     }
 }

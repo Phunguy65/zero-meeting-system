@@ -1,20 +1,26 @@
 package io.github.phunguy65.zms.presentation.schedule;
 
+import android.util.Patterns;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import io.github.phunguy65.zms.di.MainExecutor;
+import io.github.phunguy65.zms.domain.model.InviteeInfo;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
 import io.github.phunguy65.zms.domain.model.MeetingDetail;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.MeetingSettingsInput;
-import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
-import io.github.phunguy65.zms.domain.repository.SessionRepository;
 import io.github.phunguy65.zms.domain.model.MeetingStatus;
+import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
 import io.github.phunguy65.zms.domain.model.SessionInfo;
+import io.github.phunguy65.zms.domain.model.UpdateSettingsResult;
+import io.github.phunguy65.zms.domain.repository.SessionRepository;
 import io.github.phunguy65.zms.domain.usecase.meeting.CancelMeetingUseCase;
+import io.github.phunguy65.zms.domain.usecase.meeting.GetInviteesUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.GetMeetingDetailUseCase;
+import io.github.phunguy65.zms.domain.usecase.meeting.ResendInviteUseCase;
+import io.github.phunguy65.zms.domain.usecase.meeting.RevokeInviteUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.ScheduleMeetingUseCase;
 import io.github.phunguy65.zms.domain.usecase.meeting.UpdateMeetingSettingsUseCase;
 import io.github.phunguy65.zms.presentation.common.util.SingleLiveEvent;
@@ -24,6 +30,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 import javax.inject.Inject;
@@ -42,11 +50,15 @@ public class ScheduleViewModel extends ViewModel {
     public static final int MAX_PARTICIPANTS_MIN = 2;
     public static final int MAX_PARTICIPANTS_MAX = 1000;
     public static final int MAX_PARTICIPANTS_DEFAULT = 100;
+    public static final int MAX_INVITEES = 10;
 
     private final ScheduleMeetingUseCase scheduleMeetingUseCase;
     private final GetMeetingDetailUseCase getMeetingDetailUseCase;
     private final UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase;
     private final CancelMeetingUseCase cancelMeetingUseCase;
+    private final GetInviteesUseCase getInviteesUseCase;
+    private final ResendInviteUseCase resendInviteUseCase;
+    private final RevokeInviteUseCase revokeInviteUseCase;
     private final SessionRepository sessionRepository;
     private final Executor mainExecutor;
 
@@ -99,8 +111,24 @@ public class ScheduleViewModel extends ViewModel {
     private final SingleLiveEvent<String> _loadDetailError = new SingleLiveEvent<>();
     public LiveData<String> loadDetailError = _loadDetailError;
 
-    private final SingleLiveEvent<MeetingSettings> _updateSuccess = new SingleLiveEvent<>();
-    public LiveData<MeetingSettings> updateSuccess = _updateSuccess;
+    private final SingleLiveEvent<UpdateSettingsResult> _updateSuccess = new SingleLiveEvent<>();
+    public LiveData<UpdateSettingsResult> updateSuccess = _updateSuccess;
+
+    private final SingleLiveEvent<Integer> _resendInvitesPrompt = new SingleLiveEvent<>();
+    /**
+     * Emits the number of invalidated invites when a password change revokes existing tokens.
+     * The observer should prompt the host to resend invites.
+     */
+    public LiveData<Integer> resendInvitesPrompt = _resendInvitesPrompt;
+
+    private final MutableLiveData<List<InviteeInfo>> _inviteeList = new MutableLiveData<>(null);
+    public LiveData<List<InviteeInfo>> inviteeList = _inviteeList;
+
+    private final MutableLiveData<Boolean> _isLoadingInvitees = new MutableLiveData<>(false);
+    public LiveData<Boolean> isLoadingInvitees = _isLoadingInvitees;
+
+    private final SingleLiveEvent<String> _inviteeActionError = new SingleLiveEvent<>();
+    public LiveData<String> inviteeActionError = _inviteeActionError;
 
     private final MutableLiveData<Boolean> _isCancelling = new MutableLiveData<>(false);
     public LiveData<Boolean> isCancelling = _isCancelling;
@@ -111,6 +139,13 @@ public class ScheduleViewModel extends ViewModel {
     private final SingleLiveEvent<String> _cancelError = new SingleLiveEvent<>();
     public LiveData<String> cancelError = _cancelError;
 
+    private final MutableLiveData<List<String>> _invitees =
+            new MutableLiveData<>(new ArrayList<>());
+    public LiveData<List<String>> invitees = _invitees;
+
+    private final SingleLiveEvent<String> _inviteeError = new SingleLiveEvent<>();
+    public LiveData<String> inviteeError = _inviteeError;
+
     @Nullable private String editMeetingId = null;
 
     @Inject
@@ -119,14 +154,103 @@ public class ScheduleViewModel extends ViewModel {
             GetMeetingDetailUseCase getMeetingDetailUseCase,
             UpdateMeetingSettingsUseCase updateMeetingSettingsUseCase,
             CancelMeetingUseCase cancelMeetingUseCase,
+            GetInviteesUseCase getInviteesUseCase,
+            ResendInviteUseCase resendInviteUseCase,
+            RevokeInviteUseCase revokeInviteUseCase,
             SessionRepository sessionRepository,
             @MainExecutor Executor mainExecutor) {
         this.scheduleMeetingUseCase = scheduleMeetingUseCase;
         this.getMeetingDetailUseCase = getMeetingDetailUseCase;
         this.updateMeetingSettingsUseCase = updateMeetingSettingsUseCase;
         this.cancelMeetingUseCase = cancelMeetingUseCase;
+        this.getInviteesUseCase = getInviteesUseCase;
+        this.resendInviteUseCase = resendInviteUseCase;
+        this.revokeInviteUseCase = revokeInviteUseCase;
         this.sessionRepository = sessionRepository;
         this.mainExecutor = mainExecutor;
+    }
+
+    /**
+     * Loads the invitee list for the current meeting in edit mode.
+     *
+     * <p>Fetches all invitees with their token status so the host can
+     * decide whether to resend or revoke each invitee's invite token.
+     */
+    public void loadInvitees() {
+        if (editMeetingId == null) return;
+
+        _isLoadingInvitees.setValue(true);
+
+        getInviteesUseCase
+                .execute(editMeetingId)
+                .whenCompleteAsync(
+                        (invitees, error) -> {
+                            _isLoadingInvitees.setValue(false);
+
+                            if (error != null) {
+                                String message = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _inviteeActionError.setValue(message);
+                            } else {
+                                _inviteeList.setValue(invitees);
+                            }
+                        },
+                        mainExecutor);
+    }
+
+    /**
+     * Resends an invite to the specified invitee.
+     *
+     * <p>Issues a new token and triggers a fresh invite email.
+     * Refreshes the invitee list on success.
+     *
+     * @param inviteeId the invitee UUID
+     */
+    public void resendInvite(String inviteeId) {
+        if (editMeetingId == null) return;
+
+        resendInviteUseCase
+                .execute(editMeetingId, inviteeId)
+                .whenCompleteAsync(
+                        (updatedInvitee, error) -> {
+                            if (error != null) {
+                                String message = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _inviteeActionError.setValue(message);
+                            } else {
+                                loadInvitees();
+                            }
+                        },
+                        mainExecutor);
+    }
+
+    /**
+     * Revokes an invitee's pending invite token.
+     *
+     * <p>Sets the invitee's token status to REVOKED so the existing invite
+     * link can no longer be used to join the meeting. Refreshes the list on success.
+     *
+     * @param inviteeId the invitee UUID
+     */
+    public void revokeInvite(String inviteeId) {
+        if (editMeetingId == null) return;
+
+        revokeInviteUseCase
+                .execute(editMeetingId, inviteeId)
+                .whenCompleteAsync(
+                        (updatedInvitee, error) -> {
+                            if (error != null) {
+                                String message = error.getCause() != null
+                                        ? error.getCause().getMessage()
+                                        : error.getMessage();
+                                _inviteeActionError.setValue(message);
+                            } else {
+                                loadInvitees();
+                            }
+                        },
+                        mainExecutor);
     }
 
     public void setAllowGuest(boolean enabled) {
@@ -155,6 +279,65 @@ public class ScheduleViewModel extends ViewModel {
 
     public void setAllowVideo(boolean enabled) {
         _allowVideo.setValue(enabled);
+    }
+
+    /**
+     * Attempts to add an email address to the invitee list.
+     *
+     * <p>Validates format using {@link Patterns#EMAIL_ADDRESS}, rejects case-insensitive
+     * duplicates, and enforces the {@link #MAX_INVITEES} cap. On failure, emits an error
+     * code via {@link #inviteeError}. On success, the invitee list is updated in place.
+     *
+     * @param email the raw email string to add
+     */
+    public void addInvitee(@Nullable String email) {
+        if (email == null || email.trim().isEmpty()) {
+            _inviteeError.setValue("INVITEE_EMAIL_EMPTY");
+            return;
+        }
+
+        String trimmed = email.trim();
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(trimmed).matches()) {
+            _inviteeError.setValue("INVITEE_EMAIL_INVALID");
+            return;
+        }
+
+        List<String> current = currentInviteeList();
+
+        if (current.size() >= MAX_INVITEES) {
+            _inviteeError.setValue("INVITEE_MAX_REACHED");
+            return;
+        }
+
+        String lowerTrimmed = trimmed.toLowerCase(Locale.ROOT);
+        for (String existing : current) {
+            if (existing.toLowerCase(Locale.ROOT).equals(lowerTrimmed)) {
+                _inviteeError.setValue("INVITEE_DUPLICATE");
+                return;
+            }
+        }
+
+        List<String> updated = new ArrayList<>(current);
+        updated.add(trimmed);
+        _invitees.setValue(updated);
+    }
+
+    /**
+     * Removes the given email address from the invitee list using exact string matching.
+     *
+     * @param email the email to remove
+     */
+    public void removeInvitee(String email) {
+        List<String> current = currentInviteeList();
+        List<String> updated = new ArrayList<>(current);
+        updated.remove(email);
+        _invitees.setValue(updated);
+    }
+
+    private List<String> currentInviteeList() {
+        List<String> current = _invitees.getValue();
+        return current != null ? current : new ArrayList<>();
     }
 
     /**
@@ -277,6 +460,10 @@ public class ScheduleViewModel extends ViewModel {
                                         : error.getMessage();
                                 _scheduleError.setValue(errorMessage);
                             } else {
+                                if (result.isResendInvitesRecommended()) {
+                                    _resendInvitesPrompt.setValue(
+                                            result.getInvalidatedInviteCount());
+                                }
                                 _updateSuccess.setValue(result);
                             }
                         },
@@ -286,8 +473,7 @@ public class ScheduleViewModel extends ViewModel {
     /**
      * Returns the current session user ID, or null if no session exists.
      */
-    @Nullable
-    public String getCurrentUserId() {
+    @Nullable public String getCurrentUserId() {
         SessionInfo session = sessionRepository.getSession();
         return session != null ? session.userId() : null;
     }
@@ -486,7 +672,6 @@ public class ScheduleViewModel extends ViewModel {
             return;
         }
 
-        // Title is optional but has a max length
         if (topic != null && topic.length() > TITLE_MAX_LENGTH) {
             _validationError.setValue("TITLE_TOO_LONG");
             return;
@@ -547,7 +732,6 @@ public class ScheduleViewModel extends ViewModel {
 
         _isLoading.setValue(true);
 
-        // Build settings from current state using simplified contract
         Boolean passwordEnabledVal = _passwordEnabled.getValue();
         Boolean allowGuestVal = _allowGuest.getValue();
         Boolean allowScreenShareVal = _allowScreenShare.getValue();
@@ -572,8 +756,12 @@ public class ScheduleViewModel extends ViewModel {
 
         String normalizedTopic = (topic == null || topic.trim().isEmpty()) ? null : topic.trim();
 
-        ScheduleMeetingRequest request =
-                new ScheduleMeetingRequest(normalizedTopic, startTime, endTime, settings);
+        List<String> currentInvitees = currentInviteeList();
+        List<String> inviteesToSubmit =
+                currentInvitees.isEmpty() ? null : new ArrayList<>(currentInvitees);
+
+        ScheduleMeetingRequest request = new ScheduleMeetingRequest(
+                normalizedTopic, startTime, endTime, settings, inviteesToSubmit);
 
         scheduleMeetingUseCase
                 .execute(request)

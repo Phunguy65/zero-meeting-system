@@ -430,7 +430,9 @@ public class CallViewModelTest {
     public void endMeetingForAll_noMeetingId_setsErrorAndDoesNotCallUseCase() {
         viewModel.endMeetingForAll();
 
-        assertEquals(CallViewModel.ERROR_END_MEETING_NO_ID, viewModel.getEndMeetingError().getValue());
+        assertEquals(
+                CallViewModel.ERROR_END_MEETING_NO_ID,
+                viewModel.getEndMeetingError().getValue());
         assertFalse(viewModel.isEndingMeeting().getValue());
         verify(endMeetingUseCase, never()).execute(anyString());
     }
@@ -442,7 +444,9 @@ public class CallViewModelTest {
 
         viewModel.endMeetingForAll();
 
-        assertEquals(CallViewModel.ERROR_END_MEETING_NOT_HOST, viewModel.getEndMeetingError().getValue());
+        assertEquals(
+                CallViewModel.ERROR_END_MEETING_NOT_HOST,
+                viewModel.getEndMeetingError().getValue());
         assertFalse(viewModel.isEndingMeeting().getValue());
         verify(endMeetingUseCase, never()).execute(anyString());
     }
@@ -474,7 +478,9 @@ public class CallViewModelTest {
         viewModel.endMeetingForAll();
 
         assertFalse(viewModel.isEndingMeeting().getValue());
-        assertEquals(CallViewModel.ERROR_END_MEETING_FAILED, viewModel.getEndMeetingError().getValue());
+        assertEquals(
+                CallViewModel.ERROR_END_MEETING_FAILED,
+                viewModel.getEndMeetingError().getValue());
         assertFalse(Boolean.TRUE.equals(viewModel.getMeetingEndedForAll().getValue()));
     }
 }

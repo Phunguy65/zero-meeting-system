@@ -61,6 +61,7 @@ abstract class BaseController {
                     case MeetingError.CanNotKickSelf e -> HttpStatus.BAD_REQUEST;
                     case MeetingError.UserNotInMeeting e -> HttpStatus.NOT_FOUND;
                     case MeetingError.InvalidKickTarget e -> HttpStatus.BAD_REQUEST;
+                    case MeetingError.InvalidInviteToken e -> HttpStatus.UNPROCESSABLE_ENTITY;
                     case MeetingError.PartialApprovalFailure e -> HttpStatus.MULTI_STATUS;
                     case MeetingError.CanNotMuteSelf e -> HttpStatus.UNPROCESSABLE_ENTITY;
                     case MeetingError.TrackNotFound e -> HttpStatus.UNPROCESSABLE_ENTITY;
@@ -110,6 +111,7 @@ abstract class BaseController {
                     case MeetingError.CanNotKickSelf e -> MeetingErrorCode.CAN_NOT_KICK_SELF;
                     case MeetingError.UserNotInMeeting e -> MeetingErrorCode.USER_NOT_IN_MEETING;
                     case MeetingError.InvalidKickTarget e -> MeetingErrorCode.INVALID_KICK_TARGET;
+                    case MeetingError.InvalidInviteToken e -> MeetingErrorCode.INVALID_INVITE_TOKEN;
                     case MeetingError.PartialApprovalFailure e ->
                         MeetingErrorCode.PARTIAL_APPROVAL_FAILURE;
                     case MeetingError.CanNotMuteSelf e -> MeetingErrorCode.CANNOT_MUTE_SELF;

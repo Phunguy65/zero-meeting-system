@@ -22,27 +22,13 @@ class MeetingInvitationLinkFactoryTest {
     }
 
     @Test
-    void buildsUnprotectedJoinLinkWithoutPassword() {
-        assertThat(linkFactory.buildJoinLink("ABC1234567", null))
-                .isEqualTo("https://app.example.com/join?code=ABC1234567");
+    void buildsTokenBasedInviteLink() {
+        assertThat(linkFactory.buildInviteLink("abc123tokenvalue"))
+                .isEqualTo("https://app.example.com/join?token=abc123tokenvalue");
     }
 
     @Test
-    void buildsProtectedJoinLinkWithPassword() {
-        assertThat(linkFactory.buildJoinLink("ABC1234567", "secret123"))
-                .isEqualTo("https://app.example.com/join?code=ABC1234567&password=secret123");
-    }
-
-    @Test
-    void encodesPasswordCharactersSafely() {
-        assertThat(linkFactory.buildJoinLink("ABC1234567", "pass word&more"))
-                .isEqualTo(
-                        "https://app.example.com/join?code=ABC1234567&password=pass%20word%26more");
-    }
-
-    @Test
-    void omitsBlankPasswordValues() {
-        assertThat(linkFactory.buildJoinLink("ABC1234567", "   "))
-                .isEqualTo("https://app.example.com/join?code=ABC1234567");
+    void encodesTokenCharactersInInviteLink() {
+        assertThat(linkFactory.buildInviteLink("abc+def/ghi=")).contains("token=");
     }
 }

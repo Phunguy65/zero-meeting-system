@@ -56,7 +56,9 @@ public class GetParticipatedMeetingsUseCase {
                                 meeting.settings().chatEnabled(),
                                 meeting.settings().allowMicrophone(),
                                 meeting.settings().allowVideo(),
-                                meeting.settings().passwordProtected()),
+                                meeting.settings().passwordProtected(),
+                                0,
+                                false),
                         meeting.createdAt()));
     }
 }

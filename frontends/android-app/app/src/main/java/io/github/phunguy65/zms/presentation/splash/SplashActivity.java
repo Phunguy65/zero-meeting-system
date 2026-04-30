@@ -1,6 +1,7 @@
 package io.github.phunguy65.zms.presentation.splash;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.main.MainActivity;
 import io.github.phunguy65.zms.presentation.welcome.WelcomeActivity;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Splash screen activity handling the auto-login flow.
@@ -28,6 +30,9 @@ import io.github.phunguy65.zms.presentation.welcome.WelcomeActivity;
  */
 @AndroidEntryPoint
 public class SplashActivity extends AppCompatActivity {
+
+    /** Extra key for passing invite token from deep link to MainActivity. */
+    public static final String EXTRA_INVITE_TOKEN = "invite_token";
 
     /** Extra key for passing session expired flag to WelcomeActivity. */
     public static final String EXTRA_SESSION_EXPIRED = "session_expired";
@@ -53,6 +58,19 @@ public class SplashActivity extends AppCompatActivity {
         observeState();
 
         handler.postDelayed(() -> viewModel.checkAutoLogin(), SPLASH_DELAY_MS);
+    }
+
+    /**
+     * Extracts the invite token from an incoming deep link URL, if present.
+     *
+     * @return the raw token query param value, or null if not a deep link launch
+     */
+    @Nullable private String extractInviteToken() {
+        Uri data = getIntent().getData();
+        if (data != null) {
+            return data.getQueryParameter("token");
+        }
+        return null;
     }
 
     private void initViews() {
@@ -109,6 +127,10 @@ public class SplashActivity extends AppCompatActivity {
     private void navigateToMain() {
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        String inviteToken = extractInviteToken();
+        if (inviteToken != null && !inviteToken.isEmpty()) {
+            intent.putExtra(EXTRA_INVITE_TOKEN, inviteToken);
+        }
         startActivity(intent);
         finish();
         applyTransitionIfEnabled();

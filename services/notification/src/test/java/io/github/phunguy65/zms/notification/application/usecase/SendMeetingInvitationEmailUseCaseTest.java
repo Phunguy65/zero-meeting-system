@@ -1,5 +1,7 @@
 package io.github.phunguy65.zms.notification.application.usecase;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -9,6 +11,7 @@ import io.github.phunguy65.zms.notification.infrastructure.email.MeetingInvitati
 import io.github.phunguy65.zms.notification.infrastructure.messaging.MeetingInvitationsSentMessage;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,37 +39,56 @@ class SendMeetingInvitationEmailUseCaseTest {
     }
 
     @Test
-    void orchestratesLinkRenderingAndSending() {
+    void usesTokenBasedLinkWhenInviteTokenIsAvailable() {
+        UUID inviteeRecordId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        assertThat(inviteeRecordId).isNotEqualTo(userId);
         MeetingInvitationsSentMessage invitation = new MeetingInvitationsSentMessage(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 "Planning Session",
                 "ABC1234567",
                 Instant.parse("2026-04-03T10:00:00Z"),
-                "secret123",
                 List.of(new MeetingInvitationsSentMessage.InviteeInfo(
-                        UUID.randomUUID(), "alice@example.com", "Alice")),
+                        userId, "alice@example.com", "Alice")),
+                Map.of(userId, "raw-invite-token-abc"),
                 Instant.parse("2026-04-02T09:00:00Z"));
         MeetingInvitationsSentMessage.InviteeInfo invitee =
                 invitation.invitees().getFirst();
 
-        when(linkFactory.buildJoinLink("ABC1234567", "secret123"))
-                .thenReturn("https://app.example.com/join?code=ABC1234567&password=secret123");
+        when(linkFactory.buildInviteLink("raw-invite-token-abc"))
+                .thenReturn("https://app.example.com/join?token=raw-invite-token-abc");
         when(renderer.render(
                         invitation,
                         invitee,
-                        "https://app.example.com/join?code=ABC1234567&password=secret123"))
+                        "https://app.example.com/join?token=raw-invite-token-abc"))
                 .thenReturn(new MeetingInvitationEmailRenderer.RenderedEmail(
-                        "Invitation", "<p>Hello</p>"));
+                        "Invitation: Planning Session", "<p>Hello Alice</p>"));
 
         useCase.send(invitation, invitee);
 
-        verify(linkFactory).buildJoinLink("ABC1234567", "secret123");
-        verify(renderer)
-                .render(
-                        invitation,
-                        invitee,
-                        "https://app.example.com/join?code=ABC1234567&password=secret123");
-        verify(emailSender).send("alice@example.com", "Invitation", "<p>Hello</p>");
+        verify(linkFactory).buildInviteLink("raw-invite-token-abc");
+        verify(emailSender)
+                .send("alice@example.com", "Invitation: Planning Session", "<p>Hello Alice</p>");
+    }
+
+    @Test
+    void throwsWhenNoInviteTokenIsAvailableForInvitee() {
+        MeetingInvitationsSentMessage invitation = new MeetingInvitationsSentMessage(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "Legacy Meeting",
+                "XYZ9998888",
+                Instant.parse("2026-04-03T10:00:00Z"),
+                List.of(new MeetingInvitationsSentMessage.InviteeInfo(
+                        null, "bob@example.com", "Bob")),
+                null,
+                Instant.parse("2026-04-02T09:00:00Z"));
+        MeetingInvitationsSentMessage.InviteeInfo invitee =
+                invitation.invitees().getFirst();
+
+        assertThatThrownBy(() -> useCase.send(invitation, invitee))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No invite token found for invitee");
     }
 }

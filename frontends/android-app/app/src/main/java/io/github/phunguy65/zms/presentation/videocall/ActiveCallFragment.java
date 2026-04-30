@@ -337,10 +337,7 @@ public class ActiveCallFragment extends Fragment
 
         viewModel.getEndMeetingError().observe(getViewLifecycleOwner(), errorCode -> {
             if (errorCode != null && !errorCode.isEmpty()) {
-                Snackbar.make(
-                                requireView(),
-                                R.string.call_end_meeting_error,
-                                Snackbar.LENGTH_LONG)
+                Snackbar.make(requireView(), R.string.call_end_meeting_error, Snackbar.LENGTH_LONG)
                         .show();
                 viewModel.clearEndMeetingError();
             }
