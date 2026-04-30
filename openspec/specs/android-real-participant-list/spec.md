@@ -32,14 +32,13 @@ of static mock entries.
 The Android participant merge logic SHALL preserve call-state correctness while
 enriching role metadata.
 
-### Scenario: Merge prefers stable identity then display name fallback
+### Scenario: Merge uses stable identity-only participant matching
 
 - **WHEN** combining LiveKit participant entries with backend participant
   records
-- **THEN** the system SHALL match participants by stable identity or id when
-  available
-- **THEN** it SHALL fallback to display-name matching only when stable
-  identifier matching is unavailable
+- **THEN** the system SHALL use stable participant identity/id matching as the
+  sole role-resolution key
+- **THEN** it SHALL NOT use display-name fallback matching for role assignment
 
 ### Scenario: Unmatched LiveKit participant defaults role
 
