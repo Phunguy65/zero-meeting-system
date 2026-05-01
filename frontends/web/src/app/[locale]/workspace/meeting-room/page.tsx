@@ -1,5 +1,5 @@
-import { MeetingRoomScreen } from "@/components/meeting-room-screen";
+import { MeetingContainer } from '@/components/meeting/index.tsx';
 
 export default function MeetingRoomPage() {
-  return <MeetingRoomScreen />;
+    return <MeetingContainer />;
 }

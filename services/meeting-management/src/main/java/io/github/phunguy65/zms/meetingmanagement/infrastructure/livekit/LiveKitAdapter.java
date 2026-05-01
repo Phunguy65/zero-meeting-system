@@ -435,4 +435,151 @@ public class LiveKitAdapter implements LiveKitPort {
             return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
         }
     }
+
+    @Override
+    public Result<Void, MeetingError> muteParticipantTrack(
+            LiveKitRoomName roomName, String identity, String source) {
+        try {
+            Response<LivekitModels.ParticipantInfo> participantResponse =
+                    roomServiceClient.getParticipant(roomName.value(), identity).execute();
+
+            if (!participantResponse.isSuccessful() || participantResponse.body() == null) {
+                if (participantResponse.code() == 404) {
+                    return Result.failure(new MeetingError.LiveKitParticipantNotFound(
+                            roomName.value(), identity));
+                }
+                String msg = "HTTP %d: %s"
+                        .formatted(participantResponse.code(), participantResponse.message());
+                log.warn(
+                        "Failed to get participant '{}' in room '{}': {}",
+                        identity,
+                        roomName.value(),
+                        msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            LivekitModels.ParticipantInfo participantInfo = participantResponse.body();
+            String trackSid = resolveTrackSid(participantInfo, source);
+            if (trackSid == null) {
+                return Result.failure(new MeetingError.TrackNotFound(identity, source));
+            }
+
+            Response<LivekitModels.TrackInfo> muteResponse = roomServiceClient
+                    .mutePublishedTrack(roomName.value(), identity, trackSid, true)
+                    .execute();
+
+            if (!muteResponse.isSuccessful()) {
+                String msg = "HTTP %d: %s".formatted(muteResponse.code(), muteResponse.message());
+                log.warn(
+                        "Failed to mute track '{}' for participant '{}' in room '{}': {}",
+                        trackSid,
+                        identity,
+                        roomName.value(),
+                        msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            log.info(
+                    "Muted {} track (sid={}) for participant '{}' in room '{}'",
+                    source,
+                    trackSid,
+                    identity,
+                    roomName.value());
+            return Result.success();
+
+        } catch (IOException e) {
+            log.warn(
+                    "Network error muting {} track for participant '{}' in room '{}': {}",
+                    source,
+                    identity,
+                    roomName.value(),
+                    e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
+    }
+
+    @Override
+    public Result<Void, MeetingError> muteAllParticipantMicTracks(
+            LiveKitRoomName roomName, List<String> identities) {
+        if (identities.isEmpty()) {
+            return Result.success();
+        }
+
+        boolean atLeastOneSucceeded = false;
+        MeetingError.LiveKitUnavailable lastFailure = null;
+
+        for (String identity : identities) {
+            var result = muteParticipantTrack(roomName, identity, "microphone");
+            if (result instanceof Result.Success<?, ?>) {
+                atLeastOneSucceeded = true;
+            } else if (result instanceof Result.Failure<?, MeetingError>(MeetingError error)) {
+                if (error instanceof MeetingError.LiveKitParticipantNotFound) {
+                    log.debug(
+                            "Skipping mute for participant '{}' — already left room '{}'",
+                            identity,
+                            roomName.value());
+                    atLeastOneSucceeded = true;
+                } else if (error instanceof MeetingError.TrackNotFound) {
+                    log.debug(
+                            "Skipping mute for participant '{}' — no microphone track in room '{}'",
+                            identity,
+                            roomName.value());
+                    atLeastOneSucceeded = true;
+                } else if (error instanceof MeetingError.LiveKitUnavailable unavailable) {
+                    lastFailure = unavailable;
+                }
+            }
+        }
+
+        if (!atLeastOneSucceeded && lastFailure != null) {
+            return Result.failure(lastFailure);
+        }
+
+        return Result.success();
+    }
+
+    private String resolveTrackSid(LivekitModels.ParticipantInfo info, String source) {
+        LivekitModels.TrackSource targetSource =
+                switch (source) {
+                    case "microphone" -> LivekitModels.TrackSource.MICROPHONE;
+                    case "camera" -> LivekitModels.TrackSource.CAMERA;
+                    case "screen_share" -> LivekitModels.TrackSource.SCREEN_SHARE;
+                    default -> null;
+                };
+        if (targetSource == null) {
+            return null;
+        }
+        for (LivekitModels.TrackInfo track : info.getTracksList()) {
+            if (track.getSource() == targetSource) {
+                return track.getSid();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Result<Void, MeetingError> updateRoomMetadata(
+            LiveKitRoomName roomName, String metadata) {
+        try {
+            Response<LivekitModels.Room> response = roomServiceClient
+                    .updateRoomMetadata(roomName.value(), metadata)
+                    .execute();
+
+            if (!response.isSuccessful()) {
+                String msg = "HTTP %d: %s".formatted(response.code(), response.message());
+                log.warn("Failed to update room metadata for room '{}': {}", roomName.value(), msg);
+                return Result.failure(new MeetingError.LiveKitUnavailable(msg));
+            }
+
+            log.info("Updated room metadata for room '{}': {}", roomName.value(), metadata);
+            return Result.success();
+
+        } catch (IOException e) {
+            log.warn(
+                    "Network error updating room metadata for room '{}': {}",
+                    roomName.value(),
+                    e.getMessage());
+            return Result.failure(new MeetingError.LiveKitUnavailable(e.getMessage()));
+        }
+    }
 }

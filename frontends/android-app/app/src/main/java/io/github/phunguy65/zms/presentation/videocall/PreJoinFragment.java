@@ -263,6 +263,28 @@ public class PreJoinFragment extends Fragment {
                 requestPermissionsAndJoin();
             }
         });
+
+        callViewModel.isValidatingToken().observe(getViewLifecycleOwner(), isValidating -> {
+            if (Boolean.TRUE.equals(isValidating)) {
+                btnJoinMeeting.setEnabled(false);
+                scheduleCheckingIndicator();
+            } else {
+                cancelCheckingIndicator();
+                btnJoinMeeting.setEnabled(true);
+            }
+        });
+
+        callViewModel.getTokenError().observe(getViewLifecycleOwner(), tokenError -> {
+            if (tokenError != null) {
+                showTokenErrorDialog(tokenError);
+            }
+        });
+
+        callViewModel.getTokenPreApproved().observe(getViewLifecycleOwner(), preApproved -> {
+            if (preApproved != null) {
+                hidePasswordSection();
+            }
+        });
     }
 
     /**
@@ -601,6 +623,38 @@ public class PreJoinFragment extends Fragment {
                         callViewModel.fetchMeetingInfoAndJoin(meetingCode);
                     }
                 })
+                .show();
+    }
+
+    /**
+     * Shows an error dialog for invite token validation failures.
+     * The dialog is non-dismissable via back press so the user must explicitly acknowledge.
+     *
+     * @param errorCode one of TOKEN_EXPIRED, TOKEN_REVOKED, TOKEN_INVALID, TOKEN_NETWORK_ERROR
+     */
+    private void showTokenErrorDialog(String errorCode) {
+        int messageResId;
+        switch (errorCode) {
+            case "TOKEN_EXPIRED":
+                messageResId = R.string.invite_token_error_expired;
+                break;
+            case "TOKEN_REVOKED":
+                messageResId = R.string.invite_token_error_revoked;
+                break;
+            case "TOKEN_NETWORK_ERROR":
+                messageResId = R.string.invite_token_error_network;
+                break;
+            default:
+                messageResId = R.string.invite_token_error_invalid;
+                break;
+        }
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.invite_token_error_title)
+                .setMessage(messageResId)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> requireActivity()
+                        .finish())
+                .setCancelable(false)
                 .show();
     }
 

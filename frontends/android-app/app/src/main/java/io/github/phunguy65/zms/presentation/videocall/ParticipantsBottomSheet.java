@@ -17,16 +17,23 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
+import io.github.phunguy65.zms.domain.model.Participant;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.meeting.participant.ParticipantAdapter;
+import io.github.phunguy65.zms.presentation.meeting.participant.ParticipantMuteListener;
 import io.github.phunguy65.zms.presentation.meeting.participant.ParticipantsViewModel;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Bottom sheet dialog for displaying meeting participants.
  * Replaces ParticipantsActivity for use within VideoCallActivity.
+ * Implements {@link ParticipantMuteListener} to delegate per-participant host mute actions
+ * to {@link CallViewModel}.
  */
 @AndroidEntryPoint
-public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
+public class ParticipantsBottomSheet extends BottomSheetDialogFragment
+        implements ParticipantMuteListener {
 
     public static final String TAG = "ParticipantsBottomSheet";
 
@@ -99,17 +106,15 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
 
     private void setupRecyclerView() {
         rvParticipants.setLayoutManager(new LinearLayoutManager(requireContext()));
-        // Create adapter once with empty list
-        adapter = new ParticipantAdapter(new java.util.ArrayList<>());
+        Boolean isHost = callViewModel.isHost().getValue();
+        boolean hostMode = Boolean.TRUE.equals(isHost);
+        adapter = new ParticipantAdapter(new ArrayList<>(), hostMode, hostMode ? this : null);
         rvParticipants.setAdapter(adapter);
     }
 
     private void setupListeners() {
         btnCloseContainer.setOnClickListener(v -> dismiss());
-
-        // TODO: Enable mute-all when backend muteAllParticipants API is implemented
-        btnMuteAll.setEnabled(false);
-        btnMuteAll.setVisibility(View.GONE);
+        btnMuteAll.setOnClickListener(v -> callViewModel.muteAllParticipants());
     }
 
     private void setupObservers() {
@@ -119,11 +124,35 @@ public class ParticipantsBottomSheet extends BottomSheetDialogFragment {
                         getViewLifecycleOwner(),
                         videoParticipants -> viewModel.setLiveKitParticipants(videoParticipants));
 
+        callViewModel.isHost().observe(getViewLifecycleOwner(), isHost -> {
+            boolean hostMode = Boolean.TRUE.equals(isHost);
+            btnMuteAll.setVisibility(hostMode ? View.VISIBLE : View.GONE);
+            btnMuteAll.setEnabled(hostMode);
+
+            adapter = new ParticipantAdapter(new ArrayList<>(), hostMode, hostMode ? this : null);
+            rvParticipants.setAdapter(adapter);
+
+            List<Participant> current = viewModel.getParticipants().getValue();
+            if (current != null) {
+                adapter.updateList(current);
+            }
+        });
+
         viewModel.getParticipants().observe(getViewLifecycleOwner(), participants -> {
             adapter.updateList(participants);
 
             String title = getString(R.string.call_participants_count, participants.size());
             tvTitle.setText(title);
         });
+    }
+
+    @Override
+    public void onMuteMic(String identity) {
+        callViewModel.muteParticipantTrack(identity, "microphone");
+    }
+
+    @Override
+    public void onMuteCamera(String identity) {
+        callViewModel.muteParticipantTrack(identity, "camera");
     }
 }

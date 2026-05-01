@@ -12,6 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.github.phunguy65.zms.meetingmanagement.application.response.ParticipantListItemResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.GetParticipantsUseCase;
 import io.github.phunguy65.zms.meetingmanagement.application.usecase.KickParticipantUseCase;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.MuteAllParticipantsUseCase;
+import io.github.phunguy65.zms.meetingmanagement.application.usecase.MuteParticipantTrackUseCase;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.ParticipantRole;
 import io.github.phunguy65.zms.meetingmanagement.infrastructure.web.WebConfig;
@@ -39,6 +41,12 @@ class ParticipantControllerTest {
 
     @MockitoBean
     KickParticipantUseCase kickParticipantUseCase;
+
+    @MockitoBean
+    MuteAllParticipantsUseCase muteAllParticipantsUseCase;
+
+    @MockitoBean
+    MuteParticipantTrackUseCase muteParticipantTrackUseCase;
 
     @Test
     void getParticipants_returnsSimpleListResponse() throws Exception {
@@ -256,5 +264,172 @@ class ParticipantControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("fail"))
                 .andExpect(jsonPath("$.data.code").value("INVALID_KICK_TARGET"));
+    }
+
+    @Test
+    void muteAllParticipants_asHost_returns204() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        when(muteAllParticipantsUseCase.execute(any())).thenReturn(Result.success());
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:muteAll", meetingId)
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isNoContent());
+
+        verify(muteAllParticipantsUseCase).execute(any());
+    }
+
+    @Test
+    void muteAllParticipants_notHost_returns403() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        when(muteAllParticipantsUseCase.execute(any()))
+                .thenReturn(Result.failure(
+                        new MeetingError.NotAuthorized(UUID.randomUUID(), UUID.randomUUID())));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:muteAll", meetingId)
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("NOT_AUTHORIZED"));
+    }
+
+    @Test
+    void muteAllParticipants_meetingNotFound_returns404() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        when(muteAllParticipantsUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.MeetingNotFound(meetingId)));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:muteAll", meetingId)
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("MEETING_NOT_FOUND"));
+    }
+
+    @Test
+    void muteParticipantTrack_validRequest_returns204() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        String identity = "user01:device-A";
+        when(muteParticipantTrackUseCase.execute(any())).thenReturn(Result.success());
+
+        mockMvc.perform(post(
+                                "/api/v1/meetings/{id}/participants/{identity}:muteTrack",
+                                meetingId,
+                                identity)
+                        .param("source", "microphone")
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isNoContent());
+
+        verify(muteParticipantTrackUseCase).execute(any());
+    }
+
+    @Test
+    void muteParticipantTrack_hostTargetsSelf_returns422() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        String identity = UUID.randomUUID() + ":device-001";
+        when(muteParticipantTrackUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.CanNotMuteSelf()));
+
+        mockMvc.perform(post(
+                                "/api/v1/meetings/{id}/participants/{identity}:muteTrack",
+                                meetingId,
+                                identity)
+                        .param("source", "microphone")
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("CANNOT_MUTE_SELF"));
+    }
+
+    @Test
+    void muteParticipantTrack_trackNotFound_returns422() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        String identity = "user01:device-A";
+        when(muteParticipantTrackUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.TrackNotFound(identity, "microphone")));
+
+        mockMvc.perform(post(
+                                "/api/v1/meetings/{id}/participants/{identity}:muteTrack",
+                                meetingId,
+                                identity)
+                        .param("source", "microphone")
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("TRACK_NOT_FOUND"));
+    }
+
+    @Test
+    void muteParticipantTrack_noAuthentication_returns401() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        String identity = "user01:device-A";
+
+        mockMvc.perform(post(
+                                "/api/v1/meetings/{id}/participants/{identity}:muteTrack",
+                                meetingId,
+                                identity)
+                        .param("source", "microphone"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"));
+
+        verifyNoInteractions(muteParticipantTrackUseCase);
+    }
+
+    @Test
+    void muteAllParticipants_meetingNotLive_returns422() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        when(muteAllParticipantsUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.MeetingNotLive(meetingId)));
+
+        mockMvc.perform(post("/api/v1/meetings/{id}/participants:muteAll", meetingId)
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_STATUS_TRANSITION"));
+    }
+
+    @Test
+    void muteParticipantTrack_meetingNotLive_returns422() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        String identity = "user01:device-A";
+        when(muteParticipantTrackUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.MeetingNotLive(meetingId)));
+
+        mockMvc.perform(post(
+                                "/api/v1/meetings/{id}/participants/{identity}:muteTrack",
+                                meetingId,
+                                identity)
+                        .param("source", "microphone")
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("INVALID_STATUS_TRANSITION"));
+    }
+
+    @Test
+    void muteParticipantTrack_participantNotInRoom_returns404() throws Exception {
+        UUID meetingId = UUID.randomUUID();
+        String identity = "user01:device-A";
+        when(muteParticipantTrackUseCase.execute(any()))
+                .thenReturn(Result.failure(new MeetingError.LiveKitParticipantNotFound(
+                        "room-" + meetingId, identity)));
+
+        mockMvc.perform(post(
+                                "/api/v1/meetings/{id}/participants/{identity}:muteTrack",
+                                meetingId,
+                                identity)
+                        .param("source", "microphone")
+                        .principal(
+                                new TestingAuthenticationToken(UUID.randomUUID().toString(), null)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value("fail"))
+                .andExpect(jsonPath("$.data.code").value("PARTICIPANT_NOT_FOUND"));
     }
 }

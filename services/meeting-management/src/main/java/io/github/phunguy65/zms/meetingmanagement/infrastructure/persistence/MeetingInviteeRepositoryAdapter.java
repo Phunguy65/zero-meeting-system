@@ -2,6 +2,7 @@ package io.github.phunguy65.zms.meetingmanagement.infrastructure.persistence;
 
 import io.github.phunguy65.zms.meetingmanagement.domain.model.InviteeStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingInvitee;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviteTokenId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviteeDisplayName;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviteeId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.InviterId;
@@ -69,7 +70,8 @@ public class MeetingInviteeRepositoryAdapter implements MeetingInviteeRepository
                 e.getDisplayName() != null ? InviteeDisplayName.of(e.getDisplayName()) : null,
                 InviteeStatus.valueOf(e.getStatus()),
                 e.getInvitedAt(),
-                e.getRespondedAt());
+                e.getRespondedAt(),
+                e.getInviteTokenId() != null ? InviteTokenId.of(e.getInviteTokenId()) : null);
     }
 
     private MeetingInviteeJpaEntity toEntity(MeetingInvitee i) {
@@ -82,6 +84,7 @@ public class MeetingInviteeRepositoryAdapter implements MeetingInviteeRepository
                 i.getDisplayName().map(InviteeDisplayName::value).orElse(null),
                 i.getStatus().name(),
                 i.getInvitedAt(),
-                i.getRespondedAt().orElse(null));
+                i.getRespondedAt().orElse(null),
+                i.getInviteTokenId().map(InviteTokenId::value).orElse(null));
     }
 }

@@ -88,6 +88,8 @@ class UserMeetingControllerTest {
                                                 true,
                                                 true,
                                                 true,
+                                                false,
+                                                0,
                                                 false),
                                         Instant.parse("2026-04-01T08:00:00Z")))),
                         10,
@@ -154,6 +156,8 @@ class UserMeetingControllerTest {
                                                 true,
                                                 true,
                                                 true,
+                                                false,
+                                                0,
                                                 false),
                                         Instant.parse("2026-04-01T08:00:00Z")))),
                         20,
@@ -253,7 +257,7 @@ class UserMeetingControllerTest {
                         MeetingType.SCHEDULED,
                         MeetingStatus.ENDED,
                         new MeetingSettingsResponse(
-                                "ALLOW_ALL", true, 10, true, true, true, true, false),
+                                "ALLOW_ALL", true, 10, true, true, true, true, false, 0, false),
                         Instant.parse("2026-04-01T08:00:00Z"),
                         List.of(new MeetingParticipantResponse(
                                 meetingId,

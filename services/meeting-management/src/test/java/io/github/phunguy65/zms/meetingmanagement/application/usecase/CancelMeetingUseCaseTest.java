@@ -207,6 +207,7 @@ class CancelMeetingUseCaseTest {
                 InviteeDisplayName.of(displayName),
                 status,
                 Instant.parse("2026-04-02T09:00:00Z"),
+                null,
                 null);
         return invitee;
     }

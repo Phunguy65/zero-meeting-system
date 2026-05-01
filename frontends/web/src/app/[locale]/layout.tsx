@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { ApiClientProvider } from '@/components/api-client-provider.tsx';
 import { routing } from '@/i18n/request.ts';
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default async function RootLayout({
 
     return (
         <NextIntlClientProvider locale={locale} messages={messages}>
-            {children}
+            <ApiClientProvider>{children}</ApiClientProvider>
         </NextIntlClientProvider>
     );
 }

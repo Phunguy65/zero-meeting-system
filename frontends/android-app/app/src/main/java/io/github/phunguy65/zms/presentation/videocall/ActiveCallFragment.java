@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.github.phunguy65.zms.domain.model.RoomConnectionState;
@@ -58,12 +59,16 @@ public class ActiveCallFragment extends Fragment
     private LinearLayout selfCameraOffPlaceholder;
     private ImageView btnFlipCamera;
     private ImageView btnMic, btnCamera, btnMore, btnEndCall;
+    private ImageView btnRecord;
     private View btnMicContainer, btnCameraContainer, btnMoreContainer, btnEndCallContainer;
+    private View btnRecordContainer;
     private View btnLayoutPicker;
     private View btnWaitingRoomContainer;
     private TextView tvWaitingRoomBadge;
     private TextView tvTimer, tvParticipantCount;
     private ImageView imgConnectionQuality;
+    private LinearLayout recordingIndicator;
+    private View recordingDot;
 
     // Self-view rendering
     private SurfaceViewRenderer selfSurfaceRenderer;
@@ -73,6 +78,9 @@ public class ActiveCallFragment extends Fragment
     private Handler autoHideHandler;
     private Runnable autoHideRunnable;
     private boolean controlsVisible = true;
+
+    // Recording indicator animation
+    private android.animation.ObjectAnimator pulseAnimator;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,12 +134,16 @@ public class ActiveCallFragment extends Fragment
         btnCameraContainer = view.findViewById(R.id.btnCameraContainer);
         btnMoreContainer = view.findViewById(R.id.btnMoreContainer);
         btnEndCallContainer = view.findViewById(R.id.btnEndCallContainer);
+        btnRecord = view.findViewById(R.id.btnRecord);
+        btnRecordContainer = view.findViewById(R.id.btnRecordContainer);
         btnLayoutPicker = view.findViewById(R.id.btnLayoutPicker);
         btnWaitingRoomContainer = view.findViewById(R.id.btnWaitingRoomContainer);
         tvWaitingRoomBadge = view.findViewById(R.id.tvWaitingRoomBadge);
         tvTimer = view.findViewById(R.id.tvTimer);
         tvParticipantCount = view.findViewById(R.id.tvParticipantCount);
         imgConnectionQuality = view.findViewById(R.id.imgConnectionQuality);
+        recordingIndicator = view.findViewById(R.id.recordingIndicator);
+        recordingDot = view.findViewById(R.id.recordingDot);
     }
 
     private void setupRecyclerView() {
@@ -179,7 +191,11 @@ public class ActiveCallFragment extends Fragment
             resetAutoHideTimer();
         });
 
-        // Layout picker (top bar entry point)
+        btnRecordContainer.setOnClickListener(v -> {
+            viewModel.toggleRecording();
+            resetAutoHideTimer();
+        });
+
         btnLayoutPicker.setOnClickListener(v -> {
             showLayoutPicker();
             resetAutoHideTimer();
@@ -280,12 +296,11 @@ public class ActiveCallFragment extends Fragment
 
         viewModel.getCurrentLayout().observe(getViewLifecycleOwner(), this::applyLayout);
 
-        viewModel
-                .isHost()
-                .observe(
-                        getViewLifecycleOwner(),
-                        isHost -> updateWaitingRoomButtonVisibility(
-                                isHost, viewModel.getMeetingSettings().getValue()));
+        viewModel.isHost().observe(getViewLifecycleOwner(), isHost -> {
+            updateWaitingRoomButtonVisibility(
+                    isHost, viewModel.getMeetingSettings().getValue());
+            btnRecordContainer.setVisibility(isHost ? View.VISIBLE : View.GONE);
+        });
 
         viewModel.getMeetingSettings().observe(getViewLifecycleOwner(), settings -> {
             Boolean isHost = viewModel.isHost().getValue();
@@ -298,6 +313,39 @@ public class ActiveCallFragment extends Fragment
                 tvWaitingRoomBadge.setVisibility(View.VISIBLE);
             } else {
                 tvWaitingRoomBadge.setVisibility(View.GONE);
+            }
+        });
+
+        viewModel.isRecording().observe(getViewLifecycleOwner(), this::updateRecordingState);
+
+        viewModel
+                .isRecordingLoading()
+                .observe(getViewLifecycleOwner(), this::updateRecordingLoading);
+
+        viewModel.getRecordingError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Snackbar.make(requireView(), error, Snackbar.LENGTH_SHORT).show();
+                viewModel.clearRecordingError();
+            }
+        });
+
+        viewModel.isEndingMeeting().observe(getViewLifecycleOwner(), isEnding -> {
+            if (isEnding != null) {
+                btnEndCallContainer.setEnabled(!isEnding);
+            }
+        });
+
+        viewModel.getEndMeetingError().observe(getViewLifecycleOwner(), errorCode -> {
+            if (errorCode != null && !errorCode.isEmpty()) {
+                Snackbar.make(requireView(), R.string.call_end_meeting_error, Snackbar.LENGTH_LONG)
+                        .show();
+                viewModel.clearEndMeetingError();
+            }
+        });
+
+        viewModel.getMeetingEndedForAll().observe(getViewLifecycleOwner(), ended -> {
+            if (Boolean.TRUE.equals(ended)) {
+                requireActivity().finish();
             }
         });
     }
@@ -399,6 +447,54 @@ public class ActiveCallFragment extends Fragment
         btnWaitingRoomContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
+    private void updateRecordingState(boolean isRecording) {
+        recordingIndicator.setVisibility(isRecording ? View.VISIBLE : View.GONE);
+
+        if (isRecording) {
+            startPulseAnimation();
+        } else {
+            stopPulseAnimation();
+        }
+
+        if (isRecording) {
+            btnRecord.setImageResource(R.drawable.ic_record);
+            btnRecord.setBackgroundResource(R.drawable.bg_end_call_button);
+            btnRecord.setImageTintList(android.content.res.ColorStateList.valueOf(
+                    getResources().getColor(R.color.white, null)));
+            btnRecord.setContentDescription(getString(R.string.cd_stop_recording));
+        } else {
+            btnRecord.setImageResource(R.drawable.ic_record);
+            btnRecord.setBackgroundResource(R.drawable.bg_control_button);
+            btnRecord.setImageTintList(android.content.res.ColorStateList.valueOf(
+                    getResources().getColor(R.color.video_call_text_primary, null)));
+            btnRecord.setContentDescription(getString(R.string.cd_start_recording));
+        }
+    }
+
+    private void updateRecordingLoading(boolean isLoading) {
+        btnRecordContainer.setEnabled(!isLoading);
+        btnRecord.setAlpha(isLoading ? 0.5f : 1.0f);
+    }
+
+    private void startPulseAnimation() {
+        if (pulseAnimator != null && pulseAnimator.isRunning()) {
+            return;
+        }
+        pulseAnimator = android.animation.ObjectAnimator.ofFloat(recordingDot, "alpha", 1f, 0.3f);
+        pulseAnimator.setDuration(800);
+        pulseAnimator.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+        pulseAnimator.setRepeatMode(android.animation.ValueAnimator.REVERSE);
+        pulseAnimator.start();
+    }
+
+    private void stopPulseAnimation() {
+        if (pulseAnimator != null) {
+            pulseAnimator.cancel();
+            pulseAnimator = null;
+        }
+        recordingDot.setAlpha(1f);
+    }
+
     private void updateConnectionIndicator(RoomConnectionState state) {
         int color;
         switch (state) {
@@ -465,21 +561,39 @@ public class ActiveCallFragment extends Fragment
     }
 
     private void showLeaveDialog() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle(R.string.call_leave_title)
-                .setMessage(R.string.call_leave_message)
-                .setPositiveButton(R.string.call_leave_confirm, (dialog, which) -> {
-                    viewModel.endCall();
-                    requireActivity().finish();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+        Boolean isHost = viewModel.isHost().getValue();
+
+        if (Boolean.TRUE.equals(isHost)) {
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.call_host_leave_title)
+                    .setMessage(R.string.call_host_leave_message)
+                    .setPositiveButton(R.string.call_host_leave_local, (dialog, which) -> {
+                        viewModel.endCall();
+                        requireActivity().finish();
+                    })
+                    .setNeutralButton(R.string.call_host_end_for_all, (dialog, which) -> {
+                        viewModel.endMeetingForAll();
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        } else {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.call_leave_title)
+                    .setMessage(R.string.call_leave_message)
+                    .setPositiveButton(R.string.call_leave_confirm, (dialog, which) -> {
+                        viewModel.endCall();
+                        requireActivity().finish();
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         autoHideHandler.removeCallbacks(autoHideRunnable);
+        stopPulseAnimation();
 
         if (currentLocalVideoTrack != null && selfSurfaceRenderer != null) {
             currentLocalVideoTrack.removeRenderer(selfSurfaceRenderer);

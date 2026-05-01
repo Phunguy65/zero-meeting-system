@@ -56,6 +56,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     private Room.State lastKnownState = null;
     private int lastParticipantCount = 0;
     private Map<String, ParticipantTrackState> lastParticipantStates = new java.util.HashMap<>();
+    private String lastRoomMetadata = null;
 
     /**
      * Tracks the state of a participant's tracks for change detection.
@@ -98,7 +99,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     }
 
     @Override
-    public void connect(String url, String token, boolean initialMicEnabled, boolean initialCameraEnabled) {
+    public void connect(
+            String url, String token, boolean initialMicEnabled, boolean initialCameraEnabled) {
         if (room != null) {
             disconnect();
         }
@@ -155,6 +157,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         lastKnownState = null;
         lastParticipantCount = 0;
         lastParticipantStates.clear();
+        lastRoomMetadata = null;
         pendingDataMessages.clear();
         notifyConnectionStateChanged(RoomConnectionState.DISCONNECTED);
     }
@@ -163,25 +166,27 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
     public void setMicrophoneEnabled(boolean enabled) {
         this.micEnabled = enabled;
         if (room == null) {
-            android.util.Log.w("LiveKitRepo", "setMicrophoneEnabled called before room is available");
+            android.util.Log.w(
+                    "LiveKitRepo", "setMicrophoneEnabled called before room is available");
             return;
         }
 
         LocalParticipant localParticipant = room.getLocalParticipant();
         if (localParticipant == null) {
-            android.util.Log.w("LiveKitRepo", "setMicrophoneEnabled called before localParticipant is available");
+            android.util.Log.w(
+                    "LiveKitRepo",
+                    "setMicrophoneEnabled called before localParticipant is available");
             return;
         }
 
         try {
-            localParticipant.setMicrophoneEnabled(
-                    enabled, new SimpleContinuation<Boolean>() {
-                        @Override
-                        public void onSuccess(Boolean result) {}
+            localParticipant.setMicrophoneEnabled(enabled, new SimpleContinuation<Boolean>() {
+                @Override
+                public void onSuccess(Boolean result) {}
 
-                        @Override
-                        public void onFailure(Throwable t) {}
-                    });
+                @Override
+                public void onFailure(Throwable t) {}
+            });
         } catch (Exception e) {
             // Ignore
         }
@@ -197,7 +202,8 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
 
         LocalParticipant localParticipant = room.getLocalParticipant();
         if (localParticipant == null) {
-            android.util.Log.w("LiveKitRepo", "setCameraEnabled called before localParticipant is available");
+            android.util.Log.w(
+                    "LiveKitRepo", "setCameraEnabled called before localParticipant is available");
             return;
         }
 
@@ -246,8 +252,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
 
         try {
             java.lang.reflect.Method switchMethod =
-                    localVideoTrack.getClass().getMethod("switchCamera",
-                            Continuation.class);
+                    localVideoTrack.getClass().getMethod("switchCamera", Continuation.class);
             switchMethod.invoke(localVideoTrack, new SimpleContinuation<Unit>() {
                 @Override
                 public void onSuccess(Unit result) {
@@ -396,6 +401,7 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
 
         updateActiveSpeakers();
         drainPendingDataMessages();
+        checkRoomMetadataChanges();
     }
 
     /**
@@ -408,6 +414,33 @@ public class LiveKitRepositoryImpl implements LiveKitRepository {
         byte[] data;
         while ((data = pendingDataMessages.poll()) != null) {
             listener.onDataReceived(data);
+        }
+    }
+
+    /**
+     * Checks whether room-level metadata has changed since the last poll
+     * and notifies the listener when a change is detected.
+     */
+    private void checkRoomMetadataChanges() {
+        if (room == null || listener == null) return;
+
+        String currentMetadata = null;
+        try {
+            currentMetadata = room.getMetadata();
+        } catch (Exception e) {
+            return;
+        }
+
+        boolean changed;
+        if (currentMetadata == null) {
+            changed = lastRoomMetadata != null;
+        } else {
+            changed = !currentMetadata.equals(lastRoomMetadata);
+        }
+
+        if (changed) {
+            lastRoomMetadata = currentMetadata;
+            listener.onRoomMetadataChanged(currentMetadata);
         }
     }
 

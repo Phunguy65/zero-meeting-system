@@ -1,0 +1,25 @@
+name: Web Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "frontends/web/**"
+
+jobs:
+  test:
+    name: pnpm test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run web tests
+        run: pnpm --dir frontends/web test

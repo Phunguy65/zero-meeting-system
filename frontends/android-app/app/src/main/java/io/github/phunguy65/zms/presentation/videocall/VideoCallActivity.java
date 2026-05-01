@@ -16,6 +16,7 @@ import io.github.phunguy65.zms.frontends.R;
  * Entry points:
  * - MainActivity → "Join Meeting" → VideoCallActivity with isGuest=false
  * - WelcomeActivity → "Join as Guest" → VideoCallActivity with isGuest=true
+ * - Deep link: https://{host}/join?token=... → VideoCallActivity with inviteToken
  */
 @AndroidEntryPoint
 public class VideoCallActivity extends AppCompatActivity {
@@ -23,6 +24,9 @@ public class VideoCallActivity extends AppCompatActivity {
     public static final String EXTRA_IS_GUEST = "isGuest";
     public static final String EXTRA_MEETING_CODE = "meetingCode";
     public static final String EXTRA_MEETING_ID = "meetingId";
+
+    /** Raw invite token from a meeting invite link for token-based join flow. */
+    public static final String EXTRA_INVITE_TOKEN = "inviteToken";
 
     private NavController navController;
 
@@ -42,6 +46,15 @@ public class VideoCallActivity extends AppCompatActivity {
     private void initializeViewModelFromIntent() {
         CallViewModel viewModel = new ViewModelProvider(this).get(CallViewModel.class);
         viewModel.setIsGuest(getIntent().getBooleanExtra(EXTRA_IS_GUEST, false));
+
+        String inviteToken = getIntent().getStringExtra(EXTRA_INVITE_TOKEN);
+        if (inviteToken != null && !inviteToken.isEmpty()) {
+            viewModel.setInviteToken(inviteToken);
+            if (!viewModel.isGuestValue()) {
+                viewModel.loadUserDisplayName();
+            }
+            return;
+        }
 
         String meetingCode = getIntent().getStringExtra(EXTRA_MEETING_CODE);
         if (meetingCode != null && !meetingCode.isEmpty()) {

@@ -83,8 +83,14 @@ export function createJsendMiddleware(
                 const failData = (body.data ?? {}) as FailData;
                 const code = failData.code ?? '';
                 const message = failData.message ?? 'Request failed';
-                const errors = failData.errors ?? [];
+                const rawErrors = failData.errors ?? [];
                 const translatedMessage = translator(code, message);
+                const errors = rawErrors.map((violation) => ({
+                    ...violation,
+                    message: violation.code
+                        ? translator(violation.code, violation.message)
+                        : violation.message,
+                }));
                 throw new ApiFailError(code, translatedMessage, errors);
             }
 

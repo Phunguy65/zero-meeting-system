@@ -26,13 +26,36 @@
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/video_call_active_speaker" />
 
+        <!-- Recording indicator (all participants) -->
+        <LinearLayout android:id="@+id/recordingIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical" android:orientation="horizontal"
+            android:visibility="gone"
+            android:layout_marginStart="@dimen/spacing_sm"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imgConnectionQuality"
+            app:layout_constraintTop_toTopOf="parent" tools:visibility="visible">
+
+            <View android:id="@+id/recordingDot" android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/bg_recording_dot" />
+
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/recording_indicator_label"
+                android:textColor="@color/md_theme_light_error"
+                android:textSize="11sp" android:textStyle="bold" />
+        </LinearLayout>
+
         <!-- Meeting info (center) -->
         <LinearLayout android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:gravity="center"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnLayoutPicker"
-            app:layout_constraintStart_toEndOf="@id/imgConnectionQuality"
+            app:layout_constraintStart_toEndOf="@id/recordingIndicator"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView android:id="@+id/tvMeetingTitle"
@@ -242,6 +265,25 @@
                     android:contentDescription="@string/cd_more_options"
                     android:padding="@dimen/spacing_sm"
                     android:src="@drawable/ic_more_vert"
+                    app:tint="@color/video_call_text_primary" />
+            </FrameLayout>
+
+            <!-- Record toggle (host-only) -->
+            <FrameLayout android:id="@+id/btnRecordContainer"
+                android:layout_width="@dimen/video_compact_button_size"
+                android:layout_height="@dimen/video_compact_button_size"
+                android:layout_marginStart="@dimen/video_compact_button_spacing"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:visibility="gone">
+
+                <ImageView android:id="@+id/btnRecord"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_control_button"
+                    android:contentDescription="@string/cd_start_recording"
+                    android:padding="@dimen/spacing_sm"
+                    android:src="@drawable/ic_record"
                     app:tint="@color/video_call_text_primary" />
             </FrameLayout>
 

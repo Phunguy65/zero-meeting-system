@@ -18,6 +18,14 @@ session during active calls when waiting room is enabled.
 - **THEN** the system SHALL route SSE events through `CallViewModel` state
   updates
 
+### Scenario: SSE connected state is set only after confirmed connection
+
+- **WHEN** host meeting SSE subscription is initiated
+- **THEN** `CallViewModel` SHALL mark waiting-room SSE connected state true only
+  from the SSE client's `onConnected` callback
+- **THEN** failed or in-progress connection attempts SHALL NOT be reported as
+  connected
+
 ### Scenario: Host enters active call without waiting room capability
 
 - **WHEN** waiting room is disabled for the active meeting or the current user
@@ -76,8 +84,9 @@ backoff and post-reconnect synchronization.
 
 - **WHEN** a reconnect succeeds after any disconnect window
 - **THEN** the app SHALL call `GET /api/v1/meetings/{id}/joinRequests`
-- **THEN** local pending state and badge count SHALL be replaced with the
-  synchronized list result
+- **THEN** synchronized API items SHALL be merged into existing local pending
+  state by request ID without replacing newer SSE-added entries
+- **THEN** only API items not already present locally SHALL be appended
 
 ## Requirement: Host waiting room moderation APIs
 
@@ -149,3 +158,11 @@ toolbar and bottom-sheet UI.
 - **THEN** pending-item rows SHALL display display name, requested time, and
   approve or deny actions
 - **THEN** an approve-all action SHALL be available when list has items
+
+### Scenario: Bottom sheet list auto-refreshes on pending state changes
+
+- **WHEN** `CallViewModel` pending join-request LiveData changes while
+  `WaitingRoomBottomSheet` is visible
+- **THEN** the sheet adapter SHALL refresh from observed LiveData updates
+- **THEN** the sheet SHALL NOT rely solely on a one-time load for ongoing list
+  accuracy

@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
@@ -19,19 +20,25 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import dagger.hilt.android.AndroidEntryPoint;
+import io.github.phunguy65.zms.domain.model.InviteeInfo;
 import io.github.phunguy65.zms.domain.model.MeetingDetail;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
+import io.github.phunguy65.zms.domain.model.MeetingStatus;
 import io.github.phunguy65.zms.frontends.R;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel;
 import io.github.phunguy65.zms.presentation.schedule.ScheduleViewModel.ValidationResult;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -48,22 +55,18 @@ public class ScheduleFragment extends Fragment {
 
     private ScheduleViewModel viewModel;
 
-    // Header
     private ImageView btnBack;
     private TextView tvTitle;
 
-    // Basic info fields
     private TextInputLayout tilMeetingTopic, tilDate, tilTime, tilDuration;
     private TextInputEditText edtMeetingTopic, edtDate, edtTime;
     private AutoCompleteTextView tvDuration;
     private TextView tvEndTimeHelper;
 
-    // Primary settings
     private MaterialSwitch switchWaitingRoom, switchAllowGuest, switchPassword;
     private TextInputLayout tilPassword;
     private TextInputEditText edtPassword;
 
-    // Advanced settings
     private LinearLayout advancedSettingsHeader, advancedSettingsContent;
     private ImageView ivAdvancedExpand;
     private TextInputLayout tilMaxParticipants;
@@ -73,10 +76,23 @@ public class ScheduleFragment extends Fragment {
             switchAllowMicrophone,
             switchAllowVideo;
 
-    // Submit
     private MaterialButton btnScheduleMeeting;
+    private MaterialButton btnCancelMeeting;
     private CircularProgressIndicator progressLoading;
 
+    private View inviteeSectionContainer;
+    private TextInputLayout tilInviteeEmail;
+    private TextInputEditText edtInviteeEmail;
+    private MaterialButton btnAddInvitee;
+    private ChipGroup chipGroupInvitees;
+    private TextView tvInviteeCount;
+
+    private View inviteeManagementContainer;
+    private LinearLayout inviteeListContainer;
+    private TextView tvNoInvitees;
+    private CircularProgressIndicator progressInvitees;
+
+    private int lastInviteeCount = 0;
     private boolean advancedExpanded = false;
 
     @Nullable @Override
@@ -107,7 +123,6 @@ public class ScheduleFragment extends Fragment {
         btnBack = view.findViewById(R.id.btnBack);
         tvTitle = view.findViewById(R.id.tvTitle);
 
-        // Basic info
         tilMeetingTopic = view.findViewById(R.id.tilMeetingTopic);
         edtMeetingTopic = view.findViewById(R.id.edtMeetingTopic);
         tilDate = view.findViewById(R.id.tilDate);
@@ -118,14 +133,12 @@ public class ScheduleFragment extends Fragment {
         tvDuration = view.findViewById(R.id.tvDuration);
         tvEndTimeHelper = view.findViewById(R.id.tvEndTimeHelper);
 
-        // Primary settings
         switchWaitingRoom = view.findViewById(R.id.switchWaitingRoom);
         switchAllowGuest = view.findViewById(R.id.switchAllowGuest);
         switchPassword = view.findViewById(R.id.switchPassword);
         tilPassword = view.findViewById(R.id.tilPassword);
         edtPassword = view.findViewById(R.id.edtPassword);
 
-        // Advanced settings
         advancedSettingsHeader = view.findViewById(R.id.advancedSettingsHeader);
         advancedSettingsContent = view.findViewById(R.id.advancedSettingsContent);
         ivAdvancedExpand = view.findViewById(R.id.ivAdvancedExpand);
@@ -136,9 +149,21 @@ public class ScheduleFragment extends Fragment {
         switchAllowMicrophone = view.findViewById(R.id.switchAllowMicrophone);
         switchAllowVideo = view.findViewById(R.id.switchAllowVideo);
 
-        // Submit
         btnScheduleMeeting = view.findViewById(R.id.btnScheduleMeeting);
+        btnCancelMeeting = view.findViewById(R.id.btnCancelMeeting);
         progressLoading = view.findViewById(R.id.progressLoading);
+
+        inviteeSectionContainer = view.findViewById(R.id.inviteeSectionContainer);
+        tilInviteeEmail = view.findViewById(R.id.tilInviteeEmail);
+        edtInviteeEmail = view.findViewById(R.id.edtInviteeEmail);
+        btnAddInvitee = view.findViewById(R.id.btnAddInvitee);
+        chipGroupInvitees = view.findViewById(R.id.chipGroupInvitees);
+        tvInviteeCount = view.findViewById(R.id.tvInviteeCount);
+
+        inviteeManagementContainer = view.findViewById(R.id.inviteeManagementContainer);
+        inviteeListContainer = view.findViewById(R.id.inviteeListContainer);
+        tvNoInvitees = view.findViewById(R.id.tvNoInvitees);
+        progressInvitees = view.findViewById(R.id.progressInvitees);
     }
 
     private void setupDropdowns() {
@@ -181,6 +206,16 @@ public class ScheduleFragment extends Fragment {
 
         tvDuration.setOnItemClickListener((parent, view, position, id) -> updateEndTimeHelper());
 
+        btnAddInvitee.setOnClickListener(v -> submitInviteeInput());
+
+        edtInviteeEmail.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                submitInviteeInput();
+                return true;
+            }
+            return false;
+        });
+
         btnScheduleMeeting.setOnClickListener(v -> {
             boolean isWaitingRoom = switchWaitingRoom.isChecked();
             String password = switchPassword.isChecked() && edtPassword.getText() != null
@@ -217,6 +252,8 @@ public class ScheduleFragment extends Fragment {
                 viewModel.scheduleMeeting(topic, date, time, duration, isWaitingRoom, password);
             }
         });
+
+        btnCancelMeeting.setOnClickListener(v -> showCancelConfirmation());
     }
 
     private void setupBlurValidation() {
@@ -351,6 +388,12 @@ public class ScheduleFragment extends Fragment {
             switchAllowMicrophone.setEnabled(!isLoading);
             switchAllowVideo.setEnabled(!isLoading);
 
+            if (!inEditMode) {
+                boolean atCap = lastInviteeCount >= ScheduleViewModel.MAX_INVITEES;
+                edtInviteeEmail.setEnabled(!isLoading && !atCap);
+                btnAddInvitee.setEnabled(!isLoading && !atCap);
+            }
+
             if (isLoading) {
                 btnScheduleMeeting.setText("");
                 progressLoading.setVisibility(View.VISIBLE);
@@ -436,10 +479,46 @@ public class ScheduleFragment extends Fragment {
                 edtDate.setEnabled(false);
                 edtTime.setEnabled(false);
                 tvDuration.setEnabled(false);
+                inviteeSectionContainer.setVisibility(View.GONE);
+                inviteeManagementContainer.setVisibility(View.VISIBLE);
+                viewModel.loadInvitees();
             }
         });
 
-        viewModel.meetingDetail.observe(getViewLifecycleOwner(), this::populateEditModeFields);
+        viewModel.invitees.observe(getViewLifecycleOwner(), inviteeList -> {
+            int newCount = inviteeList != null ? inviteeList.size() : 0;
+            if (newCount > lastInviteeCount) {
+                tilInviteeEmail.setError(null);
+                edtInviteeEmail.setText("");
+            }
+            lastInviteeCount = newCount;
+            rebuildInviteeChips(inviteeList);
+        });
+
+        viewModel.inviteeError.observe(getViewLifecycleOwner(), errorCode -> {
+            if (errorCode == null) return;
+
+            int messageResId;
+            switch (errorCode) {
+                case "INVITEE_EMAIL_INVALID":
+                    messageResId = R.string.schedule_invitee_error_invalid_email;
+                    break;
+                case "INVITEE_DUPLICATE":
+                    messageResId = R.string.schedule_invitee_error_duplicate;
+                    break;
+                case "INVITEE_MAX_REACHED":
+                    messageResId = R.string.schedule_invitee_error_max_reached;
+                    break;
+                default:
+                    messageResId = R.string.validation_required;
+            }
+            tilInviteeEmail.setError(getString(messageResId));
+        });
+
+        viewModel.meetingDetail.observe(getViewLifecycleOwner(), detail -> {
+            populateEditModeFields(detail);
+            updateCancelButtonVisibility(detail);
+        });
 
         viewModel.loadDetailError.observe(getViewLifecycleOwner(), errorMessage -> {
             if (errorMessage != null) {
@@ -456,6 +535,55 @@ public class ScheduleFragment extends Fragment {
                                 Snackbar.LENGTH_SHORT)
                         .show();
                 Navigation.findNavController(requireView()).popBackStack();
+            }
+        });
+
+        viewModel.resendInvitesPrompt.observe(getViewLifecycleOwner(), invalidatedCount -> {
+            if (invalidatedCount != null && invalidatedCount > 0) {
+                showResendInvitesPrompt(invalidatedCount);
+            }
+        });
+
+        viewModel.isLoadingInvitees.observe(getViewLifecycleOwner(), isLoading -> {
+            if (progressInvitees != null) {
+                progressInvitees.setVisibility(
+                        Boolean.TRUE.equals(isLoading) ? View.VISIBLE : View.GONE);
+            }
+        });
+
+        viewModel.inviteeList.observe(getViewLifecycleOwner(), invitees -> {
+            rebuildInviteeManagementList(invitees);
+        });
+
+        viewModel.inviteeActionError.observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null) {
+                Snackbar.make(
+                                requireView(),
+                                R.string.schedule_invitee_action_error,
+                                Snackbar.LENGTH_LONG)
+                        .show();
+            }
+        });
+
+        viewModel.isCancelling.observe(getViewLifecycleOwner(), isCancelling -> {
+            if (isCancelling != null) {
+                btnCancelMeeting.setEnabled(!isCancelling);
+                btnScheduleMeeting.setEnabled(!isCancelling);
+                progressLoading.setVisibility(isCancelling ? View.VISIBLE : View.GONE);
+            }
+        });
+
+        viewModel.cancelSuccess.observe(getViewLifecycleOwner(), unused -> {
+            Snackbar.make(requireView(), R.string.schedule_cancel_success, Snackbar.LENGTH_SHORT)
+                    .show();
+            Navigation.findNavController(requireView()).popBackStack();
+        });
+
+        viewModel.cancelError.observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null) {
+                Snackbar.make(requireView(), errorMessage, Snackbar.LENGTH_LONG).show();
+                btnCancelMeeting.setEnabled(true);
+                btnScheduleMeeting.setEnabled(true);
             }
         });
     }
@@ -477,6 +605,40 @@ public class ScheduleFragment extends Fragment {
         String duration = tvDuration.getText() != null ? tvDuration.getText().toString() : "";
 
         viewModel.updateEndTime(date, time, duration);
+    }
+
+    private void submitInviteeInput() {
+        String email =
+                edtInviteeEmail.getText() != null ? edtInviteeEmail.getText().toString() : "";
+        viewModel.addInvitee(email);
+    }
+
+    private void rebuildInviteeChips(@Nullable List<String> inviteeList) {
+        chipGroupInvitees.removeAllViews();
+
+        int count = inviteeList != null ? inviteeList.size() : 0;
+        tvInviteeCount.setVisibility(View.VISIBLE);
+        tvInviteeCount.setText(getString(R.string.schedule_invitee_count, count));
+
+        if (inviteeList == null || inviteeList.isEmpty()) {
+            chipGroupInvitees.setVisibility(View.GONE);
+            return;
+        }
+
+        chipGroupInvitees.setVisibility(View.VISIBLE);
+
+        boolean atCap = inviteeList.size() >= ScheduleViewModel.MAX_INVITEES;
+        edtInviteeEmail.setEnabled(!atCap);
+        btnAddInvitee.setEnabled(!atCap);
+
+        for (String email : inviteeList) {
+            Chip chip = new Chip(requireContext());
+            chip.setText(email);
+            chip.setCloseIconVisible(true);
+            chip.setCloseIconContentDescription(getString(R.string.cd_remove_invitee, email));
+            chip.setOnCloseIconClickListener(v -> viewModel.removeInvitee(email));
+            chipGroupInvitees.addView(chip);
+        }
     }
 
     private void showDatePicker() {
@@ -589,5 +751,133 @@ public class ScheduleFragment extends Fragment {
             double hours = minutes / 60.0;
             return String.format(Locale.ROOT, "%.1f hours", hours);
         }
+    }
+
+    /**
+     * Shows or hides the cancel meeting button based on edit mode, host identity,
+     * and meeting status. Only visible for the host on a SCHEDULED meeting in edit mode.
+     */
+    private void updateCancelButtonVisibility(@Nullable MeetingDetail detail) {
+        if (detail == null) {
+            btnCancelMeeting.setVisibility(View.GONE);
+            return;
+        }
+
+        Boolean isEditMode = viewModel.isEditMode.getValue();
+        String currentUserId = viewModel.getCurrentUserId();
+        boolean isHost = currentUserId != null && currentUserId.equals(detail.hostId());
+        boolean isScheduled = detail.status() == MeetingStatus.SCHEDULED;
+
+        boolean shouldShow = Boolean.TRUE.equals(isEditMode) && isHost && isScheduled;
+        btnCancelMeeting.setVisibility(shouldShow ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Rebuilds the invitee management list in edit mode.
+     *
+     * <p>For each invitee, renders a row with their email, token status badge,
+     * and contextual action buttons (Resend for PENDING/EXPIRED, Revoke for PENDING).
+     *
+     * @param invitees the list of invitees, or null if not yet loaded
+     */
+    private void rebuildInviteeManagementList(@Nullable List<InviteeInfo> invitees) {
+        if (inviteeListContainer == null) return;
+        inviteeListContainer.removeAllViews();
+
+        if (invitees == null || invitees.isEmpty()) {
+            tvNoInvitees.setVisibility(invitees != null ? View.VISIBLE : View.GONE);
+            return;
+        }
+        tvNoInvitees.setVisibility(View.GONE);
+
+        for (InviteeInfo invitee : invitees) {
+            View row = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.item_invitee_management, inviteeListContainer, false);
+
+            TextView tvEmail = row.findViewById(R.id.tvInviteeEmail);
+            TextView tvStatus = row.findViewById(R.id.tvInviteeStatus);
+            MaterialButton btnResend = row.findViewById(R.id.btnResendInvite);
+            MaterialButton btnRevoke = row.findViewById(R.id.btnRevokeInvite);
+
+            String email = invitee.getEmail() != null
+                    ? invitee.getEmail()
+                    : (invitee.getDisplayName() != null
+                            ? invitee.getDisplayName()
+                            : invitee.getInviteeId());
+            tvEmail.setText(email);
+
+            String tokenStatus = invitee.getTokenStatus();
+            String statusLabel = tokenStatusLabel(tokenStatus);
+            tvStatus.setText(statusLabel);
+            tvStatus.setContentDescription(getString(R.string.cd_invitee_status, statusLabel));
+
+            boolean canResend = "PENDING".equals(tokenStatus)
+                    || "EXPIRED".equals(tokenStatus)
+                    || "REVOKED".equals(tokenStatus);
+            boolean canRevoke = "PENDING".equals(tokenStatus);
+
+            btnResend.setVisibility(canResend ? View.VISIBLE : View.GONE);
+            btnRevoke.setVisibility(canRevoke ? View.VISIBLE : View.GONE);
+
+            if (canResend) {
+                btnResend.setContentDescription(getString(R.string.cd_resend_invite, email));
+                btnResend.setOnClickListener(v -> viewModel.resendInvite(invitee.getInviteeId()));
+            }
+            if (canRevoke) {
+                btnRevoke.setContentDescription(getString(R.string.cd_revoke_invite, email));
+                btnRevoke.setOnClickListener(v -> viewModel.revokeInvite(invitee.getInviteeId()));
+            }
+
+            inviteeListContainer.addView(row);
+        }
+    }
+
+    private String tokenStatusLabel(String tokenStatus) {
+        if (tokenStatus == null) return "";
+        switch (tokenStatus) {
+            case "PENDING":
+                return getString(R.string.schedule_invitee_status_pending);
+            case "USED":
+                return getString(R.string.schedule_invitee_status_used);
+            case "REVOKED":
+                return getString(R.string.schedule_invitee_status_revoked);
+            case "EXPIRED":
+                return getString(R.string.schedule_invitee_status_expired);
+            default:
+                return tokenStatus;
+        }
+    }
+
+    /**
+     * Shows a dialog prompting the host to resend invite links after a password change.
+     * The update was already accepted by the server at this point.
+     *
+     * @param invalidatedCount the number of invitees whose tokens were revoked
+     */
+    private void showResendInvitesPrompt(int invalidatedCount) {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.invite_resend_title)
+                .setMessage(getString(R.string.invite_resend_message, invalidatedCount))
+                .setPositiveButton(R.string.invite_resend_confirm, (dialog, which) -> Snackbar.make(
+                                requireView(),
+                                R.string.invite_resend_not_supported,
+                                Snackbar.LENGTH_SHORT)
+                        .show())
+                .setNegativeButton(R.string.invite_resend_dismiss, null)
+                .show();
+    }
+
+    /**
+     * Shows a destructive confirmation dialog before cancelling the meeting.
+     */
+    private void showCancelConfirmation() {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.schedule_cancel_title)
+                .setMessage(R.string.schedule_cancel_message)
+                .setPositiveButton(R.string.schedule_cancel_confirm, (dialog, which) -> {
+                    viewModel.cancelMeeting();
+                })
+                .setNegativeButton(R.string.schedule_cancel_dismiss, null)
+                .show();
     }
 }

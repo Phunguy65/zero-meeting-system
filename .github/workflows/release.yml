@@ -1,0 +1,127 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Bump version, generate changelog, and publish release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+
+      - name: Install git-cliff
+        run: |
+          curl -sSfL \
+            "https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-x86_64-unknown-linux-musl.tar.gz" \
+            | tar -xz --strip-components=1 -C /usr/local/bin git-cliff-x86_64-unknown-linux-musl/git-cliff
+
+      - name: Determine version bump type
+        id: bump
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$PREVIOUS_TAG" ]; then
+            COMMIT_RANGE="HEAD"
+          else
+            COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
+          fi
+
+          BUMP="patch"
+          while IFS= read -r line; do
+            if echo "$line" | grep -qE "^[a-zA-Z]+(\([^)]+\))?!:"; then
+              BUMP="major"
+              break
+            fi
+            if echo "$line" | grep -qiE "BREAKING[- ]CHANGE"; then
+              BUMP="major"
+              break
+            fi
+            if echo "$line" | grep -qE "^feat(\([^)]+\))?:"; then
+              BUMP="minor"
+            fi
+          done < <(git log --pretty=format:"%s%n%b" $COMMIT_RANGE 2>/dev/null || echo "")
+
+          echo "type=${BUMP}" >> "$GITHUB_OUTPUT"
+
+      - name: Compute new version
+        id: version
+        run: |
+          CURRENT=$(node -p "require('./package.json').version.replace('-SNAPSHOT','')")
+          MAJOR=$(echo "$CURRENT" | cut -d. -f1)
+          MINOR=$(echo "$CURRENT" | cut -d. -f2)
+          PATCH=$(echo "$CURRENT" | cut -d. -f3)
+
+          case "${{ steps.bump.outputs.type }}" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "new=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Update version in package.json
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new }}"
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '${NEW_VERSION}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 4) + '\n');
+          "
+
+      - name: Generate CHANGELOG.md
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --tag ${{ steps.version.outputs.tag }} -o CHANGELOG.md
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Extract release notes for this version
+        id: notes
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.new }}"
+          NOTES=$(awk "/^## \[${VERSION}\]/{found=1; next} found && /^## /{exit} found{print}" CHANGELOG.md)
+          echo "body<<NOTES_EOF" >> "$GITHUB_OUTPUT"
+          echo "${NOTES}" >> "$GITHUB_OUTPUT"
+          echo "NOTES_EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Commit changelog and version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md
+          git commit -m "chore(release): ${{ steps.version.outputs.tag }} [skip ci]"
+
+      - name: Push release commit and tag
+        run: |
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin HEAD:main
+          git push origin ${{ steps.version.outputs.tag }}
+
+      - name: Create GitHub Release
+        run: |
+          gh release create ${{ steps.version.outputs.tag }} \
+            --title "Release ${{ steps.version.outputs.tag }}" \
+            --notes "${{ steps.notes.outputs.body }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

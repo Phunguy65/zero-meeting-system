@@ -6,10 +6,12 @@ import io.github.phunguy65.zms.meetingmanagement.application.helper.MeetingSetti
 import io.github.phunguy65.zms.meetingmanagement.application.helper.ShortCodeGenerator;
 import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingResponse;
 import io.github.phunguy65.zms.meetingmanagement.application.response.MeetingSettingsResponse;
+import io.github.phunguy65.zms.meetingmanagement.application.service.InviteTokenService;
 import io.github.phunguy65.zms.meetingmanagement.domain.MeetingError;
 import io.github.phunguy65.zms.meetingmanagement.domain.PublishableEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingInvitationsSentEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingInvitationsSentEvent.InviteeInfo;
+import io.github.phunguy65.zms.meetingmanagement.domain.model.InviteToken;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.Meeting;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.MeetingInvitee;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.*;
@@ -21,9 +23,11 @@ import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import io.github.phunguy65.zms.shared.domain.valueobject.UserId;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +42,9 @@ public class ScheduleMeetingUseCase {
     private final UserGrpcServicePort userGrpcServicePort;
     private final MeetingInviteeRepository inviteeRepository;
     private final PasswordHasher passwordHasher;
+    private final InviteTokenService inviteTokenService;
+    private final InviteTokenRepository inviteTokenRepository;
+    private final boolean useTokens;
 
     public ScheduleMeetingUseCase(
             MeetingRepository meetingRepository,
@@ -46,7 +53,10 @@ public class ScheduleMeetingUseCase {
             MeetingLimitsPort limitsConfig,
             UserGrpcServicePort userGrpcServicePort,
             MeetingInviteeRepository inviteeRepository,
-            PasswordHasher passwordHasher) {
+            PasswordHasher passwordHasher,
+            InviteTokenService inviteTokenService,
+            InviteTokenRepository inviteTokenRepository,
+            @Value("${zms.invite.use-tokens:false}") boolean useTokens) {
         this.meetingRepository = meetingRepository;
         this.shortCodeGenerator = shortCodeGenerator;
         this.eventPublisher = eventPublisher;
@@ -54,6 +64,9 @@ public class ScheduleMeetingUseCase {
         this.userGrpcServicePort = userGrpcServicePort;
         this.inviteeRepository = inviteeRepository;
         this.passwordHasher = passwordHasher;
+        this.inviteTokenService = inviteTokenService;
+        this.inviteTokenRepository = inviteTokenRepository;
+        this.useTokens = useTokens;
     }
 
     @Transactional
@@ -76,9 +89,7 @@ public class ScheduleMeetingUseCase {
 
         String rawPassword =
                 MeetingSettingsPasswordResolver.normalizeRawPassword(command.rawPassword());
-        String invitationRawPassword = null;
         if (rawPassword != null) {
-            invitationRawPassword = rawPassword;
             settings = MeetingSettingsPasswordResolver.withRawPassword(
                     settings, rawPassword, passwordHasher);
         }
@@ -128,6 +139,28 @@ public class ScheduleMeetingUseCase {
                     buildInvitees(saved.getId(), command.hostId(), inviteeInputs, resolvedUsers);
             inviteeRepository.saveAll(invitees);
 
+            Map<UUID, String> inviteeTokens = new HashMap<>();
+            if (useTokens) {
+                for (MeetingInvitee invitee : invitees) {
+                    String rawToken =
+                            inviteTokenService.generateToken(saved.getId(), invitee.getId());
+                    String tokenHash = inviteTokenService.hashToken(rawToken);
+                    Instant expiresAt = inviteTokenService.extractExpiresAt(rawToken);
+                    Result<InviteToken, MeetingError> tokenResult = InviteToken.create(
+                            saved.getId(), invitee.getId(), tokenHash, expiresAt);
+                    if (tokenResult
+                            instanceof
+                            Result.Success<InviteToken, MeetingError>(InviteToken token)) {
+                        inviteTokenRepository.save(token);
+                        invitee.assignInviteToken(token.getId());
+                        inviteeRepository.save(invitee);
+                        invitee.getUserId()
+                                .map(UserId::value)
+                                .ifPresent(uid -> inviteeTokens.put(uid, rawToken));
+                    }
+                }
+            }
+
             List<InviteeInfo> inviteeInfos = invitees.stream()
                     .map(i -> new InviteeInfo(
                             i.getUserId().map(UserId::value).orElse(null),
@@ -140,8 +173,8 @@ public class ScheduleMeetingUseCase {
                     saved.getTitle().map(MeetingTitle::value).orElse(null),
                     saved.getShortCode().value(),
                     saved.getStartTime().orElse(null),
-                    invitationRawPassword,
                     inviteeInfos,
+                    inviteeTokens,
                     Instant.now()));
         }
 

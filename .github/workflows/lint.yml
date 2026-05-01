@@ -1,0 +1,91 @@
+name: Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  services-format:
+    name: Java / Kotlin / XML (Spotless)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run Spotless check
+        run: ./services/gradlew spotlessCheck
+
+  proto-format:
+    name: Proto (Buf)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run Buf format check
+        run: ./services/gradlew -p services/proto bufFormatCheck
+
+  web-check:
+    name: Web (Biome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run Biome check
+        run: pnpm --dir frontends/web biome check
+
+  general-format:
+    name: General format (Prettier)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run Prettier check
+        run: >
+          pnpm prettier --check
+          "**/*.{md,json,toml,yaml,yml,sh}"
+          "!frontends/web/**"
+          "!node_modules/**"
+
+  commitlint:
+    name: Commitlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+      - name: Install dependencies
+        run: pnpm install
+      - name: Lint commit messages
+        run: >
+          pnpm commitlint
+          --from ${{ github.event.pull_request.base.sha }}
+          --to HEAD
+          --config commitlint.config.js

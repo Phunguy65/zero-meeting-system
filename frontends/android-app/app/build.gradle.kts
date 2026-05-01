@@ -88,12 +88,14 @@ android {
         debug {
             buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080\"")
             buildConfigField("String", "LIVEKIT_URL", "\"ws://10.0.2.2:7880\"")
+            manifestPlaceholders["inviteLinkHost"] = "10.0.2.2"
         }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             buildConfigField("String", "API_BASE_URL", "\"https://api.example.com\"")
             buildConfigField("String", "LIVEKIT_URL", "\"wss://livekit.example.com\"")
+            manifestPlaceholders["inviteLinkHost"] = "app.example.com"
         }
     }
 

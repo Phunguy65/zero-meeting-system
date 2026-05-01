@@ -40,6 +40,9 @@ public class MeetingInviteeJpaEntity {
     @Column(name = "responded_at")
     private @Nullable Instant respondedAt;
 
+    @Column(name = "invite_token_id", columnDefinition = "uuid")
+    private @Nullable UUID inviteTokenId;
+
     protected MeetingInviteeJpaEntity() {}
 
     public MeetingInviteeJpaEntity(
@@ -51,7 +54,8 @@ public class MeetingInviteeJpaEntity {
             @Nullable String displayName,
             String status,
             Instant invitedAt,
-            @Nullable Instant respondedAt) {
+            @Nullable Instant respondedAt,
+            @Nullable UUID inviteTokenId) {
         this.id = id;
         this.meetingId = meetingId;
         this.inviterId = inviterId;
@@ -61,6 +65,7 @@ public class MeetingInviteeJpaEntity {
         this.status = status;
         this.invitedAt = invitedAt;
         this.respondedAt = respondedAt;
+        this.inviteTokenId = inviteTokenId;
     }
 
     public UUID getId() {
@@ -97,5 +102,9 @@ public class MeetingInviteeJpaEntity {
 
     public @Nullable Instant getRespondedAt() {
         return respondedAt;
+    }
+
+    public @Nullable UUID getInviteTokenId() {
+        return inviteTokenId;
     }
 }

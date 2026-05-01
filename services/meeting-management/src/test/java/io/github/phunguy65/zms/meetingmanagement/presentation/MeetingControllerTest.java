@@ -108,7 +108,9 @@ class MeetingControllerTest {
                                                 true,
                                                 true,
                                                 true,
-                                                true),
+                                                true,
+                                                0,
+                                                false),
                                         Instant.parse("2026-04-01T08:00:00Z")),
                                 new MeetingResponse(
                                         secondMeetingId,
@@ -128,6 +130,8 @@ class MeetingControllerTest {
                                                 false,
                                                 true,
                                                 true,
+                                                false,
+                                                0,
                                                 false),
                                         secondCreatedAt)),
                         10,
@@ -169,7 +173,16 @@ class MeetingControllerTest {
                                 MeetingType.INSTANT,
                                 MeetingStatus.LIVE,
                                 new MeetingSettingsResponse(
-                                        "AUTO_APPROVE", false, 10, true, false, true, true, false),
+                                        "AUTO_APPROVE",
+                                        false,
+                                        10,
+                                        true,
+                                        false,
+                                        true,
+                                        true,
+                                        false,
+                                        0,
+                                        false),
                                 Instant.parse("2026-04-01T09:00:00Z"))),
                         15,
                         false));
@@ -296,7 +309,7 @@ class MeetingControllerTest {
                         && command.settings().allowVideo()
                         && command.rawPassword() == null)))
                 .thenReturn(Result.success(new MeetingSettingsResponse(
-                        "MANUAL_APPROVAL", true, 40, false, true, true, true, false)));
+                        "MANUAL_APPROVAL", true, 40, false, true, true, true, false, 0, false)));
 
         mockMvc.perform(put("/api/v1/meetings/{id}/settings", meetingId)
                         .principal(new TestingAuthenticationToken(requesterId.toString(), null))

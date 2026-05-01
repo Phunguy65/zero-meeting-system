@@ -200,6 +200,30 @@ public sealed interface MeetingError extends DomainError {
         }
     }
 
+    /** The host attempted to mute their own tracks via the moderation endpoint. */
+    record CanNotMuteSelf() implements MeetingError {
+        @Override
+        public String message() {
+            return "Host cannot mute themselves via moderation controls";
+        }
+    }
+
+    /** The meeting is not in LIVE status; mute operations are only valid on live meetings. */
+    record MeetingNotLive(UUID meetingId) implements MeetingError {
+        @Override
+        public String message() {
+            return "Meeting " + meetingId + " is not live; mute operations require a LIVE meeting";
+        }
+    }
+
+    /** The target participant has no published track of the requested source type. */
+    record TrackNotFound(String identity, String source) implements MeetingError {
+        @Override
+        public String message() {
+            return "No published '" + source + "' track found for participant '" + identity + "'";
+        }
+    }
+
     /** The host attempted to kick themselves from their own meeting. */
     record CanNotKickSelf(UUID meetingId, UUID hostId) implements MeetingError {
         @Override
@@ -221,6 +245,20 @@ public sealed interface MeetingError extends DomainError {
         @Override
         public String message() {
             return "Invalid kick target: " + detail;
+        }
+    }
+
+    /**
+     * The provided invite token is invalid (malformed, expired, or signature mismatch).
+     *
+     * @param errorCode machine-readable reason code (e.g. INVITE_TOKEN_INVALID,
+     *                  INVITE_TOKEN_EXPIRED, INVITE_TOKEN_REVOKED, MEETING_NOT_FOUND,
+     *                  MEETING_UNAVAILABLE)
+     */
+    record InvalidInviteToken(String errorCode) implements MeetingError {
+        @Override
+        public String message() {
+            return "Invite token validation failed: " + errorCode;
         }
     }
 

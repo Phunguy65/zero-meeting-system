@@ -1,5 +1,12 @@
-import { GreenRoomScreen } from "@/components/green-room-screen";
+import { JoinMeetingContainer } from '@/components/join-meeting/index.tsx';
 
-export default function GreenRoomPage() {
-  return <GreenRoomScreen />;
+type GreenRoomPageProps = {
+    searchParams: Promise<{ code?: string }>;
+};
+
+export default async function GreenRoomPage({
+    searchParams,
+}: GreenRoomPageProps) {
+    const { code } = await searchParams;
+    return <JoinMeetingContainer initialCode={code} mode='authenticated' />;
 }

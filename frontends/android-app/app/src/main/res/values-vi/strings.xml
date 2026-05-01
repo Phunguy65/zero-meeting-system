@@ -456,4 +456,11 @@
     <!-- ═══ Trợ năng badge ═══ -->
     <string name="cd_chat_unread_count">%d tin nhắn chưa đọc</string>
     <string name="cd_participant_count">%d người tham gia</string>
+
+    <!-- ═══ Ghi hình ═══ -->
+    <string name="recording_indicator_label">GHI</string>
+    <string name="cd_start_recording">Bắt đầu ghi hình</string>
+    <string name="cd_stop_recording">Dừng ghi hình</string>
+    <string name="recording_start_error">Không thể bắt đầu ghi hình</string>
+    <string name="recording_stop_error">Không thể dừng ghi hình</string>
 </resources>

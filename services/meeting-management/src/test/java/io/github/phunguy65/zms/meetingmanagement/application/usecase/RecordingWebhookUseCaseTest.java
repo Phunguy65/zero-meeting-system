@@ -14,7 +14,9 @@ import io.github.phunguy65.zms.meetingmanagement.domain.model.Recording;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.RecordingStatus;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitEgressId;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.LiveKitRoomName;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.LiveKitPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.RecordingRepository;
+import io.github.phunguy65.zms.shared.domain.Result;
 import io.github.phunguy65.zms.shared.domain.valueobject.MeetingId;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +36,9 @@ class RecordingWebhookUseCaseTest {
     RecordingRepository recordingRepository;
 
     @Mock
+    LiveKitPort liveKitPort;
+
+    @Mock
     ApplicationEventPublisher eventPublisher;
 
     private ActivateRecordingUseCase activateRecordingUseCase;
@@ -43,7 +48,7 @@ class RecordingWebhookUseCaseTest {
     void setUp() {
         activateRecordingUseCase = new ActivateRecordingUseCase(recordingRepository);
         finalizeRecordingUseCase =
-                new FinalizeRecordingUseCase(recordingRepository, eventPublisher);
+                new FinalizeRecordingUseCase(recordingRepository, liveKitPort, eventPublisher);
     }
 
     @Test
@@ -88,6 +93,7 @@ class RecordingWebhookUseCaseTest {
                 .thenReturn(Optional.of(recording));
         when(recordingRepository.save(any(Recording.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(liveKitPort.updateRoomMetadata(any(), any())).thenReturn(Result.success());
 
         finalizeRecordingUseCase.execute(new FinalizeRecordingCommand(
                 EGRESS_ID,
@@ -105,6 +111,10 @@ class RecordingWebhookUseCaseTest {
         assertThat(recording.getFileSizeBytes()).isEqualTo(2048L);
         verify(recordingRepository).save(recording);
         verify(eventPublisher).publishEvent(any(PublishableEvent.class));
+        verify(liveKitPort)
+                .updateRoomMetadata(
+                        LiveKitRoomName.fromMeetingId(recording.getMeetingId()),
+                        "{\"recording\":false}");
     }
 
     @Test
@@ -132,6 +142,7 @@ class RecordingWebhookUseCaseTest {
                 .thenReturn(Optional.of(recording));
         when(recordingRepository.save(any(Recording.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(liveKitPort.updateRoomMetadata(any(), any())).thenReturn(Result.success());
 
         finalizeRecordingUseCase.execute(new FinalizeRecordingCommand(
                 EGRESS_ID, false, null, null, "egress crashed", 0, 0L));
@@ -140,6 +151,10 @@ class RecordingWebhookUseCaseTest {
         assertThat(recording.getErrorMessage()).contains("egress crashed");
         verify(recordingRepository).save(recording);
         verify(eventPublisher).publishEvent(any(PublishableEvent.class));
+        verify(liveKitPort)
+                .updateRoomMetadata(
+                        LiveKitRoomName.fromMeetingId(recording.getMeetingId()),
+                        "{\"recording\":false}");
     }
 
     @Test
@@ -149,6 +164,7 @@ class RecordingWebhookUseCaseTest {
                 .thenReturn(Optional.of(recording));
         when(recordingRepository.save(any(Recording.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(liveKitPort.updateRoomMetadata(any(), any())).thenReturn(Result.success());
 
         finalizeRecordingUseCase.execute(new FinalizeRecordingCommand(
                 EGRESS_ID,
@@ -161,6 +177,10 @@ class RecordingWebhookUseCaseTest {
 
         assertThat(recording.getStatus()).isEqualTo(RecordingStatus.COMPLETED);
         verify(recordingRepository).save(recording);
+        verify(liveKitPort)
+                .updateRoomMetadata(
+                        LiveKitRoomName.fromMeetingId(recording.getMeetingId()),
+                        "{\"recording\":false}");
     }
 
     @Test

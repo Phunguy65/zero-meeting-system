@@ -1,23 +1,32 @@
 package io.github.phunguy65.zms.data.repository;
 
 import io.github.phunguy65.zms.data.mapper.MeetingMapper;
+import io.github.phunguy65.zms.data.remote.api.InviteManagementApi;
+import io.github.phunguy65.zms.data.remote.api.InviteTokensApi;
 import io.github.phunguy65.zms.data.remote.api.MeetingsApi;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementCreateInstantMeetingRequest;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementCursorScrollResponseMeetingResponse;
+import io.github.phunguy65.zms.data.remote.dto.MeetingManagementInviteeListResponse;
+import io.github.phunguy65.zms.data.remote.dto.MeetingManagementInviteeRequest;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingSettingsRequest;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementMeetingSettingsResponse;
 import io.github.phunguy65.zms.data.remote.dto.MeetingManagementScheduleMeetingRequest;
+import io.github.phunguy65.zms.data.remote.dto.MeetingManagementValidateInviteTokenRequest;
+import io.github.phunguy65.zms.data.remote.dto.MeetingManagementValidateInviteTokenResponse;
 import io.github.phunguy65.zms.data.remote.interceptor.AndroidErrorTranslator;
 import io.github.phunguy65.zms.data.remote.interceptor.ApiErrorException;
 import io.github.phunguy65.zms.data.remote.interceptor.ApiFailException;
 import io.github.phunguy65.zms.di.IoExecutor;
 import io.github.phunguy65.zms.domain.model.InstantMeetingSettings;
+import io.github.phunguy65.zms.domain.model.InviteTokenValidationResult;
+import io.github.phunguy65.zms.domain.model.InviteeInfo;
 import io.github.phunguy65.zms.domain.model.MeetingCreationResult;
 import io.github.phunguy65.zms.domain.model.MeetingDetail;
 import io.github.phunguy65.zms.domain.model.MeetingSettings;
 import io.github.phunguy65.zms.domain.model.ScheduleMeetingRequest;
 import io.github.phunguy65.zms.domain.model.UpcomingMeeting;
+import io.github.phunguy65.zms.domain.model.UpdateSettingsResult;
 import io.github.phunguy65.zms.domain.repository.MeetingRepository;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -45,6 +54,8 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     private static final int UPCOMING_PAGE_SIZE = 20;
 
     private final MeetingsApi meetingsApi;
+    private final InviteTokensApi inviteTokensApi;
+    private final InviteManagementApi inviteManagementApi;
     private final MeetingMapper meetingMapper;
     private final AndroidErrorTranslator errorTranslator;
     private final Executor ioExecutor;
@@ -52,10 +63,14 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     @Inject
     public MeetingRepositoryImpl(
             MeetingsApi meetingsApi,
+            InviteTokensApi inviteTokensApi,
+            InviteManagementApi inviteManagementApi,
             MeetingMapper meetingMapper,
             AndroidErrorTranslator errorTranslator,
             @IoExecutor Executor ioExecutor) {
         this.meetingsApi = meetingsApi;
+        this.inviteTokensApi = inviteTokensApi;
+        this.inviteManagementApi = inviteManagementApi;
         this.meetingMapper = meetingMapper;
         this.errorTranslator = errorTranslator;
         this.ioExecutor = ioExecutor;
@@ -171,7 +186,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     }
 
     @Override
-    public CompletableFuture<MeetingSettings> updateMeetingSettings(
+    public CompletableFuture<UpdateSettingsResult> updateMeetingSettings(
             String meetingId, MeetingSettings settings) {
         return CompletableFuture.supplyAsync(
                 () -> {
@@ -188,7 +203,17 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                                     "Update meeting settings failed: HTTP " + response.code());
                         }
 
-                        return meetingMapper.toMeetingSettings(response.body());
+                        MeetingManagementMeetingSettingsResponse body = response.body();
+                        MeetingSettings updatedSettings = meetingMapper.toMeetingSettings(body);
+
+                        int invalidatedCount = body.getInvalidatedInviteCount() != null
+                                ? body.getInvalidatedInviteCount()
+                                : 0;
+                        boolean resendRecommended =
+                                Boolean.TRUE.equals(body.getResendInvitesRecommended());
+
+                        return new UpdateSettingsResult(
+                                updatedSettings, invalidatedCount, resendRecommended);
                     } catch (Exception e) {
                         throw new CompletionException(translateException(e));
                     }
@@ -206,6 +231,26 @@ public class MeetingRepositoryImpl implements MeetingRepository {
 
                         if (!response.isSuccessful()) {
                             throw new IOException("Cancel meeting failed: HTTP " + response.code());
+                        }
+
+                        return null;
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Void> endMeeting(String meetingId) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID id = UUID.fromString(meetingId);
+                        Response<Void> response = meetingsApi.endMeeting(id).execute();
+
+                        if (!response.isSuccessful()) {
+                            throw new IOException("End meeting failed: HTTP " + response.code());
                         }
 
                         return null;
@@ -242,6 +287,102 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 ioExecutor);
     }
 
+    @Override
+    public CompletableFuture<InviteTokenValidationResult> validateInviteToken(String token) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        MeetingManagementValidateInviteTokenRequest request =
+                                new MeetingManagementValidateInviteTokenRequest().token(token);
+                        Response<MeetingManagementValidateInviteTokenResponse> response =
+                                inviteTokensApi.validateToken(request).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException(
+                                    "Invite token validation failed: HTTP " + response.code());
+                        }
+
+                        MeetingManagementValidateInviteTokenResponse body = response.body();
+                        return new InviteTokenValidationResult(
+                                body.getMeetingId() != null
+                                        ? body.getMeetingId().toString()
+                                        : null,
+                                body.getShortCode(),
+                                Boolean.TRUE.equals(body.getPreApproved()));
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<List<InviteeInfo>> getInvitees(String meetingId) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID id = UUID.fromString(meetingId);
+                        Response<List<MeetingManagementInviteeListResponse>> response =
+                                inviteManagementApi.getInvitees(id).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException("Get invitees failed: HTTP " + response.code());
+                        }
+
+                        return response.body().stream()
+                                .map(this::toInviteeInfo)
+                                .collect(Collectors.toList());
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<InviteeInfo> resendInvite(String meetingId, String inviteeId) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID mId = UUID.fromString(meetingId);
+                        UUID iId = UUID.fromString(inviteeId);
+                        Response<MeetingManagementInviteeListResponse> response =
+                                inviteManagementApi.resendInvite(mId, iId).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException("Resend invite failed: HTTP " + response.code());
+                        }
+
+                        return toInviteeInfo(response.body());
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<InviteeInfo> revokeInvite(String meetingId, String inviteeId) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        UUID mId = UUID.fromString(meetingId);
+                        UUID iId = UUID.fromString(inviteeId);
+                        Response<MeetingManagementInviteeListResponse> response =
+                                inviteManagementApi.revokeInvite(mId, iId).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new IOException("Revoke invite failed: HTTP " + response.code());
+                        }
+
+                        return toInviteeInfo(response.body());
+                    } catch (Exception e) {
+                        throw new CompletionException(translateException(e));
+                    }
+                },
+                ioExecutor);
+    }
+
     /**
      * Builds the API request for instant meeting creation.
      * Uses default settings with waiting room enabled.
@@ -257,17 +398,30 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     /**
      * Builds the API request for scheduled meeting creation.
      * Maps all user-selected settings to the backend request.
+     * Invitee emails are mapped to {@link MeetingManagementInviteeRequest} objects
+     * when the domain request carries a non-null invitee list.
      */
     private MeetingManagementScheduleMeetingRequest buildScheduleMeetingRequest(
             ScheduleMeetingRequest request) {
         MeetingManagementMeetingSettingsRequest settingsRequest =
                 buildScheduleMeetingSettings(request);
 
-        return new MeetingManagementScheduleMeetingRequest()
-                .title(request.getTitle())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
-                .settings(settingsRequest);
+        MeetingManagementScheduleMeetingRequest apiRequest =
+                new MeetingManagementScheduleMeetingRequest()
+                        .title(request.getTitle())
+                        .startTime(request.getStartTime())
+                        .endTime(request.getEndTime())
+                        .settings(settingsRequest);
+
+        List<String> domainInvitees = request.getInvitees();
+        if (domainInvitees != null && !domainInvitees.isEmpty()) {
+            List<MeetingManagementInviteeRequest> inviteeRequests = domainInvitees.stream()
+                    .map(email -> new MeetingManagementInviteeRequest().email(email))
+                    .collect(Collectors.toList());
+            apiRequest.invitees(inviteeRequests);
+        }
+
+        return apiRequest;
     }
 
     /**
@@ -296,7 +450,6 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                         .allowMicrophone(settings.isAllowMicrophone())
                         .allowVideo(settings.isAllowVideo());
 
-        // Only set password if a non-empty value was provided
         if (settings.hasPassword()) {
             settingsRequest.password(settings.getPassword());
         }
@@ -351,6 +504,21 @@ public class MeetingRepositoryImpl implements MeetingRepository {
         }
 
         return request;
+    }
+
+    /**
+     * Maps an invitee list response DTO to the domain InviteeInfo model.
+     */
+    private InviteeInfo toInviteeInfo(MeetingManagementInviteeListResponse source) {
+        return new InviteeInfo(
+                source.getInviteeId() != null ? source.getInviteeId().toString() : null,
+                source.getUserId() != null ? source.getUserId().toString() : null,
+                source.getEmail(),
+                source.getDisplayName(),
+                source.getStatus() != null ? source.getStatus().getValue() : null,
+                source.getInvitedAt(),
+                source.getRespondedAt(),
+                source.getTokenStatus());
     }
 
     /**

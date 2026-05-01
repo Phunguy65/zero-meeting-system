@@ -1,10 +1,15 @@
 package io.github.phunguy65.zms.notification.infrastructure.email;
 
 import io.github.phunguy65.zms.notification.infrastructure.config.NotificationProperties;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * Builds join links for invite emails using per-invitee invite tokens.
+ *
+ * <p>Token-based links take the form {@code {joinBaseUrl}?token={inviteToken}} and are the only
+ * supported format as of Phase 3. The legacy short-code + password URL format has been removed.
+ */
 @Component
 public class MeetingInvitationLinkFactory {
 
@@ -14,13 +19,18 @@ public class MeetingInvitationLinkFactory {
         this.notificationProperties = notificationProperties;
     }
 
-    public String buildJoinLink(String shortCode, @Nullable String rawPassword) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(
+    /**
+     * Builds a token-based invite join link.
+     *
+     * @param inviteToken the raw per-invitee invite token string
+     * @return URL of the form {@code {joinBaseUrl}?token={inviteToken}}
+     */
+    public String buildInviteLink(String inviteToken) {
+        return UriComponentsBuilder.fromUriString(
                         notificationProperties.getInvitation().getJoinBaseUrl())
-                .queryParam("code", shortCode);
-        if (rawPassword != null && !rawPassword.isBlank()) {
-            builder.queryParam("password", rawPassword);
-        }
-        return builder.build().encode().toUriString();
+                .queryParam("token", inviteToken)
+                .build()
+                .encode()
+                .toUriString();
     }
 }

@@ -10,11 +10,13 @@ import static org.mockito.Mockito.when;
 
 import io.github.phunguy65.zms.meetingmanagement.application.command.ScheduleMeetingCommand;
 import io.github.phunguy65.zms.meetingmanagement.application.helper.ShortCodeGenerator;
+import io.github.phunguy65.zms.meetingmanagement.application.service.InviteTokenService;
 import io.github.phunguy65.zms.meetingmanagement.domain.event.MeetingInvitationsSentEvent;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingSettings;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTimeRange;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.MeetingTitle;
 import io.github.phunguy65.zms.meetingmanagement.domain.model.valueobject.ShortCode;
+import io.github.phunguy65.zms.meetingmanagement.domain.port.InviteTokenRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingInviteeRepository;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingLimitsPort;
 import io.github.phunguy65.zms.meetingmanagement.domain.port.MeetingRepository;
@@ -58,6 +60,12 @@ class ScheduleMeetingUseCaseEventPublishingTest {
     @Mock
     private PasswordHasher passwordHasher;
 
+    @Mock
+    private InviteTokenService inviteTokenService;
+
+    @Mock
+    private InviteTokenRepository inviteTokenRepository;
+
     private ScheduleMeetingUseCase useCase;
 
     @BeforeEach
@@ -69,7 +77,10 @@ class ScheduleMeetingUseCaseEventPublishingTest {
                 meetingLimitsPort,
                 userGrpcServicePort,
                 inviteeRepository,
-                passwordHasher);
+                passwordHasher,
+                inviteTokenService,
+                inviteTokenRepository,
+                false);
         when(meetingLimitsPort.getMinDurationMinutes()).thenReturn(15);
         when(meetingLimitsPort.getMaxDurationMinutes()).thenReturn(240);
         when(meetingLimitsPort.getMaxParticipantsCeiling()).thenReturn(300);
@@ -82,7 +93,7 @@ class ScheduleMeetingUseCaseEventPublishingTest {
     }
 
     @Test
-    void publishesProtectedInvitationEventWithShortCodeAndRawPassword() {
+    void publishesInvitationEventWithShortCodeAndInvitees() {
         UUID hostId = UUID.randomUUID();
         UUID inviteeId = UUID.randomUUID();
         when(passwordHasher.hash("secret-pass")).thenReturn("hashed-secret");
@@ -103,7 +114,6 @@ class ScheduleMeetingUseCaseEventPublishingTest {
         MeetingInvitationsSentEvent event = capturedInvitationEvent();
         assertThat(event.meetingTitle()).isEqualTo("Weekly Sync");
         assertThat(event.meetingShortCode()).isEqualTo("SHORT12345");
-        assertThat(event.rawPassword()).isEqualTo("secret-pass");
         assertThat(event.invitees()).singleElement().satisfies(invitee -> {
             assertThat(invitee.userId()).isEqualTo(inviteeId);
             assertThat(invitee.email()).isEqualTo("alice@example.com");
@@ -112,7 +122,7 @@ class ScheduleMeetingUseCaseEventPublishingTest {
     }
 
     @Test
-    void publishesUnprotectedInvitationEventWithoutPassword() {
+    void publishesInvitationEventWithoutPasswordInPayload() {
         UUID hostId = UUID.randomUUID();
         UUID inviteeId = UUID.randomUUID();
         when(userGrpcServicePort.resolveUsers(List.of("guest@example.com")))
@@ -137,7 +147,6 @@ class ScheduleMeetingUseCaseEventPublishingTest {
         MeetingInvitationsSentEvent event = capturedInvitationEvent();
         assertThat(event.meetingTitle()).isNull();
         assertThat(event.meetingShortCode()).isEqualTo("SHORT12345");
-        assertThat(event.rawPassword()).isNull();
         assertThat(event.startTime()).isEqualTo(Instant.parse("2026-04-03T10:00:00Z"));
     }
 
@@ -158,7 +167,7 @@ class ScheduleMeetingUseCaseEventPublishingTest {
     }
 
     @Test
-    void treatsBlankPasswordAsUnprotectedInInvitationEvent() {
+    void treatsBlankPasswordAsUnprotected() {
         UUID hostId = UUID.randomUUID();
         UUID inviteeId = UUID.randomUUID();
         when(userGrpcServicePort.resolveUsers(List.of("bob@example.com")))
@@ -175,7 +184,63 @@ class ScheduleMeetingUseCaseEventPublishingTest {
 
         assertThat(result).isInstanceOf(Result.Success.class);
         verify(passwordHasher, never()).hash(org.mockito.ArgumentMatchers.anyString());
-        assertThat(capturedInvitationEvent().rawPassword()).isNull();
+    }
+
+    @Test
+    void withTokensEnabled_generatesTokenPerInviteeAndIncludesInEvent() {
+        ScheduleMeetingUseCase tokenEnabledUseCase = new ScheduleMeetingUseCase(
+                meetingRepository,
+                shortCodeGenerator,
+                eventPublisher,
+                meetingLimitsPort,
+                userGrpcServicePort,
+                inviteeRepository,
+                passwordHasher,
+                inviteTokenService,
+                inviteTokenRepository,
+                true);
+
+        UUID hostId = UUID.randomUUID();
+        UUID inviteeUserId = UUID.randomUUID();
+        String rawToken = "sig|" + UUID.randomUUID() + "|" + inviteeUserId + "|9999999999";
+        when(userGrpcServicePort.resolveUsers(List.of("carol@example.com")))
+                .thenReturn(Map.of(
+                        "carol@example.com",
+                        new ResolvedUser(
+                                inviteeUserId, "carol@example.com", "Carol", null, null, "EMAIL")));
+        when(inviteTokenService.generateToken(
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(rawToken);
+        when(inviteTokenService.hashToken(rawToken)).thenReturn("hashed-token");
+        when(inviteTokenService.extractExpiresAt(rawToken))
+                .thenReturn(java.time.Instant.now().plusSeconds(604800));
+        when(inviteTokenRepository.save(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        lenient()
+                .when(inviteeRepository.save(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        var result = tokenEnabledUseCase.execute(command(
+                hostId,
+                MeetingTitle.of("Token Meeting"),
+                List.of(new ScheduleMeetingCommand.InviteeInput("carol@example.com")),
+                null));
+
+        assertThat(result).isInstanceOf(Result.Success.class);
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(eventPublisher, atLeastOnce()).publishEvent(eventCaptor.capture());
+        MeetingInvitationsSentEvent event = eventCaptor.getAllValues().stream()
+                .filter(MeetingInvitationsSentEvent.class::isInstance)
+                .map(MeetingInvitationsSentEvent.class::cast)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Expected invitation event to be published"));
+
+        assertThat(event.inviteeTokens()).isNotEmpty();
+        assertThat(event.inviteeTokens()).containsKey(inviteeUserId);
+        assertThat(event.inviteeTokens()).containsValue(rawToken);
+        assertThat(event.inviteeTokens().get(inviteeUserId)).isEqualTo(rawToken);
+        verify(inviteTokenRepository).save(org.mockito.ArgumentMatchers.any());
     }
 
     private MeetingInvitationsSentEvent capturedInvitationEvent() {
