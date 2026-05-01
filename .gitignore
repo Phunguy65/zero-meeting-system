@@ -54,3 +54,6 @@ dist/
 # hprof
 *.hprof
 .gitnexus
+
+# CI local secrets
+.secrets/
