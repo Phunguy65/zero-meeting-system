@@ -13,24 +13,18 @@ jobs:
     name: Bump version, generate changelog, and publish release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: lts/*
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.28.1
-
-      - name: Install git-cliff
-        run: |
-          curl -sSfL \
-            "https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-x86_64-unknown-linux-musl.tar.gz" \
-            | tar -xz --strip-components=1 -C /usr/local/bin git-cliff-x86_64-unknown-linux-musl/git-cliff
 
       - name: Determine version bump type
         id: bump
